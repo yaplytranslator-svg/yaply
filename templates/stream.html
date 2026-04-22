@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Yaply Live — Real-Time Streaming Translation</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#080c14;--surface:#0e1420;--surface2:#141b2d;
+    --border:rgba(99,179,255,0.12);--accent:#3b82f6;
+    --accent2:#06b6d4;--accent3:#8b5cf6;--text:#e8f0fe;
+    --muted:#6b7fa8;--success:#10b981;--danger:#ef4444;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(59,130,246,0.08) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(139,92,246,0.07) 0%,transparent 60%);pointer-events:none;z-index:0;}
+  body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(99,179,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(99,179,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  .wrapper{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 24px 60px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:28px 0;}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;background:linear-gradient(135deg,#63b3ff,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .logo span{background:linear-gradient(135deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .live-badge{display:flex;align-items:center;gap:8px;font-size:0.75rem;color:var(--danger);border:1px solid rgba(239,68,68,0.3);padding:4px 14px;border-radius:20px;background:rgba(239,68,68,0.06);}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--danger);}
+  .live-dot.on{animation:pulseRed 1s infinite;}
+  .hero{text-align:center;padding:32px 0 24px;}
+  .hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:800;line-height:1.1;letter-spacing:-1.5px;}
+  .grad{display:block;background:linear-gradient(135deg,#63b3ff 0%,#8b5cf6 50%,#06b6d4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .hero p{margin-top:12px;color:var(--muted);max-width:480px;margin-left:auto;margin-right:auto;line-height:1.7;font-size:0.95rem;}
+  .lang-bar{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin:20px 0;flex-wrap:wrap;}
+  .lg label{display:block;font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+  .ls{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;padding:10px 36px 10px 14px;border-radius:10px;appearance:none;cursor:pointer;min-width:155px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7fa8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+  .ls:focus{outline:none;border-color:var(--accent);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:36px;position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(99,179,255,0.4),transparent);}
+  .listen-area{display:flex;flex-direction:column;align-items:center;gap:20px;padding:16px 0;}
+  .listen-wrap{position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center;}
+  .ring{position:absolute;border-radius:50%;border:1.5px solid var(--accent);opacity:0;}
+  .ring-1{width:110px;height:110px;}
+  .ring-2{width:142px;height:142px;}
+  .ring-3{width:178px;height:178px;}
+  .is-on .ring-1{animation:ripple 2s 0.0s ease-out infinite;}
+  .is-on .ring-2{animation:ripple 2s 0.5s ease-out infinite;}
+  .is-on .ring-3{animation:ripple 2s 1.0s ease-out infinite;}
+  .is-speaking .ring-1{animation:rippleFast 0.7s 0.0s ease-out infinite;border-color:var(--success);}
+  .is-speaking .ring-2{animation:rippleFast 0.7s 0.2s ease-out infinite;border-color:var(--success);}
+  .is-speaking .ring-3{animation:rippleFast 0.7s 0.4s ease-out infinite;border-color:var(--success);}
+  .listen-btn{width:90px;height:90px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),var(--accent3));color:white;font-size:2.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 8px 32px rgba(59,130,246,0.4);position:relative;z-index:2;}
+  .listen-btn:hover{transform:scale(1.08);}
+  .listen-btn.on{background:linear-gradient(135deg,var(--danger),#f97316);box-shadow:0 8px 32px rgba(239,68,68,0.5);}
+  .listen-btn.speaking{background:linear-gradient(135deg,var(--success),#06b6d4);box-shadow:0 8px 32px rgba(16,185,129,0.5);animation:btnPulse 0.6s infinite;}
+  /* Volume bars */
+  .vol{display:flex;align-items:flex-end;gap:3px;height:48px;opacity:0;transition:opacity 0.3s;}
+  .vol.show{opacity:1;}
+  .vb{width:5px;border-radius:3px;background:linear-gradient(to top,var(--accent),var(--accent2));transition:height 0.08s ease;height:4px;}
+  .lbl{font-size:0.92rem;color:var(--muted);font-weight:500;text-align:center;}
+  .lbl.on{color:var(--danger);}
+  .lbl.speaking{color:var(--success);}
+  /* Status pill */
+  .pill{display:inline-flex;align-items:center;gap:8px;font-size:0.78rem;padding:6px 16px;border-radius:20px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);color:var(--accent);opacity:0;transition:opacity 0.3s;min-height:32px;}
+  .pill.show{opacity:1;}
+  .pspin{width:12px;height:12px;border:2px solid rgba(59,130,246,0.3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+  /* Feed */
+  .divider{display:flex;align-items:center;gap:16px;margin:24px 0;color:var(--muted);font-size:0.72rem;letter-spacing:0.5px;text-transform:uppercase;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .feed{display:flex;flex-direction:column;gap:14px;max-height:420px;overflow-y:auto;padding-right:4px;}
+  .feed::-webkit-scrollbar{width:4px;}
+  .feed::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:0.88rem;line-height:2;}
+  .empty-icon{font-size:2.5rem;margin-bottom:12px;opacity:0.4;}
+  .msg{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:18px 20px;animation:slideUp 0.35s ease;transition:border-color 0.5s;}
+  .msg.fresh{border-color:rgba(99,179,255,0.4);}
+  .mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .ml{display:flex;align-items:center;gap:8px;}
+  .mn{font-size:0.68rem;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:2px 8px;border-radius:8px;}
+  .me{font-size:0.68rem;color:var(--accent2);border:1px solid rgba(6,182,212,0.2);padding:2px 8px;border-radius:8px;background:rgba(6,182,212,0.06);}
+  .mr{display:flex;align-items:center;gap:8px;}
+  .mt{font-size:0.68rem;color:var(--muted);}
+  .copy-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-size:0.7rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+  .copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .play-mini{width:28px;height:28px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.2s;}
+  .play-mini:hover{transform:scale(1.1);}
+  .mo{font-size:0.82rem;color:var(--muted);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);font-style:italic;}
+  .mtr{font-size:1rem;color:var(--text);line-height:1.6;font-weight:500;}
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;text-align:center;}
+  .sn{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .sl{font-size:0.72rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px;}
+  @keyframes ripple{0%{transform:scale(0.85);opacity:0.7}100%{transform:scale(1.5);opacity:0}}
+  @keyframes rippleFast{0%{transform:scale(0.85);opacity:0.9}100%{transform:scale(1.4);opacity:0}}
+  @keyframes btnPulse{0%,100%{box-shadow:0 8px 32px rgba(16,185,129,0.4)}50%{box-shadow:0 8px 48px rgba(16,185,129,0.8)}}
+  @keyframes pulseRed{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.7)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <nav>
+    <div class="logo">ya<span>ply</span></div>
+    <div class="live-badge"><div class="live-dot" id="liveDot"></div><span id="liveTxt">OFFLINE</span></div>
+  </nav>
+
+  <div class="hero">
+    <h1>Real-Time Streaming<span class="grad">Translation.</span></h1>
+    <p>No buttons. No waiting. Just speak naturally — Yaply listens, detects every sentence, and translates instantly.</p>
+  </div>
+
+  <div class="lang-bar">
+    <div class="lg">
+      <label>They Speak</label>
+      <select class="ls" id="srcLang" onchange="sendConfig()">
+        <option value="auto">Auto Detect</option>
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="hi">Hindi</option>
+        <option value="ja">Japanese</option>
+        <option value="zh">Chinese</option>
+        <option value="ar">Arabic</option>
+        <option value="pt">Portuguese</option>
+        <option value="ru">Russian</option>
+        <option value="it">Italian</option>
+        <option value="ko">Korean</option>
+      </select>
+    </div>
+    <div style="font-size:1.4rem;color:var(--muted);padding-bottom:8px;">→</div>
+    <div class="lg">
+      <label>You Hear</label>
+      <select class="ls" id="tgtLang" onchange="sendConfig()">
+        <option value="HI">Hindi</option>
+        <option value="EN">English</option>
+        <option value="ES">Spanish</option>
+        <option value="FR">French</option>
+        <option value="DE">German</option>
+        <option value="JA">Japanese</option>
+        <option value="ZH">Chinese</option>
+        <option value="AR">Arabic</option>
+        <option value="PT">Portuguese</option>
+        <option value="RU">Russian</option>
+        <option value="IT">Italian</option>
+        <option value="KO">Korean</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="listen-area">
+      <div class="listen-wrap" id="lw">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <button class="listen-btn" id="lb" onclick="toggle()">🎙️</button>
+      </div>
+      <div class="vol show" id="vol">
+        <div class="vb" id="v1"></div><div class="vb" id="v2"></div>
+        <div class="vb" id="v3"></div><div class="vb" id="v4"></div>
+        <div class="vb" id="v5"></div><div class="vb" id="v6"></div>
+        <div class="vb" id="v7"></div><div class="vb" id="v8"></div>
+        <div class="vb" id="v9"></div><div class="vb" id="v10"></div>
+        <div class="vb" id="v11"></div><div class="vb" id="v12"></div>
+        <div class="vb" id="v13"></div><div class="vb" id="v14"></div>
+        <div class="vb" id="v15"></div>
+      </div>
+      <div class="lbl" id="lbl">Tap to start live translation</div>
+      <div class="pill" id="pill"><div class="pspin"></div><span id="pillTxt">Processing...</span></div>
+    </div>
+
+    <div class="divider">Live Translation Feed</div>
+
+    <div class="feed" id="feed">
+      <div class="empty" id="emptyEl">
+        <div class="empty-icon">🌍</div>
+        Tap the mic and speak in any language.<br/>
+        Every sentence translates automatically.
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="sn" id="cntS">0</div><div class="sl">Sentences</div></div>
+    <div class="stat"><div class="sn" id="cntL">0</div><div class="sl">Languages</div></div>
+    <div class="stat"><div class="sn" id="cntT">0s</div><div class="sl">Avg Speed</div></div>
+  </div>
+</div>
+
+<script>
+  let ws, audioCtx, processor, source, micStream, analyser;
+  let active = false, sentCount = 0, langSet = new Set();
+  let audioStore = {}, animFrame, startTimes = {};
+  let totalTime = 0, timeCount = 0;
+  let currentTranscript = '';
+
+  async function toggle() {
+    if (!active) await start();
+    else stop();
+  }
+
+  async function start() {
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      ws = new WebSocket(`ws://${location.host}/stream`);
+      ws.binaryType = 'arraybuffer';
+      ws.onopen = () => { sendConfig(); console.log('WS connected'); };
+      ws.onmessage = e => handle(JSON.parse(e.data));
+      ws.onerror = e => { console.error(e); showPill('Connection error'); };
+      ws.onclose = () => { if(active) stop(); };
+
+      audioCtx = new AudioContext({ sampleRate: 16000 });
+      source = audioCtx.createMediaStreamSource(micStream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+
+      processor = audioCtx.createScriptProcessor(4096, 1, 1);
+      source.connect(processor);
+      processor.connect(audioCtx.destination);
+      processor.onaudioprocess = e => {
+        if (!active || !ws || ws.readyState !== 1) return;
+        const f = e.inputBuffer.getChannelData(0);
+        const i16 = new Int16Array(f.length);
+        for (let i = 0; i < f.length; i++) i16[i] = Math.max(-32768, Math.min(32767, f[i] * 32768));
+        ws.send(i16.buffer);
+      };
+
+      active = true;
+      document.getElementById('lb').classList.add('on');
+      document.getElementById('lb').textContent = '⏹';
+      document.getElementById('lw').classList.add('is-on');
+      document.getElementById('vol').classList.add('show');
+      document.getElementById('lbl').textContent = '🎙️ Listening... speak naturally';
+      document.getElementById('lbl').className = 'lbl on';
+      document.getElementById('liveDot').classList.add('on');
+      document.getElementById('liveTxt').textContent = 'LIVE';
+      document.getElementById('emptyEl').style.display = 'none';
+      animVol();
+
+    } catch(e) {
+      alert('Mic access denied. Please allow microphone.');
+    }
+  }
+
+  function stop() {
+    active = false;
+    if(processor){processor.disconnect();processor=null;}
+    if(source){source.disconnect();source=null;}
+    if(audioCtx){audioCtx.close();audioCtx=null;}
+    if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+    if(ws&&ws.readyState===1)ws.close();
+    if(animFrame)cancelAnimationFrame(animFrame);
+    document.getElementById('lb').classList.remove('on','speaking');
+    document.getElementById('lb').textContent = '🎙️';
+    document.getElementById('lw').classList.remove('is-on','is-speaking');
+    document.getElementById('lbl').textContent = 'Tap to start live translation';
+    document.getElementById('lbl').className = 'lbl';
+    document.getElementById('liveDot').classList.remove('on');
+    document.getElementById('liveTxt').textContent = 'OFFLINE';
+    hidePill();
+    for(let i=1;i<=15;i++) document.getElementById('v'+i).style.height='4px';
+  }
+
+  function handle(msg) {
+    switch(msg.type) {
+      case 'volume':
+        updateVolBars(msg.level);
+        break;
+
+      case 'speaking':
+        if(msg.status) {
+          document.getElementById('lb').classList.add('speaking');
+          document.getElementById('lw').classList.add('is-speaking');
+          document.getElementById('lbl').textContent = '🟢 Speech detected...';
+          document.getElementById('lbl').className = 'lbl speaking';
+          startTimes[sentCount+1] = Date.now();
+        } else {
+          document.getElementById('lb').classList.remove('speaking');
+          document.getElementById('lw').classList.remove('is-speaking');
+          document.getElementById('lbl').textContent = '🎙️ Listening... speak naturally';
+          document.getElementById('lbl').className = 'lbl on';
+        }
+        break;
+
+      case 'status':
+        showPill(msg.message);
+        break;
+
+      case 'transcript':
+        currentTranscript = msg.text;
+        break;
+
+      case 'translation':
+        sentCount++;
+        langSet.add(msg.lang);
+        document.getElementById('cntS').textContent = sentCount;
+        document.getElementById('cntL').textContent = langSet.size;
+        addMsg(msg.text, msg.engine, msg.lang, msg.id);
+        break;
+
+      case 'audio':
+        playB64(msg.data, msg.id);
+        // Calculate speed
+        if(startTimes[msg.id]) {
+          const elapsed = ((Date.now() - startTimes[msg.id]) / 1000).toFixed(1);
+          totalTime += parseFloat(elapsed);
+          timeCount++;
+          document.getElementById('cntT').textContent = (totalTime/timeCount).toFixed(1)+'s';
+        }
+        hidePill();
+        break;
+
+      case 'ready':
+        hidePill();
+        break;
+
+      case 'error':
+        showPill('⚠️ ' + msg.message);
+        setTimeout(hidePill, 4000);
+        break;
+    }
+  }
+
+  function addMsg(translation, engine, lang, id) {
+    const feed = document.getElementById('feed');
+    const time = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const div = document.createElement('div');
+    div.className = 'msg fresh';
+    div.id = 'msg'+id;
+    div.innerHTML = `
+      <div class="mh">
+        <div class="ml">
+          <span class="mn">#${sentCount}</span>
+          <span class="me">${engine}</span>
+        </div>
+        <div class="mr">
+          <span class="mt">${time}</span>
+          <button class="copy-btn" onclick="copyText('${id}')" title="Copy">📋</button>
+          <button class="play-mini" onclick="replay(${id})" title="Replay">▶</button>
+        </div>
+      </div>
+      <div class="mo" id="orig${id}">${currentTranscript || '...'}</div>
+      <div class="mtr" id="trans${id}">${translation}</div>
+    `;
+    feed.insertBefore(div, feed.firstChild);
+    setTimeout(() => div.classList.remove('fresh'), 2500);
+  }
+
+  function playB64(b64, id) {
+    const b = atob(b64);
+    const a = new Uint8Array(b.length);
+    for(let i=0;i<b.length;i++) a[i]=b.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([a],{type:'audio/mpeg'}));
+    audioStore[id] = url;
+    new Audio(url).play();
+  }
+
+  function replay(id) {
+    if(audioStore[id]) new Audio(audioStore[id]).play();
+  }
+
+  function copyText(id) {
+    const el = document.getElementById('trans'+id);
+    if(el) {
+      navigator.clipboard.writeText(el.textContent);
+      const btn = el.parentElement.querySelector('.copy-btn');
+      btn.textContent = '✅';
+      setTimeout(()=>btn.textContent='📋', 2000);
+    }
+  }
+
+  function showPill(t) {
+    document.getElementById('pillTxt').textContent = t;
+    document.getElementById('pill').classList.add('show');
+  }
+  function hidePill() { document.getElementById('pill').classList.remove('show'); }
+
+  function sendConfig() {
+    if(ws && ws.readyState === 1) {
+      ws.send(JSON.stringify({
+        target_lang: document.getElementById('tgtLang').value,
+        src_lang: document.getElementById('srcLang').value
+      }));
+    }
+  }
+
+  let volLevels = new Array(15).fill(4);
+  function updateVolBars(level) {
+    volLevels.shift();
+    volLevels.push(level);
+    for(let i=1;i<=15;i++) {
+      const h = Math.max(4, volLevels[i-1] * 0.44);
+      document.getElementById('v'+i).style.height = h+'px';
+    }
+  }
+
+  function animVol() {
+    if(!analyser) return;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    const step = Math.floor(data.length/15);
+    for(let i=1;i<=15;i++) {
+      const val = data[(i-1)*step]/255;
+      document.getElementById('v'+i).style.height = Math.max(4,val*44)+'px';
+    }
+    animFrame = requestAnimationFrame(animVol);
+  }
+</script>
+</body>
+</html>
