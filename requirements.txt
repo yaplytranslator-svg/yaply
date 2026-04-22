@@ -1,0 +1,9 @@
+flask
+flask-cors
+flask-sock
+groq
+deepl
+edge-tts
+gtts
+python-dotenv
+langdetect
