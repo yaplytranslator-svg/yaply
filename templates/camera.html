@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Yaply Camera — Instant Text Translation</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080C14;
+    --surface: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.1);
+    --accent: #00C9A7;
+    --accent2: #00A896;
+    --text: #F0F0F0;
+    --muted: rgba(255,255,255,0.5);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Geist', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── CAMERA VIEWFINDER ── */
+  .camera-wrap {
+    position: fixed; inset: 0;
+    background: #000;
+  }
+  #video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.85;
+  }
+  #canvas { display: none; }
+
+  /* ── OVERLAY UI ── */
+  .overlay {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Top bar */
+  .top-bar {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 52px 20px 16px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+    pointer-events: all;
+  }
+  .top-logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.3rem; color: white;
+    font-style: italic;
+  }
+  .top-logo span { color: var(--accent); }
+
+  /* Language selector */
+  .lang-pill-cam {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px;
+    padding: 8px 14px;
+    cursor: pointer;
+    pointer-events: all;
+    transition: all 0.2s;
+  }
+  .lang-pill-cam:hover { background: rgba(255,255,255,0.2); }
+  .lang-pill-cam select {
+    background: none; border: none;
+    color: white; font-family: 'Geist', sans-serif;
+    font-size: 0.85rem; font-weight: 600;
+    outline: none; cursor: pointer;
+  }
+  .lang-pill-cam select option { background: #1a1a2e; color: white; }
+
+  /* Scan frame */
+  .scan-frame {
+    flex: 1;
+    display: flex; align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .frame-box {
+    width: 280px; height: 180px;
+    position: relative;
+  }
+  .frame-corner {
+    position: absolute;
+    width: 24px; height: 24px;
+    border-color: var(--accent);
+    border-style: solid;
+  }
+  .fc-tl { top: 0; left: 0; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+  .fc-tr { top: 0; right: 0; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+  .fc-bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+  .fc-br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+  .scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    top: 0;
+    animation: scanAnim 2s ease-in-out infinite;
+    opacity: 0;
+  }
+  .scan-line.scanning { opacity: 1; }
+
+  .scan-hint {
+    position: absolute;
+    bottom: -36px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.6);
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  /* Bottom controls */
+  .bottom-controls {
+    padding: 0 24px 48px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+    pointer-events: all;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 20px;
+  }
+
+  /* Capture button */
+  .capture-btn {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: white;
+    border: 4px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    display: flex; align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    pointer-events: all;
+  }
+  .capture-btn:active { transform: scale(0.92); }
+  .capture-inner {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    transition: all 0.2s;
+  }
+  .capture-btn:active .capture-inner { background: white; }
+
+  .capture-label {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+  }
+
+  /* ── RESULT PANEL ── */
+  .result-panel {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(8,12,20,0.97);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px 24px 0 0;
+    padding: 20px;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 20;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .result-panel.show { transform: translateY(0); }
+
+  .panel-handle {
+    width: 36px; height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+
+  .panel-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .panel-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.1rem; color: white;
+  }
+  .close-panel {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: none; color: white;
+    cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .close-panel:hover { background: rgba(255,255,255,0.2); }
+
+  /* Image preview */
+  .img-preview {
+    width: 100%; border-radius: 16px;
+    overflow: hidden; margin-bottom: 16px;
+    max-height: 200px;
+    display: none;
+  }
+  .img-preview img {
+    width: 100%; height: 200px;
+    object-fit: cover;
+  }
+  .img-preview.show { display: block; }
+
+  /* Text boxes */
+  .text-box {
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .text-box-original {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .text-box-translated {
+    background: rgba(0,201,167,0.08);
+    border: 1px solid rgba(0,201,167,0.2);
+  }
+  .text-box-label {
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 8px;
+  }
+  .text-box-translated .text-box-label { color: var(--accent); }
+  .text-box-content {
+    font-size: 0.95rem; line-height: 1.6;
+    color: rgba(255,255,255,0.9);
+  }
+  .text-box-translated .text-box-content {
+    color: #7FFFD4;
+    font-weight: 500;
+  }
+
+  /* Action buttons */
+  .panel-actions {
+    display: flex; gap: 10px;
+    margin-top: 14px;
+  }
+  .panel-btn {
+    flex: 1; padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.8);
+    font-family: 'Geist', sans-serif;
+    font-size: 0.8rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center;
+    justify-content: center; gap: 6px;
+  }
+  .panel-btn:hover { background: rgba(255,255,255,0.12); }
+  .panel-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .panel-btn.primary:hover { background: var(--accent2); }
+
+  /* ── STATUS INDICATOR ── */
+  .status-indicator {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 20px 28px;
+    display: none;
+    flex-direction: column;
+    align-items: center; gap: 12px;
+    z-index: 30;
+  }
+  .status-indicator.show { display: flex; }
+  .status-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid rgba(0,201,167,0.3);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .status-text {
+    font-size: 0.88rem; color: white;
+    font-weight: 500;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 120px;
+    left: 50%; transform: translateX(-50%) translateY(10px);
+    background: rgba(0,201,167,0.9);
+    color: white; padding: 10px 20px;
+    border-radius: 100px;
+    font-size: 0.82rem; font-weight: 600;
+    opacity: 0; transition: all 0.3s;
+    z-index: 40; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Error state */
+  .error-box {
+    background: rgba(255,71,87,0.1);
+    border: 1px solid rgba(255,71,87,0.3);
+    border-radius: 14px;
+    padding: 16px;
+    color: #FF8090;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    display: none;
+  }
+  .error-box.show { display: block; }
+
+  /* No camera fallback */
+  .no-camera {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px; padding: 40px;
+    text-align: center;
+    z-index: 50;
+  }
+  .no-camera.show { display: flex; }
+  .no-camera-icon { font-size: 4rem; opacity: 0.4; }
+
+  /* Upload fallback button */
+  .upload-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--accent);
+    color: white; padding: 14px 24px;
+    border-radius: 100px; border: none;
+    font-family: 'Geist', sans-serif;
+    font-size: 0.9rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .upload-btn:hover { background: var(--accent2); }
+
+  @keyframes scanAnim {
+    0% { top: 0; }
+    50% { top: calc(100% - 2px); }
+    100% { top: 0; }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<link rel="stylesheet" href="/static/yaply-theme.css"/>
+</head>
+<body>
+
+<!-- Camera -->
+<div class="camera-wrap">
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="canvas"></canvas>
+</div>
+
+<!-- Main Overlay -->
+<div class="overlay">
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-logo">ya<span>ply</span> 📸</div>
+    <div class="lang-pill-cam">
+      <span>🌍</span>
+      <select id="targetLang">
+        <option value="EN">→ English</option>
+        <option value="HI">→ Hindi</option>
+        <option value="ES">→ Spanish</option>
+        <option value="FR">→ French</option>
+        <option value="DE">→ German</option>
+        <option value="JA">→ Japanese</option>
+        <option value="ZH">→ Chinese</option>
+        <option value="AR">→ Arabic</option>
+        <option value="PT">→ Portuguese</option>
+        <option value="RU">→ Russian</option>
+        <option value="IT">→ Italian</option>
+        <option value="KO">→ Korean</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Scan Frame -->
+  <div class="scan-frame">
+    <div class="frame-box">
+      <div class="frame-corner fc-tl"></div>
+      <div class="frame-corner fc-tr"></div>
+      <div class="frame-corner fc-bl"></div>
+      <div class="frame-corner fc-br"></div>
+      <div class="scan-line" id="scanLine"></div>
+      <div class="scan-hint" id="scanHint">Point at any text and tap capture</div>
+    </div>
+  </div>
+
+  <!-- Bottom Controls -->
+  <div class="bottom-controls">
+    <button class="capture-btn" onclick="capture()" id="captureBtn">
+      <div class="capture-inner"></div>
+    </button>
+    <div class="capture-label">Tap to scan & translate</div>
+  </div>
+</div>
+
+<!-- Status Indicator -->
+<div class="status-indicator" id="statusIndicator">
+  <div class="status-spinner"></div>
+  <div class="status-text" id="statusText">Reading text...</div>
+</div>
+
+<!-- Result Panel -->
+<div class="result-panel" id="resultPanel">
+  <div class="panel-handle"></div>
+  <div class="panel-header">
+    <div class="panel-title">Translation Result</div>
+    <button class="close-panel" onclick="closePanel()">✕</button>
+  </div>
+
+  <!-- Image Preview -->
+  <div class="img-preview" id="imgPreview">
+    <img id="capturedImg" src="" alt="Captured"/>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- Original Text -->
+  <div class="text-box text-box-original" id="originalBox" style="display:none">
+    <div class="text-box-label">📷 Detected Text</div>
+    <div class="text-box-content" id="originalText"></div>
+  </div>
+
+  <!-- Translated Text -->
+  <div class="text-box text-box-translated" id="translatedBox" style="display:none">
+    <div class="text-box-label">✨ Translation</div>
+    <div class="text-box-content" id="translatedText"></div>
+  </div>
+
+  <!-- Actions -->
+  <div class="panel-actions" id="panelActions" style="display:none">
+    <button class="panel-btn" onclick="copyTranslation()">📋 Copy</button>
+    <button class="panel-btn" onclick="shareTranslation()">↗️ Share</button>
+    <button class="panel-btn primary" onclick="closePanel()">📸 Scan Again</button>
+  </div>
+</div>
+
+<!-- No Camera Fallback -->
+<div class="no-camera" id="noCameraMsg">
+  <div class="no-camera-icon">📷</div>
+  <div style="font-family:'Instrument Serif',serif;font-size:1.4rem">Camera Access Needed</div>
+  <div style="font-size:0.88rem;color:rgba(255,255,255,0.5);line-height:1.6">
+    Please allow camera access in your browser settings, or upload an image to translate text.
+  </div>
+  <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+    📁 Upload Image
+  </button>
+  <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileUpload(event)"/>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">✓ Copied!</div>
+
+<script>
+  let videoStream = null;
+  let capturing = false;
+
+  // Start camera
+  async function startCamera() {
+    try {
+      const constraints = {
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      };
+      videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+      const video = document.getElementById('video');
+      video.srcObject = videoStream;
+      await video.play();
+      console.log('Camera started ✅');
+    } catch(e) {
+      console.error('Camera error:', e);
+      document.getElementById('noCameraMsg').classList.add('show');
+    }
+  }
+
+  // Capture and translate
+  async function capture() {
+    if (capturing) return;
+    capturing = true;
+
+    const btn = document.getElementById('captureBtn');
+    btn.style.opacity = '0.6';
+
+    // Start scan animation
+    const scanLine = document.getElementById('scanLine');
+    scanLine.classList.add('scanning');
+    document.getElementById('scanHint').textContent = 'Scanning...';
+
+    // Show status
+    showStatus('Reading text...');
+
+    try {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+
+      // Get base64 image
+      const imageData = canvas.toDataURL('image/jpeg', 0.9);
+
+      // Show preview
+      document.getElementById('capturedImg').src = imageData;
+      document.getElementById('imgPreview').classList.add('show');
+
+      // Send to server
+      showStatus('Translating...');
+      const targetLang = document.getElementById('targetLang').value;
+
+      const response = await fetch('/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: imageData,
+          target_lang: targetLang
+        })
+      });
+
+      const data = await response.json();
+      showResult(data);
+
+    } catch(e) {
+      console.error(e);
+      showResult({ success: false, error: 'Failed to process image. Please try again.' });
+    } finally {
+      capturing = false;
+      btn.style.opacity = '1';
+      scanLine.classList.remove('scanning');
+      document.getElementById('scanHint').textContent = 'Point at any text and tap capture';
+      hideStatus();
+    }
+  }
+
+  // Handle file upload
+  function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    document.getElementById('noCameraMsg').classList.remove('show');
+    showStatus('Reading text...');
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const imageData = e.target.result;
+      document.getElementById('capturedImg').src = imageData;
+      document.getElementById('imgPreview').classList.add('show');
+
+      showStatus('Translating...');
+      const targetLang = document.getElementById('targetLang').value;
+
+      try {
+        const response = await fetch('/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: imageData, target_lang: targetLang })
+        });
+        const data = await response.json();
+        showResult(data);
+      } catch(err) {
+        showResult({ success: false, error: 'Failed to process image.' });
+      } finally {
+        hideStatus();
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Show result
+  function showResult(data) {
+    const panel = document.getElementById('resultPanel');
+    const errorBox = document.getElementById('errorBox');
+    const originalBox = document.getElementById('originalBox');
+    const translatedBox = document.getElementById('translatedBox');
+    const panelActions = document.getElementById('panelActions');
+
+    // Reset
+    errorBox.classList.remove('show');
+    originalBox.style.display = 'none';
+    translatedBox.style.display = 'none';
+    panelActions.style.display = 'none';
+
+    if (data.success) {
+      document.getElementById('originalText').textContent = data.original_text;
+      document.getElementById('translatedText').textContent = data.translated_text;
+      originalBox.style.display = 'block';
+      translatedBox.style.display = 'block';
+      panelActions.style.display = 'flex';
+    } else {
+      errorBox.textContent = '⚠️ ' + (data.error || 'Something went wrong');
+      errorBox.classList.add('show');
+    }
+
+    panel.classList.add('show');
+  }
+
+  // Close result panel
+  function closePanel() {
+    document.getElementById('resultPanel').classList.remove('show');
+    document.getElementById('imgPreview').classList.remove('show');
+  }
+
+  // Show/hide status
+  function showStatus(text) {
+    document.getElementById('statusText').textContent = text;
+    document.getElementById('statusIndicator').classList.add('show');
+  }
+  function hideStatus() {
+    document.getElementById('statusIndicator').classList.remove('show');
+  }
+
+  // Copy translation
+  function copyTranslation() {
+    const text = document.getElementById('translatedText').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    });
+  }
+
+  // Share translation
+  function shareTranslation() {
+    const original = document.getElementById('originalText').textContent;
+    const translated = document.getElementById('translatedText').textContent;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Yaply Translation',
+        text: `Original: ${original}\n\nTranslation: ${translated}\n\nTranslated by Yaply.live 🌍`
+      });
+    } else {
+      copyTranslation();
+    }
+  }
+
+  // Start
+  startCamera();
+</script>
+<script src="/static/yaply-auth.js"></script>
+<script src="/static/yaply-nav.js"></script>
+
+
+
+
+<!-- Add before </body> -->
+<script src="/static/yaply-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Yaply — During Trip Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#F7F5F0;--bg2:#EFECEA;--surface:#FFFFFF;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.12);
+  --text:#0A0A0A;--muted:#6B6B6B;--muted2:#9B9B9B;
+  --accent:#00C9A7;--accent2:#00A896;--accent-soft:rgba(0,201,167,0.1);
+  --red:#FF4757;--gold:#FFB347;--blue:#4A90D9;--green:#2ECC71;
+  --shadow:0 2px 12px rgba(0,0,0,0.06);--shadow-lg:0 12px 40px rgba(0,0,0,0.1);
+  --r:16px;--r-lg:24px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+nav{
+  position:fixed;top:0;left:0;right:0;
+  background:rgba(247,245,240,0.95);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  z-index:100;
+}
+.nav-logo{font-family:'Instrument Serif',serif;font-size:1.3rem;font-style:italic;color:var(--text);}
+.nav-logo span{color:var(--accent);}
+
+.hero{
+  padding:88px 24px 32px;
+  max-width:900px;margin:0 auto;
+  text-align:center;
+}
+.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(2rem,5vw,2.8rem);line-height:1.1;letter-spacing:-0.5px;margin-bottom:12px;}
+.hero h1 em{color:var(--red);font-style:italic;}
+.hero p{font-size:0.95rem;color:var(--muted);max-width:500px;margin:0 auto;line-height:1.7;}
+
+.sos-banner{
+  max-width:900px;margin:0 auto 24px;
+  padding:0 24px;
+}
+.sos-card{
+  background:linear-gradient(135deg,var(--red),#FF6B6B);
+  border-radius:var(--r-lg);padding:20px 24px;
+  display:flex;align-items:center;gap:16px;
+  cursor:pointer;transition:transform 0.2s;
+  box-shadow:0 8px 32px rgba(255,71,87,0.3);
+}
+.sos-card:hover{transform:scale(1.01);}
+.sos-icon{font-size:2rem;}
+.sos-text{flex:1;color:white;}
+.sos-title{font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:700;}
+.sos-sub{font-size:0.82rem;opacity:0.85;margin-top:2px;}
+.sos-arrow{color:rgba(255,255,255,0.7);font-size:1.2rem;}
+
+.tools-nav{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:12px;max-width:900px;margin:0 auto 32px;
+  padding:0 24px;
+}
+@media(max-width:600px){.tools-nav{grid-template-columns:repeat(2,1fr);}}
+.tool-nav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:16px 12px;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:var(--r);
+  cursor:pointer;transition:all 0.2s;
+  font-family:'Geist',sans-serif;font-size:0.78rem;font-weight:600;
+  color:var(--muted);text-align:center;
+}
+.tool-nav-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
+.tool-nav-btn.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent2);}
+.tnb-icon{font-size:1.5rem;}
+
+.main{max-width:900px;margin:0 auto;padding:0 24px 80px;}
+
+.tool-panel{display:none;animation:fadeUp 0.4s ease both;}
+.tool-panel.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);margin-bottom:20px;}
+.card-header{padding:20px 24px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-family:'Instrument Serif',serif;font-size:1.1rem;display:flex;align-items:center;gap:10px;}
+.card-body{padding:24px;}
+
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:0.72rem;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted2);margin-bottom:6px;}
+.form-input{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px 16px;font-family:'Geist',sans-serif;font-size:0.92rem;color:var(--text);outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--accent);background:white;}
+.form-input::placeholder{color:var(--muted2);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+
+.btn-primary{width:100%;padding:14px;background:var(--text);color:white;border:none;border-radius:100px;font-family:'Geist',sans-serif;font-size:0.92rem;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-primary:hover{background:#1a1a2e;transform:translateY(-1px);}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.btn-danger{background:var(--red);box-shadow:0 4px 16px rgba(255,71,87,0.3);}
+.btn-danger:hover{background:#E8392A;}
+
+.result-container{display:none;margin-top:20px;animation:fadeUp 0.4s ease both;}
+.result-container.show{display:block;}
+
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;font-size:0.78rem;font-weight:700;}
+.badge-green{background:rgba(46,204,113,0.1);color:#27AE60;}
+.badge-yellow{background:rgba(255,179,71,0.12);color:#E5930A;}
+.badge-orange{background:rgba(255,100,50,0.1);color:#E85A20;}
+.badge-red{background:rgba(255,71,87,0.1);color:var(--red);}
+.badge-blue{background:rgba(74,144,217,0.1);color:var(--blue);}
+
+.spinner{display:none;align-items:center;justify-content:center;gap:12px;padding:24px;color:var(--muted);font-size:0.85rem;}
+.spinner.show{display:flex;}
+.spin-circle{width:20px;height:20px;border:2px solid rgba(0,201,167,0.3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.severity-bar{height:8px;border-radius:4px;background:var(--bg2);overflow:hidden;margin:8px 0;}
+.severity-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+
+.phrase-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;}
+.phrase-english{font-size:0.88rem;font-weight:600;margin-bottom:6px;}
+.phrase-local{font-size:1rem;color:var(--accent2);font-weight:700;margin-bottom:4px;}
+.phrase-pron{font-size:0.75rem;color:var(--muted);font-style:italic;}
+.copy-phrase{float:right;padding:4px 12px;background:none;border:1px solid var(--border2);border-radius:100px;font-size:0.72rem;cursor:pointer;font-family:'Geist',sans-serif;transition:all 0.2s;}
+.copy-phrase:hover{border-color:var(--accent);color:var(--accent);}
+
+.scam-card{border-radius:var(--r);padding:0;margin-bottom:12px;border:1px solid var(--border);overflow:hidden;}
+.scam-header{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--bg);}
+.scam-icon{font-size:1.3rem;}
+.scam-name{font-size:0.92rem;font-weight:700;flex:1;}
+.scam-cat{font-size:0.68rem;color:var(--muted);background:var(--bg2);padding:3px 10px;border-radius:100px;}
+.scam-sev{font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:100px;}
+.scam-body{padding:16px 18px;display:none;border-top:1px solid var(--border);}
+.scam-body.open{display:block;}
+.scam-detail-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:6px;margin-top:12px;}
+.scam-detail-label:first-child{margin-top:0;}
+
+.allergy-tag{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;border:1.5px solid var(--red);background:rgba(255,71,87,0.06);color:var(--red);font-size:0.82rem;font-weight:700;margin:4px;cursor:pointer;transition:all 0.2s;}
+.allergy-tag.selected{background:var(--red);color:white;}
+
+.step-card{display:flex;align-items:flex-start;gap:14px;padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:8px;}
+.step-badge{width:28px;height:28px;border-radius:50%;background:var(--accent);color:white;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-action{font-size:0.88rem;font-weight:700;margin-bottom:2px;}
+.step-timing{font-size:0.75rem;color:var(--muted);}
+
+.verdict-card{border-radius:var(--r-lg);padding:24px;margin-bottom:20px;text-align:center;}
+.verdict-icon{font-size:3rem;margin-bottom:12px;}
+.verdict-title{font-family:'Instrument Serif',serif;font-size:1.4rem;font-weight:700;margin-bottom:8px;}
+.verdict-sub{font-size:0.88rem;color:var(--muted);margin-bottom:16px;}
+
+.price-compare{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0;}
+@media(max-width:500px){.price-compare{grid-template-columns:1fr;}}
+.pc-item{padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;}
+.pc-label{font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:6px;}
+.pc-value{font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:700;}
+
+.route-option{padding:16px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
+.route-icon{font-size:1.3rem;}
+.route-name{font-size:0.9rem;font-weight:700;margin-bottom:4px;}
+.route-details{font-size:0.78rem;color:var(--muted);}
+.route-safety{font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;margin-left:auto;flex-shrink:0;}
+
+.immig-q{background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:10px;overflow:hidden;}
+.immig-q-header{padding:14px 18px;font-size:0.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:var(--bg);}
+.immig-q-body{padding:16px 18px;display:none;border-top:1px solid var(--border);}
+.immig-q-body.open{display:block;}
+.immig-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:4px;margin-top:10px;}
+.immig-label:first-child{margin-top:0;}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:white;padding:12px 20px;border-radius:100px;font-size:0.82rem;font-weight:500;opacity:0;transform:translateY(10px);transition:all 0.3s;z-index:200;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+.print-btn{width:100%;padding:12px;background:none;border:1.5px solid var(--border2);border-radius:100px;font-family:'Geist',sans-serif;font-size:0.85rem;font-weight:700;color:var(--text);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;}
+.print-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+.allergy-card-visual{background:linear-gradient(135deg,var(--red),#FF6B6B);border-radius:20px;padding:28px;color:white;margin-bottom:16px;position:relative;overflow:hidden;}
+.ac-logo{font-size:0.8rem;opacity:0.5;margin-bottom:12px;font-family:'Instrument Serif',serif;font-style:italic;}
+.ac-name{font-size:1.3rem;font-weight:700;margin-bottom:8px;}
+.ac-allergies{font-size:1rem;font-weight:800;margin-bottom:8px;}
+.ac-warning{font-size:0.75rem;opacity:0.85;line-height:1.5;}
+.ac-local{font-size:0.88rem;opacity:0.9;margin-top:12px;font-style:italic;}
+</style>
+<link rel="stylesheet" href="/static/yaply-theme.css"/>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">ya<span>ply</span></div>
+  <a href="/" style="font-size:0.82rem;font-weight:600;color:var(--muted);text-decoration:none;">← Trip Planner</a>
+</nav>
+
+<div class="hero">
+  <h1>You're <em>Travelling.</em><br/>We've Got You.</h1>
+  <p>Real-time help for every problem you face abroad — medical emergencies, scams, safety, flight rights and more.</p>
+</div>
+
+<!-- SOS Banner -->
+<div class="sos-banner">
+  <div class="sos-card" onclick="switchTool('medical')">
+    <div class="sos-icon">🚨</div>
+    <div class="sos-text">
+      <div class="sos-title">Medical Emergency?</div>
+      <div class="sos-sub">Translate symptoms instantly · Find nearest hospital · Get emergency phrases</div>
+    </div>
+    <div class="sos-arrow">›</div>
+  </div>
+</div>
+
+<!-- Tools Nav -->
+<div class="tools-nav">
+  <button class="tool-nav-btn active" onclick="switchTool('medical')">
+    <span class="tnb-icon">🏥</span>Medical Help
+  </button>
+  <button class="tool-nav-btn" onclick="switchTool('price')">
+    <span class="tnb-icon">💰</span>Price Check
+  </button>
+  <button class="tool-nav-btn" onclick="switchTool('scams')">
+    <span class="tnb-icon">🚨</span>Scam Alerts
+  </button>
+  <button class="tool-nav-btn" onclick="switchTool('allergy')">
+    <span class="tnb-icon">🍜</span>Allergy Card
+  </button>
+  <button class="tool-nav-btn" onclick="switchTool('flight')">
+    <span class="tnb-icon">✈️</span>Flight Rights
+  </button>
+  <button class="tool-nav-btn" onclick="switchTool('safety')">
+    <span class="tnb-icon">🛡️</span>Safe Route
+  </button>
+  <button class="tool-nav-btn" onclick="switchTool('immigration')">
+    <span class="tnb-icon">🛂</span>Immigration
+  </button>
+</div>
+
+<div class="main">
+
+  <!-- MEDICAL -->
+  <div class="tool-panel active" id="panel-medical">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🏥 Medical Emergency Translator</div>
+        <div class="badge badge-red">🚨 Emergency Tool</div>
+      </div>
+      <div class="card-body">
+        <div style="padding:12px 16px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);margin-bottom:20px;font-size:0.82rem;color:var(--muted);line-height:1.6;">
+          ⚠️ For life-threatening emergencies, call local emergency services immediately. This tool helps you communicate symptoms to medical staff.
+        </div>
+        <div class="form-group">
+          <label class="form-label">🤒 Describe Your Symptoms</label>
+          <textarea class="form-input" id="symptoms" rows="3" placeholder="e.g. I have severe stomach pain and fever since 2 hours. I feel nauseous and dizzy." style="resize:none;"></textarea>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">🌍 Where Are You?</label>
+            <input class="form-input" type="text" id="medDest" placeholder="e.g. Tokyo, Japan"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">🗣️ Local Language</label>
+            <select class="form-input" id="medLang">
+              <option value="Japanese">Japanese</option>
+              <option value="French">French</option>
+              <option value="Spanish">Spanish</option>
+              <option value="German">German</option>
+              <option value="Chinese">Chinese (Mandarin)</option>
+              <option value="Arabic">Arabic</option>
+              <option value="Thai">Thai</option>
+              <option value="Korean">Korean</option>
+              <option value="Portuguese">Portuguese</option>
+              <option value="Italian">Italian</option>
+              <option value="Turkish">Turkish</option>
+              <option value="Indonesian">Indonesian</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary btn-danger" onclick="getMedicalHelp()">🚨 Get Medical Help Now</button>
+        <div class="spinner" id="medical-spinner"><div class="spin-circle"></div>Translating symptoms...</div>
+        <div class="result-container" id="medical-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICE CHECK -->
+  <div class="tool-panel" id="panel-price">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">💰 Price Fairness Checker</div>
+        <div class="badge badge-blue">Anti-Scam</div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">🏷️ What Are You Buying?</label>
+          <input class="form-input" type="text" id="priceItem" placeholder="e.g. Taxi from airport to city center / Street food meal / Museum ticket"/>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">💵 Price Being Asked</label>
+            <input class="form-input" type="text" id="priceAmount" placeholder="e.g. 500"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">💱 Currency</label>
+            <input class="form-input" type="text" id="priceCurr" placeholder="e.g. THB, JPY, EUR"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📍 Where Are You?</label>
+          <input class="form-input" type="text" id="priceDest" placeholder="e.g. Bangkok, Thailand"/>
+        </div>
+        <button class="btn-primary" onclick="checkPrice()">💰 Is This Fair?</button>
+        <div class="spinner" id="price-spinner"><div class="spin-circle"></div>Checking local prices...</div>
+        <div class="result-container" id="price-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCAMS -->
+  <div class="tool-panel" id="panel-scams">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🚨 Scam Alert System</div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">📍 Your Current Destination</label>
+          <input class="form-input" type="text" id="scamDest" placeholder="e.g. Rome, Italy"/>
+        </div>
+        <button class="btn-primary" onclick="getScamAlerts()">🚨 Show Scam Alerts</button>
+        <div class="spinner" id="scams-spinner"><div class="spin-circle"></div>Loading scam database...</div>
+        <div class="result-container" id="scams-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALLERGY -->
+  <div class="tool-panel" id="panel-allergy">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🍜 Food Allergy Safety Card</div>
+        <div class="badge badge-red">Medical</div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">👤 Your Name</label>
+          <input class="form-input" type="text" id="allergyName" placeholder="Your name"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">⚠️ Select Your Allergies</label>
+          <div style="margin-bottom:12px;">
+            <div id="allergyTags">
+              <span class="allergy-tag" onclick="toggleAllergy(this,'Peanuts')">🥜 Peanuts</span>
+              <span class="allergy-tag" onclick="toggleAllergy(this,'Gluten')">🌾 Gluten</span>
+              <span class="allergy-tag" onclick="toggleAllergy(this,'Dairy')">🥛 Dairy</span>
+              <span class="allergy-tag" onclick="toggleAllergy(this,'Eggs')">🥚 Eggs</span>
+              <span class="allergy-tag" onclick="toggleAllergy(this,'Shellfish')">🦐 Shellfish</span>
+              <span class="allergy-tag" onclick="toggleAllergy(this,'Fish')">🐟 Fish</span>
+              <span class="allergy-tag" onclick="toggleAllergy(this,'Soy')">🫘 Soy</span>
+              <span class="allergy-tag" onclick="toggleAllergy(this,'Tree Nuts')">🌰 Tree Nuts</span>
+              <span class="allergy-tag" onclick="toggleAllergy(this,'Sesame')">🌿 Sesame</span>
+              <span class="allergy-tag" onclick="toggleAllergy(this,'Penicillin')">💊 Penicillin</span>
+            </div>
+          </div>
+          <input class="form-input" type="text" id="allergyCustom" placeholder="+ Add custom allergy (optional)"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📍 Destination</label>
+          <input class="form-input" type="text" id="allergyDest" placeholder="e.g. Tokyo, Japan"/>
+        </div>
+        <button class="btn-primary btn-danger" onclick="generateAllergyCard()">🍜 Generate Allergy Card</button>
+        <div class="spinner" id="allergy-spinner"><div class="spin-circle"></div>Generating your allergy card...</div>
+        <div class="result-container" id="allergy-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLIGHT RIGHTS -->
+  <div class="tool-panel" id="panel-flight">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">✈️ Flight Rights & Compensation</div>
+        <div class="badge badge-blue">Know Your Rights</div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">✈️ Airline</label>
+            <input class="form-input" type="text" id="flightAirline" placeholder="e.g. Air India, Emirates"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">🗺️ Route</label>
+            <input class="form-input" type="text" id="flightRoute" placeholder="e.g. Mumbai to London"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">⚠️ What Happened?</label>
+          <select class="form-input" id="flightIssue">
+            <option value="Flight delayed by 2-3 hours">Delayed 2-3 hours</option>
+            <option value="Flight delayed by 3+ hours">Delayed 3+ hours</option>
+            <option value="Flight cancelled">Flight Cancelled</option>
+            <option value="Denied boarding due to overbooking">Denied Boarding (Overbooking)</option>
+            <option value="Lost baggage">Lost Baggage</option>
+            <option value="Damaged baggage">Damaged Baggage</option>
+            <option value="Delayed baggage">Delayed Baggage</option>
+            <option value="Missed connecting flight">Missed Connecting Flight</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">⏱️ Delay Duration (hours)</label>
+          <input class="form-input" type="number" id="flightDelay" placeholder="e.g. 4" value="3"/>
+        </div>
+        <button class="btn-primary" onclick="getFlightRights()">✈️ Know My Rights</button>
+        <div class="spinner" id="flight-spinner"><div class="spin-circle"></div>Checking aviation regulations...</div>
+        <div class="result-container" id="flight-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAFE ROUTE -->
+  <div class="tool-panel" id="panel-safety">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🛡️ Safe Route Planner</div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">📍 From</label>
+            <input class="form-input" type="text" id="routeFrom" placeholder="e.g. Shinjuku Station"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">🎯 To</label>
+            <input class="form-input" type="text" id="routeTo" placeholder="e.g. Shibuya"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">🌍 City</label>
+            <input class="form-input" type="text" id="routeCity" placeholder="e.g. Tokyo, Japan"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">🕐 Time of Day</label>
+            <select class="form-input" id="routeTime">
+              <option value="morning">Morning (6am-12pm)</option>
+              <option value="afternoon">Afternoon (12pm-6pm)</option>
+              <option value="evening" selected>Evening (6pm-10pm)</option>
+              <option value="night">Night (10pm-6am)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">👤 Traveller Type</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="allergy-tag selected" onclick="setTraveller(this,'solo female')">👩 Solo Female</button>
+            <button class="allergy-tag" onclick="setTraveller(this,'solo male')">👨 Solo Male</button>
+            <button class="allergy-tag" onclick="setTraveller(this,'couple')">💑 Couple</button>
+            <button class="allergy-tag" onclick="setTraveller(this,'group')">👥 Group</button>
+            <button class="allergy-tag" onclick="setTraveller(this,'family with kids')">👨‍👩‍👧 Family</button>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="getSafeRoute()">🛡️ Plan Safe Route</button>
+        <div class="spinner" id="safety-spinner"><div class="spin-circle"></div>Analyzing route safety...</div>
+        <div class="result-container" id="safety-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMMIGRATION -->
+  <div class="tool-panel" id="panel-immigration">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🛂 Immigration Guide</div>
+        <div class="badge badge-blue">Border Help</div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">🌍 Destination Country</label>
+            <input class="form-input" type="text" id="immigDest" placeholder="e.g. Japan"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">🛂 Your Passport</label>
+            <select class="form-input" id="immigPassport">
+              <option value="India">🇮🇳 India</option>
+              <option value="USA">🇺🇸 USA</option>
+              <option value="UK">🇬🇧 UK</option>
+              <option value="UAE">🇦🇪 UAE</option>
+              <option value="Canada">🇨🇦 Canada</option>
+              <option value="Australia">🇦🇺 Australia</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🎯 Purpose of Visit</label>
+          <select class="form-input" id="immigPurpose">
+            <option value="Tourism">Tourism / Holiday</option>
+            <option value="Business">Business</option>
+            <option value="Study">Study</option>
+            <option value="Transit">Transit</option>
+            <option value="Medical">Medical Treatment</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="getImmigrationHelp()">🛂 Get Immigration Guide</button>
+        <div class="spinner" id="immigration-spinner"><div class="spin-circle"></div>Loading immigration information...</div>
+        <div class="result-container" id="immigration-result"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let selectedAllergies = [];
+let selectedTraveller = 'solo female';
+
+function switchTool(tool) {
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + tool).classList.add('active');
+  event.currentTarget.classList.add('active');
+  document.querySelector('.main').scrollIntoView({behavior:'smooth'});
+}
+
+function showSpinner(id) { document.getElementById(id+'-spinner').classList.add('show'); }
+function hideSpinner(id) { document.getElementById(id+'-spinner').classList.remove('show'); }
+function showResult(id) { document.getElementById(id+'-result').classList.add('show'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function toggleAllergy(el, allergy) {
+  el.classList.toggle('selected');
+  if (selectedAllergies.includes(allergy)) {
+    selectedAllergies = selectedAllergies.filter(a => a !== allergy);
+  } else {
+    selectedAllergies.push(allergy);
+  }
+}
+
+function setTraveller(el, type) {
+  document.querySelectorAll('#panel-safety .allergy-tag').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTraveller = type;
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text);
+  showToast('✅ Copied!');
+}
+
+// ── MEDICAL ──
+async function getMedicalHelp() {
+  const symptoms = document.getElementById('symptoms').value.trim();
+  const dest = document.getElementById('medDest').value.trim();
+  const lang = document.getElementById('medLang').value;
+  if (!symptoms) { showToast('Please describe your symptoms'); return; }
+
+  showSpinner('medical');
+  document.getElementById('medical-result').classList.remove('show');
+
+  try {
+    const res = await apiFetch('/medical-translate', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ symptoms, destination: dest, language: lang })
+    });
+    const data = await res.json();
+    if (data.success) renderMedical(data.data, lang);
+    else showToast('Error: ' + data.error);
+  } catch(e) { showToast('Connection error'); }
+  hideSpinner('medical');
+}
+
+function renderMedical(d, lang) {
+  const el = document.getElementById('medical-result');
+  const sevColors = { Minor: '#27AE60', Moderate: '#E5930A', Severe: '#E85A20', Emergency: '#FF4757' };
+  const sevBg = { Minor: 'rgba(46,204,113,0.08)', Moderate: 'rgba(255,179,71,0.08)', Severe: 'rgba(255,100,50,0.08)', Emergency: 'rgba(255,71,87,0.08)' };
+  const color = sevColors[d.severity] || '#E5930A';
+  const bg = sevBg[d.severity] || 'rgba(255,179,71,0.08)';
+
+  el.innerHTML = `
+    <div style="padding:20px;background:${bg};border:2px solid ${color};border-radius:var(--r-lg);margin-bottom:20px;text-align:center;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${color};margin-bottom:8px;">Severity Assessment</div>
+      <div style="font-family:'Instrument Serif',serif;font-size:1.6rem;font-weight:700;color:${color};margin-bottom:6px;">${d.severity}</div>
+      ${d.possible_conditions ? `<div style="font-size:0.82rem;color:var(--muted);">Possible: ${d.possible_conditions.join(', ')}</div>` : ''}
+    </div>
+
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:16px;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🗣️ Say This to the Doctor (${lang})</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--accent2);margin-bottom:6px;">${d.say_to_doctor}</div>
+      <div style="font-size:0.78rem;color:var(--muted);font-style:italic;margin-bottom:8px;">${d.say_pronunciation}</div>
+      <div style="font-size:0.82rem;color:var(--muted);">📝 English: ${d.say_to_doctor_english}</div>
+      <button onclick="copyText('${d.say_to_doctor?.replace(/'/g,"\\'")||''}')" style="margin-top:10px;padding:6px 16px;background:var(--accent);color:white;border:none;border-radius:100px;font-size:0.75rem;font-weight:700;cursor:pointer;">📋 Copy Phrase</button>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🚨 Immediate Actions</div>
+      ${(d.immediate_actions||[]).map((a,i) => `
+        <div class="step-card">
+          <div class="step-badge">${i+1}</div>
+          <div><div class="step-action">${a}</div></div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🗣️ Emergency Phrases</div>
+      ${(d.medical_phrases||[]).map(p => `
+        <div class="phrase-card">
+          <button class="copy-phrase" onclick="copyText('${p.local?.replace(/'/g,"\\'")||''}')">📋 Copy</button>
+          <div class="phrase-english">${p.english}</div>
+          <div class="phrase-local">${p.local}</div>
+          <div class="phrase-pron">🔊 ${p.pronunciation}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${(d.medicines_to_ask||[]).length > 0 ? `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">💊 Medicines to Ask For</div>
+        ${d.medicines_to_ask.map(m => `
+          <div style="padding:12px 16px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:0.88rem;font-weight:700;">${m.english_name}</div>
+              <div style="font-size:0.75rem;color:var(--muted);">${m.purpose}</div>
+            </div>
+            <div style="font-size:0.82rem;color:var(--accent2);font-weight:600;">${m.local_name}</div>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+
+    <div style="padding:14px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:var(--r);">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:6px;">🚑 Call Ambulance If</div>
+      <div style="font-size:0.85rem;">${d.when_to_call_ambulance}</div>
+      ${d.emergency_number ? `<div style="font-size:1rem;font-weight:800;color:var(--red);margin-top:8px;">📞 Emergency: ${d.emergency_number}</div>` : ''}
+    </div>
+
+    ${d.home_remedies ? `
+      <div style="margin-top:12px;padding:14px;background:var(--accent-soft);border-radius:var(--r);">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:6px;">🌿 Home Remedies (Minor Cases Only)</div>
+        ${(d.home_remedies||[]).map(r=>`<div style="font-size:0.82rem;padding:3px 0;">• ${r}</div>`).join('')}
+      </div>
+    ` : ''}
+  `;
+  showResult('medical');
+}
+
+// ── PRICE CHECK ──
+async function checkPrice() {
+  const item = document.getElementById('priceItem').value.trim();
+  const amount = document.getElementById('priceAmount').value.trim();
+  const curr = document.getElementById('priceCurr').value.trim();
+  const dest = document.getElementById('priceDest').value.trim();
+  if (!item || !amount || !dest) { showToast('Please fill all fields'); return; }
+
+  showSpinner('price');
+  document.getElementById('price-result').classList.remove('show');
+
+  try {
+    const res = await apiFetch('/price-check', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ item, price: amount, currency: curr, destination: dest })
+    });
+    const data = await res.json();
+    if (data.success) renderPrice(data.data);
+    else showToast('Error: ' + data.error);
+  } catch(e) { showToast('Connection error'); }
+  hideSpinner('price');
+}
+
+function renderPrice(d) {
+  const el = document.getElementById('price-result');
+  const colors = {
+    'Great Deal': { bg: 'rgba(46,204,113,0.08)', border: 'rgba(46,204,113,0.3)', text: '#27AE60', icon: '🎉' },
+    'Fair Price': { bg: 'rgba(74,144,217,0.08)', border: 'rgba(74,144,217,0.3)', text: '#4A90D9', icon: '✅' },
+    'Slightly Overpriced': { bg: 'rgba(255,179,71,0.08)', border: 'rgba(255,179,71,0.3)', text: '#E5930A', icon: '⚠️' },
+    'Overpriced': { bg: 'rgba(255,100,50,0.1)', border: 'rgba(255,100,50,0.3)', text: '#E85A20', icon: '❌' },
+    'Scam': { bg: 'rgba(255,71,87,0.1)', border: 'rgba(255,71,87,0.3)', text: '#FF4757', icon: '🚨' },
+  };
+  const c = colors[d.verdict] || colors['Fair Price'];
+
+  el.innerHTML = `
+    <div class="verdict-card" style="background:${c.bg};border:2px solid ${c.border};">
+      <div class="verdict-icon">${c.icon}</div>
+      <div class="verdict-title" style="color:${c.text}">${d.verdict}</div>
+      <div class="verdict-sub">${d.verdict_explanation}</div>
+      ${d.overpaying_by ? `<div style="font-size:0.88rem;font-weight:700;color:${c.text};">Overpaying by: ${d.overpaying_by}</div>` : ''}
+    </div>
+
+    <div class="price-compare">
+      <div class="pc-item">
+        <div class="pc-label">You're Paying</div>
+        <div class="pc-value" style="color:${c.text}">${d.you_are_paying}</div>
+      </div>
+      <div class="pc-item">
+        <div class="pc-label">Fair Range</div>
+        <div class="pc-value">${d.fair_price_range}</div>
+      </div>
+      <div class="pc-item">
+        <div class="pc-label">Locals Pay</div>
+        <div class="pc-value" style="color:var(--accent2)">${d.local_price}</div>
+      </div>
+    </div>
+
+    ${d.negotiation_tips ? `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">💬 How to Negotiate</div>
+        ${d.negotiation_tips.map(tip=>`<div style="padding:8px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:6px;display:flex;gap:8px;"><span>💡</span>${tip}</div>`).join('')}
+      </div>
+    ` : ''}
+
+    ${d.how_to_negotiate ? `
+      <div style="background:var(--accent-soft);border:1px solid rgba(0,201,167,0.2);border-radius:var(--r);padding:16px;margin-bottom:16px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:8px;">🗣️ Say This to Negotiate</div>
+        <div style="font-size:0.95rem;font-weight:600;color:var(--accent2);margin-bottom:4px;">${d.local_phrase_to_say}</div>
+        <div style="font-size:0.82rem;color:var(--muted);">English: ${d.how_to_negotiate}</div>
+        <button onclick="copyText('${d.local_phrase_to_say?.replace(/'/g,"\\'")||''}')" style="margin-top:8px;padding:5px 14px;background:var(--accent);color:white;border:none;border-radius:100px;font-size:0.72rem;font-weight:700;cursor:pointer;">📋 Copy Phrase</button>
+      </div>
+    ` : ''}
+
+    ${d.walk_away_price ? `
+      <div style="padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-size:0.85rem;">
+        <strong>Walk away if above:</strong> ${d.walk_away_price}
+      </div>
+    ` : ''}
+
+    ${d.scam_warning ? `
+      <div style="margin-top:12px;padding:16px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.2);border-radius:var(--r);">
+        <div style="font-weight:700;color:var(--red);margin-bottom:6px;">🚨 Scam Warning!</div>
+        <div style="font-size:0.85rem;">${d.scam_details}</div>
+      </div>
+    ` : ''}
+  `;
+  showResult('price');
+}
+
+// ── SCAMS ──
+async function getScamAlerts() {
+  const dest = document.getElementById('scamDest').value.trim();
+  if (!dest) { showToast('Please enter your destination'); return; }
+
+  showSpinner('scams');
+  document.getElementById('scams-result').classList.remove('show');
+
+  try {
+    const res = await apiFetch('/scam-alerts', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ destination: dest })
+    });
+    const data = await res.json();
+    if (data.success) renderScams(data.data);
+    else showToast('Error: ' + data.error);
+  } catch(e) { showToast('Connection error'); }
+  hideSpinner('scams');
+}
+
+function renderScams(d) {
+  const el = document.getElementById('scams-result');
+  const riskColors = { Low: '#27AE60', Medium: '#E5930A', High: '#E85A20', 'Very High': '#FF4757' };
+  const riskColor = riskColors[d.scam_risk_level] || '#E5930A';
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);margin-bottom:20px;">
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:4px;">Scam Risk Level</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:1.3rem;font-weight:700;color:${riskColor};">${d.scam_risk_level}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:0.72rem;color:var(--muted2);margin-bottom:4px;">Most Targeted</div>
+        <div style="font-size:0.82rem;font-weight:600;">${d.most_targeted}</div>
+      </div>
+    </div>
+
+    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">⚠️ ${(d.scams||[]).length} Common Scams in ${d.destination}</div>
+
+    ${(d.scams||[]).map((scam,i) => `
+      <div class="scam-card">
+        <div class="scam-header" onclick="toggleScam(${i})">
+          <div class="scam-icon">${scam.icon||'⚠️'}</div>
+          <div class="scam-name">${scam.name}</div>
+          <div class="scam-cat">${scam.category}</div>
+          <div class="scam-sev" style="background:${scam.severity==='Dangerous'?'rgba(255,71,87,0.1)':scam.severity==='Costly'?'rgba(255,179,71,0.1)':'rgba(0,201,167,0.1)'};color:${scam.severity==='Dangerous'?'var(--red)':scam.severity==='Costly'?'#E5930A':'var(--accent2)'};">${scam.severity}</div>
+        </div>
+        <div class="scam-body" id="scam-body-${i}">
+          <div class="scam-detail-label">How it works</div>
+          <div style="font-size:0.85rem;line-height:1.6;margin-bottom:8px;">${scam.how_it_works}</div>
+          <div class="scam-detail-label">🚩 Red Flags</div>
+          ${(scam.red_flags||[]).map(f=>`<div style="font-size:0.82rem;padding:3px 0;color:var(--red);">• ${f}</div>`).join('')}
+          <div class="scam-detail-label">✅ How to Avoid</div>
+          <div style="font-size:0.85rem;line-height:1.6;margin-bottom:8px;">${scam.how_to_avoid}</div>
+          <div class="scam-detail-label">💬 Say This</div>
+          <div style="background:var(--accent-soft);border-radius:var(--r);padding:12px;margin-bottom:8px;">
+            <div style="font-size:0.88rem;font-weight:600;color:var(--accent2);">${scam.what_to_say_local}</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">English: ${scam.what_to_say}</div>
+          </div>
+          <div class="scam-detail-label">If You Fall For It</div>
+          <div style="font-size:0.82rem;line-height:1.5;">${scam.if_it_happens}</div>
+        </div>
+      </div>
+    `).join('')}
+
+    ${d.general_rules ? `
+      <div style="margin-top:16px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🛡️ General Safety Rules</div>
+        ${d.general_rules.map(r=>`<div style="padding:8px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:6px;display:flex;gap:8px;"><span>✓</span>${r}</div>`).join('')}
+      </div>
+    ` : ''}
+  `;
+  showResult('scams');
+}
+
+function toggleScam(i) {
+  const body = document.getElementById('scam-body-' + i);
+  body.classList.toggle('open');
+}
+
+// ── ALLERGY CARD ──
+async function generateAllergyCard() {
+  const name = document.getElementById('allergyName').value.trim();
+  const custom = document.getElementById('allergyCustom').value.trim();
+  const dest = document.getElementById('allergyDest').value.trim();
+
+  if (custom) selectedAllergies.push(custom);
+  if (selectedAllergies.length === 0) { showToast('Please select at least one allergy'); return; }
+  if (!dest) { showToast('Please enter your destination'); return; }
+
+  showSpinner('allergy');
+  document.getElementById('allergy-result').classList.remove('show');
+
+  try {
+    const res = await apiFetch('/allergy-card', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name, allergies: selectedAllergies, destination: dest })
+    });
+    const data = await res.json();
+    if (data.success) renderAllergyCard(data.data, name);
+    else showToast('Error: ' + data.error);
+  } catch(e) { showToast('Connection error'); }
+  hideSpinner('allergy');
+}
+
+function renderAllergyCard(d, name) {
+  const el = document.getElementById('allergy-result');
+  el.innerHTML = `
+    <div class="allergy-card-visual" id="allergyCardPrint">
+      <div class="ac-logo">yaply allergy card</div>
+      <div class="ac-name">${name || 'Traveller'}</div>
+      <div class="ac-allergies">⚠️ ALLERGIC TO: ${(d.allergies||[]).join(' · ').toUpperCase()}</div>
+      <div class="ac-warning">${d.allergy_card_text?.english}</div>
+      <div class="ac-local">${d.allergy_card_text?.local_language}</div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
+      <button onclick="copyText('${(d.allergy_card_text?.local_language||'').replace(/'/g,"\\'")}')" style="flex:1;padding:12px;background:var(--accent);color:white;border:none;border-radius:100px;font-family:'Geist',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;">📋 Copy Local Translation</button>
+      <button onclick="printAllergyCard()" class="print-btn" style="margin-top:0;flex:1;">🖨️ Print Card</button>
+    </div>
+
+    ${(d.dangerous_dishes||[]).length > 0 ? `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:12px;">🚫 Dishes to AVOID in ${d.destination}</div>
+        ${d.dangerous_dishes.map(dish=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,71,87,0.04);border:1px solid rgba(255,71,87,0.12);border-radius:var(--r);margin-bottom:8px;">
+            <div>
+              <div style="font-size:0.88rem;font-weight:700;">${dish.dish_name}</div>
+              <div style="font-size:0.75rem;color:var(--muted);">${dish.why_dangerous}</div>
+            </div>
+            <div class="badge badge-${dish.severity==='High'?'red':'yellow'}">${dish.severity}</div>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+
+    ${(d.safe_dishes||[]).length > 0 ? `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:12px;">✅ Safe Dishes to Try</div>
+        ${d.safe_dishes.map(dish=>`
+          <div style="padding:10px 16px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:var(--r);margin-bottom:6px;font-size:0.85rem;">
+            ✓ <strong>${dish.dish_name}</strong> — ${dish.why_safe}
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🗣️ Phrases to Say at Restaurants</div>
+      ${(d.phrases_to_say||[]).map(p=>`
+        <div class="phrase-card">
+          <button class="copy-phrase" onclick="copyText('${p.local?.replace(/'/g,"\\'")||''}')">📋 Copy</button>
+          <div style="font-size:0.68rem;color:var(--accent2);font-weight:700;margin-bottom:4px;text-transform:uppercase;">${p.situation}</div>
+          <div class="phrase-english">${p.english}</div>
+          <div class="phrase-local">${p.local}</div>
+          <div class="phrase-pron">🔊 ${p.pronunciation}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${d.emergency_protocol ? `
+      <div style="padding:16px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:var(--r);">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:10px;">🚨 If Allergic Reaction Happens</div>
+        ${d.emergency_protocol.map((s,i)=>`<div style="font-size:0.85rem;padding:5px 0;display:flex;gap:10px;"><strong style="color:var(--red);">${i+1}.</strong>${s}</div>`).join('')}
+        ${d.hospital_phrase ? `<div style="margin-top:10px;font-size:0.9rem;font-weight:700;color:var(--red);">🏥 ${d.hospital_phrase}</div>` : ''}
+      </div>
+    ` : ''}
+  `;
+  showResult('allergy');
+}
+
+function printAllergyCard() {
+  const card = document.getElementById('allergyCardPrint').outerHTML;
+  const w = window.open('', '_blank');
+  w.document.write(`<html><head><title>Allergy Card</title><style>body{font-family:sans-serif;padding:20px;}.allergy-card-visual{background:linear-gradient(135deg,#FF4757,#FF6B6B);border-radius:20px;padding:28px;color:white;max-width:400px;}.ac-logo{font-size:0.8rem;opacity:0.5;margin-bottom:12px;}.ac-name{font-size:1.3rem;font-weight:700;margin-bottom:8px;}.ac-allergies{font-size:1rem;font-weight:800;margin-bottom:8px;}.ac-warning{font-size:0.75rem;opacity:0.85;line-height:1.5;}.ac-local{font-size:0.88rem;opacity:0.9;margin-top:12px;font-style:italic;}</style></head><body>${card}</body></html>`);
+  w.document.close();
+  w.print();
+}
+
+// ── FLIGHT RIGHTS ──
+async function getFlightRights() {
+  const airline = document.getElementById('flightAirline').value.trim();
+  const route = document.getElementById('flightRoute').value.trim();
+  const issue = document.getElementById('flightIssue').value;
+  const delay = document.getElementById('flightDelay').value;
+  if (!airline || !route) { showToast('Please fill all fields'); return; }
+
+  showSpinner('flight');
+  document.getElementById('flight-result').classList.remove('show');
+
+  try {
+    const res = await apiFetch('/flight-rights', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ airline, route, issue, delay_hours: delay })
+    });
+    const data = await res.json();
+    if (data.success) renderFlightRights(data.data);
+    else showToast('Error: ' + data.error);
+  } catch(e) { showToast('Connection error'); }
+  hideSpinner('flight');
+}
+
+function renderFlightRights(d) {
+  const el = document.getElementById('flight-result');
+  el.innerHTML = `
+    <div style="padding:20px;background:${d.entitled_to_compensation?'rgba(46,204,113,0.08)':'rgba(255,179,71,0.08)'};border:2px solid ${d.entitled_to_compensation?'rgba(46,204,113,0.3)':'rgba(255,179,71,0.3)'};border-radius:var(--r-lg);margin-bottom:20px;text-align:center;">
+      <div style="font-size:2rem;margin-bottom:8px;">${d.entitled_to_compensation?'💰':'ℹ️'}</div>
+      <div style="font-family:'Instrument Serif',serif;font-size:1.3rem;font-weight:700;margin-bottom:6px;">${d.entitled_to_compensation?'You Are Entitled to Compensation!':'No Compensation This Time'}</div>
+      ${d.compensation_amount ? `<div style="font-size:1.1rem;font-weight:700;color:var(--accent2);">${d.compensation_amount}</div>` : ''}
+      ${d.compensation_basis ? `<div style="font-size:0.78rem;color:var(--muted);margin-top:4px;">${d.compensation_basis}</div>` : ''}
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">✅ Your Rights</div>
+      ${(d.your_rights||[]).map(r=>`<div style="padding:8px 14px;background:rgba(46,204,113,0.06);border-left:3px solid var(--green);border-radius:0 var(--r) var(--r) 0;font-size:0.82rem;margin-bottom:6px;">${r}</div>`).join('')}
+    </div>
+
+    ${(d.what_airline_must_provide||[]).length > 0 ? `
+      <div style="margin-bottom:16px;padding:16px;background:rgba(74,144,217,0.06);border:1px solid rgba(74,144,217,0.2);border-radius:var(--r);">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:10px;">✈️ Airline Must Provide</div>
+        ${d.what_airline_must_provide.map(p=>`<div style="font-size:0.85rem;padding:4px 0;display:flex;gap:8px;"><span>•</span>${p}</div>`).join('')}
+      </div>
+    ` : ''}
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">📋 Immediate Actions</div>
+      ${(d.immediate_actions||[]).map(a=>`
+        <div class="step-card">
+          <div class="step-badge">${a.step}</div>
+          <div>
+            <div class="step-action">${a.action}</div>
+            <div class="step-timing">${a.timing} · ${a.why}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${(d.exact_phrases_to_say||[]).length > 0 ? `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">💬 Say This to Airline Staff</div>
+        ${d.exact_phrases_to_say.map(p=>`
+          <div style="background:var(--accent-soft);border:1px solid rgba(0,201,167,0.2);border-radius:var(--r);padding:14px;margin-bottom:10px;">
+            <div style="font-size:0.65rem;color:var(--accent2);font-weight:700;text-transform:uppercase;margin-bottom:6px;">${p.situation}</div>
+            <div style="font-size:0.9rem;font-weight:600;">"${p.say_this}"</div>
+            <button onclick="copyText('${p.say_this?.replace(/'/g,"\\'")||''}')" style="margin-top:8px;padding:5px 14px;background:var(--accent);color:white;border:none;border-radius:100px;font-size:0.72rem;font-weight:700;cursor:pointer;">📋 Copy</button>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+
+    ${d.claim_template ? `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">📧 Claim Email Template</div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;">${d.claim_template}</div>
+        <button onclick="copyText('${d.claim_template?.replace(/'/g,"\\'")||''}')" style="margin-top:8px;width:100%;padding:10px;background:var(--text);color:white;border:none;border-radius:100px;font-family:'Geist',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;">📋 Copy Email Template</button>
+      </div>
+    ` : ''}
+
+    ${d.claim_deadline ? `
+      <div style="padding:12px 16px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.2);border-radius:var(--r);">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#E5930A;margin-bottom:4px;">⏰ Claim Deadline</div>
+        <div style="font-size:0.88rem;font-weight:600;">${d.claim_deadline}</div>
+      </div>
+    ` : ''}
+  `;
+  showResult('flight');
+}
+
+// ── SAFE ROUTE ──
+async function getSafeRoute() {
+  const from = document.getElementById('routeFrom').value.trim();
+  const to = document.getElementById('routeTo').value.trim();
+  const city = document.getElementById('routeCity').value.trim();
+  const time = document.getElementById('routeTime').value;
+  if (!from || !to || !city) { showToast('Please fill all fields'); return; }
+
+  showSpinner('safety');
+  document.getElementById('safety-result').classList.remove('show');
+
+  try {
+    const res = await apiFetch('/safe-route', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ destination: city, from_location: from, to_location: to, time_of_day: time, traveller_type: selectedTraveller })
+    });
+    const data = await res.json();
+    if (data.success) renderSafeRoute(data.data);
+    else showToast('Error: ' + data.error);
+  } catch(e) { showToast('Connection error'); }
+  hideSpinner('safety');
+}
+
+function renderSafeRoute(d) {
+  const el = document.getElementById('safety-result');
+  const safeColors = { Safe: '#27AE60', Moderate: '#E5930A', 'Use Caution': '#E85A20', 'Avoid at Night': '#FF4757' };
+  const color = safeColors[d.route_safety] || '#E5930A';
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg);border:2px solid ${color}20;border-radius:var(--r-lg);margin-bottom:20px;">
+      <div>
+        <div style="font-size:0.72rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Route Safety</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:700;color:${color};">${d.route_safety}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:'Instrument Serif',serif;font-size:1.8rem;font-weight:700;color:${color};">${d.safety_score}</div>
+        <div style="font-size:0.68rem;color:var(--muted2);">Safety Score</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🚗 Transport Options</div>
+      ${(d.transport_options||[]).map(opt=>`
+        <div class="route-option">
+          <div class="route-icon">${opt.mode.includes('Metro')||opt.mode.includes('Subway')?'🚇':opt.mode.includes('Bus')?'🚌':opt.mode.includes('Taxi')||opt.mode.includes('Cab')?'🚕':opt.mode.includes('Walk')?'🚶':'🚗'}</div>
+          <div style="flex:1;">
+            <div class="route-name">${opt.mode}</div>
+            <div class="route-details">${opt.duration} · ${opt.cost} · ${opt.tips}</div>
+            ${(opt.recommended_apps||[]).length > 0 ? `<div style="font-size:0.72rem;color:var(--accent2);margin-top:4px;">Apps: ${opt.recommended_apps.join(', ')}</div>` : ''}
+          </div>
+          <div class="route-safety" style="background:${opt.safety_rating==='Safe'?'rgba(46,204,113,0.1)':opt.safety_rating==='Moderate'?'rgba(255,179,71,0.1)':'rgba(255,71,87,0.1)'};color:${opt.safety_rating==='Safe'?'#27AE60':opt.safety_rating==='Moderate'?'#E5930A':'#FF4757'};">${opt.safety_rating}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${(d.areas_to_avoid||[]).length > 0 ? `
+      <div style="margin-bottom:16px;padding:14px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px;">🚫 Avoid These Areas</div>
+        ${d.areas_to_avoid.map(a=>`<div style="font-size:0.82rem;padding:3px 0;">• ${a}</div>`).join('')}
+      </div>
+    ` : ''}
+
+    ${(d.if_harassed||[]).length > 0 ? `
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">⚠️ If Harassed or Followed</div>
+        ${d.if_harassed.map((s,i)=>`<div style="font-size:0.85rem;padding:5px 0;display:flex;gap:10px;"><strong style="color:var(--red);">${i+1}.</strong>${s}</div>`).join('')}
+      </div>
+    ` : ''}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+      ${d.trusted_contacts ? `
+        <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
+          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;margin-bottom:4px;">POLICE</div>
+          <div style="font-size:1rem;font-weight:800;color:var(--red);">${d.trusted_contacts.police}</div>
+        </div>
+        <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
+          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;margin-bottom:4px;">HELPLINE</div>
+          <div style="font-size:1rem;font-weight:800;color:var(--blue);">${d.trusted_contacts.women_helpline||d.trusted_contacts.tourist_helpline}</div>
+        </div>
+        <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
+          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;margin-bottom:4px;">TOURIST</div>
+          <div style="font-size:1rem;font-weight:800;color:var(--accent2);">${d.trusted_contacts.tourist_helpline}</div>
+        </div>
+      ` : ''}
+    </div>
+
+    ${d.local_phrase_help ? `
+      <div style="background:var(--accent-soft);border-radius:var(--r);padding:14px;margin-bottom:10px;">
+        <div style="font-size:0.65rem;color:var(--accent2);font-weight:700;text-transform:uppercase;margin-bottom:6px;">🗣️ If Lost — Say This</div>
+        <div style="font-size:0.95rem;font-weight:700;color:var(--accent2);">${d.local_phrase_help}</div>
+        <button onclick="copyText('${d.local_phrase_help?.replace(/'/g,"\\'")||''}')" style="margin-top:8px;padding:5px 14px;background:var(--accent);color:white;border:none;border-radius:100px;font-size:0.72rem;font-weight:700;cursor:pointer;">📋 Copy</button>
+      </div>
+    ` : ''}
+
+    ${(d.pro_tips||[]).length > 0 ? `
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">💡 Safety Tips</div>
+        ${d.pro_tips.map(tip=>`<div style="padding:8px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:6px;display:flex;gap:8px;"><span>✓</span>${tip}</div>`).join('')}
+      </div>
+    ` : ''}
+  `;
+  showResult('safety');
+}
+
+// ── IMMIGRATION ──
+async function getImmigrationHelp() {
+  const dest = document.getElementById('immigDest').value.trim();
+  const passport = document.getElementById('immigPassport').value;
+  const purpose = document.getElementById('immigPurpose').value;
+  if (!dest) { showToast('Please enter destination'); return; }
+
+  showSpinner('immigration');
+  document.getElementById('immigration-result').classList.remove('show');
+
+  try {
+    const res = await apiFetch('/immigration-help', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ destination: dest, passport, purpose })
+    });
+    const data = await res.json();
+    if (data.success) renderImmigration(data.data);
+    else showToast('Error: ' + data.error);
+  } catch(e) { showToast('Connection error'); }
+  hideSpinner('immigration');
+}
+
+function renderImmigration(d) {
+  const el = document.getElementById('immigration-result');
+  el.innerHTML = `
+    <div style="padding:14px;background:rgba(74,144,217,0.08);border:1px solid rgba(74,144,217,0.2);border-radius:var(--r);margin-bottom:20px;font-size:0.85rem;line-height:1.6;">
+      <strong>Expected Wait:</strong> ${d.expected_wait_time} ${d.fast_track_options ? ` · Fast track: ${d.fast_track_options}` : ''}
+    </div>
+
+    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">❓ Common Immigration Questions</div>
+    ${(d.common_questions||[]).map((q,i) => `
+      <div class="immig-q">
+        <div class="immig-q-header" onclick="toggleImmig(${i})">
+          <span>${q.question_english}</span>
+          <span style="color:var(--muted2);">›</span>
+        </div>
+        <div class="immig-q-body" id="immig-${i}">
+          <div class="immig-label">Local Language</div>
+          <div style="font-size:0.9rem;font-weight:600;color:var(--accent2);">${q.question_local}</div>
+          <div class="immig-label">Best Answer</div>
+          <div style="font-size:0.88rem;padding:10px;background:rgba(46,204,113,0.06);border-radius:var(--r);border:1px solid rgba(46,204,113,0.15);">"${q.best_answer}"</div>
+          <div class="immig-label">Why They Ask</div>
+          <div style="font-size:0.82rem;color:var(--muted);">${q.why_they_ask}</div>
+          ${q.avoid_saying ? `<div class="immig-label">Never Say</div><div style="font-size:0.82rem;color:var(--red);">✗ ${q.avoid_saying}</div>` : ''}
+        </div>
+      </div>
+    `).join('')}
+
+    ${(d.documents_to_keep_ready||[]).length > 0 ? `
+      <div style="margin-top:16px;margin-bottom:16px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">📄 Documents to Keep Ready</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          ${d.documents_to_keep_ready.map(doc=>`<div style="padding:10px 14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);font-size:0.82rem;display:flex;gap:8px;"><span>📋</span>${doc}</div>`).join('')}
+        </div>
+      </div>
+    ` : ''}
+
+    ${(d.common_mistakes||[]).length > 0 ? `
+      <div style="padding:16px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);margin-bottom:16px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:10px;">❌ Common Mistakes to Avoid</div>
+        ${d.common_mistakes.map(m=>`<div style="font-size:0.82rem;padding:4px 0;">• ${m}</div>`).join('')}
+      </div>
+    ` : ''}
+
+    ${(d.pro_tips||[]).length > 0 ? `
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">💡 Pro Tips</div>
+        ${d.pro_tips.map(tip=>`<div style="padding:8px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:6px;display:flex;gap:8px;"><span>✓</span>${tip}</div>`).join('')}
+      </div>
+    ` : ''}
+  `;
+  showResult('immigration');
+}
+
+function toggleImmig(i) {
+  const body = document.getElementById('immig-' + i);
+  body.classList.toggle('open');
+}
+</script>
+<script src="/static/yaply-auth.js"></script>
+<script src="/static/yaply-nav.js"></script>
+</body>
+</html>

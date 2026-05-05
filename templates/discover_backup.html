@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Yaply Discover — Find Any Place From Photos</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --ink: #0D0D0D;
+  --cream: #FAF8F4;
+  --warm: #F2EDE4;
+  --border: rgba(0,0,0,0.08);
+  --accent: #E8633A;
+  --accent2: #D4522A;
+  --teal: #2A9D8F;
+  --gold: #E9C46A;
+  --text: #1A1A1A;
+  --muted: #7A7A7A;
+  --surface: #FFFFFF;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grain texture */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.5;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 40px;
+  background: rgba(250,248,244,0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 700;
+  color: var(--ink);
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-logo em { color: var(--accent); font-style: italic; }
+.nav-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--ink);
+  color: white; padding: 8px 18px;
+  border-radius: 100px;
+  font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.nav-pill span { color: var(--gold); }
+
+/* HERO */
+.hero {
+  padding: 120px 40px 60px;
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 80px; align-items: center;
+  position: relative; z-index: 1;
+}
+
+@media(max-width:800px){ .hero { grid-template-columns: 1fr; padding: 100px 20px 40px; gap: 40px; } }
+
+.hero-left {}
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 24px;
+}
+.hero-tag::before {
+  content: '';
+  width: 32px; height: 2px;
+  background: var(--accent);
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.8rem, 5vw, 4.2rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  margin-bottom: 20px;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-sub {
+  font-size: 1rem; color: var(--muted);
+  line-height: 1.8; margin-bottom: 36px;
+  max-width: 440px;
+}
+
+.hero-steps {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.hero-step {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 0.88rem; color: var(--muted);
+}
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ink); color: white;
+  font-size: 0.72rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-num.done { background: var(--teal); }
+
+/* Hero visual */
+.hero-right {
+  position: relative;
+}
+
+.phone-mockup {
+  width: 260px; margin: 0 auto;
+  background: var(--ink);
+  border-radius: 36px;
+  padding: 12px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+.phone-screen {
+  background: #1a1a2e;
+  border-radius: 28px;
+  overflow: hidden;
+  aspect-ratio: 9/16;
+  position: relative;
+  display: flex; flex-direction: column;
+}
+.phone-reel {
+  flex: 1;
+  background: linear-gradient(160deg, #667eea 0%, #764ba2 40%, #f093fb 100%);
+  position: relative;
+  display: flex; align-items: flex-end;
+}
+.phone-reel-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+}
+.reel-location {
+  position: relative; z-index: 1;
+  padding: 16px 14px;
+  color: white;
+}
+.reel-loc-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+  margin-bottom: 4px;
+}
+.reel-loc-sub { font-size: 0.7rem; opacity: 0.8; }
+.reel-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--accent); color: white;
+  padding: 3px 10px; border-radius: 100px;
+  font-size: 0.62rem; font-weight: 700;
+  margin-top: 8px;
+}
+
+.floating-card {
+  position: absolute;
+  background: white;
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  animation: float 4s ease-in-out infinite;
+}
+.fc-1 { top: 20px; right: -30px; width: 160px; animation-delay: 0s; }
+.fc-2 { bottom: 80px; right: -40px; width: 150px; animation-delay: -2s; }
+.fc-3 { top: 50%; left: -50px; transform: translateY(-50%); width: 140px; animation-delay: -1s; }
+
+.fc-label {
+  font-size: 0.6rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); margin-bottom: 6px;
+}
+.fc-value {
+  font-size: 0.82rem; font-weight: 700; color: var(--text);
+}
+.fc-sub {
+  font-size: 0.7rem; color: var(--muted); margin-top: 2px;
+}
+.fc-accent { color: var(--accent); }
+.fc-teal { color: var(--teal); }
+
+/* MAIN UPLOAD SECTION */
+.main {
+  max-width: 1100px; margin: 0 auto;
+  padding: 0 40px 80px;
+  position: relative; z-index: 1;
+}
+
+@media(max-width:800px){ .main { padding: 0 20px 60px; } }
+
+/* Upload zone */
+.upload-section {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px; margin-bottom: 32px;
+}
+@media(max-width:700px){ .upload-section { grid-template-columns: 1fr; } }
+
+.upload-zone {
+  background: var(--surface);
+  border: 2px dashed rgba(0,0,0,0.15);
+  border-radius: 24px;
+  padding: 48px 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.upload-zone::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(232,99,58,0.03), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.upload-zone:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.upload-zone:hover::before { opacity: 1; }
+.upload-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(232,99,58,0.04);
+}
+
+.upload-icon {
+  font-size: 2.8rem;
+  margin-bottom: 16px;
+  display: block;
+}
+.upload-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem; font-weight: 700;
+  margin-bottom: 8px;
+}
+.upload-sub {
+  font-size: 0.82rem; color: var(--muted);
+  line-height: 1.6; margin-bottom: 20px;
+}
+.upload-btn-sm {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--ink); color: white;
+  padding: 10px 22px; border-radius: 100px;
+  font-size: 0.82rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  border: none; font-family: 'DM Sans', sans-serif;
+}
+.upload-btn-sm:hover { background: var(--accent); }
+
+.upload-formats {
+  margin-top: 14px;
+  font-size: 0.7rem; color: var(--muted);
+}
+
+/* URL Input Zone */
+.url-zone {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 32px;
+  display: flex; flex-direction: column;
+}
+.url-zone-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 700;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 10px;
+}
+.url-zone-sub {
+  font-size: 0.82rem; color: var(--muted);
+  margin-bottom: 20px; line-height: 1.6;
+}
+
+.url-input-wrap {
+  display: flex; gap: 10px;
+  margin-bottom: 16px;
+}
+.url-input {
+  flex: 1;
+  background: var(--warm);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; color: var(--text);
+  outline: none; transition: border-color 0.2s;
+}
+.url-input:focus { border-color: var(--accent); }
+.url-input::placeholder { color: var(--muted); }
+
+.url-fetch-btn {
+  padding: 12px 20px;
+  background: var(--ink); color: white;
+  border: none; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+}
+.url-fetch-btn:hover { background: var(--accent); }
+
+.social-chips {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.social-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: var(--warm);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--muted);
+}
+
+/* Preview + Analyze */
+.preview-analyze {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  display: none;
+  box-shadow: var(--shadow);
+}
+.preview-analyze.show { display: block; }
+
+.preview-header {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  background: var(--warm);
+}
+.preview-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+}
+.preview-body {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+@media(max-width:600px){ .preview-body { grid-template-columns: 1fr; } }
+
+.preview-img-wrap {
+  position: relative;
+  background: #1a1a1a;
+  min-height: 300px;
+  display: flex; align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.preview-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  max-height: 400px;
+}
+.preview-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, transparent 60%, rgba(0,0,0,0.4));
+  pointer-events: none;
+}
+
+.preview-side {
+  padding: 32px;
+  display: flex; flex-direction: column;
+  justify-content: center; gap: 20px;
+}
+.preview-info-label {
+  font-size: 0.65rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--muted); margin-bottom: 4px;
+}
+.preview-info-value {
+  font-size: 0.9rem; font-weight: 600;
+  color: var(--text);
+}
+
+.analyze-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--ink); color: white;
+  border: none; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center;
+  justify-content: center; gap: 10px;
+  letter-spacing: 0.3px;
+}
+.analyze-btn:hover { background: var(--accent); transform: translateY(-1px); }
+.analyze-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ANALYZING STATE */
+.analyzing-overlay {
+  position: fixed; inset: 0;
+  background: rgba(13,13,13,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 32px;
+}
+.analyzing-overlay.show { display: flex; }
+
+.analyzing-visual {
+  position: relative;
+  width: 200px; height: 200px;
+}
+.scan-circle {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(232,99,58,0.3);
+}
+.scan-circle-1 { animation: scanPulse 2s 0s ease-out infinite; }
+.scan-circle-2 { animation: scanPulse 2s 0.5s ease-out infinite; }
+.scan-circle-3 { animation: scanPulse 2s 1s ease-out infinite; }
+
+.scan-icon {
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+.scan-line-h {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  top: 50%;
+  animation: scanMove 2s ease-in-out infinite;
+}
+
+.analyzing-text {
+  text-align: center; color: white;
+}
+.analyzing-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem; font-weight: 700;
+  margin-bottom: 8px;
+}
+.analyzing-sub {
+  font-size: 0.85rem; color: rgba(255,255,255,0.5);
+  margin-bottom: 24px;
+}
+.analyzing-steps {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.astep {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 0.82rem; color: rgba(255,255,255,0.4);
+  transition: color 0.3s;
+}
+.astep.active { color: white; }
+.astep.done { color: var(--teal); }
+.astep-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: background 0.3s;
+}
+.astep.active .astep-dot { background: var(--accent); animation: pulse 1s infinite; }
+.astep.done .astep-dot { background: var(--teal); }
+
+/* RESULTS */
+.results-section {
+  display: none;
+}
+.results-section.show { display: block; }
+
+/* Main result card */
+.result-hero {
+  background: var(--ink);
+  border-radius: 28px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+.result-hero-img {
+  width: 100%; height: 320px;
+  object-fit: cover; opacity: 0.4;
+  position: absolute; inset: 0;
+}
+
+.result-hero-content {
+  position: relative; z-index: 1;
+  padding: 48px;
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 40px; align-items: end;
+}
+@media(max-width:700px){ .result-hero-content { grid-template-columns: 1fr; padding: 32px 24px; } }
+
+.result-confidence {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+.conf-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse 1.5s infinite; }
+
+.result-place-name {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  color: white;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+
+.result-place-location {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 1rem; color: rgba(255,255,255,0.7);
+  margin-bottom: 20px;
+}
+
+.result-tags {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.result-tag {
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 100px;
+  font-size: 0.75rem; font-weight: 600;
+  color: rgba(255,255,255,0.8);
+}
+.result-tag.accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.result-actions-hero {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.btn-add-itinerary {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--accent); color: white;
+  padding: 14px 24px; border-radius: 14px;
+  border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 700;
+  transition: all 0.2s; white-space: nowrap;
+}
+.btn-add-itinerary:hover { background: var(--accent2); transform: scale(1.02); }
+
+.btn-plan-trip {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white; padding: 14px 24px; border-radius: 14px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-plan-trip:hover { background: rgba(255,255,255,0.2); }
+
+/* Info grid */
+.info-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-bottom: 24px;
+}
+@media(max-width:700px){ .info-grid { grid-template-columns: 1fr 1fr; } }
+
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+.info-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.info-icon { font-size: 1.5rem; margin-bottom: 10px; }
+.info-label {
+  font-size: 0.65rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); margin-bottom: 4px;
+}
+.info-value {
+  font-size: 0.92rem; font-weight: 700; color: var(--text);
+}
+.info-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+/* Similar places */
+.similar-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+.section-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem; font-weight: 700;
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.similar-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media(max-width:700px){ .similar-grid { grid-template-columns: 1fr 1fr; } }
+
+.similar-card {
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s;
+  border: 1px solid var(--border);
+  background: var(--warm);
+}
+.similar-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.similar-img {
+  height: 100px;
+  display: flex; align-items: center;
+  justify-content: center; font-size: 2.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.similar-img-2 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.similar-img-3 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.similar-info { padding: 12px; }
+.similar-name { font-size: 0.82rem; font-weight: 700; margin-bottom: 2px; }
+.similar-country { font-size: 0.72rem; color: var(--muted); }
+.similar-add {
+  margin-top: 8px; width: 100%;
+  padding: 6px;
+  background: var(--ink); color: white;
+  border: none; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem; font-weight: 700;
+  cursor: pointer; transition: background 0.2s;
+}
+.similar-add:hover { background: var(--accent); }
+
+/* Nearby section */
+.nearby-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+.nearby-item {
+  display: flex; align-items: center;
+  gap: 16px; padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.15s;
+}
+.nearby-item:last-child { border-bottom: none; }
+.nearby-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center;
+  justify-content: center; font-size: 1.2rem;
+  background: var(--warm); flex-shrink: 0;
+}
+.nearby-info { flex: 1; }
+.nearby-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+.nearby-dist { font-size: 0.75rem; color: var(--muted); }
+.nearby-type {
+  font-size: 0.7rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 100px;
+  background: var(--warm);
+  color: var(--muted);
+}
+
+/* Travel quick plan */
+.quick-plan {
+  background: linear-gradient(135deg, var(--ink), #1a1a3e);
+  border-radius: 24px;
+  padding: 36px;
+  color: white;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.quick-plan::before {
+  content: '';
+  position: absolute; top: -50px; right: -50px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(232,99,58,0.15);
+}
+.quick-plan-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem; font-weight: 700;
+  margin-bottom: 8px;
+}
+.quick-plan-sub {
+  font-size: 0.84rem; color: rgba(255,255,255,0.55);
+  margin-bottom: 24px; line-height: 1.6;
+}
+.quick-plan-form {
+  display: grid; grid-template-columns: 1fr 1fr auto;
+  gap: 12px; align-items: center;
+}
+@media(max-width:600px){ .quick-plan-form { grid-template-columns: 1fr; } }
+.qp-input {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px; padding: 12px 16px;
+  color: white; font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; outline: none;
+}
+.qp-input::placeholder { color: rgba(255,255,255,0.35); }
+.qp-input:focus { border-color: var(--accent); }
+.qp-btn {
+  padding: 12px 24px;
+  background: var(--accent); color: white;
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+}
+.qp-btn:hover { background: var(--accent2); }
+
+/* Saved places */
+.saved-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+.saved-empty {
+  text-align: center; padding: 32px;
+  color: var(--muted); font-size: 0.85rem;
+}
+.saved-grid {
+  display: grid; grid-template-columns: repeat(2,1fr);
+  gap: 12px;
+}
+@media(max-width:500px){ .saved-grid { grid-template-columns: 1fr; } }
+.saved-item {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex; gap: 12px;
+  align-items: flex-start;
+  background: var(--warm);
+  position: relative;
+}
+.saved-emoji { font-size: 1.5rem; flex-shrink: 0; }
+.saved-name { font-size: 0.88rem; font-weight: 700; margin-bottom: 2px; }
+.saved-loc { font-size: 0.75rem; color: var(--muted); }
+.saved-remove {
+  position: absolute; top: 10px; right: 10px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(0,0,0,0.08);
+  border: none; cursor: pointer;
+  font-size: 0.65rem; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--ink); color: white;
+  padding: 14px 24px; border-radius: 14px;
+  font-size: 0.85rem; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(80px);
+  opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 300; display: flex; align-items: center; gap: 10px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { font-size: 1rem; }
+
+/* ANIMATIONS */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes scanPulse {
+  0% { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+@keyframes scanMove {
+  0%, 100% { top: 10%; }
+  50% { top: 90%; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.fade-in { animation: fadeUp 0.5s ease both; }
+</style>
+<link rel="stylesheet" href="/static/yaply-theme.css"/>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ya<em>ply</em> <span style="font-size:0.9rem;font-weight:400;font-family:'DM Sans',sans-serif;color:var(--muted)">discover</span></div>
+  <div class="nav-pill">✨ <span>AI</span> Place Finder</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">Powered by Vision AI</div>
+    <h1>Saw it on a<br/>Reel? <em>Find it.</em></h1>
+    <p class="hero-sub">Upload any photo or screenshot from Instagram, TikTok, or YouTube Shorts — Yaply's AI identifies the exact location, tells you everything about it, and adds it to your trip plan.</p>
+    <div class="hero-steps">
+      <div class="hero-step">
+        <div class="step-num">1</div>
+        Screenshot a beautiful place from any reel
+      </div>
+      <div class="hero-step">
+        <div class="step-num">2</div>
+        Upload it to Yaply Discover
+      </div>
+      <div class="hero-step">
+        <div class="step-num">3</div>
+        AI identifies exact location + details
+      </div>
+      <div class="hero-step">
+        <div class="step-num">4</div>
+        Add to your itinerary with one tap
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="phone-mockup">
+      <div class="phone-screen">
+        <div class="phone-reel">
+          <div class="phone-reel-overlay"></div>
+          <div class="reel-location">
+            <div class="reel-loc-name">Santorini, Greece 🇬🇷</div>
+            <div class="reel-loc-sub">Identified by Yaply AI</div>
+            <div class="reel-tag">📍 Add to Trip</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="floating-card fc-1">
+      <div class="fc-label">Identified</div>
+      <div class="fc-value fc-accent">Santorini</div>
+      <div class="fc-sub">Greece · 98% confident</div>
+    </div>
+    <div class="floating-card fc-2">
+      <div class="fc-label">Best Time</div>
+      <div class="fc-value">Jun – Sep</div>
+      <div class="fc-sub fc-teal">Avg 28°C ☀️</div>
+    </div>
+    <div class="floating-card fc-3">
+      <div class="fc-label">Flight from Mumbai</div>
+      <div class="fc-value">₹45,000</div>
+      <div class="fc-sub">~9 hours</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- Upload Section -->
+  <div class="upload-section">
+
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="uploadZone"
+         onclick="document.getElementById('fileInput').click()"
+         ondragover="handleDragOver(event)"
+         ondrop="handleDrop(event)"
+         ondragleave="handleDragLeave(event)">
+      <span class="upload-icon">📸</span>
+      <div class="upload-title">Upload Your Screenshot</div>
+      <div class="upload-sub">Drag & drop a screenshot from any social media reel, post, or story. Works with Instagram, TikTok, YouTube, Pinterest.</div>
+      <button class="upload-btn-sm" onclick="event.stopPropagation();document.getElementById('fileInput').click()">
+        Choose Photo
+      </button>
+      <div class="upload-formats">Supports JPG, PNG, WEBP, HEIC</div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)"/>
+    </div>
+
+    <!-- URL Zone -->
+    <div class="url-zone">
+      <div class="url-zone-title">🔗 Paste URL or Describe</div>
+      <div class="url-zone-sub">Paste an Instagram/TikTok URL, or describe the place you saw — "blue caves with turquoise water in Europe"</div>
+
+      <div class="url-input-wrap">
+        <input class="url-input" type="text" id="descInput" placeholder="Describe the place or paste URL..."/>
+        <button class="url-fetch-btn" onclick="analyzeDescription()">Find It</button>
+      </div>
+
+      <div class="social-chips">
+        <div class="social-chip">📸 Instagram</div>
+        <div class="social-chip">🎵 TikTok</div>
+        <div class="social-chip">▶️ YouTube</div>
+        <div class="social-chip">📌 Pinterest</div>
+      </div>
+
+      <div style="margin-top:20px;padding:16px;background:var(--warm);border-radius:12px;">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Try these descriptions</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div class="example-desc" onclick="tryExample(this)" style="font-size:0.8rem;color:var(--text);cursor:pointer;padding:4px 0;border-bottom:1px solid var(--border);">🌊 "Pink sand beach with crystal clear water"</div>
+          <div class="example-desc" onclick="tryExample(this)" style="font-size:0.8rem;color:var(--text);cursor:pointer;padding:4px 0;border-bottom:1px solid var(--border);">🏯 "Ancient temple with golden spires in Asia"</div>
+          <div class="example-desc" onclick="tryExample(this)" style="font-size:0.8rem;color:var(--text);cursor:pointer;padding:4px 0;">🌃 "City with neon lights and futuristic buildings"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Preview + Analyze -->
+  <div class="preview-analyze" id="previewAnalyze">
+    <div class="preview-header">
+      <div class="preview-title">📷 Ready to Analyze</div>
+      <button onclick="clearImage()" style="font-size:0.78rem;padding:6px 14px;border-radius:100px;border:1px solid var(--border);background:none;cursor:pointer;font-family:'DM Sans',sans-serif;">✕ Clear</button>
+    </div>
+    <div class="preview-body">
+      <div class="preview-img-wrap">
+        <img id="previewImg" src="" alt="Preview" class="preview-img"/>
+        <div class="preview-overlay"></div>
+      </div>
+      <div class="preview-side">
+        <div>
+          <div class="preview-info-label">File Name</div>
+          <div class="preview-info-value" id="previewName">—</div>
+        </div>
+        <div>
+          <div class="preview-info-label">File Size</div>
+          <div class="preview-info-value" id="previewSize">—</div>
+        </div>
+        <div>
+          <div class="preview-info-label">What AI will do</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+            <div style="font-size:0.8rem;display:flex;gap:8px;align-items:center;"><span style="color:var(--accent)">✓</span>Identify the exact location</div>
+            <div style="font-size:0.8rem;display:flex;gap:8px;align-items:center;"><span style="color:var(--accent)">✓</span>Find country, city, landmark name</div>
+            <div style="font-size:0.8rem;display:flex;gap:8px;align-items:center;"><span style="color:var(--accent)">✓</span>Best time to visit & travel tips</div>
+            <div style="font-size:0.8rem;display:flex;gap:8px;align-items:center;"><span style="color:var(--accent)">✓</span>Nearby hidden gems</div>
+            <div style="font-size:0.8rem;display:flex;gap:8px;align-items:center;"><span style="color:var(--accent)">✓</span>Add to your trip itinerary</div>
+          </div>
+        </div>
+        <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()">
+          🔍 Identify This Place
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analyzing Overlay -->
+  <div class="analyzing-overlay" id="analyzingOverlay">
+    <div class="analyzing-visual">
+      <div class="scan-circle scan-circle-1"></div>
+      <div class="scan-circle scan-circle-2"></div>
+      <div class="scan-circle scan-circle-3"></div>
+      <div class="scan-icon">🔍</div>
+      <div class="scan-line-h"></div>
+    </div>
+    <div class="analyzing-text">
+      <div class="analyzing-title">Identifying Location</div>
+      <div class="analyzing-sub">Our AI is analyzing visual patterns, landmarks, and geographic features</div>
+      <div class="analyzing-steps">
+        <div class="astep active" id="astep1"><div class="astep-dot"></div>Reading visual features...</div>
+        <div class="astep" id="astep2"><div class="astep-dot"></div>Matching landmarks...</div>
+        <div class="astep" id="astep3"><div class="astep-dot"></div>Identifying location...</div>
+        <div class="astep" id="astep4"><div class="astep-dot"></div>Gathering travel info...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section" id="resultsSection">
+
+    <!-- Main result -->
+    <div class="result-hero fade-in" id="resultHero">
+      <img id="resultBgImg" src="" alt="" class="result-hero-img"/>
+      <div class="result-hero-content">
+        <div>
+          <div class="result-confidence">
+            <div class="conf-dot"></div>
+            <span id="confidenceText">High Confidence Match</span>
+          </div>
+          <div class="result-place-name" id="resultPlaceName">Loading...</div>
+          <div class="result-place-location">
+            <span>📍</span>
+            <span id="resultPlaceLocation">—</span>
+          </div>
+          <div class="result-tags" id="resultTags"></div>
+        </div>
+        <div class="result-actions-hero">
+          <button class="btn-add-itinerary" onclick="addToItinerary()">
+            ✈️ Add to My Trip
+          </button>
+          <button class="btn-plan-trip" onclick="planThisTrip()">
+            🗺️ Plan Full Trip Here
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="info-grid fade-in" id="infoGrid"></div>
+
+    <!-- Nearby Attractions -->
+    <div class="nearby-section fade-in">
+      <div class="section-heading">🗺️ Nearby Must-Visits</div>
+      <div id="nearbyList"></div>
+    </div>
+
+    <!-- Similar Places -->
+    <div class="similar-section fade-in">
+      <div class="section-heading">✨ Similar Places You'll Love</div>
+      <div class="similar-grid" id="similarGrid"></div>
+    </div>
+
+    <!-- Quick Plan -->
+    <div class="quick-plan fade-in">
+      <div class="result-confidence" style="margin-bottom:16px;">
+        <div class="conf-dot"></div>
+        <span>Plan Your Trip There</span>
+      </div>
+      <div class="quick-plan-title" id="quickPlanTitle">Ready to visit this place?</div>
+      <div class="quick-plan-sub">Tell us when you want to go and we'll build your complete itinerary in seconds.</div>
+      <div class="quick-plan-form">
+        <input class="qp-input" type="text" id="qpFrom" placeholder="Flying from (your city)"/>
+        <input class="qp-input" type="number" id="qpDays" placeholder="Days" value="5" min="1" max="30"/>
+        <button class="qp-btn" onclick="quickPlan()">Plan It →</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Saved Places -->
+  <div class="saved-section">
+    <div class="section-heading">💾 Saved Places</div>
+    <div id="savedPlacesContent"></div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✅</span>
+  <span id="toastMsg">Done!</span>
+</div>
+
+<script>
+  let currentImage = null;
+  let currentResult = null;
+  let savedPlaces = JSON.parse(localStorage.getItem('yaply_places') || '[]');
+
+  // ── FILE HANDLING ──
+  function handleFile(event) {
+    const file = event.target.files[0];
+    if (file) loadFile(file);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('uploadZone').classList.add('drag-over');
+  }
+  function handleDragLeave(e) {
+    document.getElementById('uploadZone').classList.remove('drag-over');
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('uploadZone').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadFile(file);
+  }
+
+  function loadFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      currentImage = e.target.result;
+      document.getElementById('previewImg').src = currentImage;
+      document.getElementById('previewName').textContent = file.name;
+      document.getElementById('previewSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+      document.getElementById('previewAnalyze').classList.add('show');
+      document.getElementById('previewAnalyze').scrollIntoView({behavior:'smooth'});
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage() {
+    currentImage = null;
+    document.getElementById('previewAnalyze').classList.remove('show');
+    document.getElementById('fileInput').value = '';
+  }
+
+  function tryExample(el) {
+    const text = el.textContent.replace(/^[^\s]+\s/, '');
+    document.getElementById('descInput').value = text;
+  }
+
+  // ── ANALYZE IMAGE ──
+  async function analyzeImage() {
+    if (!currentImage) return;
+    showAnalyzing();
+
+    try {
+      const base64 = currentImage.split(',')[1];
+      const res = await fetch('/identify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ image: base64 })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        currentResult = data.result;
+        renderResult(data.result);
+      } else {
+        hideAnalyzing();
+        showToast('⚠️ ' + (data.error || 'Could not identify location'));
+      }
+    } catch(e) {
+      hideAnalyzing();
+      showToast('❌ Connection error');
+    }
+  }
+
+  // ── ANALYZE DESCRIPTION ──
+  async function analyzeDescription() {
+    const desc = document.getElementById('descInput').value.trim();
+    if (!desc) { showToast('Please enter a description or URL'); return; }
+
+    showAnalyzing();
+
+    try {
+      const res = await fetch('/identify-text', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ description: desc })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        currentResult = data.result;
+        renderResult(data.result);
+      } else {
+        hideAnalyzing();
+        showToast('⚠️ ' + (data.error || 'Could not identify location'));
+      }
+    } catch(e) {
+      hideAnalyzing();
+      showToast('❌ Connection error');
+    }
+  }
+
+  // ── ANALYZING ANIMATION ──
+  let analyzingInterval;
+  function showAnalyzing() {
+    document.getElementById('analyzingOverlay').classList.add('show');
+    const steps = ['astep1','astep2','astep3','astep4'];
+    let current = 0;
+    steps.forEach(s => {
+      document.getElementById(s).className = 'astep';
+    });
+    document.getElementById(steps[0]).className = 'astep active';
+
+    analyzingInterval = setInterval(() => {
+      if (current < steps.length - 1) {
+        document.getElementById(steps[current]).className = 'astep done';
+        current++;
+        document.getElementById(steps[current]).className = 'astep active';
+      }
+    }, 2000);
+  }
+
+  function hideAnalyzing() {
+    clearInterval(analyzingInterval);
+    document.getElementById('analyzingOverlay').classList.remove('show');
+    ['astep1','astep2','astep3','astep4'].forEach(s => {
+      document.getElementById(s).className = 'astep';
+    });
+  }
+
+  // ── RENDER RESULT ──
+  function renderResult(r) {
+    hideAnalyzing();
+
+    // Set background image
+    if (currentImage) {
+      document.getElementById('resultBgImg').src = currentImage;
+    }
+
+    // Main info
+    document.getElementById('resultPlaceName').textContent = r.place_name || 'Unknown Place';
+    document.getElementById('resultPlaceLocation').textContent = [r.city, r.country].filter(Boolean).join(', ');
+    document.getElementById('confidenceText').textContent = r.confidence + '% Confidence Match';
+
+    // Tags
+    document.getElementById('resultTags').innerHTML = (r.tags || []).map((tag, i) =>
+      `<span class="result-tag ${i===0?'accent':''}">${tag}</span>`
+    ).join('');
+
+    // Info grid
+    document.getElementById('infoGrid').innerHTML = [
+      { icon: '🌍', label: 'Country', value: r.country || '—', sub: r.continent || '' },
+      { icon: '🏙️', label: 'City/Region', value: r.city || '—', sub: r.region || '' },
+      { icon: '🌤️', label: 'Best Time', value: r.best_time || '—', sub: r.climate || '' },
+      { icon: '💰', label: 'Budget Level', value: r.budget_level || '—', sub: r.avg_daily_cost || '' },
+      { icon: '🗣️', label: 'Language', value: r.language || '—', sub: r.currency || '' },
+      { icon: '✈️', label: 'Nearest Airport', value: r.nearest_airport || '—', sub: r.airport_code || '' },
+    ].map(item => `
+      <div class="info-card">
+        <div class="info-icon">${item.icon}</div>
+        <div class="info-label">${item.label}</div>
+        <div class="info-value">${item.value}</div>
+        ${item.sub ? `<div class="info-sub">${item.sub}</div>` : ''}
+      </div>
+    `).join('');
+
+    // Nearby
+    document.getElementById('nearbyList').innerHTML = (r.nearby || []).map(place => `
+      <div class="nearby-item">
+        <div class="nearby-icon">${place.icon || '📍'}</div>
+        <div class="nearby-info">
+          <div class="nearby-name">${place.name}</div>
+          <div class="nearby-dist">${place.distance} · ${place.description}</div>
+        </div>
+        <div class="nearby-type">${place.type}</div>
+      </div>
+    `).join('');
+
+    // Similar places
+    const gradients = [
+      'linear-gradient(135deg,#667eea,#764ba2)',
+      'linear-gradient(135deg,#f093fb,#f5576c)',
+      'linear-gradient(135deg,#4facfe,#00f2fe)',
+    ];
+    document.getElementById('similarGrid').innerHTML = (r.similar_places || []).map((place, i) => `
+      <div class="similar-card">
+        <div class="similar-img" style="background:${gradients[i%3]}">${place.emoji || '🌍'}</div>
+        <div class="similar-info">
+          <div class="similar-name">${place.name}</div>
+          <div class="similar-country">${place.country} · ${place.why_similar}</div>
+          <button class="similar-add" onclick="addSimilarToSaved('${place.name}','${place.country}','${place.emoji||'🌍'}')">+ Save Place</button>
+        </div>
+      </div>
+    `).join('');
+
+    // Quick plan
+    document.getElementById('quickPlanTitle').textContent = `Ready to visit ${r.place_name}?`;
+
+    // Show results
+    document.getElementById('resultsSection').classList.add('show');
+    document.getElementById('resultsSection').scrollIntoView({behavior:'smooth'});
+  }
+
+  // ── ACTIONS ──
+  function addToItinerary() {
+    if (!currentResult) return;
+    const trips = JSON.parse(localStorage.getItem('yaply_trips') || '[]');
+    const place = {
+      name: currentResult.place_name,
+      country: currentResult.country,
+      city: currentResult.city,
+      addedAt: new Date().toISOString(),
+      type: 'discovered'
+    };
+    savedPlaces.unshift({ ...place, emoji: '📍' });
+    localStorage.setItem('yaply_places', JSON.stringify(savedPlaces));
+    renderSavedPlaces();
+    showToast('✅ Added to your trip!');
+  }
+
+  function addSimilarToSaved(name, country, emoji) {
+    savedPlaces.unshift({ name, country, emoji, addedAt: new Date().toISOString() });
+    localStorage.setItem('yaply_places', JSON.stringify(savedPlaces));
+    renderSavedPlaces();
+    showToast('✅ ' + name + ' saved!');
+  }
+
+  function planThisTrip() {
+    if (!currentResult) return;
+    const dest = encodeURIComponent(currentResult.place_name + ', ' + currentResult.country);
+    window.location.href = `/?dest=${dest}`;
+  }
+
+  function quickPlan() {
+    if (!currentResult) return;
+    const from = document.getElementById('qpFrom').value.trim();
+    const days = document.getElementById('qpDays').value;
+    if (!from) { showToast('Please enter your departure city'); return; }
+    const dest = currentResult.place_name + ', ' + currentResult.country;
+    window.location.href = `/?dest=${encodeURIComponent(dest)}&from=${encodeURIComponent(from)}&days=${days}`;
+  }
+
+  // ── SAVED PLACES ──
+  function renderSavedPlaces() {
+    const el = document.getElementById('savedPlacesContent');
+    if (savedPlaces.length === 0) {
+      el.innerHTML = `<div class="saved-empty">📍 No saved places yet.<br/>Identify places and save them here!</div>`;
+      return;
+    }
+    el.innerHTML = `<div class="saved-grid">${savedPlaces.map((p,i) => `
+      <div class="saved-item">
+        <div class="saved-emoji">${p.emoji || '📍'}</div>
+        <div style="flex:1">
+          <div class="saved-name">${p.name}</div>
+          <div class="saved-loc">${p.country || ''}</div>
+        </div>
+        <button class="saved-remove" onclick="removePlace(${i})">✕</button>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  function removePlace(i) {
+    savedPlaces.splice(i, 1);
+    localStorage.setItem('yaply_places', JSON.stringify(savedPlaces));
+    renderSavedPlaces();
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    document.getElementById('toastMsg').textContent = msg;
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // Init
+  renderSavedPlaces();
+</script>
+</body>
+</html>

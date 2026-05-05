@@ -1,0 +1,3591 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yaply -- Plan Your Trip</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F4F1EB;
+      --bg2: #EAE6DC;
+      --surface: #FFFFFF;
+      --border: rgba(0, 0, 0, 0.07);
+      --border2: rgba(0, 0, 0, 0.13);
+      --text: #0A0A0A;
+      --muted: #6B6B6B;
+      --muted2: #9B9B9B;
+      --accent: #00C9A7;
+      --accent2: #009E84;
+      --accent-soft: rgba(0, 201, 167, 0.1);
+      --accent-border: rgba(0, 201, 167, 0.25);
+      --red: #E84545;
+      --gold: #D4A017;
+      --gold-soft: rgba(212, 160, 23, 0.1);
+      --blue: #4A90D9;
+      --green: #22C55E;
+      --shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.1);
+      --r: 14px;
+      --r-lg: 22px;
+      --r-xl: 32px;
+      --theme-primary: #00C9A7;
+      --theme-secondary: #00A896;
+      --theme-accent: #00E5C9;
+      --theme-gradient-start: #00C9A7;
+      --theme-gradient-end: #00A896;
+      --accent-border: rgba(0, 201, 167, 0.25);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Geist', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(244, 241, 235, 0.94);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      font-style: italic;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-logo span {
+      color: var(--accent);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      padding: 8px 18px;
+      border-radius: 100px;
+      border: none;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: none;
+      color: var(--muted);
+    }
+
+    .nav-btn:hover {
+      background: var(--bg2);
+      color: var(--text);
+    }
+
+    .nav-btn.primary {
+      background: var(--text);
+      color: white;
+    }
+
+    .nav-btn.primary:hover {
+      background: #1a1a2e;
+    }
+
+    /* HERO */
+    .hero {
+      padding: 100px 32px 56px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .hero-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 48px;
+      align-items: start;
+      margin-bottom: 48px;
+    }
+
+    @media(max-width: 768px) {
+      .hero-top {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hero-left {}
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      line-height: 1.0;
+      letter-spacing: -2px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 em {
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .hero-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 440px;
+      line-height: 1.75;
+    }
+
+    /* TRIP FORM CARD */
+    .form-card {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .form-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), #00E5C9);
+    }
+
+    .form-section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted2);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .route-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    @media(max-width: 600px) {
+      .route-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .route-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--muted2);
+      font-size: 0.8rem;
+    }
+
+    .route-arrow-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--r);
+      padding: 13px 16px 13px 42px;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.92rem;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-input.no-icon {
+      padding-left: 16px;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      background: white;
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .form-input::placeholder {
+      color: var(--muted2);
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    @media(max-width: 700px) {
+      .details-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .detail-item {}
+
+    .detail-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 6px;
+    }
+
+    .budget-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+    }
+
+    .curr-select-small {
+      background: var(--bg);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--r);
+      padding: 13px 10px;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .curr-select-small:focus {
+      border-color: var(--accent);
+    }
+
+    /* Vibe pills */
+    .vibe-section {
+      margin-bottom: 24px;
+    }
+
+    .vibe-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .vibe-pill {
+      padding: 8px 16px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border2);
+      background: none;
+      cursor: pointer;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vibe-pill.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent2);
+      font-weight: 700;
+    }
+
+    .vibe-pill:hover:not(.active) {
+      border-color: var(--border2);
+      background: var(--bg2);
+    }
+
+    .generate-btn {
+      width: 100%;
+      padding: 17px;
+      background: var(--text);
+      color: white;
+      border: none;
+      border-radius: 100px;
+      font-family: 'Geist', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      letter-spacing: 0.2px;
+    }
+
+    .generate-btn:hover {
+      background: #1c1c3a;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* LOADING */
+    .loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 60px 32px;
+      text-align: center;
+    }
+
+    .loading.show {
+      display: flex;
+    }
+
+    .loader-ring {
+      width: 56px;
+      height: 56px;
+      border: 3px solid var(--accent-soft);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    .loading-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.3rem;
+      color: var(--text);
+    }
+
+    .loading-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .loading-step {
+      font-size: 0.82rem;
+      color: var(--muted2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .loading-step.done {
+      color: var(--accent2);
+    }
+
+    .loading-step.active {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* RESULTS */
+    .results {
+      display: none;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 32px 80px;
+    }
+
+    .results.show {
+      display: block;
+    }
+
+    /* Section cards */
+    .sec {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      margin-bottom: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .sec-head {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to right, var(--bg), var(--surface));
+    }
+
+    .sec-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.15rem;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sec-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 100px;
+      background: var(--accent-soft);
+      color: var(--accent2);
+    }
+
+    .sec-body {
+      padding: 24px;
+    }
+
+    /* Overview grid */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    @media(max-width: 600px) {
+      .overview-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .ov-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+    }
+
+    .ov-icon {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .ov-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 4px;
+    }
+
+    .ov-value {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .flight-banner {
+      background: linear-gradient(135deg, rgba(0, 201, 167, 0.08), rgba(0, 201, 167, 0.04));
+      border: 1px solid var(--accent-border);
+      border-radius: var(--r);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .flight-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .flight-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+    }
+
+    .flight-value {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .act-btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 11px 16px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border2);
+      background: none;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .act-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .act-btn.primary {
+      background: var(--text);
+      color: white;
+      border-color: var(--text);
+    }
+
+    .act-btn.primary:hover {
+      background: #1c1c3a;
+      border-color: #1c1c3a;
+    }
+
+    /* ITINERARY */
+    .day-nav {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+      margin-bottom: 20px;
+    }
+
+    .day-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .day-nav-btn {
+      flex-shrink: 0;
+      padding: 9px 18px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border2);
+      background: none;
+      cursor: pointer;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .day-nav-btn.active {
+      background: var(--text);
+      border-color: var(--text);
+      color: white;
+    }
+
+    .day-panel {
+      display: none;
+    }
+
+    .day-panel.active {
+      display: block;
+    }
+
+    .day-hero {
+      background: linear-gradient(135deg, #0A0A0A, #1a1a2e);
+      border-radius: var(--r);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .day-hero-left {}
+
+    .day-num {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .day-tab {
+      flex-shrink: 0;
+      padding: 10px 18px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border2);
+      background: var(--surface);
+      cursor: pointer;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .day-tab small {
+      font-size: 0.62rem;
+      color: var(--muted2);
+    }
+
+    .day-tab.active {
+      background: var(--theme-primary, var(--text));
+      border-color: var(--theme-primary, var(--text));
+      color: white;
+    }
+
+    .day-tab.active small {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .day-tab:hover:not(.active) {
+      border-color: var(--theme-primary);
+      color: var(--theme-primary);
+    }
+
+    .day-title-text {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.3rem;
+      color: white;
+      font-style: italic;
+    }
+
+    .edit-day-btn {
+      padding: 8px 16px;
+      border-radius: 100px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.7);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .edit-day-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+
+    .timeline {
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 20px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+      opacity: 0.3;
+    }
+
+    .tl-item {
+      display: flex;
+      gap: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .tl-item:last-child {
+      border-bottom: none;
+    }
+
+    .tl-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      width: 40px;
+      flex-shrink: 0;
+    }
+
+    .tl-icon-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tl-time {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--muted2);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .tl-right {
+      flex: 1;
+    }
+
+    .tl-period {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 6px;
+    }
+
+    .tl-activity {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .tl-location {
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+
+    .tl-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tl-cost {
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: var(--bg2);
+      border-radius: 100px;
+      padding: 3px 10px;
+      color: var(--text);
+    }
+
+    .tl-duration {
+      font-size: 0.75rem;
+      color: var(--muted2);
+    }
+
+    .tl-tip {
+      width: 100%;
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--r) var(--r) 0;
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      color: var(--accent2);
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    .meal-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    @media(max-width: 500px) {
+      .meal-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .meal-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .meal-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .meal-info {}
+
+    .meal-type {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 3px;
+    }
+
+    .meal-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .meal-detail {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .accom-card {
+      background: linear-gradient(135deg, rgba(74, 144, 217, 0.06), rgba(74, 144, 217, 0.02));
+      border: 1px solid rgba(74, 144, 217, 0.2);
+      border-radius: var(--r);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .accom-icon {
+      font-size: 1.4rem;
+    }
+
+    .accom-info {}
+
+    .accom-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--blue);
+      margin-bottom: 3px;
+    }
+
+    .accom-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .accom-detail {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Edit form */
+    .edit-form {
+      display: none;
+      background: var(--bg);
+      border-radius: var(--r);
+      padding: 20px;
+      border: 1px solid var(--border);
+      margin-top: 8px;
+    }
+
+    .edit-form.show {
+      display: block;
+    }
+
+    .edit-field {
+      margin-bottom: 14px;
+    }
+
+    .edit-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 6px;
+    }
+
+    .edit-input {
+      width: 100%;
+      background: white;
+      border: 1.5px solid var(--border2);
+      border-radius: var(--r);
+      padding: 10px 14px;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .edit-input:focus {
+      border-color: var(--accent);
+    }
+
+    .edit-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .edit-save {
+      flex: 1;
+      padding: 11px;
+      background: var(--text);
+      color: white;
+      border: none;
+      border-radius: 100px;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .edit-save:hover {
+      background: #1c1c3a;
+    }
+
+    .edit-cancel {
+      flex: 1;
+      padding: 11px;
+      background: none;
+      color: var(--muted);
+      border: 1.5px solid var(--border2);
+      border-radius: 100px;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .edit-cancel:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    /* BUDGET */
+    .budget-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .budget-row-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .b-label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      width: 130px;
+      flex-shrink: 0;
+    }
+
+    .b-bar-wrap {
+      flex: 1;
+      height: 10px;
+      background: var(--bg2);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .b-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      background: linear-gradient(90deg, var(--accent), #00E5C9);
+      transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .b-amount {
+      font-size: 0.85rem;
+      font-weight: 700;
+      width: 90px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* PACKING */
+    .packing-cats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media(max-width: 600px) {
+      .packing-cats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pack-cat-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted2);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pack-items {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .pack-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+
+    .pack-item:last-child {
+      border-bottom: none;
+    }
+
+    .pack-check {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border2);
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      transition: all 0.15s;
+      color: transparent;
+    }
+
+    .pack-item.packed .pack-check {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .pack-item.packed .pack-text {
+      text-decoration: line-through;
+      color: var(--muted2);
+    }
+
+    /* PHRASES */
+    .phrase-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .phrase-table th {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      padding: 8px 14px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .phrase-table td {
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .phrase-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .phrase-table tr:hover td {
+      background: var(--bg);
+    }
+
+    .phrase-local {
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    .phrase-pron {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* TIPS */
+    .tips-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .tip-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px;
+      background: var(--bg);
+      border-radius: var(--r);
+      border: 1px solid var(--border);
+    }
+
+    .tip-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--text);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .tip-text {
+      font-size: 0.86rem;
+      line-height: 1.6;
+    }
+
+    /* EMERGENCY */
+    .emergency-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .em-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .em-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .em-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 3px;
+    }
+
+    .em-num {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--red);
+      letter-spacing: 1px;
+    }
+
+    /* HIDDEN GEMS */
+    .gems-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .gem-card {
+      display: flex;
+      gap: 18px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 18px;
+      transition: all 0.2s;
+    }
+
+    .gem-card:hover {
+      transform: translateX(4px);
+      border-color: var(--accent-border);
+    }
+
+    .gem-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #E8A800);
+      color: white;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .gem-info {}
+
+    .gem-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .gem-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .gem-meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .gem-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 100px;
+      background: var(--gold-soft);
+      color: var(--gold);
+      border: 1px solid rgba(212, 160, 23, 0.2);
+    }
+
+    .gem-cost {
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    /* TRANSPORT */
+    .airport-box {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--r);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .airport-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent2);
+      margin-bottom: 10px;
+    }
+
+    .airport-details {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .airport-item {}
+
+    .airport-item-label {
+      font-size: 0.65rem;
+      color: var(--muted2);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .airport-item-value {
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .transport-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .transport-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+    }
+
+    .transport-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--bg2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .transport-info {
+      flex: 1;
+    }
+
+    .transport-type {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .transport-tip {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .transport-cost {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    .apps-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .app-chip {
+      padding: 6px 14px;
+      background: var(--text);
+      color: white;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* CULTURAL */
+    .cultural-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    @media(max-width: 600px) {
+      .cultural-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .cultural-col-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cultural-col-title.dos {
+      color: var(--green);
+    }
+
+    .cultural-col-title.donts {
+      color: var(--red);
+    }
+
+    .cultural-item {
+      padding: 8px 0;
+      font-size: 0.84rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      line-height: 1.5;
+    }
+
+    .cultural-item:last-child {
+      border-bottom: none;
+    }
+
+    .cultural-item-icon {
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .culture-extras {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    @media(max-width: 600px) {
+      .culture-extras {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .culture-extra-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+    }
+
+    .ce-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 5px;
+    }
+
+    .ce-value {
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    /* SIM */
+    .sim-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .sim-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+    }
+
+    .sim-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 5px;
+    }
+
+    .sim-value {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    /* APPS */
+    .apps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .app-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+    }
+
+    .app-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #00A896);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .app-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .app-purpose {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .app-platform {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 100px;
+      background: var(--accent-soft);
+      color: var(--accent2);
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* PAYMENT */
+    .payment-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .payment-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+    }
+
+    .payment-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 5px;
+    }
+
+    .payment-value {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .payment-tip {
+      border-radius: var(--r);
+      padding: 14px 18px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .payment-tip.warn {
+      background: rgba(212, 160, 23, 0.08);
+      border: 1px solid rgba(212, 160, 23, 0.25);
+      color: var(--gold);
+    }
+
+    .payment-tip.info {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent2);
+    }
+
+    /* VACCINATION */
+    .vax-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 14px;
+    }
+
+    @media(max-width: 600px) {
+      .vax-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .vax-col-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .vax-col-title.req {
+      color: var(--red);
+    }
+
+    .vax-col-title.rec {
+      color: var(--gold);
+    }
+
+    .vax-item {
+      padding: 8px 0;
+      font-size: 0.84rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .vax-item:last-child {
+      border-bottom: none;
+    }
+
+    .vax-note {
+      background: rgba(212, 160, 23, 0.08);
+      border: 1px solid rgba(212, 160, 23, 0.2);
+      border-radius: var(--r);
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: var(--gold);
+    }
+
+    /* SHOPPING */
+    .shopping-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media(max-width: 600px) {
+      .shopping-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .shop-col-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .shop-col-title.buy {
+      color: var(--green);
+    }
+
+    .shop-col-title.avoid {
+      color: var(--red);
+    }
+
+    .shop-item {
+      padding: 8px 0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .shop-item:last-child {
+      border-bottom: none;
+    }
+
+    /* POWER & INSURANCE */
+    .plug-ins-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media(max-width: 500px) {
+      .plug-ins-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .plug-card,
+    .ins-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px;
+    }
+
+    .plug-label,
+    .ins-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 12px;
+    }
+
+    .plug-row,
+    .ins-row {
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .plug-key,
+    .ins-key {
+      color: var(--muted2);
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .plug-val,
+    .ins-val {
+      font-weight: 700;
+    }
+
+    .plug-warn {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .plug-warn.needed {
+      background: rgba(232, 69, 69, 0.08);
+      color: var(--red);
+    }
+
+    .plug-warn.ok {
+      background: var(--accent-soft);
+      color: var(--accent2);
+    }
+
+    .ins-covers {
+      margin-top: 10px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* WEATHER */
+    .weather-scroll {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .weather-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .w-day {
+      flex-shrink: 0;
+      width: 86px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px 10px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .w-day.today {
+      background: var(--text);
+      border-color: var(--text);
+    }
+
+    .w-day.today .w-date,
+    .w-day.today .w-temp,
+    .w-day.today .w-desc {
+      color: white;
+    }
+
+    .w-date {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted2);
+      margin-bottom: 8px;
+    }
+
+    .w-icon {
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+    }
+
+    .w-temp {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .w-desc {
+      font-size: 0.65rem;
+      color: var(--muted2);
+    }
+
+    /* CURRENCY */
+    .curr-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .curr-amount-input {
+      flex: 1;
+      min-width: 120px;
+      background: var(--bg);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--r);
+      padding: 13px 16px;
+      font-family: 'Geist', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .curr-amount-input:focus {
+      border-color: var(--accent);
+    }
+
+    .curr-select-pill {
+      background: var(--bg);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--r);
+      padding: 13px 14px;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .curr-select-pill:focus {
+      border-color: var(--accent);
+    }
+
+    .curr-arrow {
+      font-size: 1.2rem;
+      color: var(--muted2);
+    }
+
+    .curr-result-box {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--r);
+      padding: 18px 22px;
+      display: none;
+    }
+
+    .curr-result-box.show {
+      display: block;
+    }
+
+    .curr-big {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.2rem;
+      color: var(--accent2);
+    }
+
+    .curr-rate-text {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* VISA */
+    .visa-badge {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px;
+      border-radius: var(--r);
+      margin-bottom: 16px;
+    }
+
+    .visa-badge.req {
+      background: rgba(232, 69, 69, 0.06);
+      border: 1px solid rgba(232, 69, 69, 0.2);
+    }
+
+    .visa-badge.free {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+    }
+
+    .visa-badge-icon {
+      font-size: 2rem;
+    }
+
+    .visa-badge-title {
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 3px;
+    }
+
+    .visa-badge-sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .visa-details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .visa-detail-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+    }
+
+    .vd-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 4px;
+    }
+
+    .vd-value {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .visa-docs {}
+
+    .visa-docs-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 8px;
+    }
+
+    .visa-doc-item {
+      padding: 8px 0;
+      font-size: 0.84rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .visa-doc-item:last-child {
+      border-bottom: none;
+    }
+
+    /* WEATHER/CURRENCY/VISA standalone */
+    .standalone-sec {
+      margin-bottom: 20px;
+    }
+
+    .standalone-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .standalone-input {
+      flex: 1;
+      min-width: 180px;
+      background: var(--bg);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--r);
+      padding: 12px 16px;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .standalone-input:focus {
+      border-color: var(--accent);
+    }
+
+    .standalone-btn {
+      padding: 12px 22px;
+      border-radius: 100px;
+      background: var(--text);
+      color: white;
+      border: none;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .standalone-btn:hover {
+      background: #1c1c3a;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: var(--text);
+      color: white;
+      padding: 11px 24px;
+      border-radius: 100px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 200;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-up {
+      animation: fadeUp 0.5s ease both;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/static/yaply-theme.css"/>
+</head>
+
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo">ya<span>ply</span></a>
+    <div class="nav-right">
+      <button class="nav-btn"
+        onclick="document.getElementById('weatherSec').scrollIntoView({behavior:'smooth'})">Weather</button>
+      <button class="nav-btn"
+        onclick="document.getElementById('currSec').scrollIntoView({behavior:'smooth'})">Currency</button>
+      <button class="nav-btn"
+        onclick="document.getElementById('visaSec').scrollIntoView({behavior:'smooth'})">Visa</button>
+      <button class="nav-btn primary" onclick="window.location.href='/app'">Translate Now</button>
+    </div>
+  </nav>
+
+  <div style="max-width:1000px;margin:0 auto;padding:0 32px;">
+
+    <div class="hero">
+      <div class="hero-top">
+        <div class="hero-left">
+          <div class="hero-eyebrow">AI Trip Planner</div>
+          <h1>Plan your trip<br /><em>before you pack.</em></h1>
+          <p class="hero-sub">Tell Yaply where you're going — get a complete itinerary, visa info, weather, packing list
+            and more in seconds.</p>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div class="form-card fade-up">
+
+        <div class="form-section-title">Your Route</div>
+        <div class="route-row">
+          <div class="input-wrap">
+            <span class="input-icon">🛫</span>
+            <input class="form-input" type="text" id="origin" placeholder="Mumbai, India" />
+          </div>
+          <div class="route-arrow">
+            <div class="route-arrow-icon">✈️</div>
+          </div>
+          <div class="input-wrap">
+            <span class="input-icon">🛬</span>
+            <input class="form-input" type="text" id="destination" placeholder="Tokyo, Japan" />
+          </div>
+        </div>
+
+        <div class="form-section-title">Trip Details</div>
+        <div class="details-grid">
+          <div class="detail-item">
+            <div class="detail-label">Days</div>
+            <input class="form-input no-icon" type="number" id="days" value="5" min="1" max="30" />
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Travellers</div>
+            <input class="form-input no-icon" type="number" id="people" value="2" min="1" />
+          </div>
+          <div class="detail-item" style="grid-column: span 2">
+            <div class="detail-label">Total Budget</div>
+            <div class="budget-row">
+              <select class="curr-select-small" id="homeCurrency" onchange="updatePlaceholder()">
+                <option value="INR">INR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+                <option value="AED">AED</option>
+                <option value="SGD">SGD</option>
+                <option value="CAD">CAD</option>
+                <option value="AUD">AUD</option>
+                <option value="JPY">JPY</option>
+              </select>
+              <input class="form-input no-icon" type="text" id="budget" placeholder="80,000" />
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Passport</div>
+            <select class="form-input no-icon" id="passport">
+              <option value="India">India</option>
+              <option value="USA">USA</option>
+              <option value="UK">UK</option>
+              <option value="UAE">UAE</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+              <option value="Singapore">Singapore</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="vibe-section">
+          <div class="form-section-title">Travel Vibe <span
+              style="font-size:0.7rem;color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0">(pick
+              multiple)</span></div>
+          <div class="vibe-pills">
+            <button class="vibe-pill active" onclick="toggleVibe(this,'adventure')">🏔️ Adventure</button>
+            <button class="vibe-pill" onclick="toggleVibe(this,'cultural')">🏛️ Cultural</button>
+            <button class="vibe-pill" onclick="toggleVibe(this,'relaxation')">🏖️ Relaxation</button>
+            <button class="vibe-pill" onclick="toggleVibe(this,'foodie')">🍜 Foodie</button>
+            <button class="vibe-pill" onclick="toggleVibe(this,'budget')">💸 Budget</button>
+            <button class="vibe-pill" onclick="toggleVibe(this,'luxury')">✨ Luxury</button>
+            <button class="vibe-pill" onclick="toggleVibe(this,'family')">👨‍👩‍👧 Family</button>
+            <button class="vibe-pill" onclick="toggleVibe(this,'solo')">🧳 Solo</button>
+            <button class="vibe-pill" onclick="toggleVibe(this,'romantic')">💑 Romantic</button>
+            <button class="vibe-pill" onclick="toggleVibe(this,'wellness')">🧘 Wellness</button>
+          </div>
+        </div>
+
+        <button class="generate-btn" id="generateBtn" onclick="generatePlan()">
+          ✨ Generate My Complete Trip Plan
+        </button>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading" id="loading">
+      <div class="loader-ring"></div>
+      <div class="loading-title" id="loadingTitle">Planning your trip...</div>
+      <div style="font-size:0.82rem;color:var(--muted2)">Usually takes 10-20 seconds</div>
+    </div>
+
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="results">
+
+    <!-- HERO PHOTO SECTION -->
+    <div id="tripHero"
+      style="border-radius:28px;overflow:hidden;margin-bottom:24px;min-height:300px;display:flex;flex-direction:column;justify-content:flex-end;padding:36px;position:relative;transition:all 0.5s ease;box-shadow:var(--shadow-lg);"
+      class="fade-up">
+      <div style="position:relative;z-index:1;">
+        <div style="font-size:2.5rem;margin-bottom:8px;" id="heroEmoji">🌍</div>
+        <div
+          style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:6px;"
+          id="heroMood">Adventure</div>
+        <div
+          style="font-family:'Instrument Serif',serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:700;color:white;line-height:1.05;letter-spacing:-1px;margin-bottom:8px;"
+          id="heroTitle">Loading...</div>
+        <div style="font-size:0.88rem;color:rgba(255,255,255,0.75);" id="heroDays"></div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;" id="heroVibes"></div>
+      </div>
+    </div>
+
+    <!-- Hero Photo -->
+    <div id="tripHero" class="fade-up" style="border-radius:28px;min-height:280px;margin-bottom:24px;"></div>
+    <!-- Overview -->
+    <div class="section-card fade-up">
+      <div class="section-header">
+        <div class="section-title">🗺️ Trip Overview</div>
+        <div class="action-row">
+          <button class="act-btn" onclick="saveTrip()">💾 Save</button>
+          <button class="act-btn" onclick="shareTrip()">↗️ Share</button>
+          <button class="act-btn primary" onclick="window.location.href='/app'">🎙️ Translate</button>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="flight-banner" id="flightBanner" style="display:none"></div>
+        <div class="overview-grid" id="overviewGrid"></div>
+      </div>
+    </div>
+
+    <!-- ITINERARY -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">📅 Day-by-Day Itinerary</div>
+        <div class="sec-badge" id="itinBadge"></div>
+      </div>
+      <div class="sec-body">
+        <div class="day-nav" id="dayNav"></div>
+        <div id="dayPanels"></div>
+      </div>
+    </div>
+
+    <!-- BUDGET -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">💰 Budget Breakdown</div>
+      </div>
+      <div class="sec-body">
+        <div class="budget-list" id="budgetList"></div>
+      </div>
+    </div>
+
+    <!-- HIDDEN GEMS -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">💎 Hidden Gems</div>
+        <div class="sec-badge">Not in guidebooks</div>
+      </div>
+      <div class="sec-body">
+        <div class="gems-list" id="gemsList"></div>
+      </div>
+    </div>
+
+    <!-- TRANSPORT -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">🚇 Getting Around</div>
+      </div>
+      <div class="sec-body" id="transportBody"></div>
+    </div>
+
+    <!-- CULTURAL GUIDE -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">🕌 Cultural Guide</div>
+      </div>
+      <div class="sec-body">
+        <div class="cultural-grid" id="culturalGrid"></div>
+        <div class="culture-extras" id="cultureExtras"></div>
+      </div>
+    </div>
+
+    <!-- SIM & INTERNET -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">📶 SIM & Internet</div>
+      </div>
+      <div class="sec-body">
+        <div class="sim-grid" id="simGrid"></div>
+      </div>
+    </div>
+
+    <!-- MUST-HAVE APPS -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">📲 Must-Have Apps</div>
+      </div>
+      <div class="sec-body">
+        <div class="apps-list" id="appsList"></div>
+      </div>
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">💳 Money & Payments</div>
+      </div>
+      <div class="sec-body" id="paymentBody"></div>
+    </div>
+
+    <!-- VACCINATIONS -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">💉 Health & Vaccinations</div>
+      </div>
+      <div class="sec-body" id="vaxBody"></div>
+    </div>
+
+    <!-- PACKING LIST -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">🧳 Smart Packing List</div>
+        <div class="sec-badge" id="packBadge">0 packed</div>
+      </div>
+      <div class="sec-body">
+        <div class="packing-cats" id="packingCats"></div>
+      </div>
+    </div>
+
+    <!-- SHOPPING -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">🛍️ Shopping Guide</div>
+      </div>
+      <div class="sec-body">
+        <div class="shopping-grid" id="shoppingGrid"></div>
+      </div>
+    </div>
+
+    <!-- POWER & INSURANCE -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">🔌 Power & Insurance</div>
+      </div>
+      <div class="sec-body">
+        <div class="plug-ins-grid" id="plugInsGrid"></div>
+      </div>
+    </div>
+
+    <!-- LOCAL PHRASES -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">🗣️ Essential Phrases</div>
+      </div>
+      <div class="sec-body">
+        <table class="phrase-table" id="phraseTable">
+          <thead>
+            <tr>
+              <th>English</th>
+              <th>Local</th>
+              <th>Say it like</th>
+            </tr>
+          </thead>
+          <tbody id="phraseBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="sec fade-up">
+      <div class="sec-head">
+        <div class="sec-title">💡 Insider Tips</div>
+      </div>
+      <div class="sec-body">
+        <div class="tips-list" id="tipsList"></div>
+      </div>
+    </div>
+
+    <!-- EMERGENCY -->
+    <div class="sec fade-up" style="margin-bottom:40px">
+      <div class="sec-head">
+        <div class="sec-title">🆘 Emergency Numbers</div>
+      </div>
+      <div class="sec-body">
+        <div class="emergency-grid" id="emergencyGrid"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STANDALONE TOOLS -->
+  <div style="max-width:1000px;margin:0 auto;padding:0 32px 80px;">
+
+    <!-- JOURNEY PLANNER -->
+    <div id="journeySection" style="margin-top:40px;">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">🗺️ Complete Journey Planner</div>
+          <div style="font-size:0.75rem;color:var(--accent2);font-weight:600;">Door to Door</div>
+        </div>
+        <div class="section-body">
+          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:20px;line-height:1.6">
+            Even if you're in a small town or village — we'll find the best way to reach your destination from your
+            exact location.
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+            <div class="form-group">
+              <label class="form-label">📍 Your Exact Location</label>
+              <input class="form-input" type="text" id="journeyOrigin" placeholder="e.g. Rajkot, Gujarat" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">🌍 Destination</label>
+              <input class="form-input" type="text" id="journeyDest" placeholder="e.g. Tokyo, Japan" />
+            </div>
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <label class="form-label" style="margin-bottom:8px;display:block;">🚗 Preferred Travel Mode</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="vibe-pill active" onclick="setJourneyMode(this,'any')" id="mode-any">🌐 Best
+                Option</button>
+              <button class="vibe-pill" onclick="setJourneyMode(this,'flight')" id="mode-flight">✈️ Flight</button>
+              <button class="vibe-pill" onclick="setJourneyMode(this,'train')" id="mode-train">🚂 Train</button>
+              <button class="vibe-pill" onclick="setJourneyMode(this,'bus')" id="mode-bus">🚌 Bus</button>
+              <button class="vibe-pill" onclick="setJourneyMode(this,'cab')" id="mode-cab">🚕 Cab</button>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;">
+            <select class="curr-select" id="journeyCurrency">
+              <option value="INR">🇮🇳 INR</option>
+              <option value="USD">🇺🇸 USD</option>
+              <option value="EUR">🇪🇺 EUR</option>
+              <option value="GBP">🇬🇧 GBP</option>
+            </select>
+            <button onclick="planJourney()"
+              style="flex:1;padding:14px;background:var(--text);color:white;border:none;border-radius:100px;font-family:'Geist',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;">
+              🗺️ Plan My Complete Journey
+            </button>
+          </div>
+
+          <!-- Journey Loading -->
+          <div id="journeyLoading" style="display:none;text-align:center;padding:32px;">
+            <div class="loader" style="margin:0 auto 16px;"></div>
+            <div style="font-family:'Instrument Serif',serif;font-size:1.1rem;color:var(--muted)">Finding best routes...
+            </div>
+          </div>
+
+          <!-- Journey Results -->
+          <div id="journeyResults" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="sec standalone-sec" id="weatherSec">
+      <div class="sec-head">
+        <div class="sec-title">🌤️ Weather Forecast</div>
+      </div>
+      <div class="sec-body">
+        <div class="standalone-form">
+          <input class="standalone-input" type="text" id="weatherCity" placeholder="Enter city name" />
+          <button class="standalone-btn" onclick="getWeather()">Check Weather</button>
+        </div>
+        <div id="weatherResult"></div>
+      </div>
+    </div>
+
+    <!-- CURRENCY -->
+    <div class="sec standalone-sec" id="currSec">
+      <div class="sec-head">
+        <div class="sec-title">💱 Currency Converter</div>
+        <div class="sec-badge">Live Rates</div>
+      </div>
+      <div class="sec-body">
+        <div class="curr-wrap">
+          <input class="curr-amount-input" type="number" id="currAmount" value="1000" oninput="convertCurrency()" />
+          <select class="curr-select-pill" id="currFrom" onchange="convertCurrency()">
+            <option value="INR">INR</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+            <option value="AED">AED</option>
+            <option value="SGD">SGD</option>
+          </select>
+          <span class="curr-arrow">→</span>
+          <select class="curr-select-pill" id="currTo" onchange="convertCurrency()">
+            <option value="JPY">JPY</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+            <option value="THB">THB</option>
+            <option value="SGD">SGD</option>
+            <option value="AED">AED</option>
+            <option value="INR">INR</option>
+          </select>
+        </div>
+        <div class="curr-result-box" id="currResultBox">
+          <div class="curr-big" id="currConverted"></div>
+          <div class="curr-rate-text" id="currRateText"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VISA -->
+    <div class="sec standalone-sec" id="visaSec">
+      <div class="sec-head">
+        <div class="sec-title">🛂 Visa Requirements</div>
+      </div>
+      <div class="sec-body">
+        <div class="standalone-form">
+          <select class="standalone-input" id="visaPassport" style="flex:none;width:auto">
+            <option value="India">Indian Passport</option>
+            <option value="USA">US Passport</option>
+            <option value="UK">UK Passport</option>
+            <option value="UAE">UAE Passport</option>
+            <option value="Canada">Canadian Passport</option>
+          </select>
+          <input class="standalone-input" type="text" id="visaDest" placeholder="Destination country" />
+          <button class="standalone-btn" onclick="checkVisa()">Check Visa</button>
+        </div>
+        <div id="visaResult"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let selectedVibes = new Set(['adventure']);
+    let currentPlan = null;
+
+    function toggleVibe(el, vibe) {
+      if (selectedVibes.has(vibe)) {
+        if (selectedVibes.size === 1) return;
+        selectedVibes.delete(vibe);
+        el.classList.remove('active');
+      } else {
+        selectedVibes.add(vibe);
+        el.classList.add('active');
+      }
+    }
+
+    function updatePlaceholder() {
+      const c = document.getElementById('homeCurrency').value;
+      const defaults = { INR: '80,000', USD: '1,000', EUR: '900', GBP: '800', AED: '3,500', SGD: '1,300', CAD: '1,200', AUD: '1,400', JPY: '120,000' };
+      document.getElementById('budget').placeholder = defaults[c] || '1,000';
+    }
+
+    async function generatePlan() {
+      const destination = document.getElementById('destination').value.trim();
+      const origin = document.getElementById('origin').value.trim();
+      if (!destination) { showToast('Please enter a destination'); return; }
+      if (!origin) { showToast('Please enter where you are flying from'); return; }
+
+      const days = parseInt(document.getElementById('days').value) || 5;
+      const people = parseInt(document.getElementById('people').value) || 2;
+      const budget = document.getElementById('budget').value || '80000';
+      const currency = document.getElementById('homeCurrency').value;
+      const passport = document.getElementById('passport').value;
+      const vibeString = Array.from(selectedVibes).join(' + ');
+
+      document.getElementById('loading').classList.add('show');
+      document.getElementById('results').classList.remove('show');
+      document.getElementById('generateBtn').disabled = true;
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+      const steps = [
+        'Building your unique itinerary...',
+        'Finding hidden gems...',
+        'Checking visa requirements...',
+        'Calculating budget in ' + currency + '...',
+        'Getting local transport info...',
+        'Generating packing list...',
+        'Adding cultural tips...'
+      ];
+      let si = 0;
+      const interval = setInterval(() => {
+        si = (si + 1) % steps.length;
+        document.getElementById('loadingTitle').textContent = steps[si];
+      }, 2500);
+
+      try {
+        const res = await apiFetch('/api/plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destination, origin, days, budget, people, vibe: vibeString, currency })
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentPlan = data.plan;
+          currentPlan._meta = { destination, origin, days, budget, currency, people, vibes: vibeString, passport };
+          renderPlan(data.plan, currency);
+          document.getElementById('results').classList.add('show');
+          document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+          // Auto-fetch extras
+          document.getElementById('weatherCity').value = destination.split(',')[0];
+          getWeather();
+          document.getElementById('visaPassport').value = passport;
+          document.getElementById('visaDest').value = destination.split(',')[0];
+          checkVisa();
+        } else {
+          showToast('Error: ' + data.error);
+        }
+      } catch (e) {
+        showToast('Connection error. Is server running?');
+      }
+
+      clearInterval(interval);
+      document.getElementById('loading').classList.remove('show');
+      document.getElementById('generateBtn').disabled = false;
+    }
+
+    async function renderPlan(plan, currency) {
+
+      // ── STEP 1: Fetch theme + hero photo simultaneously ──
+      const destName = plan.destination;
+      let theme = getDefaultTheme();
+      let heroPhoto = null;
+
+      try {
+        const [themeRes, photoRes] = await Promise.all([
+          apiFetch('/detect-theme', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ destination: destName })
+          }),
+          apiFetch('/place-photo', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ place_name: destName })
+          })
+        ]);
+        const themeData = await themeRes.json();
+        const photoData = await photoRes.json();
+        if (themeData.success) theme = themeData.theme;
+        if (photoData.success && photoData.photos.length > 0) heroPhoto = photoData.photos[0];
+      } catch (e) { console.log('Theme/photo fetch failed:', e); }
+
+      applyTheme(theme);
+
+      // ── STEP 2: Hero Section ──
+      const heroEl = document.getElementById('tripHero');
+      if (heroEl) {
+        heroEl.style.cssText = `
+      border-radius:28px;overflow:hidden;margin-bottom:24px;
+      min-height:320px;display:flex;flex-direction:column;
+      justify-content:flex-end;padding:36px;position:relative;
+      box-shadow:0 20px 60px rgba(0,0,0,0.2);
+      background:${heroPhoto
+            ? `linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.75) 100%), url('${heroPhoto}') center/cover no-repeat`
+            : `linear-gradient(135deg,${theme.gradient_start},${theme.gradient_end})`};
+      transition:all 0.5s ease;
+    `;
+        heroEl.innerHTML = `
+      <div style="position:relative;z-index:1;">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:8px;">${theme.mood || 'Adventure'} ${theme.emoji || '🌍'}</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:clamp(2.2rem,6vw,3.8rem);font-weight:700;color:white;line-height:1.0;letter-spacing:-1.5px;margin-bottom:10px;text-shadow:0 2px 20px rgba(0,0,0,0.3);">${destName}</div>
+        <div style="font-size:0.9rem;color:rgba(255,255,255,0.75);margin-bottom:16px;">${plan.days} Days · ${plan.best_time_to_visit || 'Best season varies'}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${(theme.vibe_words || []).map(w => `<span style="padding:5px 14px;background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);border-radius:100px;font-size:0.72rem;font-weight:600;color:white;">${w}</span>`).join('')}
+        </div>
+      </div>
+    `;
+      }
+
+      // ── STEP 3: Overview Grid ──
+      document.getElementById('overviewGrid').innerHTML = [
+        { icon: '📅', label: 'Duration', value: plan.days + ' Days' },
+        { icon: '🗣️', label: 'Language', value: plan.language || 'Local' },
+        { icon: '💵', label: 'Local Currency', value: plan.currency || 'Local' },
+        { icon: '🕐', label: 'Timezone', value: plan.timezone || 'Local' },
+        { icon: '🌤️', label: 'Best Time', value: plan.best_time_to_visit || 'Year-round' },
+        { icon: '🛂', label: 'Visa', value: plan.visa_info?.required ? 'Required' : 'Visa Free' },
+      ].map(item => `
+    <div class="ov-card" style="border-top:3px solid ${theme.primary_color};">
+      <div class="ov-icon">${item.icon}</div>
+      <div class="ov-label">${item.label}</div>
+      <div class="ov-value">${item.value}</div>
+    </div>
+  `).join('');
+
+      // ── STEP 4: Flight Banner ──
+      if (plan.flight_info) {
+        const f = plan.flight_info;
+        const fb = document.getElementById('flightBanner');
+        fb.style.display = 'flex';
+        fb.style.background = `linear-gradient(135deg,${theme.gradient_start}15,${theme.gradient_end}08)`;
+        fb.style.borderColor = `${theme.primary_color}30`;
+        fb.innerHTML = `
+      <div class="flight-item"><div class="flight-label">Estimated Flights</div><div class="flight-value" style="color:${theme.primary_color}">${f.estimated_cost || 'Check airline'}</div></div>
+      <div class="flight-item"><div class="flight-label">Duration</div><div class="flight-value">${f.flight_duration || 'Varies'}</div></div>
+      <div class="flight-item"><div class="flight-label">Best Airlines</div><div class="flight-value">${(f.best_airlines || []).join(', ')}</div></div>
+      <div class="flight-item"><div class="flight-label">Book In Advance</div><div class="flight-value">${f.best_time_to_book || 'ASAP'}</div></div>
+    `;
+      }
+
+      // ── STEP 5: Itinerary with photos ──
+      const dayNav = document.getElementById('dayNav');
+      const dayPanels = document.getElementById('dayPanels');
+      dayNav.innerHTML = '';
+      dayPanels.innerHTML = '';
+      document.getElementById('itinBadge').textContent = plan.days + ' days';
+
+      for (let i = 0; i < (plan.itinerary || []).length; i++) {
+        const day = plan.itinerary[i];
+
+        // Day nav button
+        const btn = document.createElement('button');
+        btn.className = 'day-nav-btn' + (i === 0 ? ' active' : '');
+        btn.style.cssText = i === 0 ? `background:${theme.primary_color};border-color:${theme.primary_color};color:white;` : '';
+        btn.innerHTML = `<span style="font-size:0.85rem;font-weight:700;">Day ${day.day}</span><span style="font-size:0.65rem;opacity:0.7;">${(day.title || '').split(' ').slice(0, 2).join(' ')}</span>`;
+        btn.style.display = 'flex';
+        btn.style.flexDirection = 'column';
+        btn.style.alignItems = 'center';
+        btn.style.gap = '2px';
+        btn.onclick = () => switchDay(i, theme);
+        dayNav.appendChild(btn);
+
+        // Fetch activity photos
+        const locations = [
+          day.morning?.location,
+          day.afternoon?.location,
+          day.evening?.location
+        ];
+
+        const photoResults = await Promise.all(
+          locations.map(loc => loc
+            ? apiFetch('/place-photo', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ place_name: `${loc} ${plan.destination}` })
+            }).then(r => r.json()).catch(() => ({ success: false }))
+            : Promise.resolve({ success: false })
+          )
+        );
+
+        const getPhoto = (idx) => {
+          const r = photoResults[idx];
+          return r?.success && r.photos?.length > 0 ? r.photos[0] : null;
+        };
+
+        const panel = document.createElement('div');
+        panel.className = 'day-panel' + (i === 0 ? ' active' : '');
+        panel.id = 'dp-' + i;
+
+        panel.innerHTML = `
+      <!-- Day Header -->
+      <div style="background:linear-gradient(135deg,${theme.gradient_start}18,${theme.gradient_end}10);border:1px solid ${theme.primary_color}25;border-radius:20px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,${theme.gradient_start},${theme.gradient_end});display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:1.3rem;font-weight:700;color:white;box-shadow:0 4px 16px ${theme.primary_color}40;">${day.day}</div>
+          <div>
+            <div style="font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:700;color:var(--text);">${day.title || 'Day ' + day.day}</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">${plan.destination} · Day ${day.day} of ${plan.days}</div>
+          </div>
+        </div>
+        <button class="edit-day-btn" id="editBtn-${i}" onclick="toggleEdit(${i})" style="border-color:${theme.primary_color}40;color:${theme.primary_color};">✏️ Edit</button>
+      </div>
+
+      <div id="dayView-${i}">
+        <!-- Activities with photos -->
+        ${renderActivityWithPhoto('🌅 Morning', day.morning, getPhoto(0), theme)}
+        ${renderMealRow(day.lunch, '🍽️ Lunch', theme)}
+        ${renderActivityWithPhoto('☀️ Afternoon', day.afternoon, getPhoto(1), theme)}
+        ${renderActivityWithPhoto('🌙 Evening', day.evening, getPhoto(2), theme)}
+        ${renderMealRow(day.dinner, '🍷 Dinner', theme)}
+        ${renderAccomRow(day.accommodation, theme)}
+      </div>
+
+      <div class="edit-form" id="editForm-${i}">
+        <div class="edit-field"><div class="edit-label">Morning Activity</div><input class="edit-input" id="em-a-${i}" value="${day.morning?.activity || ''}"/></div>
+        <div class="edit-field"><div class="edit-label">Morning Location</div><input class="edit-input" id="em-l-${i}" value="${day.morning?.location || ''}"/></div>
+        <div class="edit-field"><div class="edit-label">Afternoon Activity</div><input class="edit-input" id="ea-a-${i}" value="${day.afternoon?.activity || ''}"/></div>
+        <div class="edit-field"><div class="edit-label">Afternoon Location</div><input class="edit-input" id="ea-l-${i}" value="${day.afternoon?.location || ''}"/></div>
+        <div class="edit-field"><div class="edit-label">Evening Activity</div><input class="edit-input" id="ee-a-${i}" value="${day.evening?.activity || ''}"/></div>
+        <div class="edit-field"><div class="edit-label">Hotel Name</div><input class="edit-input" id="eh-${i}" value="${day.accommodation?.name || ''}"/></div>
+        <div class="edit-actions">
+          <button class="edit-save" style="background:${theme.primary_color};" onclick="saveEdit(${i})">Save Changes</button>
+          <button class="edit-cancel" onclick="toggleEdit(${i})">Cancel</button>
+        </div>
+      </div>
+    `;
+        dayPanels.appendChild(panel);
+      }
+
+      // ── STEP 6: Budget ──
+      const budget = plan.budget_breakdown || {};
+      const entries = Object.entries(budget);
+      const vals = entries.map(([, v]) => parseInt((v + '').replace(/[^0-9]/g, '')) || 0);
+      const maxV = Math.max(...vals, 1);
+      const budgetColors = [theme.primary_color, theme.secondary_color, theme.accent_color, '#FFB347', '#4A90D9', '#8B5CF6'];
+      document.getElementById('budgetList').innerHTML = entries.map(([k, v], i) => `
+    <div class="budget-row-item">
+      <div class="b-label">${k.charAt(0).toUpperCase() + k.slice(1)}</div>
+      <div class="b-bar-wrap"><div class="b-bar-fill" style="width:${vals[i] / maxV * 100}%;background:${budgetColors[i % budgetColors.length]};"></div></div>
+      <div class="b-amount">${currency} ${v}</div>
+    </div>
+  `).join('');
+
+      // ── STEP 7: Hidden Gems ──
+      if (plan.hidden_gems && plan.hidden_gems.length) {
+        document.getElementById('gemsList').innerHTML = plan.hidden_gems.map((g, i) => `
+      <div class="gem-card" style="border-left:3px solid ${theme.primary_color};">
+        <div class="gem-num" style="background:linear-gradient(135deg,${theme.gradient_start},${theme.gradient_end});">${i + 1}</div>
+        <div class="gem-info">
+          <div class="gem-name">${g.name}</div>
+          <div class="gem-desc">${g.description}</div>
+          <div class="gem-meta">
+            <span class="gem-tag">📍 ${g.location}</span>
+            <span class="gem-tag">⏰ ${g.best_time}</span>
+            <span class="gem-cost" style="color:${theme.primary_color};">${g.cost}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+      }
+
+      // ── STEP 8: Transport ──
+      const t = plan.local_transport;
+      if (t) {
+        document.getElementById('transportBody').innerHTML = `
+      ${t.airport_to_city ? `
+        <div class="airport-box" style="border-color:${theme.primary_color}30;background:${theme.primary_color}08;">
+          <div class="airport-title" style="color:${theme.primary_color};">Airport to City Center</div>
+          <div class="airport-details">
+            <div class="airport-item"><div class="airport-item-label">Options</div><div class="airport-item-value">${(t.airport_to_city.options || []).join(', ')}</div></div>
+            <div class="airport-item"><div class="airport-item-label">Cost</div><div class="airport-item-value">${t.airport_to_city.cost}</div></div>
+            <div class="airport-item"><div class="airport-item-label">Time</div><div class="airport-item-value">${t.airport_to_city.duration}</div></div>
+          </div>
+        </div>` : ''}
+      <div class="transport-list">
+        ${(t.within_city || []).map(opt => `
+          <div class="transport-card">
+            <div class="transport-icon">${opt.type.includes('Metro') || opt.type.includes('Subway') ? '🚇' : opt.type.includes('Bus') ? '🚌' : opt.type.includes('Taxi') || opt.type.includes('Ride') ? '🚕' : '🚗'}</div>
+            <div class="transport-info">
+              <div class="transport-type">${opt.type}</div>
+              <div class="transport-tip">${opt.tip}</div>
+            </div>
+            <div class="transport-cost" style="color:${theme.primary_color};">${opt.cost}</div>
+          </div>
+        `).join('')}
+      </div>
+      ${t.useful_apps?.length ? `
+        <div style="margin-top:4px">
+          <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px">Useful Apps</div>
+          <div class="apps-chips">${t.useful_apps.map(a => `<div class="app-chip" style="background:${theme.primary_color}15;color:${theme.primary_color};">${a}</div>`).join('')}</div>
+        </div>` : ''}
+    `;
+      }
+
+      // ── STEP 9: Cultural Guide ──
+      const c = plan.cultural_guide;
+      if (c) {
+        document.getElementById('culturalGrid').innerHTML = `
+      <div>
+        <div class="cultural-col-title dos">✅ Do's</div>
+        ${(c.dos || []).map(d => `<div class="cultural-item"><span class="cultural-item-icon">✓</span>${d}</div>`).join('')}
+      </div>
+      <div>
+        <div class="cultural-col-title donts">❌ Don'ts</div>
+        ${(c.donts || []).map(d => `<div class="cultural-item"><span class="cultural-item-icon">✗</span>${d}</div>`).join('')}
+      </div>
+    `;
+        document.getElementById('cultureExtras').innerHTML = `
+      <div class="culture-extra-card" style="border-top:2px solid ${theme.primary_color}30;"><div class="ce-label">👗 Dress Code</div><div class="ce-value">${c.dress_code || '-'}</div></div>
+      <div class="culture-extra-card" style="border-top:2px solid ${theme.primary_color}30;"><div class="ce-label">💵 Tipping</div><div class="ce-value">${c.tipping || '-'}</div></div>
+      <div class="culture-extra-card" style="border-top:2px solid ${theme.primary_color}30;"><div class="ce-label">🤝 Greetings</div><div class="ce-value">${c.greetings || '-'}</div></div>
+    `;
+      }
+
+      // ── STEP 10: SIM ──
+      const s = plan.sim_internet;
+      if (s) {
+        document.getElementById('simGrid').innerHTML = `
+      <div class="sim-card"><div class="sim-label">Best Option</div><div class="sim-value">${s.best_option || '-'}</div></div>
+      <div class="sim-card"><div class="sim-label">Cost</div><div class="sim-value" style="color:${theme.primary_color};">${s.cost || '-'}</div></div>
+      <div class="sim-card"><div class="sim-label">Data</div><div class="sim-value">${s.data || '-'}</div></div>
+      <div class="sim-card"><div class="sim-label">Where to Buy</div><div class="sim-value">${s.where_to_buy || '-'}</div></div>
+    `;
+      }
+
+      // ── STEP 11: Apps ──
+      if (plan.must_have_apps?.length) {
+        document.getElementById('appsList').innerHTML = plan.must_have_apps.map(a => `
+      <div class="app-card">
+        <div class="app-icon-wrap" style="background:linear-gradient(135deg,${theme.gradient_start},${theme.gradient_end});">📱</div>
+        <div>
+          <div class="app-name">${a.name}</div>
+          <div class="app-purpose">${a.purpose}</div>
+        </div>
+        <div class="app-platform" style="background:${theme.primary_color}15;color:${theme.primary_color};">${a.platform}</div>
+      </div>
+    `).join('');
+      }
+
+      // ── STEP 12: Payment ──
+      const p = plan.payment_info;
+      if (p) {
+        document.getElementById('paymentBody').innerHTML = `
+      <div class="payment-grid">
+        <div class="payment-card"><div class="payment-label">Preferred Payment</div><div class="payment-value">${p.preferred || '-'}</div></div>
+        <div class="payment-card"><div class="payment-label">ATM Availability</div><div class="payment-value">${p.atm_availability || '-'}</div></div>
+      </div>
+      <div class="payment-tip ${p.notify_bank ? 'warn' : 'info'}">${p.forex_tips || ''}${p.notify_bank ? '<br><br><strong>⚠️ Notify your bank before travelling!</strong>' : ''}</div>
+    `;
+      }
+
+      // ── STEP 13: Vaccinations ──
+      const vax = plan.vaccinations;
+      if (vax) {
+        document.getElementById('vaxBody').innerHTML = `
+      <div class="vax-grid">
+        <div>
+          <div class="vax-col-title req">🔴 Required</div>
+          ${(vax.required || []).map(vx => `<div class="vax-item"><span>💉</span>${vx}</div>`).join('')}
+        </div>
+        <div>
+          <div class="vax-col-title rec">🟡 Recommended</div>
+          ${(vax.recommended || []).map(vx => `<div class="vax-item"><span>💊</span>${vx}</div>`).join('')}
+        </div>
+      </div>
+      ${vax.note ? `<div class="vax-note">ℹ️ ${vax.note}</div>` : ''}
+    `;
+      }
+
+      // ── STEP 14: Packing ──
+      const packing = plan.packing_list || [];
+      const half = Math.ceil(packing.length / 2);
+      document.getElementById('packingCats').innerHTML = [
+        { name: '📦 Essentials', items: packing.slice(0, half) },
+        { name: '✅ Good to Have', items: packing.slice(half) }
+      ].map(cat => `
+    <div>
+      <div class="pack-cat-title">${cat.name}</div>
+      <div class="pack-items">
+        ${cat.items.map(item => `
+          <div class="pack-item" onclick="togglePack(this)">
+            <div class="pack-check" style="border-color:${theme.primary_color}50;">✓</div>
+            <span class="pack-text">${item}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+      // ── STEP 15: Shopping ──
+      document.getElementById('shoppingGrid').innerHTML = `
+    <div>
+      <div class="shop-col-title buy" style="color:${theme.primary_color};">🛍️ Must Buy</div>
+      ${(plan.what_to_buy || []).map(item => `<div class="shop-item"><span>✓</span>${item}</div>`).join('')}
+    </div>
+    <div>
+      <div class="shop-col-title avoid">🚫 Avoid Buying</div>
+      ${(plan.what_to_avoid || []).map(item => `<div class="shop-item"><span>✗</span>${item}</div>`).join('')}
+    </div>
+  `;
+
+      // ── STEP 16: Power & Insurance ──
+      document.getElementById('plugInsGrid').innerHTML = `
+    ${plan.power_plug ? `
+      <div class="plug-card">
+        <div class="plug-label">🔌 Power Plug</div>
+        <div class="plug-row"><span class="plug-key">Type:</span><span class="plug-val">${plan.power_plug.type}</span></div>
+        <div class="plug-row"><span class="plug-key">Voltage:</span><span class="plug-val">${plan.power_plug.voltage}</span></div>
+        <div class="plug-warn ${plan.power_plug.adapter_needed ? 'needed' : 'ok'}">${plan.power_plug.adapter_needed ? '⚠️ Adapter needed!' : '✅ No adapter needed'}</div>
+      </div>` : ''}
+    ${plan.insurance ? `
+      <div class="ins-card">
+        <div class="ins-label">🛡️ Travel Insurance</div>
+        <div class="ins-row"><span class="ins-key">Type:</span><span class="ins-val">${plan.insurance.type}</span></div>
+        <div class="ins-row"><span class="ins-key">Est. Cost:</span><span class="ins-val" style="color:${theme.primary_color};">${plan.insurance.estimated_cost}</span></div>
+        <div class="ins-covers">Covers: ${(plan.insurance.must_cover || []).join(', ')}</div>
+      </div>` : ''}
+  `;
+
+      // ── STEP 17: Phrases ──
+      document.getElementById('phraseBody').innerHTML = (plan.local_phrases || []).map(ph => `
+    <tr>
+      <td>${ph.phrase}</td>
+      <td class="phrase-local" style="color:${theme.primary_color};">${ph.translation}</td>
+      <td class="phrase-pron">${ph.pronunciation}</td>
+    </tr>
+  `).join('');
+
+      // ── STEP 18: Tips ──
+      document.getElementById('tipsList').innerHTML = (plan.tips || []).map((tip, i) => `
+    <div class="tip-card">
+      <div class="tip-num" style="background:linear-gradient(135deg,${theme.gradient_start},${theme.gradient_end});">${i + 1}</div>
+      <div class="tip-text">${tip}</div>
+    </div>
+  `).join('');
+
+      // ── STEP 19: Emergency ──
+      const em = plan.emergency_numbers || {};
+      const emIcons = { police: '👮', ambulance: '🚑', fire: '🚒', tourist_helpline: '📞' };
+      document.getElementById('emergencyGrid').innerHTML = Object.entries(em).map(([k, num]) => `
+    <div class="em-card">
+      <div class="em-icon">${emIcons[k] || '📞'}</div>
+      <div>
+        <div class="em-label">${k.replace(/_/g, ' ').toUpperCase()}</div>
+        <div class="em-num">${num}</div>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    // ── HELPER FUNCTIONS ──
+    function renderActivityWithPhoto(label, data, photo, theme) {
+      if (!data) return '';
+      return `
+    <div style="border-radius:20px;overflow:hidden;margin-bottom:16px;border:1px solid var(--border);box-shadow:var(--shadow);background:var(--surface);">
+      ${photo ? `
+        <div style="position:relative;height:200px;overflow:hidden;">
+          <img src="${photo}" alt="${data.location || ''}" style="width:100%;height:100%;object-fit:cover;" onerror="this.closest('div').style.display='none'"/>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.1) 60%,transparent 100%);"></div>
+          <div style="position:absolute;top:14px;left:16px;">
+            <span style="padding:4px 12px;background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);border-radius:100px;font-size:0.7rem;font-weight:700;color:white;letter-spacing:0.5px;">${label}</span>
+          </div>
+          ${data.cost ? `<div style="position:absolute;top:14px;right:16px;padding:4px 12px;background:linear-gradient(135deg,${theme.gradient_start},${theme.gradient_end});border-radius:100px;font-size:0.72rem;font-weight:700;color:white;">${data.cost}</div>` : ''}
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:16px 20px;">
+            <div style="font-size:1rem;font-weight:700;color:white;margin-bottom:4px;text-shadow:0 1px 8px rgba(0,0,0,0.5);">${data.activity || ''}</div>
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.8);">📍 ${data.location || ''} &nbsp;·&nbsp; ⏱️ ${data.duration || ''}</div>
+          </div>
+        </div>
+        ${data.tip ? `<div style="padding:12px 18px;font-size:0.78rem;background:${theme.primary_color}10;color:${theme.primary_color};display:flex;align-items:center;gap:8px;"><span>💡</span>${data.tip}</div>` : ''}
+      ` : `
+        <div style="padding:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:0.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${theme.primary_color};">${label}</span>
+            ${data.cost ? `<span style="font-size:0.85rem;font-weight:700;color:${theme.primary_color};">${data.cost}</span>` : ''}
+          </div>
+          <div style="font-size:0.98rem;font-weight:700;margin-bottom:6px;">${data.activity || ''}</div>
+          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">📍 ${data.location || ''} &nbsp;·&nbsp; ⏱️ ${data.duration || ''}</div>
+          ${data.tip ? `<div style="font-size:0.78rem;background:${theme.primary_color}12;color:${theme.primary_color};padding:6px 12px;border-radius:10px;display:inline-flex;align-items:center;gap:6px;"><span>💡</span>${data.tip}</div>` : ''}
+        </div>
+      `}
+    </div>
+  `;
+    }
+
+    function renderMealRow(data, label, theme) {
+      if (!data) return '';
+      return `
+    <div style="padding:14px 18px;background:${theme.primary_color}08;border:1px solid ${theme.primary_color}20;border-radius:14px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">
+      <div style="font-size:1.3rem;">${label.includes('Lunch') ? '🍽️' : '🍷'}</div>
+      <div style="flex:1;">
+        <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${theme.primary_color};margin-bottom:2px;">${label}</div>
+        <div style="font-size:0.9rem;font-weight:700;">${data.restaurant || ''}</div>
+        <div style="font-size:0.75rem;color:var(--muted);">${data.cuisine || ''}</div>
+      </div>
+      <div style="font-size:0.88rem;font-weight:700;color:${theme.primary_color};">${data.cost || ''}</div>
+    </div>
+  `;
+    }
+
+    function renderAccomRow(data, theme) {
+      if (!data) return '';
+      return `
+    <div style="padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);">
+      <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,${theme.gradient_start},${theme.gradient_end});display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🏨</div>
+      <div style="flex:1;">
+        <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:2px;">Tonight's Stay</div>
+        <div style="font-size:0.9rem;font-weight:700;">${data.name || ''}</div>
+        <div style="font-size:0.75rem;color:var(--muted);">📍 ${data.area || ''}</div>
+      </div>
+      <div style="font-size:0.88rem;font-weight:700;color:${theme.primary_color};">${data.cost || ''} / night</div>
+    </div>
+  `;
+    }
+
+    function applyTheme(theme) {
+      const r = document.documentElement;
+      r.style.setProperty('--theme-primary', theme.primary_color || '#00C9A7');
+      r.style.setProperty('--theme-secondary', theme.secondary_color || '#00A896');
+      r.style.setProperty('--theme-accent', theme.accent_color || '#00E5C9');
+      r.style.setProperty('--theme-gradient-start', theme.gradient_start || '#00C9A7');
+      r.style.setProperty('--theme-gradient-end', theme.gradient_end || '#00A896');
+    }
+
+    function getDefaultTheme() {
+      return {
+        primary_color: '#00C9A7', secondary_color: '#00A896',
+        accent_color: '#00E5C9', gradient_start: '#00C9A7',
+        gradient_end: '#00A896', mood: 'Adventure', emoji: '🌍',
+        vibe_words: ['Explore', 'Discover', 'Experience']
+      };
+    }
+
+    function switchDay(i, theme) {
+      document.querySelectorAll('.day-nav-btn').forEach((b, j) => {
+        b.classList.toggle('active', j === i);
+        b.style.cssText = j === i
+          ? `background:${theme?.primary_color || 'var(--text)'};border-color:${theme?.primary_color || 'var(--text)'};color:white;display:flex;flex-direction:column;align-items:center;gap:2px;`
+          : 'display:flex;flex-direction:column;align-items:center;gap:2px;';
+      });
+      document.querySelectorAll('.day-panel').forEach((p, j) => p.classList.toggle('active', j === i));
+    }
+
+    function switchDay(i) {
+      document.querySelectorAll('.day-nav-btn').forEach((b, j) => b.classList.toggle('active', j === i));
+      document.querySelectorAll('.day-panel').forEach((p, j) => p.classList.toggle('active', j === i));
+    }
+
+    function toggleEdit(i) {
+      const form = document.getElementById('editForm-' + i);
+      const view = document.getElementById('dayView-' + i);
+      const btn = document.getElementById('editBtn-' + i);
+      const isEditing = form.classList.contains('show');
+      form.classList.toggle('show', !isEditing);
+      view.style.display = isEditing ? 'block' : 'none';
+      btn.textContent = isEditing ? 'Edit Day' : 'Cancel';
+    }
+
+    function saveEdit(i) {
+      const day = currentPlan.itinerary[i];
+      if (day.morning) {
+        day.morning.activity = document.getElementById('em-a-' + i).value;
+        day.morning.location = document.getElementById('em-l-' + i).value;
+      }
+      if (day.afternoon) {
+        day.afternoon.activity = document.getElementById('ea-a-' + i).value;
+        day.afternoon.location = document.getElementById('ea-l-' + i).value;
+      }
+      if (day.evening) {
+        day.evening.activity = document.getElementById('ee-a-' + i).value;
+      }
+      if (day.accommodation) {
+        day.accommodation.name = document.getElementById('eh-' + i).value;
+      }
+      // Re-render panel
+      const panel = document.getElementById('dp-' + i);
+      const view = document.getElementById('dayView-' + i);
+      const tl = [];
+      if (day.morning) tl.push({ period: 'Morning', icon: '🌅', bg: '#FFF8E6', data: day.morning });
+      if (day.afternoon) tl.push({ period: 'Afternoon', icon: '☀️', bg: '#E6F4FF', data: day.afternoon });
+      if (day.evening) tl.push({ period: 'Evening', icon: '🌙', bg: '#F0E6FF', data: day.evening });
+      view.innerHTML = `
+      <div class="timeline">
+        ${tl.map(item => `
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-icon-wrap" style="background:${item.bg}">${item.icon}</div></div>
+            <div class="tl-right">
+              <div class="tl-period">${item.period}</div>
+              <div class="tl-activity">${item.data.activity || ''}</div>
+              <div class="tl-location">📍 ${item.data.location || ''} · ⏱️ ${item.data.duration || ''}</div>
+              <div class="tl-meta">${item.data.cost ? `<div class="tl-cost">${item.data.cost}</div>` : ''}</div>
+              ${item.data.tip ? `<div class="tl-tip">💡 ${item.data.tip}</div>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="meal-row">
+        ${day.lunch ? `<div class="meal-card"><div class="meal-icon">🍽️</div><div class="meal-info"><div class="meal-type">Lunch</div><div class="meal-name">${day.lunch.restaurant}</div><div class="meal-detail">${day.lunch.cuisine} · ${day.lunch.cost}</div></div></div>` : ''}
+        ${day.dinner ? `<div class="meal-card"><div class="meal-icon">🍷</div><div class="meal-info"><div class="meal-type">Dinner</div><div class="meal-name">${day.dinner.restaurant}</div><div class="meal-detail">${day.dinner.cuisine} · ${day.dinner.cost}</div></div></div>` : ''}
+      </div>
+      ${day.accommodation ? `<div class="accom-card"><div class="accom-icon">🏨</div><div class="accom-info"><div class="accom-label">Tonight's Stay</div><div class="accom-name">${day.accommodation.name}</div><div class="accom-detail">${day.accommodation.area} · ${day.accommodation.cost} per night</div></div></div>` : ''}
+    `;
+      view.style.display = 'block';
+      document.getElementById('editForm-' + i).classList.remove('show');
+      document.getElementById('editBtn-' + i).textContent = 'Edit Day';
+      showToast('Day updated!');
+    }
+
+    function togglePack(el) {
+      el.classList.toggle('packed');
+      const total = document.querySelectorAll('.pack-item').length;
+      const done = document.querySelectorAll('.pack-item.packed').length;
+      document.getElementById('packBadge').textContent = done + '/' + total + ' packed';
+    }
+
+    function saveTrip() {
+      if (!currentPlan) { showToast('Generate a trip first!'); return; }
+      const trips = JSON.parse(localStorage.getItem('yaply_trips') || '[]');
+      trips.unshift({ ...currentPlan, _savedAt: new Date().toISOString() });
+      if (trips.length > 10) trips.splice(10);
+      localStorage.setItem('yaply_trips', JSON.stringify(trips));
+      showToast('Trip saved to your profile!');
+    }
+
+    function shareTrip() {
+      if (navigator.share && currentPlan) {
+        navigator.share({
+          title: 'My trip to ' + currentPlan.destination,
+          text: 'Check out my trip plan built with Yaply!',
+          url: window.location.href
+        });
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        showToast('Link copied!');
+      }
+    }
+
+    // Weather
+    async function getWeather() {
+      const city = document.getElementById('weatherCity').value.trim();
+      if (!city) return;
+      document.getElementById('weatherResult').innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Loading...</div>';
+      try {
+        const res = await apiFetch('/api/weather', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ city }) });
+        const data = await res.json();
+        if (data.success) {
+          const icons = { '01': '☀️', '02': '⛅', '03': '🌥️', '04': '☁️', '09': '🌧️', '10': '🌦️', '11': '⛈️', '13': '❄️', '50': '🌫️' };
+          document.getElementById('weatherResult').innerHTML = `
+          <div style="font-family:'Instrument Serif',serif;font-size:1.1rem;margin-bottom:14px">${data.city}, ${data.country}</div>
+          <div class="weather-scroll">
+            ${data.forecast.map((d, i) => {
+            const icon = icons[d.icon?.substring(0, 2)] || '🌤️';
+            const date = new Date(d.date);
+            const name = i === 0 ? 'Today' : date.toLocaleDateString('en', { weekday: 'short' });
+            return `
+                <div class="w-day ${i === 0 ? 'today' : ''}">
+                  <div class="w-date">${name}</div>
+                  <div class="w-icon">${icon}</div>
+                  <div class="w-temp">${Math.round(d.temp_max)}° / ${Math.round(d.temp_min)}°</div>
+                  <div class="w-desc">${d.description}</div>
+                </div>`;
+          }).join('')}
+          </div>
+        `;
+        } else {
+          document.getElementById('weatherResult').innerHTML = `<div style="color:var(--red);font-size:0.85rem">${data.error}</div>`;
+        }
+      } catch (e) {
+        document.getElementById('weatherResult').innerHTML = '<div style="color:var(--red);font-size:0.85rem">Error loading weather</div>';
+      }
+    }
+
+    // Currency
+    let currTimer;
+    function convertCurrency() {
+      clearTimeout(currTimer);
+      currTimer = setTimeout(async () => {
+        const amount = document.getElementById('currAmount').value;
+        const from = document.getElementById('currFrom').value;
+        const to = document.getElementById('currTo').value;
+        try {
+          const res = await apiFetch('/api/currency', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount, from, to }) });
+          const data = await res.json();
+          if (data.success) {
+            document.getElementById('currConverted').textContent = data.converted.toLocaleString() + ' ' + to;
+            document.getElementById('currRateText').textContent = '1 ' + from + ' = ' + data.rate + ' ' + to + ' · Live rate';
+            document.getElementById('currResultBox').classList.add('show');
+          }
+        } catch (e) { }
+      }, 500);
+    }
+
+    // Visa
+    async function checkVisa() {
+      const passport = document.getElementById('visaPassport').value;
+      const destination = document.getElementById('visaDest').value.trim();
+      if (!destination) return;
+      document.getElementById('visaResult').innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Checking...</div>';
+      try {
+        const res = await apiFetch('/api/visa', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passport, destination }) });
+        const data = await res.json();
+        if (data.success) {
+          const v = data.visa;
+          document.getElementById('visaResult').innerHTML = `
+          <div class="visa-badge ${v.visa_required ? 'req' : 'free'}">
+            <div class="visa-badge-icon">${v.visa_required ? '🛂' : '✅'}</div>
+            <div>
+              <div class="visa-badge-title">${v.visa_required ? 'Visa Required' : 'Visa Free'} ${v.visa_on_arrival ? '· Visa on Arrival Available' : ''}</div>
+              <div class="visa-badge-sub">${v.visa_type || ''} ${v.visa_free_days > 0 ? '· Free for ' + v.visa_free_days + ' days' : ''}</div>
+            </div>
+          </div>
+          <div class="visa-details-grid">
+            <div class="visa-detail-card"><div class="vd-label">Cost</div><div class="vd-value">${v.cost || 'Check embassy'}</div></div>
+            <div class="visa-detail-card"><div class="vd-label">Processing</div><div class="vd-value">${v.processing_days || 'Varies'}</div></div>
+            <div class="visa-detail-card"><div class="vd-label">Validity</div><div class="vd-value">${v.validity || 'Check embassy'}</div></div>
+            <div class="visa-detail-card"><div class="vd-label">Apply At</div><div class="vd-value">${v.apply_at || 'Embassy'}</div></div>
+          </div>
+          ${v.documents ? `
+            <div class="visa-docs">
+              <div class="visa-docs-title">Required Documents</div>
+              ${v.documents.map(d => `<div class="visa-doc-item"><span>📄</span>${d}</div>`).join('')}
+            </div>` : ''}
+        `;
+        }
+      } catch (e) { }
+    }
+
+    let selectedJourneyMode = 'any';
+
+    function setJourneyMode(el, mode) {
+      document.querySelectorAll('[id^="mode-"]').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      selectedJourneyMode = mode;
+    }
+
+    async function planJourney() {
+      const origin = document.getElementById('journeyOrigin').value.trim();
+      const dest = document.getElementById('journeyDest').value.trim();
+      const currency = document.getElementById('journeyCurrency').value;
+
+      if (!origin || !dest) {
+        showToast('Please enter both your location and destination!');
+        return;
+      }
+
+      document.getElementById('journeyLoading').style.display = 'block';
+      document.getElementById('journeyResults').style.display = 'none';
+
+      try {
+        const res = await apiFetch('/api/journey', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            origin, destination: dest,
+            travel_mode: selectedJourneyMode,
+            currency
+          })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          renderJourney(data.journey, currency);
+          document.getElementById('journeyResults').style.display = 'block';
+        } else {
+          showToast('Error: ' + data.error);
+        }
+      } catch (e) {
+        showToast('Connection error. Is server running?');
+      }
+
+      document.getElementById('journeyLoading').style.display = 'none';
+    }
+
+    function renderJourney(j, currency) {
+      const el = document.getElementById('journeyResults');
+
+      // Recommended route summary
+      const rec = j.recommended_route || {};
+      const steps = Object.entries(rec).filter(([k]) => k.startsWith('step'));
+
+      el.innerHTML = `
+    <!-- Recommended Route -->
+    <div style="background:linear-gradient(135deg,rgba(0,201,167,0.08),rgba(0,168,150,0.05));border:1px solid rgba(0,201,167,0.2);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;">
+      <div style="font-family:'Instrument Serif',serif;font-size:1.1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+        ⭐ Recommended Route
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+        ${steps.map(([k, v], i) => `
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:white;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i + 1}</div>
+            <div style="font-size:0.88rem;padding-top:4px;">${v}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;padding:14px;background:white;border-radius:var(--r);border:1px solid var(--border);">
+        <div>
+          <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);">Total Time</div>
+          <div style="font-size:1rem;font-weight:700;margin-top:4px;">⏱️ ${rec.total_duration || 'N/A'}</div>
+        </div>
+        <div>
+          <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);">Total Cost</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--accent2);margin-top:4px;">💰 ${rec.total_cost || 'N/A'}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Airport Warning if no local airport -->
+    ${!j.origin_has_airport ? `
+      <div style="padding:16px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.3);border-radius:var(--r);margin-bottom:20px;display:flex;gap:12px;align-items:flex-start;">
+        <div style="font-size:1.3rem;">⚠️</div>
+        <div>
+          <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px;">No Direct Airport in Your Area</div>
+          <div style="font-size:0.82rem;color:var(--muted);">Don't worry! We've found the nearest airports and the best ways to reach them from ${j.origin}.</div>
+        </div>
+      </div>
+    ` : ''}
+
+    <!-- Nearest Airports -->
+    ${(j.nearest_airports || []).length > 0 ? `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:14px;">
+          ✈️ Nearest Airports to ${j.origin}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          ${(j.nearest_airports || []).map((airport, ai) => `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);">
+              <div style="padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <div style="font-weight:700;font-size:0.95rem;">${airport.name}</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">${airport.city} · ${airport.distance_from_origin} away</div>
+                </div>
+                <div style="background:var(--text);color:white;padding:6px 14px;border-radius:100px;font-size:0.82rem;font-weight:700;">${airport.code}</div>
+              </div>
+              <div style="padding:16px 20px;">
+                <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">How to Reach</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  ${(airport.ways_to_reach || []).map(way => `
+                    <div style="display:flex;align-items:flex-start;gap:14px;padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
+                      <div style="font-size:1.2rem;">${way.mode.includes('Train') || way.mode.includes('Rail') ? '🚂' : way.mode.includes('Bus') ? '🚌' : way.mode.includes('Cab') || way.mode.includes('Taxi') ? '🚕' : way.mode.includes('Metro') ? '🚇' : way.mode.includes('Auto') ? '🛺' : '🚗'}</div>
+                      <div style="flex:1;">
+                        <div style="font-weight:700;font-size:0.88rem;">${way.mode} ${way.operator ? '· ' + way.operator : ''}</div>
+                        <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">${way.duration} · ${way.frequency || ''}</div>
+                        ${way.tip ? `<div style="font-size:0.75rem;background:rgba(0,201,167,0.08);color:var(--accent2);padding:4px 10px;border-radius:8px;margin-top:6px;display:inline-block;">💡 ${way.tip}</div>` : ''}
+                        ${way.booking ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">📱 Book on: ${way.booking}</div>` : ''}
+                      </div>
+                      <div style="font-weight:700;color:var(--accent2);font-size:0.9rem;flex-shrink:0;">${way.cost}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+
+    <!-- Flight Options -->
+    ${(j.flight_options || []).length > 0 ? `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:14px;">
+          ✈️ Flight Options
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          ${(j.flight_options || []).map(flight => `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div style="font-weight:700;font-size:1rem;">${flight.from_airport} → ${flight.to_airport}</div>
+                  <div style="font-size:0.75rem;padding:3px 10px;border-radius:100px;background:${flight.stops === 0 ? 'rgba(0,201,167,0.1)' : 'rgba(255,179,71,0.1)'};color:${flight.stops === 0 ? 'var(--accent2)' : 'var(--gold)'};font-weight:600;">${flight.stops === 0 ? 'Direct' : flight.stops + ' Stop'}</div>
+                </div>
+                <div style="font-family:'Instrument Serif',serif;font-size:1.3rem;color:var(--accent2);font-weight:400;">${flight.estimated_cost}</div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;">
+                <div style="font-size:0.8rem;color:var(--muted);">⏱️ ${flight.duration}</div>
+                <div style="font-size:0.8rem;color:var(--muted);">📅 Book ${flight.book_advance} before</div>
+                <div style="font-size:0.8rem;color:var(--muted);">✈️ ${(flight.airlines || []).join(', ')}</div>
+                <div style="font-size:0.8rem;color:var(--muted);">💡 Fly on ${flight.cheapest_days}</div>
+              </div>
+              ${(flight.best_booking_sites || []).length > 0 ? `
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  ${flight.best_booking_sites.map(site => `<span style="padding:4px 12px;background:var(--bg);border:1px solid var(--border);border-radius:100px;font-size:0.75rem;font-weight:600;">${site}</span>`).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+
+    <!-- Alternative Routes -->
+    ${(j.alternative_routes || []).length > 0 ? `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:14px;">
+          🔀 Alternative Routes
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          ${(j.alternative_routes || []).map(route => `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;">
+              <div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;">${route.title}</div>
+              <div style="font-size:0.84rem;color:var(--muted);margin-bottom:12px;line-height:1.5;">${route.description}</div>
+              <div style="display:flex;gap:20px;margin-bottom:12px;">
+                <div><div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Cost</div><div style="font-weight:700;color:var(--accent2);margin-top:4px;">${route.total_cost}</div></div>
+                <div><div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Time</div><div style="font-weight:700;margin-top:4px;">${route.total_time}</div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <div style="font-size:0.7rem;color:var(--success);font-weight:700;margin-bottom:6px;">✅ Pros</div>
+                  ${(route.pros || []).map(p => `<div style="font-size:0.78rem;color:var(--muted);margin-bottom:4px;">· ${p}</div>`).join('')}
+                </div>
+                <div>
+                  <div style="font-size:0.7rem;color:var(--red);font-weight:700;margin-bottom:6px;">❌ Cons</div>
+                  ${(route.cons || []).map(c => `<div style="font-size:0.78rem;color:var(--muted);margin-bottom:4px;">· ${c}</div>`).join('')}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+
+    <!-- Documents & Notes -->
+    ${(j.documents_needed || []).length > 0 ? `
+      <div style="padding:20px;background:rgba(255,71,87,0.05);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r-lg);margin-bottom:20px;">
+        <div style="font-weight:700;font-size:0.9rem;margin-bottom:12px;">📄 Documents You Need</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${(j.documents_needed || []).map(doc => `<div style="font-size:0.84rem;display:flex;gap:10px;align-items:center;"><span>📋</span>${doc}</div>`).join('')}
+        </div>
+      </div>
+    ` : ''}
+
+    ${(j.important_notes || []).length > 0 ? `
+      <div style="padding:20px;background:rgba(255,179,71,0.06);border:1px solid rgba(255,179,71,0.2);border-radius:var(--r-lg);">
+        <div style="font-weight:700;font-size:0.9rem;margin-bottom:12px;">⚠️ Important Notes</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${(j.important_notes || []).map(note => `<div style="font-size:0.84rem;display:flex;gap:10px;align-items:flex-start;"><span>•</span>${note}</div>`).join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    convertCurrency();
+  </script>
+  <script src="/static/yaply-auth.js"></script>
+  <script src="/static/yaply-nav.js"></script>
+
+
+
+</body>
+
+</html>

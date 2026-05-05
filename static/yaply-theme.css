@@ -1,0 +1,209 @@
+/**
+ * yaply-theme.css — Universal palette override
+ * Add to every feature page:
+ * <link rel="stylesheet" href="/static/yaply-theme.css"/>
+ * This applies Yaply brand colors on top of existing page styles
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Righteous&display=swap');
+
+:root {
+  --accent:        #F4642A !important;
+  --accent2:       #D4522A !important;
+  --accent-soft:   rgba(244,100,42,0.1) !important;
+  --accent-border: rgba(244,100,42,0.25) !important;
+  --theme-primary: #F4642A !important;
+  --theme-secondary: #E8474A !important;
+
+  /* All yaply colors available */
+  --y-blue:   #4A7FD4;
+  --y-orange: #F4642A;
+  --y-red:    #E8474A;
+  --y-green:  #2BAF7E;
+  --y-gold:   #F5A623;
+  --y-purple: #6B5CE7;
+  --y-ink:    #1A1A2E;
+}
+
+/* ── TYPOGRAPHY ── */
+body, * {
+  font-family: 'Nunito', 'Geist', sans-serif !important;
+}
+h1, h2, h3, .section-title, .plan-title, .result-title,
+.card-title, .feature-title, [class*="title"],
+[class*="heading"], [class*="header"] h2 {
+  font-family: 'Righteous', 'Instrument Serif', serif !important;
+}
+
+/* ── RAINBOW COLOR STRIP ── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg,#4A7FD4,#F4642A,#E8474A,#2BAF7E,#F5A623,#6B5CE7);
+  z-index: 99999;
+  pointer-events: none;
+}
+
+/* ── BUTTONS — override to Yaply orange ── */
+button[class*="primary"],
+.btn-primary, .generate-btn, .start-btn,
+button[style*="background:#00C9A7"],
+button[style*="background: #00C9A7"],
+button[style*="background:var(--accent)"],
+button[style*="background: var(--accent)"],
+.cta-btn, .action-btn, .submit-btn {
+  background: linear-gradient(135deg, #F4642A, #E8474A) !important;
+  border-color: transparent !important;
+  color: white !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 800 !important;
+  box-shadow: 0 6px 24px rgba(244,100,42,0.3) !important;
+  border-radius: 100px !important;
+  transition: all 0.25s !important;
+}
+button[class*="primary"]:hover,
+.btn-primary:hover, .generate-btn:hover, .start-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 32px rgba(244,100,42,0.4) !important;
+}
+
+/* ── INPUTS — cleaner focus ── */
+input:focus, select:focus, textarea:focus {
+  border-color: #F4642A !important;
+  box-shadow: 0 0 0 4px rgba(244,100,42,0.1) !important;
+  outline: none !important;
+}
+
+/* ── PAGE HEADERS — apply dark ink hero ── */
+.page-header, .section-header,
+[class*="header"]:not(#y-nav):not(.card-header) {
+  background: linear-gradient(160deg, #1A1A2E, #2D1A2E) !important;
+  position: relative;
+}
+[class*="header"]:not(#y-nav)::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg,#4A7FD4,#F4642A,#E8474A,#2BAF7E,#F5A623,#6B5CE7);
+}
+
+/* ── LINKS ── */
+a { color: #F4642A !important; }
+a:hover { color: #E8474A !important; }
+
+/* ── ACCENT COLORS ── */
+[style*="color:var(--accent)"],
+[style*="color: var(--accent)"],
+.accent-text { color: #F4642A !important; }
+
+[style*="background:var(--accent-soft)"],
+[style*="background: var(--accent-soft)"],
+.accent-bg { background: rgba(244,100,42,0.1) !important; }
+
+/* ── CARDS ── */
+.card, [class*="card"], [class*="result-card"],
+[class*="info-card"] {
+  border-radius: 18px !important;
+  border: 1.5px solid rgba(0,0,0,0.07) !important;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06) !important;
+  transition: all 0.2s !important;
+}
+.card:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 24px rgba(0,0,0,0.1) !important; }
+
+/* ── TABS ── */
+[class*="tab"].active,
+[class*="tab"][class*="active"],
+.tab-btn.active {
+  color: #F4642A !important;
+  border-bottom-color: #F4642A !important;
+}
+
+/* ── BEFORE TRIP specific ── */
+.plan-result { border-top: 3px solid #F4642A !important; }
+.day-card { border-left: 4px solid #F4642A !important; }
+.weather-card { border-top: 3px solid #4A7FD4 !important; }
+.currency-result { border-top: 3px solid #2BAF7E !important; }
+.visa-result { border-top: 3px solid #F5A623 !important; }
+.journey-result { border-top: 3px solid #6B5CE7 !important; }
+
+/* ── DURING TRIP specific ── */
+.medical-result { border-top: 3px solid #E8474A !important; }
+.price-result { border-top: 3px solid #2BAF7E !important; }
+.scam-result { border-top: 3px solid #F5A623 !important; }
+.allergy-result { border-top: 3px solid #E8474A !important; }
+.rights-result { border-top: 3px solid #4A7FD4 !important; }
+.route-result { border-top: 3px solid #2BAF7E !important; }
+
+/* ── AFTER TRIP specific ── */
+.journal-cover { background: linear-gradient(135deg,#6B5CE7,#E8474A) !important; }
+.journal-chapter { border-left: 3px solid #6B5CE7 !important; }
+.expense-category { border-left: 3px solid #2BAF7E !important; }
+.settlement-item { border-left: 3px solid #F5A623 !important; }
+.achievement { background: linear-gradient(135deg,rgba(245,166,35,0.1),rgba(244,100,42,0.1)) !important; }
+
+/* ── SEVERITY BADGES ── */
+[class*="severity-critical"], [class*="sos"],
+.badge-red { background: rgba(232,71,74,0.15) !important; color: #E8474A !important; }
+[class*="severity-moderate"],
+.badge-gold { background: rgba(245,166,35,0.15) !important; color: #F5A623 !important; }
+[class*="severity-minor"],
+.badge-green { background: rgba(43,175,126,0.15) !important; color: #2BAF7E !important; }
+
+/* ── DISCOVER ── */
+.identify-result { border-top: 4px solid #6B5CE7 !important; }
+.confidence-bar-fill { background: linear-gradient(90deg, #6B5CE7, #F4642A) !important; }
+.nearby-card { border-left: 3px solid #4A7FD4 !important; }
+.similar-card { border-left: 3px solid #2BAF7E !important; }
+
+/* ── TOOLS ── */
+.safety-score-circle { stroke: #2BAF7E !important; }
+.passport-valid { border-top: 3px solid #2BAF7E !important; }
+.passport-warning { border-top: 3px solid #F5A623 !important; }
+.passport-danger { border-top: 3px solid #E8474A !important; }
+
+/* ── DONUT CHARTS ── */
+canvas { border-radius: 50%; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #F0EEE8; }
+::-webkit-scrollbar-thumb { background: linear-gradient(#F4642A,#6B5CE7); border-radius: 10px; }
+
+/* ── SELECTION ── */
+::selection { background: rgba(244,100,42,0.2); color: #1A1A2E; }
+
+/* ── SPINNER ── */
+[class*="spinner"], [class*="loader"] {
+  border-top-color: #F4642A !important;
+  border-color: rgba(244,100,42,0.15) !important;
+  border-top-color: #F4642A !important;
+}
+
+/* ── TOAST / ALERT ── */
+[class*="toast"] {
+  background: #1A1A2E !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 700 !important;
+}
+
+/* Back links */
+a.nav-link, .back-link, [href="/"], [href="/after"], [href="/plan"], [href="/during"] {
+  color: rgba(255,255,255,0.5) !important;
+  text-decoration: none !important;
+  font-weight: 700 !important;
+}
+a.nav-link:hover, .back-link:hover { color: white !important; }
+
+/* ── BOTTOM NAV (if present) ── */
+.bottom-nav, [class*="bottom-nav"] {
+  border-top: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+/* ── PRINT (emergency cards) ── */
+@media print {
+  #y-nav, #y-strip, #y-tripbar, #y-dropdown { display: none !important; }
+  body { padding-top: 0 !important; }
+}
