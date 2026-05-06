@@ -1,1 +1,1 @@
-web: python stream.py
+web: gunicorn app:app --worker-class gevent --workers 1 --blind 0.0.0.0:$PORT --timeout 120
