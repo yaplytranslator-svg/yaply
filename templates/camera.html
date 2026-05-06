@@ -538,7 +538,7 @@
       showStatus('Translating...');
       const targetLang = document.getElementById('targetLang').value;
 
-      const response = await fetch('/scan', {
+      const response = await apiapiFetch('/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -580,7 +580,7 @@
       const targetLang = document.getElementById('targetLang').value;
 
       try {
-        const response = await fetch('/scan', {
+        const response = await apiapiFetch('/scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: imageData, target_lang: targetLang })
