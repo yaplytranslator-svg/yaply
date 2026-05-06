@@ -28,6 +28,10 @@ app.config['SECRET_KEY'] = os.getenv('JWT_SECRET', 'yaply-secret-2025-change-me'
 def health():
     return 'OK', 200
 
+@app.route('/ping')
+def ping():
+    return 'pong', 200
+
 # ── RATE LIMITER (after app) ──
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
