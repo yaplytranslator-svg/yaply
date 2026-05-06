@@ -7,7 +7,6 @@ edge-tts
 python-dotenv
 requests
 gunicorn
-gevent
 bcrypt
 PyJWT
 flask-limiter
