@@ -119,7 +119,7 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 /* ── FORM ── */
 .fg{margin-bottom:12px;}
 .fl{display:block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);margin-bottom:5px;}
-.fi{width:100%;background:var(--bg);border:1.5px solid var(--border-md);border-radius:var(--r);padding:9px 12px;font-family:'Inter',sans-serif;font-size:.82rem;color:var(--text);font-weight:500;outline:none;transition:all .2s;-webkit-appearance:none;}
+.fi{width:100%;background:var(--bg);border:1.5px solid var(--border-md);border-radius:var(--r);padding:9px 12px;font-family:'Inter',sans-serif;font-size:.82rem;color:var(--text);font-weight:500;outline:none;transition:all .2s;-webkit-appearance:none;appearance:none;}
 .fi:focus{border-color:var(--teal);background:var(--white);box-shadow:0 0 0 3px var(--teal-s);}
 .fi::placeholder{color:var(--muted2);font-weight:400;}
 .fg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -368,6 +368,28 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
       <div class="hstat"><div class="hstat-num" id="totalSpent">₹0</div><div class="hstat-lbl">Total Spent</div></div>
       <div class="hstat"><div class="hstat-num" id="totalPlaces">0</div><div class="hstat-lbl">Places Visited</div></div>
     </div>
+  </div>
+</div>
+
+<!-- PLAN CONTEXT BANNER -->
+<div id="planCtx" style="display:none;max-width:980px;margin:0 auto;padding:0 24px 0;">
+  <div id="planCtxInner" style="background:linear-gradient(135deg,var(--charcoal),#1e2a3a);border-radius:var(--r-xl);padding:16px 20px;margin-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:38px;height:38px;border-radius:10px;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:.92rem;font-weight:800;color:#fff;" id="pcDest">—</div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,.5);margin-top:1px;" id="pcMeta">—</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;" id="pcTags"></div>
+  </div>
+</div>
+<div id="noPlanBanner" style="display:none;max-width:980px;margin:0 auto;padding:0 24px;">
+  <div style="background:var(--amber-s);border:1.5px solid var(--amber-m);border-radius:var(--r-xl);padding:16px 20px;margin-top:16px;display:flex;align-items:center;gap:12px;">
+    <span style="font-size:1.2rem;">✈️</span>
+    <div style="flex:1;font-size:.78rem;color:var(--amber);">No saved trip found. <a href="/plan" style="font-weight:700;color:var(--amber);text-decoration:underline;">Plan a trip first</a> — then come back to relive it.</div>
   </div>
 </div>
 

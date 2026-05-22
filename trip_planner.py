@@ -40,15 +40,17 @@ Create a UNIQUE, HIGHLY DETAILED {days}-day trip plan for:
 
 CRITICAL RULES:
 1. ALL prices must be in {currency} — not any other currency
-2. Budget breakdown must add up to approximately {currency} {budget}
-3. Every single activity, restaurant, hotel price must be in {currency}
-4. Tailor activities 100% to the {vibe} travel style
-5. Include HIDDEN GEMS — not just tourist spots
-6. Include LOCAL TRANSPORT options specific to {destination}
-7. Include internet/SIM card costs in {currency}
-8. Include vaccination requirements for travellers from {origin}
-9. Include cultural dos and donts
-10. Include must have apps for {destination}
+2. budget_breakdown values MUST be plain integers that SUM EXACTLY to {budget}. No currency symbols, no commas — just numbers like 25000 not "INR 25,000"
+3. Include "flights" as the FIRST key in budget_breakdown (return flights from {origin})
+4. Every single activity, restaurant, hotel price must be in {currency}
+5. Tailor activities 100% to the {vibe} travel style
+6. Include HIDDEN GEMS — not just tourist spots
+7. Include LOCAL TRANSPORT options specific to {destination}
+8. Include internet/SIM card costs in {currency}
+9. Include vaccination requirements for travellers from {origin}
+10. Include cultural dos and donts
+11. Include must have apps for {destination}
+12. budget_breakdown should cover: flights, accommodation, food, local_transport, activities, shopping, miscellaneous — proportioned realistically
 
 Make the itinerary 100% unique based on the travel style. Different vibes = completely different activities, restaurants and experiences.
 
@@ -57,12 +59,15 @@ Return ONLY a valid JSON object with this exact structure:
   "destination": "{destination}",
   "days": {days},
   "budget_breakdown": {{
-    "accommodation": "amount",
-    "food": "amount", 
-    "transport": "amount",
-    "activities": "amount",
-    "miscellaneous": "amount"
+    "flights": integer_number_only,
+    "accommodation": integer_number_only,
+    "food": integer_number_only,
+    "local_transport": integer_number_only,
+    "activities": integer_number_only,
+    "shopping": integer_number_only,
+    "miscellaneous": integer_number_only
   }},
+  "budget_tips": ["money saving tip 1", "tip 2", "tip 3"],
   "best_time_to_visit": "month range",
   "language": "local language",
   "currency": "local currency",
@@ -1727,50 +1732,75 @@ def trip_journal():
         highlights = data.get('highlights', '')
         vibe = data.get('vibe', '')
         travel_with = data.get('travel_with', 'solo')
+        itinerary = data.get('itinerary', [])
+        people = data.get('people', 1)
+        origin = data.get('origin', '')
         import json
 
-        prompt = f"""You are a professional travel writer. Write a beautiful, vivid, personal travel journal for this trip.
+        # Build detailed itinerary text from real plan data
+        itin_lines = []
+        for day in itinerary:
+            itin_lines.append(f"Day {day.get('day','?')} — {day.get('title','')}")
+            for slot in ['morning', 'afternoon', 'evening']:
+                s = day.get(slot, {})
+                if s and s.get('activity'):
+                    itin_lines.append(f"  {slot.capitalize()}: {s.get('activity','')} at {s.get('location','')}" + (f" — {s.get('tip','')}" if s.get('tip') else ''))
+            for meal in ['lunch', 'dinner']:
+                m = day.get(meal, {})
+                if m and m.get('restaurant'):
+                    itin_lines.append(f"  {meal.capitalize()}: {m.get('restaurant','')} ({m.get('cuisine','')})")
+            acc = day.get('accommodation', {})
+            if acc and acc.get('name'):
+                itin_lines.append(f"  Stayed at: {acc.get('name','')} ({acc.get('type','')})")
+            itin_lines.append('')
+
+        itin_section = ('\nACTUAL ITINERARY — reference these real places and activities in every chapter:\n' + '\n'.join(itin_lines)) if itin_lines else ''
+        highlights_section = f"\nPersonal notes from the traveller: {highlights}" if highlights.strip() else ''
+        num_chapters = len(itinerary) if itinerary else int(days)
+
+        prompt = f"""You are a professional travel writer. Write a beautiful, vivid, personal travel journal.
 
 Destination: {destination}
-Duration: {days} days
+Duration: {days} days | Travelling: {travel_with}{f' ({people} people)' if int(people)>1 else ''}
 Travel style: {vibe}
-Travelled with: {travel_with}
-Personal highlights/notes: {highlights}
+{f'From: {origin}' if origin else ''}
+{itin_section}
+{highlights_section}
 
-Write as if you ARE the traveller. First person. Emotional. Vivid. Real.
+CRITICAL: Write as the traveller in first person. Reference SPECIFIC real places, restaurants, and activities from the itinerary. Be vivid and emotional.
 
-Return ONLY valid JSON:
+Return ONLY valid JSON with exactly {num_chapters} chapters:
 {{
-  "title": "creative trip title",
-  "tagline": "one line that captures the trip",
-  "opening": "beautiful opening paragraph 3-4 sentences",
+  "title": "evocative trip title",
+  "tagline": "one poetic line capturing this trip",
+  "opening": "beautiful opening paragraph, 3-4 sentences, referencing the destination",
   "chapters": [
     {{
       "day": 1,
-      "title": "chapter title",
-      "story": "2-3 paragraph vivid story of this day",
-      "highlight": "best moment of the day",
-      "emotion": "emotion of the day",
-      "emoji": "emoji"
+      "title": "chapter title referencing a real place from that day",
+      "story": "2-3 vivid paragraphs about that day using the real places and activities listed",
+      "highlight": "the single best moment of that specific day",
+      "emotion": "primary emotion of that day",
+      "emoji": "one emoji"
     }}
   ],
-  "closing": "emotional closing paragraph",
-  "best_memory": "single best memory",
+  "closing": "emotional closing paragraph, 3-4 sentences",
+  "best_memory": "one specific memory from the itinerary",
   "lesson_learned": "what this trip taught you",
-  "quote": "travel quote that fits this trip",
+  "quote": "a travel quote that fits this exact trip",
   "would_return": true,
   "rating": 9,
-  "tags": ["tag1", "tag2", "tag3"]
+  "tags": ["tag1", "tag2", "tag3", "tag4"]
 }}"""
 
         response = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": "You are a professional travel writer. Return ONLY valid JSON. No markdown."},
+                {"role": "system", "content": "You are a professional travel writer. Return ONLY valid JSON. No markdown. No commentary."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
-            max_tokens=3000
+            temperature=0.72,
+            max_tokens=4000
         )
 
         result = response.choices[0].message.content.strip()
@@ -1925,44 +1955,73 @@ def trip_stats():
         data = request.get_json()
         destination = data.get('destination', '')
         days = data.get('days', 5)
-        activities = data.get('activities', [])
         expenses = data.get('expenses', [])
         travel_with = data.get('travel_with', 'solo')
         vibes = data.get('vibes', [])
+        itinerary = data.get('itinerary', [])
+        budget = data.get('budget', '')
+        origin = data.get('origin', '')
+        currency = data.get('currency', 'INR')
         import json
 
+        # Extract real data from itinerary — no assumptions
+        actual_places = []
+        actual_meals = []
+        actual_activities = []
+        for day in itinerary:
+            for slot in ['morning', 'afternoon', 'evening']:
+                s = day.get(slot, {})
+                if s and s.get('location'): actual_places.append(s['location'])
+                if s and s.get('activity'): actual_activities.append(s['activity'])
+            for meal in ['lunch', 'dinner']:
+                m = day.get(meal, {})
+                if m and m.get('restaurant'): actual_meals.append(m['restaurant'])
+
+        unique_places = list(dict.fromkeys(actual_places))
         total_spent = sum(float(e.get('amount', 0)) for e in expenses)
+        spent_line = f"Total spent: {currency} {total_spent:.0f}\n" if total_spent > 0 else ''
 
-        prompt = f"""Generate fun, viral travel stats for this trip.
+        itin_detail = ''
+        if actual_activities:
+            itin_detail += f"Activities done: {', '.join(actual_activities[:12])}\n"
+        if actual_meals:
+            itin_detail += f"Restaurants visited: {', '.join(actual_meals[:8])}\n"
+        if unique_places:
+            itin_detail += f"Places visited: {', '.join(unique_places[:10])}\n"
 
-Destination: {destination}
-Duration: {days} days
-Travelled with: {travel_with}
-Activities: {activities}
-Total spent: {total_spent}
-Travel vibes: {vibes}
+        prompt = f"""Generate fun, viral travel stats for this real trip.
+
+Destination: {destination} | Duration: {days} days | With: {travel_with}
+{f'From: {origin}' if origin else ''}
+Budget: {currency} {budget} | Travel style: {vibes}
+{spent_line}{itin_detail}
+
+The fun_stats MUST use the real numbers below — do NOT invent them:
+- Places visited: {len(unique_places)}
+- Activities done: {len(actual_activities)}
+- Meals at restaurants: {len(actual_meals)}
+Generate estimates for steps, photos, distance.
 
 Return ONLY valid JSON:
 {{
   "traveller_type": "The Foodie Explorer / The Adventure Seeker / The Culture Vulture / etc",
-  "traveller_description": "2 sentence fun description of their travel personality",
+  "traveller_description": "2 sentences about their personality based on what they actually did",
   "fun_stats": [
-    {{"label": "Steps Walked (est)", "value": "42,000", "icon": "👟"}},
-    {{"label": "Photos Taken (est)", "value": "380", "icon": "📸"}},
-    {{"label": "Local Dishes Tried", "value": "12", "icon": "🍜"}},
-    {{"label": "Distance Covered", "value": "2,400 km", "icon": "✈️"}},
-    {{"label": "Languages Heard", "value": "3", "icon": "🗣️"}},
-    {{"label": "New Friends Made", "value": "7", "icon": "🤝"}}
+    {{"label": "Places Visited", "value": "{len(unique_places)}", "icon": "📍"}},
+    {{"label": "Activities Done", "value": "{len(actual_activities)}", "icon": "🎯"}},
+    {{"label": "Meals Savoured", "value": "{len(actual_meals)}", "icon": "🍽️"}},
+    {{"label": "Photos Taken (est)", "value": "...", "icon": "📸"}},
+    {{"label": "Steps Walked (est)", "value": "...", "icon": "👟"}},
+    {{"label": "Distance Covered (est)", "value": "... km", "icon": "✈️"}}
   ],
   "achievements": [
-    {{"title": "achievement name", "description": "what they did", "icon": "emoji", "rarity": "Common/Rare/Epic/Legendary"}}
+    {{"title": "achievement name based on actual activities", "description": "specific what they did", "icon": "emoji", "rarity": "Common/Rare/Epic/Legendary"}}
   ],
   "travel_score": 87,
-  "next_destination_prediction": "destination they'll love next",
-  "personality_match": "Famous traveller or explorer they are like",
+  "next_destination_prediction": "destination based on their actual travel style",
+  "personality_match": "Famous traveller/explorer they are like",
   "carbon_footprint": "estimated CO2 in kg",
-  "memorable_moments": ["moment1", "moment2", "moment3"],
-  "instagram_caption": "perfect instagram caption for this trip with hashtags"
+  "instagram_caption": "perfect caption using real place names with hashtags"
 }}"""
 
         response = groq_client.chat.completions.create(
@@ -1981,7 +2040,15 @@ Return ONLY valid JSON:
         start = result.find('{')
         end = result.rfind('}') + 1
         if start != -1: result = result[start:end]
-        return jsonify({'success': True, 'data': json.loads(result)})
+        parsed = json.loads(result)
+        # Always inject real computed counts so frontend can trust them
+        parsed['real_counts'] = {
+            'places': len(unique_places),
+            'activities': len(actual_activities),
+            'meals': len(actual_meals),
+            'days': int(days),
+        }
+        return jsonify({'success': True, 'data': parsed})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 

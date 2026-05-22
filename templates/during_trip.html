@@ -406,6 +406,7 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
           <div class="fg">
             <label class="fl">Local Language</label>
             <select class="fi" id="medLang">
+              <option>Hindi</option><option>English</option>
               <option>Japanese</option><option>French</option><option>Spanish</option>
               <option>German</option><option>Chinese (Mandarin)</option><option>Arabic</option>
               <option>Thai</option><option>Korean</option><option>Portuguese</option>
@@ -696,7 +697,7 @@ async function getMedicalHelp() {
   showSpinner('medical');
   document.getElementById('medical-result').classList.remove('show');
   try {
-    const d = await apiFetch('/api/medical-translate', { method:'POST', body: JSON.stringify({ symptoms, destination:dest, language:lang }) });
+    const d = await apiFetch('/medical-translate', { method:'POST', body: JSON.stringify({ symptoms, destination:dest, language:lang }) });
     if (d.success) renderMedical(d.data, lang);
     else showToast(d.error || 'Something went wrong');
   } catch(e) { showToast('Please check your connection'); }
@@ -752,7 +753,7 @@ async function checkPrice() {
   if (!item || !amount || !dest) { showToast('Please fill all fields'); return; }
   showSpinner('price'); document.getElementById('price-result').classList.remove('show');
   try {
-    const d = await apiFetch('/api/price-check', { method:'POST', body: JSON.stringify({ item, price:amount, currency:curr, destination:dest }) });
+    const d = await apiFetch('/price-check', { method:'POST', body: JSON.stringify({ item, price:amount, currency:curr, destination:dest }) });
     if (d.success) renderPrice(d.data);
     else showToast(d.error || 'Something went wrong');
   } catch(e) { showToast('Please check your connection'); }
@@ -799,7 +800,7 @@ async function getScamAlerts() {
   if (!dest) { showToast('Please enter your destination'); return; }
   showSpinner('scams'); document.getElementById('scams-result').classList.remove('show');
   try {
-    const d = await apiFetch('/api/scam-alerts', { method:'POST', body: JSON.stringify({ destination:dest }) });
+    const d = await apiFetch('/scam-alerts', { method:'POST', body: JSON.stringify({ destination:dest }) });
     if (d.success) renderScams(d.data);
     else showToast(d.error || 'Something went wrong');
   } catch(e) { showToast('Please check your connection'); }
@@ -862,7 +863,7 @@ async function generateAllergyCard() {
   if (!dest) { showToast('Please enter your destination'); return; }
   showSpinner('allergy'); document.getElementById('allergy-result').classList.remove('show');
   try {
-    const d = await apiFetch('/api/allergy-card', { method:'POST', body: JSON.stringify({ name, allergies:selectedAllergies, destination:dest }) });
+    const d = await apiFetch('/allergy-card', { method:'POST', body: JSON.stringify({ name, allergies:selectedAllergies, destination:dest }) });
     if (d.success) renderAllergyCard(d.data, name);
     else showToast(d.error || 'Something went wrong');
   } catch(e) { showToast('Please check your connection'); }
@@ -918,7 +919,7 @@ async function getFlightRights() {
   if (!airline || !route) { showToast('Please fill airline and route'); return; }
   showSpinner('flight'); document.getElementById('flight-result').classList.remove('show');
   try {
-    const d = await apiFetch('/api/flight-rights', { method:'POST', body: JSON.stringify({ airline, route, issue, delay_hours:delay }) });
+    const d = await apiFetch('/flight-rights', { method:'POST', body: JSON.stringify({ airline, route, issue, delay_hours:delay }) });
     if (d.success) renderFlightRights(d.data);
     else showToast(d.error || 'Something went wrong');
   } catch(e) { showToast('Please check your connection'); }
@@ -969,7 +970,7 @@ async function getSafeRoute() {
   if (!from || !to || !city) { showToast('Please fill all fields'); return; }
   showSpinner('safety'); document.getElementById('safety-result').classList.remove('show');
   try {
-    const d = await apiFetch('/api/safe-route', { method:'POST', body: JSON.stringify({ destination:city, from_location:from, to_location:to, time_of_day:time, traveller_type:selectedTraveller }) });
+    const d = await apiFetch('/safe-route', { method:'POST', body: JSON.stringify({ destination:city, from_location:from, to_location:to, time_of_day:time, traveller_type:selectedTraveller }) });
     if (d.success) renderSafeRoute(d.data);
     else showToast(d.error || 'Something went wrong');
   } catch(e) { showToast('Please check your connection'); }
@@ -1031,7 +1032,7 @@ async function getImmigrationHelp() {
   if (!dest) { showToast('Please enter destination'); return; }
   showSpinner('immigration'); document.getElementById('immigration-result').classList.remove('show');
   try {
-    const d = await apiFetch('/api/immigration-help', { method:'POST', body: JSON.stringify({ destination:dest, passport, purpose }) });
+    const d = await apiFetch('/immigration-help', { method:'POST', body: JSON.stringify({ destination:dest, passport, purpose }) });
     if (d.success) renderImmigration(d.data);
     else showToast(d.error || 'Something went wrong');
   } catch(e) { showToast('Please check your connection'); }

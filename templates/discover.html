@@ -551,6 +551,20 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
   </div>
 </div>
 
+<!-- ADD TO TRIP MODAL -->
+<div id="addTripModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:450;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:24px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.3);">
+    <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--charcoal);margin-bottom:4px;">Add to Trip</div>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:18px;" id="atm-place"></div>
+    <div id="atm-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
+    <button id="atm-create-btn" onclick="createNewTripForPlace()" style="width:100%;padding:12px;background:var(--teal);color:#fff;border:none;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Create New Trip to This Destination
+    </button>
+    <button onclick="document.getElementById('addTripModal').style.display='none'" style="width:100%;padding:9px;background:none;border:none;font-family:'Inter',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;margin-top:6px;">Cancel</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script src="/static/yaply-nav.js"></script>
 <script>
@@ -641,8 +655,17 @@ async function analyzeDescription() {
 // ── RENDER RESULT ──
 function renderResult(r) {
   hideScan();
-  // Hero
-  if (currentImage) document.getElementById('rhImg').src = currentImage;
+  // Hero image: use uploaded screenshot or fetch from Unsplash
+  const rhImg = document.getElementById('rhImg');
+  if (currentImage) {
+    rhImg.src = currentImage;
+  } else {
+    rhImg.src = '';
+    const searchTerm = [r.place_name, r.city, r.country].filter(Boolean).join(' ');
+    apiFetch('/api/place-photo', { method:'POST', body: JSON.stringify({ place_name: searchTerm }) })
+      .then(d => { if (d.success && d.photos?.length) rhImg.src = d.photos[0]; })
+      .catch(() => {});
+  }
   document.getElementById('rhName').textContent = r.place_name || 'Unknown Place';
   document.getElementById('rhLocation').textContent = [r.city, r.country].filter(Boolean).join(', ');
   document.getElementById('rhConf').textContent = (r.confidence || '—') + '% Confidence Match';
@@ -681,15 +704,29 @@ function renderResult(r) {
     </div>`).join('');
 
   // Nearby
-  document.getElementById('nearbyList').innerHTML = (r.nearby||[]).map(p => `
-    <div class="nearby-item">
-      <div class="nearby-ico">${p.icon||'📍'}</div>
+  const nearbyItems = r.nearby || [];
+  document.getElementById('nearbyList').innerHTML = nearbyItems.length
+    ? nearbyItems.map((p,i) => `
+    <div class="nearby-item" id="nb-${i}">
+      <div class="nearby-ico" id="nb-ico-${i}" style="overflow:hidden;background:#eee;">${p.icon||'📍'}</div>
       <div>
-        <div class="nearby-name">${p.name}</div>
-        <div class="nearby-dist">${p.distance} · ${p.description||''}</div>
+        <div class="nearby-name">${p.name||'Nearby Place'}</div>
+        <div class="nearby-dist">${p.distance||'Nearby'}${p.description ? ' · '+p.description : ''}</div>
       </div>
       <div class="nearby-type">${p.type||'Place'}</div>
-    </div>`).join('') || '<div style="font-size:.78rem;color:var(--muted2);padding:8px 0;">No nearby data available</div>';
+    </div>`).join('')
+    : '<div style="font-size:.78rem;color:var(--muted2);padding:8px 0;">No nearby data available</div>';
+  // Fetch small images for nearby places
+  nearbyItems.forEach((p, i) => {
+    if (!p.name) return;
+    apiFetch('/api/place-photo', { method:'POST', body: JSON.stringify({ place_name: p.name + ' ' + (r.country||'') }) })
+      .then(d => {
+        if (d.success && d.photos?.length) {
+          const el = document.getElementById('nb-ico-'+i);
+          if (el) el.innerHTML = `<img src="${d.photos[0]}" style="width:100%;height:100%;object-fit:cover;border-radius:9px;" onerror="this.parentNode.textContent='${p.icon||'📍'}'"/>`;
+        }
+      }).catch(() => {});
+  });
 
   // Similar
   const grads = ['linear-gradient(135deg,#667eea,#764ba2)','linear-gradient(135deg,#f093fb,#f5576c)','linear-gradient(135deg,#4facfe,#00f2fe)','linear-gradient(135deg,#fa709a,#fee140)','linear-gradient(135deg,#43e97b,#38f9d7)','linear-gradient(135deg,#f5576c,#f093fb)'];
@@ -726,12 +763,83 @@ function renderResult(r) {
 }
 
 // ── ACTIONS ──
-function addToItinerary() {
+async function addToItinerary() {
   if (!currentResult) return;
+  const modal = document.getElementById('addTripModal');
+  document.getElementById('atm-place').textContent =
+    currentResult.place_name + (currentResult.country ? ' · ' + currentResult.country : '');
+  document.getElementById('atm-list').innerHTML =
+    '<div style="font-size:.75rem;color:var(--muted2);padding:6px 0;">Loading your trips…</div>';
+  modal.style.display = 'flex';
+
+  try {
+    const d = await apiFetch('/api/trips');
+    const trips = (d.success && d.trips) ? d.trips : [];
+    if (trips.length) {
+      document.getElementById('atm-list').innerHTML =
+        '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:8px;">Choose an existing trip</div>' +
+        trips.map(t => `
+          <div onclick="addPlaceToTrip(${t.id})"
+            style="padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;"
+            onmouseover="this.style.borderColor='var(--teal)';this.style.background='var(--teal-s)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.background=''">
+            <div style="font-size:.82rem;font-weight:700;color:var(--charcoal);">${t.destination}</div>
+            <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">${t.days||5} days · ${t.status||'planned'}</div>
+          </div>`).join('');
+    } else {
+      document.getElementById('atm-list').innerHTML =
+        '<div style="font-size:.78rem;color:var(--muted2);text-align:center;padding:8px 0;">No trips yet — create one below!</div>';
+    }
+  } catch {
+    document.getElementById('atm-list').innerHTML =
+      '<div style="font-size:.75rem;color:var(--muted2);">Could not load trips.</div>';
+  }
+}
+
+async function addPlaceToTrip(tripId) {
+  document.getElementById('addTripModal').style.display = 'none';
+  if (!currentResult) return;
+  try {
+    await apiFetch('/api/places', { method:'POST', body: JSON.stringify({
+      name: currentResult.place_name || '',
+      city: currentResult.city || '',
+      country: currentResult.country || '',
+      description: currentResult.description || '',
+      emoji: '📍',
+      tags: currentResult.tags || [],
+      trip_id: tripId
+    })});
+  } catch {}
   savedPlaces.unshift({ name:currentResult.place_name, country:currentResult.country, city:currentResult.city, emoji:'📍', addedAt:new Date().toISOString() });
   localStorage.setItem('yaply_places', JSON.stringify(savedPlaces));
   renderSavedPlaces();
-  showToast('Added to your places');
+  showToast('Place added to your trip!');
+}
+
+async function createNewTripForPlace() {
+  document.getElementById('addTripModal').style.display = 'none';
+  if (!currentResult) return;
+  const dest = (currentResult.place_name||'') + (currentResult.country ? ', '+currentResult.country : '');
+  try {
+    const d = await apiFetch('/api/trips', { method:'POST', body: JSON.stringify({
+      destination: dest, days: 5, origin: 'India', budget: '80000',
+      vibes: (currentResult.tags||[]).join(', ') || 'Adventure'
+    })});
+    if (d.success && d.trip_id) {
+      await apiFetch('/api/places', { method:'POST', body: JSON.stringify({
+        name: currentResult.place_name || '', city: currentResult.city||'',
+        country: currentResult.country||'', description: currentResult.description||'',
+        emoji: '📍', tags: currentResult.tags||[], trip_id: d.trip_id
+      })});
+      savedPlaces.unshift({ name:currentResult.place_name, country:currentResult.country, city:currentResult.city, emoji:'📍', addedAt:new Date().toISOString() });
+      localStorage.setItem('yaply_places', JSON.stringify(savedPlaces));
+      renderSavedPlaces();
+      showToast('Trip created! Heading to planner…');
+      setTimeout(() => { window.location.href = `/plan?dest=${encodeURIComponent(dest)}`; }, 1400);
+      return;
+    }
+  } catch {}
+  window.location.href = `/plan?dest=${encodeURIComponent(dest)}`;
 }
 
 function saveSimilar(name, country, emoji) {
@@ -743,7 +851,7 @@ function saveSimilar(name, country, emoji) {
 
 function planThisTrip() {
   if (!currentResult) return;
-  const dest = encodeURIComponent((currentResult.place_name||'') + ', ' + (currentResult.country||''));
+  const dest = encodeURIComponent((currentResult.place_name||'') + (currentResult.country ? ', '+currentResult.country : ''));
   window.location.href = `/plan?dest=${dest}`;
 }
 

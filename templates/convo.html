@@ -306,6 +306,30 @@ body::before{
   display:flex;align-items:center;gap:8px;
 }
 .feed-divider::before,.feed-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── MODE TOGGLE ── */
+.mode-toggle{
+  display:flex;gap:0;
+  border-radius:10px;overflow:hidden;
+  border:1.5px solid var(--border);
+  background:var(--bg);margin-bottom:12px;
+}
+.mode-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:8px 10px;border:none;background:transparent;
+  font-family:'Inter',sans-serif;font-size:.68rem;font-weight:700;
+  color:var(--muted);cursor:pointer;transition:all .2s;
+}
+.mode-btn.active.fast{background:var(--teal-s);color:var(--teal);}
+.mode-btn.active.advanced{background:rgba(139,92,246,.12);color:#8B5CF6;}
+.mode-divider-line{width:1px;background:var(--border);flex-shrink:0;}
+.mode-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:1px 6px;border-radius:100px;
+  font-size:.55rem;font-weight:700;vertical-align:middle;
+}
+.mode-badge.fast{background:var(--teal-s);color:var(--teal);}
+.mode-badge.advanced{background:rgba(139,92,246,.1);color:#8B5CF6;}
 </style>
 </head>
 <body>
@@ -409,6 +433,19 @@ body::before{
     </div>
   </div>
 
+  <!-- Mode toggle -->
+  <div class="mode-toggle">
+    <button class="mode-btn fast active" id="modeF" onclick="setMode('fast')">
+      ⚡ Fast
+      <span style="font-size:.58rem;font-weight:400;opacity:.7;">Turbo</span>
+    </button>
+    <div class="mode-divider-line"></div>
+    <button class="mode-btn advanced" id="modeA" onclick="setMode('advanced')">
+      ✦ Advanced
+      <span style="font-size:.58rem;font-weight:400;opacity:.7;">Precise</span>
+    </button>
+  </div>
+
   <!-- Session button -->
   <button class="sess-btn start" id="sessBtn" onclick="toggleSession()">
     <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
@@ -428,6 +465,7 @@ let ws=null,audioCtx=null,processor=null,source=null,micStream=null,analyser=nul
 let animFrame=null,active=false,activeSpeaker='A';
 let msgCount=0,audioStore={},currentTranscript='';
 let volHist = new Array(8).fill(3);
+let currentMode = 'fast';
 
 // ── SESSION ──
 async function toggleSession() {
@@ -440,7 +478,7 @@ async function startSession() {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(`${proto}//${location.host}/convo-ws`);
     ws.binaryType = 'arraybuffer';
-    ws.onopen = () => { updateConfig(); };
+    ws.onopen = () => { updateConfig(); setMode(currentMode, true); };
     ws.onmessage = e => handle(JSON.parse(e.data));
     ws.onerror = () => showPill('Connection error');
     ws.onclose = () => { if(active) stopSession(); };
@@ -490,7 +528,7 @@ function setOnUI() {
   document.getElementById('feedEmpty').style.display = 'none';
   document.getElementById('liveBadge').className = 'live-badge online';
   document.getElementById('lbDot').className = 'lb-dot pulse';
-  document.getElementById('lbTxt').textContent = 'LIVE';
+  document.getElementById('lbTxt').textContent = currentMode==='advanced' ? 'LIVE ✦' : 'LIVE ⚡';
   addDivider('Session started');
 }
 
@@ -566,6 +604,12 @@ function handle(msg) {
       hidePill();
       break;
     case 'ready': hidePill(); break;
+    case 'mode_ack':
+      currentMode = msg.mode;
+      document.getElementById('modeF').className = 'mode-btn fast' + (msg.mode==='fast'?' active':'');
+      document.getElementById('modeA').className = 'mode-btn advanced' + (msg.mode==='advanced'?' active':'');
+      if(active) document.getElementById('lbTxt').textContent = msg.mode==='advanced' ? 'LIVE ✦' : 'LIVE ⚡';
+      break;
     case 'error':
       showPill('⚠ ' + msg.message);
       setTimeout(hidePill, 3000);
@@ -590,6 +634,7 @@ function addMessage(msg) {
     </div>
     <div class="msg-footer">
       <span class="msg-engine">${msg.engine||'AI'}</span>
+      <span class="mode-badge ${msg.mode||currentMode}">${msg.mode==='advanced'?'✦ Adv':'⚡ Fast'}</span>
       <span class="msg-time">${time}</span>
       <button class="msg-replay" onclick="replayAudio(${msg.id})" title="Replay">
         <svg viewBox="0 0 24 24" fill="currentColor" width="8" height="8"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -631,6 +676,16 @@ function showPill(t) {
   document.getElementById('procPill').classList.add('show');
 }
 function hidePill() { document.getElementById('procPill').classList.remove('show'); }
+
+// ── MODE ──
+function setMode(m, silent) {
+  currentMode = m;
+  document.getElementById('modeF').className = 'mode-btn fast' + (m==='fast'?' active':'');
+  document.getElementById('modeA').className = 'mode-btn advanced' + (m==='advanced'?' active':'');
+  if(ws?.readyState===1) ws.send(JSON.stringify({ mode:m }));
+  if(!silent && active) showPill(m==='advanced' ? '✦ Switched to Advanced' : '⚡ Switched to Fast');
+  if(!silent) setTimeout(hidePill, 1800);
+}
 
 // ── CONFIG ──
 function updateConfig() {

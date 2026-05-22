@@ -958,6 +958,43 @@ Return JSON: place_name,city,country,confidence(0-100),place_type,description,ta
 
 # ── CAMERA SCAN ──
 
+def _translate_blocks_batch(blocks, target_lang, src_lang=None):
+    """Translate a list of {text, vertices} blocks. Returns [{original,translated,vertices}]."""
+    if not blocks: return []
+    texts = [b['text'] for b in blocks]
+    tgt = target_lang.lower()[:2] if len(target_lang) >= 2 else target_lang
+    deepl_code = DEEPL_LANGS.get(tgt) or DEEPL_LANGS.get(target_lang)
+    translated_texts = []
+    if deepl_code and deepl_client:
+        try:
+            src = None
+            if src_lang and src_lang not in ('unknown','auto',None,''):
+                src = src_lang.upper()[:2]
+            results = deepl_client.translate_text(texts, target_lang=deepl_code, source_lang=src)
+            translated_texts = [r.text for r in results]
+        except Exception as e: print(f"[DeepL batch] {e}")
+    if not translated_texts:
+        lang_name = LANG_NAMES.get(target_lang, LANG_NAMES.get(tgt.upper(), 'English'))
+        sep = "\n[|||]\n"
+        combined = sep.join(texts)
+        try:
+            r = groq_client.chat.completions.create(
+                model='llama-3.1-8b-instant',
+                messages=[
+                    {'role':'system','content':f'Translate each segment to {lang_name}. Keep [|||] separators exactly. Return ONLY translations separated by [|||].'},
+                    {'role':'user','content':combined}
+                ], temperature=0.1, max_tokens=1500
+            )
+            parts = r.choices[0].message.content.strip().split('[|||]')
+            translated_texts = [p.strip() for p in parts]
+        except Exception as e:
+            print(f"[Groq batch] {e}")
+            translated_texts = texts  # fallback: no translation
+    return [
+        {'original': b['text'], 'translated': translated_texts[i].strip() if i < len(translated_texts) else b['text'], 'vertices': b['vertices']}
+        for i, b in enumerate(blocks)
+    ]
+
 @app.route('/scan', methods=['POST'])
 @require_auth
 @limiter.limit("30 per hour")
@@ -978,20 +1015,44 @@ def scan():
                 if not GOOGLE_VISION_KEY: vision_done.set(); return
                 r = req.post(
                     f"https://vision.googleapis.com/v1/images:annotate?key={GOOGLE_VISION_KEY}",
-                    json={"requests":[{"image":{"content":image_data},"features":[{"type":"DOCUMENT_TEXT_DETECTION"},{"type":"TEXT_DETECTION"}]}]},
-                    timeout=6
+                    json={"requests":[{"image":{"content":image_data},"features":[{"type":"DOCUMENT_TEXT_DETECTION"}]}]},
+                    timeout=8
                 )
-                responses = r.json().get('responses',[{}])
-                full_text = responses[0].get('fullTextAnnotation',{}).get('text','')
+                resp0 = r.json().get('responses',[{}])[0]
+                full_text = resp0.get('fullTextAnnotation',{}).get('text','')
                 if not full_text:
-                    anns = responses[0].get('textAnnotations',[])
+                    anns = resp0.get('textAnnotations',[])
                     full_text = anns[0].get('description','') if anns else ''
-                pages = responses[0].get('fullTextAnnotation',{}).get('pages',[])
+                pages = resp0.get('fullTextAnnotation',{}).get('pages',[])
                 lang = 'unknown'
                 if pages:
                     langs = pages[0].get('property',{}).get('detectedLanguages',[])
                     if langs: lang = langs[0].get('languageCode','unknown')
-                if full_text.strip(): vision_result[0] = (full_text.strip(), lang)
+                # Extract paragraph-level blocks with bounding boxes
+                raw_blocks = []
+                for page in pages:
+                    for block in page.get('blocks', []):
+                        parts = []
+                        for para in block.get('paragraphs', []):
+                            words = []
+                            for word in para.get('words', []):
+                                w = ''.join(s.get('text','') for s in word.get('symbols',[]))
+                                words.append(w)
+                            parts.append(' '.join(words))
+                        block_text = '\n'.join(parts).strip()
+                        if not block_text: continue
+                        verts = block.get('boundingBox',{}).get('vertices',[])
+                        vertices = [[v.get('x',0), v.get('y',0)] for v in verts]
+                        if vertices: raw_blocks.append({'text': block_text, 'vertices': vertices})
+                # Fallback to word-level annotations if no blocks extracted
+                if not raw_blocks and resp0.get('textAnnotations'):
+                    for ann in resp0['textAnnotations'][1:]:
+                        t = ann.get('description','').strip()
+                        verts = ann.get('boundingPoly',{}).get('vertices',[])
+                        vertices = [[v.get('x',0), v.get('y',0)] for v in verts]
+                        if t and vertices: raw_blocks.append({'text': t, 'vertices': vertices})
+                if full_text.strip():
+                    vision_result[0] = (full_text.strip(), lang, raw_blocks)
             except Exception as e: print(f"[Vision] {e}")
             vision_done.set()
 
@@ -1005,32 +1066,57 @@ def scan():
                     ]}], temperature=0.0, max_tokens=800
                 )
                 text = response.choices[0].message.content.strip()
-                if text and text != 'NO_TEXT': groq_result[0] = (text, 'unknown')
+                if text and text != 'NO_TEXT': groq_result[0] = (text, 'unknown', [])
             except Exception as e: print(f"[Groq Vision] {e}")
             groq_done.set()
 
         threading.Thread(target=run_vision, daemon=True).start()
         threading.Thread(target=run_groq_vision, daemon=True).start()
 
-        extracted_text=''; detected_lang='unknown'
+        extracted_text=''; detected_lang='unknown'; raw_blocks=[]
         deadline = time.time() + 8.0
         while time.time() < deadline:
-            if vision_done.is_set() and vision_result[0]: extracted_text, detected_lang = vision_result[0]; break
-            if groq_done.is_set() and groq_result[0]: extracted_text, detected_lang = groq_result[0]; break
+            if vision_done.is_set() and vision_result[0]:
+                extracted_text, detected_lang, raw_blocks = vision_result[0]; break
+            if groq_done.is_set() and groq_result[0]:
+                extracted_text, detected_lang, raw_blocks = groq_result[0]; break
             time.sleep(0.05)
 
         if not extracted_text:
             vision_done.wait(2); groq_done.wait(2)
-            if vision_result[0]: extracted_text, detected_lang = vision_result[0]
-            elif groq_result[0]: extracted_text, detected_lang = groq_result[0]
+            if vision_result[0]: extracted_text, detected_lang, raw_blocks = vision_result[0]
+            elif groq_result[0]: extracted_text, detected_lang, raw_blocks = groq_result[0]
 
         if not extracted_text:
             return jsonify({'success':False,'error':'No text found. Try pointing at clearer text.'})
 
         translated_text, engine = translate(extracted_text, target_lang, detected_lang)
-        return jsonify({'success':True,'original_text':extracted_text,'translated_text':translated_text,'detected_lang':detected_lang,'engine':engine})
+        text_blocks = _translate_blocks_batch(raw_blocks, target_lang, detected_lang)
+        return jsonify({
+            'success':True,
+            'original_text':extracted_text,
+            'translated_text':translated_text,
+            'detected_lang':detected_lang,
+            'engine':engine,
+            'text_blocks':text_blocks
+        })
     except Exception as e:
         import traceback; traceback.print_exc()
+        return jsonify({'success':False,'error':str(e)})
+
+@app.route('/api/retranslate-blocks', methods=['POST'])
+@require_auth
+@limiter.limit("60 per hour")
+def api_retranslate_blocks():
+    try:
+        data = request.get_json() or {}
+        blocks = data.get('blocks', [])
+        target_lang = clean(data.get('target_lang','EN'), 5).upper()
+        src_lang = data.get('src_lang', None)
+        if not blocks: return jsonify({'success':False,'error':'No blocks provided'})
+        text_blocks = _translate_blocks_batch(blocks, target_lang, src_lang)
+        return jsonify({'success':True, 'text_blocks':text_blocks})
+    except Exception as e:
         return jsonify({'success':False,'error':str(e)})
 
 # ══════════════════════════════════════

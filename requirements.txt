@@ -2,7 +2,7 @@ flask==3.0.3
 flask-cors==4.0.1
 flask-sock==0.7.0
 flask-limiter==3.8.0
-groq==0.11.0
+groq==0.25.0
 deepl==1.19.1
 edge-tts==6.1.12
 PyJWT==2.9.0

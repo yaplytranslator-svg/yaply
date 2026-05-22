@@ -129,9 +129,12 @@ def safe_send(ws, data):
 # ─────────────────────────────────────
 
 def transcribe(wav_data, lang_hint=None):
+    return transcribe_with_model(wav_data, lang_hint, 'whisper-large-v3-turbo')
+
+def transcribe_with_model(wav_data, lang_hint=None, model='whisper-large-v3-turbo', prompt_override=None):
     kwargs = {
         'file': ('audio.wav', wav_data),
-        'model': 'whisper-large-v3-turbo',
+        'model': model,
         'response_format': 'verbose_json',
         'temperature': 0.0,
     }
@@ -139,20 +142,45 @@ def transcribe(wav_data, lang_hint=None):
         wc = WHISPER_LANG.get(lang_hint)
         if wc:
             kwargs['language'] = wc
-            prompt = WHISPER_PROMPTS.get(wc,'')
-            if prompt: kwargs['prompt'] = prompt  # Boosts accuracy
+            if prompt_override:
+                kwargs['prompt'] = prompt_override
+            else:
+                prompt = WHISPER_PROMPTS.get(wc,'')
+                if prompt: kwargs['prompt'] = prompt
     t0 = time.time()
     result = groq_client.audio.transcriptions.create(**kwargs)
     text = result.text.strip()
     detected = getattr(result,'language','unknown')
     segments = getattr(result,'segments',[])
     conf = sum(abs(s.get('avg_logprob',-1)) for s in segments)/max(len(segments),1) if segments else 0.0
-    print(f"[Whisper {time.time()-t0:.2f}s] '{text[:50]}' | lang={detected} | conf={conf:.2f}")
+    print(f"[{model.split('/')[-1]} {time.time()-t0:.2f}s] '{text[:50]}' | lang={detected} | conf={conf:.2f}")
     return text, detected, conf
 
 # ─────────────────────────────────────
 # TRANSLATION
 # ─────────────────────────────────────
+
+_TRANSLATE_PREFIXES = (
+    'translation:', 'translated:', 'in english:', 'in hindi:', 'in spanish:',
+    'in french:', 'in german:', 'in japanese:', 'in chinese:', 'in arabic:',
+    'in portuguese:', 'in russian:', 'in italian:', 'in korean:',
+    'here is the translation:', 'here\'s the translation:',
+    'the translation is:', 'sure,', 'sure!', 'certainly,',
+)
+
+def _strip_translation_noise(text):
+    """Remove any AI commentary the model may have prepended."""
+    t = text.strip()
+    lower = t.lower()
+    for prefix in _TRANSLATE_PREFIXES:
+        if lower.startswith(prefix):
+            t = t[len(prefix):].lstrip(' \n')
+            lower = t.lower()
+    # Strip trailing notes in parentheses like "(Note: ...)"
+    import re
+    t = re.sub(r'\s*\(Note:[^)]*\)\s*$', '', t, flags=re.IGNORECASE).strip()
+    t = re.sub(r'\s*\[Note:[^\]]*\]\s*$', '', t, flags=re.IGNORECASE).strip()
+    return t
 
 def translate(text, target_lang, src_lang=None):
     tgt = target_lang.lower()[:2] if len(target_lang)>=2 else target_lang
@@ -168,18 +196,31 @@ def translate(text, target_lang, src_lang=None):
             print(f"[DeepL {time.time()-t0:.2f}s]")
             return result.text,'DeepL'
         except Exception as e: print(f"[DeepL error] {e}")
-    lang_name = LANG_NAMES.get(target_lang,'English')
+    tgt_name = LANG_NAMES.get(tgt) or LANG_NAMES.get(target_lang,'English')
+    src_name = LANG_NAMES.get(src_lang,'') if src_lang and src_lang not in ('unknown','auto',None,'') else ''
+    src_clause = f' from {src_name}' if src_name else ''
     t0=time.time()
     r = groq_client.chat.completions.create(
-        model='llama-3.1-8b-instant',
+        model='llama-3.3-70b-versatile',
         messages=[
-            {'role':'system','content':f'Translate to {lang_name}. Return ONLY the translation. Be natural.'},
-            {'role':'user','content':text}
+            {'role':'system','content':(
+                f'You are a professional translator. Your sole task is to translate text{src_clause} into {tgt_name}.\n'
+                'RULES — follow exactly:\n'
+                '• Output ONLY the translated text. No labels, no explanations, no commentary.\n'
+                '• Do NOT answer questions in the text — translate them as questions.\n'
+                '• Do NOT greet, confirm, or add anything before or after the translation.\n'
+                '• Preserve the original meaning, tone, register, and punctuation.\n'
+                '• If the input contains multiple sentences, translate all of them in order.\n'
+                '• Never say "Translation:", "Sure,", "Here is", or any similar prefix.'
+            )},
+            {'role':'user','content':f'Text to translate:\n"""\n{text}\n"""'}
         ],
-        temperature=0.1, max_tokens=500
+        temperature=0.05, max_tokens=600
     )
+    raw = r.choices[0].message.content.strip()
+    result = _strip_translation_noise(raw)
     print(f"[Groq translate {time.time()-t0:.2f}s]")
-    return r.choices[0].message.content.strip(),'Groq AI'
+    return result,'Groq AI'
 
 # ─────────────────────────────────────
 # TTS
@@ -225,7 +266,45 @@ def landing_page(): return render_template('landing.html')
 # ─────────────────────────────────────
 # CAMERA — PARALLEL Vision + Groq
 # Both run simultaneously, first result wins
+# Returns text_blocks with bounding boxes for in-image overlay
 # ─────────────────────────────────────
+
+def _translate_blocks_batch(blocks, target_lang, src_lang=None):
+    """Translate [{text, vertices}] blocks in one shot. Returns [{original, translated, vertices}]."""
+    if not blocks: return []
+    texts = [b['text'] for b in blocks]
+    tgt = target_lang.lower()[:2] if len(target_lang) >= 2 else target_lang
+    deepl_code = DEEPL_LANGS.get(tgt) or DEEPL_LANGS.get(target_lang)
+    translated_texts = []
+    if deepl_code and deepl_client:
+        try:
+            src = None
+            if src_lang and src_lang not in ('unknown','auto',None,''):
+                src = src_lang.upper()[:2]
+            results = deepl_client.translate_text(texts, target_lang=deepl_code, source_lang=src)
+            translated_texts = [r.text for r in results]
+        except Exception as e: print(f"[DeepL batch] {e}")
+    if not translated_texts:
+        lang_name = LANG_NAMES.get(target_lang, LANG_NAMES.get(tgt.upper(), 'English'))
+        sep = "\n[|||]\n"
+        combined = sep.join(texts)
+        try:
+            r = groq_client.chat.completions.create(
+                model='llama-3.1-8b-instant',
+                messages=[
+                    {'role':'system','content':f'Translate each segment to {lang_name}. Keep [|||] separators exactly. Return ONLY translations separated by [|||].'},
+                    {'role':'user','content':combined}
+                ], temperature=0.1, max_tokens=1500
+            )
+            parts = r.choices[0].message.content.strip().split('[|||]')
+            translated_texts = [p.strip() for p in parts]
+        except Exception as e:
+            print(f"[Groq batch] {e}")
+            translated_texts = texts
+    return [
+        {'original': b['text'], 'translated': translated_texts[i].strip() if i < len(translated_texts) else b['text'], 'vertices': b['vertices']}
+        for i, b in enumerate(blocks)
+    ]
 
 @app.route('/scan', methods=['POST'])
 def scan():
@@ -246,22 +325,45 @@ def scan():
                 r = req.post(
                     f"https://vision.googleapis.com/v1/images:annotate?key={GOOGLE_VISION_KEY}",
                     json={"requests":[{"image":{"content":image_data},"features":[
-                        {"type":"DOCUMENT_TEXT_DETECTION"},{"type":"TEXT_DETECTION"}
+                        {"type":"DOCUMENT_TEXT_DETECTION"}
                     ]}]},
-                    timeout=6
+                    timeout=8
                 )
-                responses = r.json().get('responses',[{}])
-                full_text = responses[0].get('fullTextAnnotation',{}).get('text','')
+                resp0 = r.json().get('responses',[{}])[0]
+                full_text = resp0.get('fullTextAnnotation',{}).get('text','')
                 if not full_text:
-                    anns = responses[0].get('textAnnotations',[])
+                    anns = resp0.get('textAnnotations',[])
                     full_text = anns[0].get('description','') if anns else ''
-                pages = responses[0].get('fullTextAnnotation',{}).get('pages',[])
+                pages = resp0.get('fullTextAnnotation',{}).get('pages',[])
                 lang='unknown'
                 if pages:
                     langs=pages[0].get('property',{}).get('detectedLanguages',[])
                     if langs: lang=langs[0].get('languageCode','unknown')
-                print(f"[Vision {time.time()-t0:.2f}s] '{full_text[:50]}'")
-                if full_text.strip(): vision_result[0]=(full_text.strip(),lang)
+                # Extract paragraph-level blocks with bounding boxes
+                raw_blocks=[]
+                for page in pages:
+                    for block in page.get('blocks',[]):
+                        parts=[]
+                        for para in block.get('paragraphs',[]):
+                            words=[]
+                            for word in para.get('words',[]):
+                                w=''.join(s.get('text','') for s in word.get('symbols',[]))
+                                words.append(w)
+                            parts.append(' '.join(words))
+                        block_text='\n'.join(parts).strip()
+                        if not block_text: continue
+                        verts=block.get('boundingBox',{}).get('vertices',[])
+                        vertices=[[v.get('x',0),v.get('y',0)] for v in verts]
+                        if vertices: raw_blocks.append({'text':block_text,'vertices':vertices})
+                # Fallback to word-level annotations if no blocks
+                if not raw_blocks and resp0.get('textAnnotations'):
+                    for ann in resp0['textAnnotations'][1:]:
+                        t=ann.get('description','').strip()
+                        verts=ann.get('boundingPoly',{}).get('vertices',[])
+                        vertices=[[v.get('x',0),v.get('y',0)] for v in verts]
+                        if t and vertices: raw_blocks.append({'text':t,'vertices':vertices})
+                print(f"[Vision {time.time()-t0:.2f}s] '{full_text[:50]}' | {len(raw_blocks)} blocks")
+                if full_text.strip(): vision_result[0]=(full_text.strip(), lang, raw_blocks)
             except Exception as e: print(f"[Vision error] {e}")
             vision_done.set()
 
@@ -278,7 +380,7 @@ def scan():
                 )
                 text=response.choices[0].message.content.strip()
                 print(f"[Groq Vision {time.time()-t0:.2f}s] '{text[:50]}'")
-                if text and text!='NO_TEXT': groq_result[0]=(text,'unknown')
+                if text and text!='NO_TEXT': groq_result[0]=(text,'unknown',[])
             except Exception as e: print(f"[Groq Vision error] {e}")
             groq_done.set()
 
@@ -287,30 +389,45 @@ def scan():
         threading.Thread(target=run_groq_vision,daemon=True).start()
 
         # Wait for first good result
-        extracted_text=''; detected_lang='unknown'
+        extracted_text=''; detected_lang='unknown'; raw_blocks=[]
         deadline=time.time()+8.0
         while time.time()<deadline:
             if vision_done.is_set() and vision_result[0]:
-                extracted_text,detected_lang=vision_result[0]; break
+                extracted_text,detected_lang,raw_blocks=vision_result[0]; break
             if groq_done.is_set() and groq_result[0]:
-                extracted_text,detected_lang=groq_result[0]; break
+                extracted_text,detected_lang,raw_blocks=groq_result[0]; break
             time.sleep(0.05)
 
         if not extracted_text:
             vision_done.wait(2); groq_done.wait(2)
-            if vision_result[0]: extracted_text,detected_lang=vision_result[0]
-            elif groq_result[0]: extracted_text,detected_lang=groq_result[0]
+            if vision_result[0]: extracted_text,detected_lang,raw_blocks=vision_result[0]
+            elif groq_result[0]: extracted_text,detected_lang,raw_blocks=groq_result[0]
 
         if not extracted_text:
             return jsonify({'success':False,'error':'No text found. Try pointing at clearer text.'})
 
         translated_text,engine = translate(extracted_text,target_lang,detected_lang)
+        text_blocks = _translate_blocks_batch(raw_blocks, target_lang, detected_lang)
         return jsonify({
             'success':True,'original_text':extracted_text,
-            'translated_text':translated_text,'detected_lang':detected_lang,'engine':engine
+            'translated_text':translated_text,'detected_lang':detected_lang,
+            'engine':engine,'text_blocks':text_blocks
         })
     except Exception as e:
         import traceback; traceback.print_exc()
+        return jsonify({'success':False,'error':str(e)})
+
+@app.route('/api/retranslate-blocks', methods=['POST'])
+def api_retranslate_blocks():
+    try:
+        data = request.get_json() or {}
+        blocks = data.get('blocks',[])
+        target_lang = data.get('target_lang','EN').upper()
+        src_lang = data.get('src_lang', None)
+        if not blocks: return jsonify({'success':False,'error':'No blocks provided'})
+        text_blocks = _translate_blocks_batch(blocks, target_lang, src_lang)
+        return jsonify({'success':True,'text_blocks':text_blocks})
+    except Exception as e:
         return jsonify({'success':False,'error':str(e)})
 
 # ─────────────────────────────────────
@@ -394,8 +511,28 @@ def convo_ws(ws):
     print("✅ Convo connected")
     lang_a='en'; lang_b='hi'; active_speaker='A'
     audio_buffer=bytearray(); silent_chunks=0; speaking=False; msg_id=0
-    SILENCE_THRESHOLD=450
-    MIN_BYTES=int(16000*2*0.4)
+    mode='fast'   # 'fast' or 'advanced'
+    overlap_buf=bytearray()   # last 0.3s kept for word-boundary continuity (advanced)
+    context_a=''; context_b=''  # per-speaker transcript context for Whisper prompt
+    OVERLAP_BYTES=int(16000*2*0.3)
+
+    # ── Mode configs ──
+    MODES = {
+        'fast': {
+            'model':  'whisper-large-v3-turbo',
+            'threshold': 400,
+            'silence_fast': 2,   # ~0.6s
+            'silence_slow': 4,
+            'min_bytes': int(16000*2*0.25),
+        },
+        'advanced': {
+            'model':  'whisper-large-v3',
+            'threshold': 450,
+            'silence_fast': 3,   # ~0.9s — gives full sentences
+            'silence_slow': 5,
+            'min_bytes': int(16000*2*0.35),
+        },
+    }
 
     while True:
         try:
@@ -406,43 +543,73 @@ def convo_ws(ws):
                     cfg=json.loads(msg)
                     if 'lang_a' in cfg: lang_a=cfg['lang_a'].lower().strip()[:2]
                     if 'lang_b' in cfg: lang_b=cfg['lang_b'].lower().strip()[:2]
+                    if 'mode' in cfg:
+                        mode=cfg['mode']
+                        print(f"[Convo] Mode → {mode}")
+                        safe_send(ws,{'type':'mode_ack','mode':mode})
                     if 'speaker' in cfg:
                         active_speaker=cfg['speaker']
                         audio_buffer=bytearray(); silent_chunks=0; speaking=False
+                        overlap_buf=bytearray()
                         safe_send(ws,{'type':'speaker_changed','speaker':active_speaker})
                 except Exception as e: print(f"[Convo config] {e}")
                 continue
+
+            mc=MODES.get(mode,MODES['fast'])
             chunk=bytes(msg); rms=get_rms(chunk)
             safe_send(ws,{'type':'volume','level':min(100,int(rms/35)),'speaker':active_speaker})
-            if rms>=SILENCE_THRESHOLD:
+
+            if rms>=mc['threshold']:
                 if not speaking:
-                    speaking=True; safe_send(ws,{'type':'speaking','status':True,'speaker':active_speaker})
+                    speaking=True
+                    # Advanced: prepend overlap so we don't clip word starts
+                    if mode=='advanced' and overlap_buf:
+                        audio_buffer.extend(overlap_buf)
+                    safe_send(ws,{'type':'speaking','status':True,'speaker':active_speaker})
                 silent_chunks=0; audio_buffer.extend(chunk)
             elif speaking:
                 silent_chunks+=1; audio_buffer.extend(chunk)
                 src=lang_a if active_speaker=='A' else lang_b
-                # Longer silence window for languages with natural pauses
-                silence_needed=5 if src in SLOW_LANGS else 3
+                silence_needed=mc['silence_slow'] if src in SLOW_LANGS else mc['silence_fast']
                 if silent_chunks>=silence_needed:
-                    if len(audio_buffer)>=MIN_BYTES:
+                    if len(audio_buffer)>=mc['min_bytes']:
                         msg_id+=1
                         tgt=lang_b if active_speaker=='A' else lang_a
+                        # Save overlap for next utterance
+                        if len(audio_buffer)>OVERLAP_BYTES:
+                            overlap_buf=bytearray(audio_buffer[-OVERLAP_BYTES:])
                         try:
-                            safe_send(ws,{'type':'status','message':'🎯 Listening...'})
+                            status_msg='⚡ Processing...' if mode=='fast' else '🔍 High-accuracy scan...'
+                            safe_send(ws,{'type':'status','message':status_msg})
                             wav=audio_to_wav(bytes(audio_buffer))
-                            # Use speaker's language as Whisper hint + prompt
                             whisper_hint=WHISPER_LANG.get(src)
-                            text,detected,conf=transcribe(wav,whisper_hint)
+
+                            if mode=='advanced':
+                                # Build context prompt: base language prompt + last 120 chars spoken
+                                ctx = context_a if active_speaker=='A' else context_b
+                                base_prompt = WHISPER_PROMPTS.get(WHISPER_LANG.get(src,'en'),'')
+                                prompt_ctx = (base_prompt+' '+ctx[-120:]).strip() if ctx else base_prompt or None
+                                text,detected,_ = transcribe_with_model(wav, whisper_hint, mc['model'], prompt_ctx)
+                            else:
+                                text,detected,_ = transcribe_with_model(wav, whisper_hint, mc['model'])
+
                             if is_valid(text):
-                                safe_send(ws,{'type':'transcript','text':text,'speaker':active_speaker,'lang':detected,'id':msg_id})
+                                # Update per-speaker context
+                                if active_speaker=='A': context_a=text
+                                else: context_b=text
+
+                                safe_send(ws,{'type':'transcript','text':text,'speaker':active_speaker,
+                                              'lang':detected,'id':msg_id,'mode':mode})
                                 safe_send(ws,{'type':'status','message':'🌍 Translating...'})
                                 translated,engine=translate(text,tgt,src)
-                                safe_send(ws,{'type':'translation','text':translated,'speaker':active_speaker,'engine':engine,'src_lang':src,'tgt_lang':tgt,'id':msg_id})
+                                safe_send(ws,{'type':'translation','text':translated,'speaker':active_speaker,
+                                              'engine':engine,'src_lang':src,'tgt_lang':tgt,'id':msg_id,'mode':mode})
                                 safe_send(ws,{'type':'status','message':'🔊 Speaking...'})
                                 audio_data=tts(translated,tgt)
-                                safe_send(ws,{'type':'audio','data':base64.b64encode(audio_data).decode(),'speaker':active_speaker,'id':msg_id})
+                                safe_send(ws,{'type':'audio','data':base64.b64encode(audio_data).decode(),
+                                              'speaker':active_speaker,'id':msg_id})
                             else:
-                                print(f"[Convo {active_speaker}] Filtered: '{text}'")
+                                print(f"[Convo {active_speaker}/{mode}] Filtered: '{text}'")
                         except Exception as e:
                             print(f"[Convo error] {e}")
                             safe_send(ws,{'type':'error','message':str(e)})

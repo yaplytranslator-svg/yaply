@@ -299,12 +299,33 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 .alt-cost{font-size:0.65rem;font-weight:700;color:var(--green);margin-top:3px;}
 
 /* BUDGET */
-.budget-bars{display:flex;flex-direction:column;gap:12px;}
-.bb-row{display:flex;align-items:center;gap:12px;}
-.bb-label{font-size:0.78rem;font-weight:500;width:110px;flex-shrink:0;text-transform:capitalize;}
-.bb-bar{flex:1;height:7px;background:var(--bg2);border-radius:4px;overflow:hidden;}
-.bb-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.22,1,.36,1);}
-.bb-amount{font-size:0.78rem;font-weight:700;width:80px;text-align:right;flex-shrink:0;}
+.budget-bars{display:flex;flex-direction:column;gap:0;}
+.bud-summary{background:linear-gradient(135deg,var(--charcoal),#1e2a3a);border-radius:var(--r-lg);padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.bud-summary::after{content:'';position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.04);}
+.bud-total-label{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);margin-bottom:4px;}
+.bud-total-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;line-height:1;}
+.bud-ppd{font-size:0.72rem;color:rgba(255,255,255,.5);margin-top:3px;}
+.bud-ppd strong{color:rgba(255,255,255,.85);}
+.bud-stack{height:9px;border-radius:5px;display:flex;overflow:hidden;gap:1.5px;margin:16px 0 10px;}
+.bud-stack-seg{height:100%;transition:width 1.3s cubic-bezier(.22,1,.36,1);}
+.bud-legend{display:flex;flex-wrap:wrap;gap:8px;}
+.bud-leg-item{display:flex;align-items:center;gap:4px;font-size:0.62rem;font-weight:600;color:rgba(255,255,255,.55);}
+.bud-leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.bud-rows{display:flex;flex-direction:column;gap:8px;}
+.bud-row{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);transition:all .2s;}
+.bud-row:hover{border-color:var(--border-md);transform:translateX(2px);}
+.bud-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.bud-info{flex:1;min-width:0;}
+.bud-name{font-size:0.8rem;font-weight:700;text-transform:capitalize;margin-bottom:4px;}
+.bud-bar2{height:4px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+.bud-bar2-fill{height:100%;border-radius:3px;transition:width 1.3s cubic-bezier(.22,1,.36,1);}
+.bud-right{text-align:right;flex-shrink:0;}
+.bud-pct{font-size:0.6rem;font-weight:700;padding:2px 7px;border-radius:100px;margin-bottom:3px;display:inline-block;}
+.bud-amt{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:800;}
+.bud-perp{font-size:0.62rem;color:var(--muted2);margin-top:1px;}
+.bud-tips{margin-top:14px;padding:13px 14px;background:var(--teal-s);border:1px solid var(--teal-m);border-radius:var(--r);}
+.bud-tips-title{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--teal);margin-bottom:7px;}
+.bud-tip-item{font-size:0.73rem;color:var(--charcoal);padding:3px 0;display:flex;gap:6px;line-height:1.5;}
 
 /* GEMS */
 .gems-list{display:flex;flex-direction:column;gap:11px;}
@@ -1137,18 +1158,78 @@ async function renderPlan(plan, currency, journey) {
     dayPanels.appendChild(panel);
   }
 
-  // Budget bars
+  // Budget breakdown — advanced visualization
   const bb = plan.budget_breakdown || {};
   const entries = Object.entries(bb);
-  const vals = entries.map(([,v]) => parseInt((v+'').replace(/[^0-9]/g,''))||0);
-  const maxV = Math.max(...vals, 1);
-  const barCols = ['#1A8A72','#3A6BC8','#E8823A','#28B06A','#8B5CF6','#F0B429'];
-  document.getElementById('budgetList').innerHTML = entries.map(([k,v],i) => `
-    <div class="bb-row">
-      <div class="bb-label">${k}</div>
-      <div class="bb-bar"><div class="bb-fill" style="width:${vals[i]/maxV*100}%;background:${barCols[i%barCols.length]};"></div></div>
-      <div class="bb-amount">${currency} ${v}</div>
-    </div>`).join('');
+  const rawVals = entries.map(([,v]) => parseInt((v+'').replace(/[^0-9]/g,''))||0);
+  const rawSum = rawVals.reduce((a,b)=>a+b,0)||1;
+  const actualBudget = parseInt((currentPlan._meta?.budget||'').replace(/[^0-9]/g,'')) || rawSum;
+  const normVals = rawVals.map(v => Math.round(v/rawSum*actualBudget));
+  if (normVals.length) normVals[normVals.length-1] += actualBudget - normVals.reduce((a,b)=>a+b,0);
+  const numPeople = parseInt(currentPlan._meta?.people)||1;
+  const numDays = parseInt(plan.days)||1;
+  const perPerson = Math.round(actualBudget/numPeople);
+  const perDay = Math.round(actualBudget/numDays);
+  const CAT_META = {
+    flights:        { icon:'✈', color:'#3A6BC8', bg:'rgba(58,107,200,.13)' },
+    accommodation:  { icon:'🏨', color:'#1A8A72', bg:'rgba(26,138,114,.13)' },
+    food:           { icon:'🍜', color:'#E8823A', bg:'rgba(232,130,58,.13)' },
+    local_transport:{ icon:'🚌', color:'#8B5CF6', bg:'rgba(139,92,246,.13)' },
+    activities:     { icon:'🎯', color:'#28B06A', bg:'rgba(40,176,106,.13)' },
+    shopping:       { icon:'🛍', color:'#F0B429', bg:'rgba(240,180,41,.13)' },
+    miscellaneous:  { icon:'💼', color:'#94A3B8', bg:'rgba(148,163,184,.13)' },
+  };
+  const fallbackColors = ['#3A6BC8','#1A8A72','#E8823A','#8B5CF6','#28B06A','#F0B429','#94A3B8'];
+  const stackSegs = entries.map(([k],i) => {
+    const pct = normVals[i]/actualBudget*100;
+    const col = (CAT_META[k]||{color:fallbackColors[i%fallbackColors.length]}).color;
+    return `<div class="bud-stack-seg" style="flex:${pct} 1 0;background:${col};"></div>`;
+  }).join('');
+  const rowsHtml = entries.map(([k],i) => {
+    const meta = CAT_META[k]||{icon:'•',color:fallbackColors[i%fallbackColors.length],bg:'rgba(148,163,184,.13)'};
+    const pct = Math.round(normVals[i]/actualBudget*100);
+    const label = k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    return `<div class="bud-row">
+      <div class="bud-icon" style="background:${meta.bg};color:${meta.color};">${meta.icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.78rem;font-weight:700;color:var(--text);">${label}</div>
+        <div style="font-size:.6rem;color:var(--muted2);margin-top:1px;">${currency} ${perPerson>0?Math.round(normVals[i]/numPeople).toLocaleString():'-'} / person</div>
+      </div>
+      <span class="bud-pct" style="background:${meta.bg};color:${meta.color};">${pct}%</span>
+      <div class="bud-amt" style="color:${meta.color};">${currency} ${normVals[i].toLocaleString()}</div>
+    </div>`;
+  }).join('');
+  const legendHtml = entries.map(([k],i)=>{
+    const col=(CAT_META[k]||{color:fallbackColors[i%fallbackColors.length]}).color;
+    return `<div style="display:flex;align-items:center;gap:4px;"><div style="width:7px;height:7px;border-radius:50%;background:${col};flex-shrink:0;"></div><span style="font-size:.58rem;color:rgba(255,255,255,.6);">${k.replace(/_/g,' ')}</span></div>`;
+  }).join('');
+  const tipsHtml = (plan.budget_tips||[]).length ? `<div class="bud-tips">
+    <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--teal);margin-bottom:8px;">Money-Saving Tips</div>
+    ${plan.budget_tips.map(tip=>`<div style="font-size:.72rem;color:var(--text);padding:4px 0;border-bottom:1px solid rgba(26,138,114,.1);">· ${tip}</div>`).join('')}
+  </div>` : '';
+  document.getElementById('budgetList').innerHTML = `
+    <div class="bud-summary">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:4px;">Total Budget</div>
+          <div class="bud-total-val">${currency} ${actualBudget.toLocaleString()}</div>
+        </div>
+        <div style="display:flex;gap:16px;">
+          <div style="text-align:right;">
+            <div style="font-size:.6rem;color:rgba(255,255,255,.45);margin-bottom:2px;">Per Person</div>
+            <div style="font-size:.82rem;font-weight:800;color:#fff;">${currency} ${perPerson.toLocaleString()}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:.6rem;color:rgba(255,255,255,.45);margin-bottom:2px;">Per Day</div>
+            <div style="font-size:.82rem;font-weight:800;color:#fff;">${currency} ${perDay.toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+      <div class="bud-stack">${stackSegs}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">${legendHtml}</div>
+    </div>
+    <div class="bud-rows">${rowsHtml}</div>
+    ${tipsHtml}`;
 
   // Gems
   if (plan.hidden_gems?.length) {
@@ -1517,6 +1598,15 @@ async function checkVisa() {
 
 // Init currency
 convertCurrency();
+
+// Auto-fill from URL params (e.g. redirected from Discover page)
+(function() {
+  const p = new URLSearchParams(window.location.search);
+  const dest = p.get('dest'), from = p.get('from'), days = p.get('days');
+  if (dest) { const el = document.getElementById('destination'); if (el) el.value = dest; }
+  if (from) { const el = document.getElementById('origin');      if (el) el.value = from; }
+  if (days) { const el = document.getElementById('days');        if (el) el.value = Math.min(Math.max(parseInt(days)||5,1),60); }
+})();
 </script>
 </body>
 </html>
