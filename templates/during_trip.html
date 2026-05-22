@@ -3,551 +3,688 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Yaply — During Trip Tools</title>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<title>Yaply — During Trip</title>
+<link rel="icon" href="/static/favicon.png" type="image/png"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --bg:#F7F5F0;--bg2:#EFECEA;--surface:#FFFFFF;
-  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.12);
-  --text:#0A0A0A;--muted:#6B6B6B;--muted2:#9B9B9B;
-  --accent:#00C9A7;--accent2:#00A896;--accent-soft:rgba(0,201,167,0.1);
-  --red:#FF4757;--gold:#FFB347;--blue:#4A90D9;--green:#2ECC71;
-  --shadow:0 2px 12px rgba(0,0,0,0.06);--shadow-lg:0 12px 40px rgba(0,0,0,0.1);
-  --r:16px;--r-lg:24px;
-}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-
-nav{
-  position:fixed;top:0;left:0;right:0;
-  background:rgba(247,245,240,0.95);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  padding:16px 24px;
-  display:flex;align-items:center;justify-content:space-between;
-  z-index:100;
+:root{
+  --teal:#1A8A72;--teal-s:rgba(26,138,114,0.08);--teal-m:rgba(26,138,114,0.15);
+  --amber:#E8823A;--amber-s:rgba(232,130,58,0.08);
+  --sky:#3A6BC8;--sky-s:rgba(58,107,200,0.08);
+  --charcoal:#2C2B28;--stone:#C8C4B2;
+  --green:#28B06A;--green-s:rgba(40,176,106,0.08);
+  --red:#D84C3E;--red-s:rgba(216,76,62,0.08);--red-m:rgba(216,76,62,0.15);
+  --purple:#8B5CF6;--gold:#F0B429;--gold-s:rgba(240,180,41,0.08);
+  --bg:#F7F6F2;--bg2:#EFEDE8;--white:#FFFFFF;
+  --border:rgba(200,196,178,0.35);--border-md:rgba(200,196,178,0.6);
+  --text:#2C2B28;--muted:#6B6860;--muted2:#9B9890;
+  --nav-h:64px;--r:10px;--r-lg:16px;--r-xl:20px;
+  --shadow:0 2px 12px rgba(44,43,40,0.06);
+  --shadow-lg:0 12px 40px rgba(44,43,40,0.1);
 }
-.nav-logo{font-family:'Instrument Serif',serif;font-size:1.3rem;font-style:italic;color:var(--text);}
-.nav-logo span{color:var(--accent);}
+html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-.hero{
-  padding:88px 24px 32px;
-  max-width:900px;margin:0 auto;
-  text-align:center;
+/* ── PARALLAX HERO ── */
+.page-hero{
+  position:relative;overflow:hidden;
+  min-height:320px;
+  background:linear-gradient(145deg,#1A2744 0%,#2C1A28 40%,#1A2C28 100%);
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:var(--nav-h) 0 0;
 }
-.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(2rem,5vw,2.8rem);line-height:1.1;letter-spacing:-0.5px;margin-bottom:12px;}
-.hero h1 em{color:var(--red);font-style:italic;}
-.hero p{font-size:0.95rem;color:var(--muted);max-width:500px;margin:0 auto;line-height:1.7;}
+.hero-bg-svg{
+  position:absolute;inset:0;overflow:hidden;pointer-events:none;
+}
+.hero-bg-svg svg{width:100%;height:100%;opacity:0.07;}
+.hero-orb{
+  position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;
+}
+.orb1{width:400px;height:400px;background:rgba(216,76,62,0.25);top:-120px;right:-80px;animation:orbFloat 8s ease-in-out infinite;}
+.orb2{width:300px;height:300px;background:rgba(26,138,114,0.2);bottom:-80px;left:-60px;animation:orbFloat 10s 1s ease-in-out infinite reverse;}
+.orb3{width:200px;height:200px;background:rgba(232,130,58,0.15);top:40%;left:30%;animation:orbFloat 12s 2s ease-in-out infinite;}
+@keyframes orbFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-20px);}}
 
-.sos-banner{
-  max-width:900px;margin:0 auto 24px;
-  padding:0 24px;
+.hero-content{position:relative;z-index:2;padding:40px 28px 36px;}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(216,76,62,0.2);border:1px solid rgba(216,76,62,0.3);
+  border-radius:100px;padding:4px 12px;
+  font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.8);
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;
 }
+.hero-dot{width:5px;height:5px;border-radius:50%;background:#D84C3E;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.hero-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;color:#fff;letter-spacing:-1px;line-height:1.05;margin-bottom:10px;}
+.hero-title .accent{color:#E8823A;}
+.hero-sub{font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.7;max-width:480px;}
+
+/* Floating tool icons */
+.float-icons{position:absolute;inset:0;pointer-events:none;z-index:1;}
+.hero-fi{position:absolute;opacity:0.06;}
+.hero-fi svg{fill:none;stroke:#fff;stroke-width:1.5;}
+
+/* ── SOS BANNER ── */
+.sos-wrap{max-width:900px;margin:-20px auto 0;padding:0 24px;position:relative;z-index:10;}
 .sos-card{
-  background:linear-gradient(135deg,var(--red),#FF6B6B);
-  border-radius:var(--r-lg);padding:20px 24px;
-  display:flex;align-items:center;gap:16px;
-  cursor:pointer;transition:transform 0.2s;
-  box-shadow:0 8px 32px rgba(255,71,87,0.3);
+  background:linear-gradient(135deg,#D84C3E,#B83830);
+  border-radius:var(--r-xl);padding:18px 22px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:all .25s;
+  box-shadow:0 8px 32px rgba(216,76,62,0.4);
+  border:1px solid rgba(255,255,255,0.1);
 }
-.sos-card:hover{transform:scale(1.01);}
-.sos-icon{font-size:2rem;}
-.sos-text{flex:1;color:white;}
-.sos-title{font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:700;}
-.sos-sub{font-size:0.82rem;opacity:0.85;margin-top:2px;}
-.sos-arrow{color:rgba(255,255,255,0.7);font-size:1.2rem;}
+.sos-card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(216,76,62,0.5);}
+.sos-ico{width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sos-ico svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;}
+.sos-text{flex:1;}
+.sos-title{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;color:#fff;margin-bottom:2px;}
+.sos-sub{font-size:0.72rem;color:rgba(255,255,255,.65);}
+.sos-arrow{color:rgba(255,255,255,.5);font-size:1.1rem;}
 
-.tools-nav{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:12px;max-width:900px;margin:0 auto 32px;
-  padding:0 24px;
+/* ── TOOLS NAV ── */
+.tools-nav-wrap{max-width:900px;margin:20px auto 0;padding:0 24px;}
+.tools-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+@media(max-width:700px){.tools-nav{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:400px){.tools-nav{grid-template-columns:repeat(2,1fr);}}
+
+.tnav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  padding:14px 8px;background:var(--white);
+  border:1.5px solid var(--border);border-radius:var(--r-lg);
+  cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;
+  font-size:0.7rem;font-weight:600;color:var(--muted);text-align:center;
 }
-@media(max-width:600px){.tools-nav{grid-template-columns:repeat(2,1fr);}}
-.tool-nav-btn{
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-  padding:16px 12px;background:var(--surface);
-  border:1.5px solid var(--border);border-radius:var(--r);
-  cursor:pointer;transition:all 0.2s;
-  font-family:'Geist',sans-serif;font-size:0.78rem;font-weight:600;
-  color:var(--muted);text-align:center;
+.tnav-btn:hover{border-color:var(--teal);color:var(--teal);transform:translateY(-2px);box-shadow:var(--shadow);}
+.tnav-btn.active{border-color:var(--teal);background:var(--teal-s);color:var(--teal);}
+.tnav-btn.active .tnb-ico{background:var(--teal-m);}
+.tnav-btn.active .tnb-ico svg{stroke:var(--teal);}
+.tnb-ico{width:36px;height:36px;border-radius:9px;background:var(--bg2);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.tnb-ico svg{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;transition:stroke .2s;}
+
+/* ── MAIN ── */
+.main{max-width:900px;margin:20px auto 0;padding:0 24px 80px;}
+
+/* ── PANELS ── */
+.tool-panel{display:none;}
+.tool-panel.active{display:block;animation:panelIn .35s cubic-bezier(.22,1,.36,1);}
+@keyframes panelIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── CARDS ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px;position:relative;}
+.card-accent-top{height:3px;background:linear-gradient(90deg,var(--teal),var(--sky));}
+.card-accent-top.red{background:linear-gradient(90deg,var(--red),var(--amber));}
+.card-accent-top.amber{background:linear-gradient(90deg,var(--amber),var(--gold));}
+.card-accent-top.green{background:linear-gradient(90deg,var(--green),var(--teal));}
+.card-accent-top.sky{background:linear-gradient(90deg,var(--sky),var(--purple));}
+
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to right,var(--bg),var(--white));}
+.card-title{display:flex;align-items:center;gap:9px;font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:800;color:var(--charcoal);}
+.card-title-ico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.card-title-ico svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
+.cti-red{background:var(--red-s);color:var(--red);}
+.cti-amber{background:var(--amber-s);color:var(--amber);}
+.cti-sky{background:var(--sky-s);color:var(--sky);}
+.cti-teal{background:var(--teal-s);color:var(--teal);}
+.cti-green{background:var(--green-s);color:var(--green);}
+.cti-gold{background:var(--gold-s);color:var(--gold);}
+.card-badge{font-size:0.6rem;font-weight:700;padding:3px 9px;border-radius:100px;letter-spacing:.5px;}
+.cb-red{background:var(--red-s);color:var(--red);}
+.cb-sky{background:var(--sky-s);color:var(--sky);}
+.cb-teal{background:var(--teal-s);color:var(--teal);}
+.card-body{padding:18px 20px;}
+
+/* ── FORM ELEMENTS ── */
+.fg{margin-bottom:14px;}
+.fl{display:block;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);margin-bottom:5px;}
+.fi{width:100%;background:var(--bg);border:1.5px solid var(--border-md);border-radius:var(--r);padding:10px 13px;font-family:'Inter',sans-serif;font-size:0.82rem;color:var(--text);font-weight:500;outline:none;transition:all .2s;-webkit-appearance:none;}
+.fi:focus{border-color:var(--teal);background:var(--white);box-shadow:0 0 0 3px rgba(26,138,114,0.1);}
+.fi::placeholder{color:var(--muted2);font-weight:400;}
+.fg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:560px){.fg-grid{grid-template-columns:1fr;}}
+
+/* ── BUTTONS ── */
+.btn{
+  width:100%;padding:12px;border:none;border-radius:var(--r);
+  font-family:'Inter',sans-serif;font-size:0.85rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
 }
-.tool-nav-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
-.tool-nav-btn.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent2);}
-.tnb-icon{font-size:1.5rem;}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:hover{background:#158068;transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,138,114,0.3);}
+.btn-red{background:var(--red);color:#fff;}
+.btn-red:hover{background:#B83830;transform:translateY(-1px);box-shadow:0 6px 20px rgba(216,76,62,0.3);}
+.btn-sky{background:var(--sky);color:#fff;}
+.btn-sky:hover{background:#2D5AB5;transform:translateY(-1px);}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
 
-.main{max-width:900px;margin:0 auto;padding:0 24px 80px;}
-
-.tool-panel{display:none;animation:fadeUp 0.4s ease both;}
-.tool-panel.active{display:block;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);margin-bottom:20px;}
-.card-header{padding:20px 24px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;}
-.card-title{font-family:'Instrument Serif',serif;font-size:1.1rem;display:flex;align-items:center;gap:10px;}
-.card-body{padding:24px;}
-
-.form-group{margin-bottom:16px;}
-.form-label{display:block;font-size:0.72rem;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted2);margin-bottom:6px;}
-.form-input{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px 16px;font-family:'Geist',sans-serif;font-size:0.92rem;color:var(--text);outline:none;transition:border-color 0.2s;}
-.form-input:focus{border-color:var(--accent);background:white;}
-.form-input::placeholder{color:var(--muted2);}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
-
-.btn-primary{width:100%;padding:14px;background:var(--text);color:white;border:none;border-radius:100px;font-family:'Geist',sans-serif;font-size:0.92rem;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;}
-.btn-primary:hover{background:#1a1a2e;transform:translateY(-1px);}
-.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-.btn-danger{background:var(--red);box-shadow:0 4px 16px rgba(255,71,87,0.3);}
-.btn-danger:hover{background:#E8392A;}
-
-.result-container{display:none;margin-top:20px;animation:fadeUp 0.4s ease both;}
-.result-container.show{display:block;}
-
-.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;font-size:0.78rem;font-weight:700;}
-.badge-green{background:rgba(46,204,113,0.1);color:#27AE60;}
-.badge-yellow{background:rgba(255,179,71,0.12);color:#E5930A;}
-.badge-orange{background:rgba(255,100,50,0.1);color:#E85A20;}
-.badge-red{background:rgba(255,71,87,0.1);color:var(--red);}
-.badge-blue{background:rgba(74,144,217,0.1);color:var(--blue);}
-
-.spinner{display:none;align-items:center;justify-content:center;gap:12px;padding:24px;color:var(--muted);font-size:0.85rem;}
+/* ── SPINNER ── */
+.spinner{display:none;align-items:center;justify-content:center;gap:10px;padding:20px;color:var(--muted);font-size:0.78rem;}
 .spinner.show{display:flex;}
-.spin-circle{width:20px;height:20px;border:2px solid rgba(0,201,167,0.3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+.spin-ring{width:18px;height:18px;border:2px solid var(--teal-m);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-.severity-bar{height:8px;border-radius:4px;background:var(--bg2);overflow:hidden;margin:8px 0;}
-.severity-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+/* ── RESULT ── */
+.result{display:none;margin-top:14px;animation:panelIn .35s ease both;}
+.result.show{display:block;}
 
-.phrase-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;}
-.phrase-english{font-size:0.88rem;font-weight:600;margin-bottom:6px;}
-.phrase-local{font-size:1rem;color:var(--accent2);font-weight:700;margin-bottom:4px;}
-.phrase-pron{font-size:0.75rem;color:var(--muted);font-style:italic;}
-.copy-phrase{float:right;padding:4px 12px;background:none;border:1px solid var(--border2);border-radius:100px;font-size:0.72rem;cursor:pointer;font-family:'Geist',sans-serif;transition:all 0.2s;}
-.copy-phrase:hover{border-color:var(--accent);color:var(--accent);}
+/* ── SEVERITY / VERDICT ── */
+.verdict-box{border-radius:var(--r-lg);padding:20px;text-align:center;margin-bottom:16px;}
+.verdict-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:4px;}
+.verdict-sub{font-size:0.78rem;color:var(--muted);line-height:1.6;}
 
-.scam-card{border-radius:var(--r);padding:0;margin-bottom:12px;border:1px solid var(--border);overflow:hidden;}
-.scam-header{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--bg);}
-.scam-icon{font-size:1.3rem;}
-.scam-name{font-size:0.92rem;font-weight:700;flex:1;}
-.scam-cat{font-size:0.68rem;color:var(--muted);background:var(--bg2);padding:3px 10px;border-radius:100px;}
-.scam-sev{font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:100px;}
-.scam-body{padding:16px 18px;display:none;border-top:1px solid var(--border);}
-.scam-body.open{display:block;}
-.scam-detail-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:6px;margin-top:12px;}
-.scam-detail-label:first-child{margin-top:0;}
+/* ── PHRASE CARD ── */
+.phrase-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;position:relative;}
+.phrase-eng{font-size:0.78rem;font-weight:600;margin-bottom:4px;color:var(--charcoal);}
+.phrase-local{font-size:0.95rem;font-weight:700;color:var(--teal);margin-bottom:3px;}
+.phrase-pron{font-size:0.68rem;color:var(--muted);font-style:italic;}
+.phrase-copy{position:absolute;top:10px;right:12px;padding:3px 10px;border:1px solid var(--border-md);border-radius:100px;font-family:'Inter',sans-serif;font-size:0.6rem;font-weight:700;color:var(--muted);cursor:pointer;background:none;transition:all .15s;}
+.phrase-copy:hover{border-color:var(--teal);color:var(--teal);}
 
-.allergy-tag{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;border:1.5px solid var(--red);background:rgba(255,71,87,0.06);color:var(--red);font-size:0.82rem;font-weight:700;margin:4px;cursor:pointer;transition:all 0.2s;}
-.allergy-tag.selected{background:var(--red);color:white;}
+/* ── SCAM CARD ── */
+.scam-card{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:8px;transition:all .2s;}
+.scam-card:hover{border-color:var(--border-md);}
+.scam-head{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--bg);transition:background .15s;}
+.scam-head:hover{background:var(--bg2);}
+.scam-ico{width:32px;height:32px;border-radius:8px;background:var(--red-s);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.scam-ico svg{width:14px;height:14px;stroke:var(--red);fill:none;stroke-width:2;}
+.scam-name{font-size:0.82rem;font-weight:700;flex:1;}
+.scam-sev{font-size:0.58rem;font-weight:700;padding:2px 8px;border-radius:100px;flex-shrink:0;}
+.sev-danger{background:var(--red-s);color:var(--red);}
+.sev-costly{background:var(--amber-s);color:var(--amber);}
+.sev-minor{background:var(--green-s);color:var(--green);}
+.scam-expand{width:18px;height:18px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .2s;}
+.scam-expand svg{width:9px;height:9px;stroke:var(--muted);fill:none;stroke-width:2.5;}
+.scam-card.open .scam-expand{transform:rotate(180deg);}
+.scam-body{display:none;padding:13px 14px;border-top:1px solid var(--border);}
+.scam-card.open .scam-body{display:block;}
+.scam-sec-title{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:5px;margin-top:10px;}
+.scam-sec-title:first-child{margin-top:0;}
 
-.step-card{display:flex;align-items:flex-start;gap:14px;padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:8px;}
-.step-badge{width:28px;height:28px;border-radius:50%;background:var(--accent);color:white;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.step-action{font-size:0.88rem;font-weight:700;margin-bottom:2px;}
-.step-timing{font-size:0.75rem;color:var(--muted);}
+/* ── ALLERGY TAGS ── */
+.allergy-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.a-tag{padding:6px 12px;border-radius:8px;border:1.5px solid var(--border-md);background:none;font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
+.a-tag:hover{border-color:var(--red);color:var(--red);}
+.a-tag.sel{background:var(--red-s);border-color:var(--red);color:var(--red);}
 
-.verdict-card{border-radius:var(--r-lg);padding:24px;margin-bottom:20px;text-align:center;}
-.verdict-icon{font-size:3rem;margin-bottom:12px;}
-.verdict-title{font-family:'Instrument Serif',serif;font-size:1.4rem;font-weight:700;margin-bottom:8px;}
-.verdict-sub{font-size:0.88rem;color:var(--muted);margin-bottom:16px;}
+/* ── TRAVELLER TYPE ── */
+.traveller-opts{display:flex;flex-wrap:wrap;gap:6px;}
+.t-opt{padding:6px 12px;border-radius:8px;border:1.5px solid var(--border-md);background:none;font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
+.t-opt:hover{border-color:var(--teal);color:var(--teal);}
+.t-opt.sel{background:var(--teal-s);border-color:var(--teal);color:var(--teal);}
 
-.price-compare{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0;}
-@media(max-width:500px){.price-compare{grid-template-columns:1fr;}}
-.pc-item{padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;}
-.pc-label{font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:6px;}
-.pc-value{font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:700;}
+/* ── STEP LIST ── */
+.step-item{display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:6px;}
+.step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.62rem;font-weight:800;color:#fff;flex-shrink:0;}
+.sn-red{background:var(--red);}
+.sn-teal{background:var(--teal);}
+.sn-sky{background:var(--sky);}
+.step-text{font-size:0.78rem;line-height:1.55;}
+.step-sub{font-size:0.68rem;color:var(--muted);margin-top:2px;}
 
-.route-option{padding:16px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
-.route-icon{font-size:1.3rem;}
-.route-name{font-size:0.9rem;font-weight:700;margin-bottom:4px;}
-.route-details{font-size:0.78rem;color:var(--muted);}
-.route-safety{font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;margin-left:auto;flex-shrink:0;}
+/* ── PRICE COMPARE ── */
+.price-compare{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;}
+@media(max-width:480px){.price-compare{grid-template-columns:1fr;}}
+.pc-item{padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);text-align:center;}
+.pc-label{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:4px;}
+.pc-val{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;}
 
-.immig-q{background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:10px;overflow:hidden;}
-.immig-q-header{padding:14px 18px;font-size:0.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:var(--bg);}
-.immig-q-body{padding:16px 18px;display:none;border-top:1px solid var(--border);}
-.immig-q-body.open{display:block;}
-.immig-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:4px;margin-top:10px;}
+/* ── ROUTE OPTION ── */
+.route-opt{display:flex;align-items:flex-start;gap:11px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;}
+.ro-ico{width:32px;height:32px;border-radius:8px;background:var(--sky-s);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ro-ico svg{width:14px;height:14px;stroke:var(--sky);fill:none;stroke-width:1.8;}
+.ro-name{font-size:0.8rem;font-weight:700;margin-bottom:2px;}
+.ro-detail{font-size:0.7rem;color:var(--muted);line-height:1.5;}
+.ro-safety{font-size:0.58rem;font-weight:700;padding:2px 8px;border-radius:100px;margin-left:auto;flex-shrink:0;}
+.rs-safe{background:var(--green-s);color:var(--green);}
+.rs-mod{background:var(--amber-s);color:var(--amber);}
+.rs-risk{background:var(--red-s);color:var(--red);}
+
+/* ── IMMIG Q ── */
+.immig-q{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:6px;}
+.immig-head{padding:11px 14px;font-size:0.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:var(--bg);transition:background .15s;}
+.immig-head:hover{background:var(--bg2);}
+.immig-head svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2;transition:transform .2s;flex-shrink:0;}
+.immig-q.open .immig-head svg{transform:rotate(180deg);}
+.immig-body{display:none;padding:12px 14px;border-top:1px solid var(--border);}
+.immig-q.open .immig-body{display:block;}
+.immig-label{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:4px;margin-top:9px;}
 .immig-label:first-child{margin-top:0;}
 
-.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:white;padding:12px 20px;border-radius:100px;font-size:0.82rem;font-weight:500;opacity:0;transform:translateY(10px);transition:all 0.3s;z-index:200;}
-.toast.show{opacity:1;transform:translateY(0);}
+/* ── ALLERGY VISUAL CARD ── */
+.allergy-visual{background:linear-gradient(135deg,#D84C3E,#B83830);border-radius:var(--r-xl);padding:22px;color:#fff;margin-bottom:14px;position:relative;overflow:hidden;}
+.allergy-visual::before{content:'';position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.allergy-visual::after{content:'';position:absolute;right:20px;bottom:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.04);}
+.av-logo{font-size:0.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:10px;}
+.av-name{font-size:1.1rem;font-weight:800;margin-bottom:6px;}
+.av-allergy{font-size:0.82rem;font-weight:700;opacity:.9;margin-bottom:6px;}
+.av-warning{font-size:0.7rem;opacity:.75;line-height:1.6;}
+.av-local{font-size:0.78rem;opacity:.85;margin-top:10px;font-style:italic;border-top:1px solid rgba(255,255,255,.15);padding-top:10px;}
 
-.print-btn{width:100%;padding:12px;background:none;border:1.5px solid var(--border2);border-radius:100px;font-family:'Geist',sans-serif;font-size:0.85rem;font-weight:700;color:var(--text);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;}
-.print-btn:hover{border-color:var(--accent);color:var(--accent);}
+/* ── COMPENSATION BOX ── */
+.comp-box{border-radius:var(--r-lg);padding:18px;text-align:center;margin-bottom:14px;}
+.comp-box.yes{background:var(--green-s);border:1px solid rgba(40,176,106,.2);}
+.comp-box.no{background:var(--gold-s);border:1px solid rgba(240,180,41,.2);}
+.comp-amount{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:3px;}
+.comp-basis{font-size:0.72rem;color:var(--muted);}
 
-.allergy-card-visual{background:linear-gradient(135deg,var(--red),#FF6B6B);border-radius:20px;padding:28px;color:white;margin-bottom:16px;position:relative;overflow:hidden;}
-.ac-logo{font-size:0.8rem;opacity:0.5;margin-bottom:12px;font-family:'Instrument Serif',serif;font-style:italic;}
-.ac-name{font-size:1.3rem;font-weight:700;margin-bottom:8px;}
-.ac-allergies{font-size:1rem;font-weight:800;margin-bottom:8px;}
-.ac-warning{font-size:0.75rem;opacity:0.85;line-height:1.5;}
-.ac-local{font-size:0.88rem;opacity:0.9;margin-top:12px;font-style:italic;}
+/* ── INFO ROW ── */
+.info-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.info-pill{padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:0.72rem;font-weight:600;display:flex;align-items:center;gap:5px;}
+.info-pill svg{width:11px;height:11px;stroke:var(--teal);fill:none;stroke-width:2;}
+
+/* ── EMERGENCY ── */
+.em-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+@media(max-width:480px){.em-grid{grid-template-columns:1fr;}}
+.em-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:11px;text-align:center;}
+.em-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:3px;}
+.em-num{font-size:1rem;font-weight:800;color:var(--red);}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:200;}
+.nav-left{display:flex;align-items:center;gap:9px;}
+.nav-back{display:flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:600;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .15s;}
+.nav-back:hover{background:var(--bg2);color:var(--charcoal);}
+.nav-back svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+.nav-logo-mark{width:28px;height:28px;border-radius:8px;background:var(--teal);display:flex;align-items:center;justify-content:center;}
+.nav-logo-mark svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2;}
+.nav-logo-name{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--charcoal);}
+.nav-right{display:flex;align-items:center;gap:6px;}
+.nav-link{padding:6px 12px;border-radius:7px;border:none;background:none;font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:600;color:var(--muted);cursor:pointer;text-decoration:none;transition:all .15s;}
+.nav-link:hover{background:var(--bg2);color:var(--charcoal);}
+.nav-link.primary{background:var(--teal);color:#fff;}
+.nav-link.primary:hover{background:#158068;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--charcoal);color:#fff;padding:9px 18px;border-radius:100px;font-size:0.72rem;font-weight:600;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.2);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
-<link rel="stylesheet" href="/static/yaply-theme.css"/>
 </head>
 <body>
 
-<nav>
-  <div class="nav-logo">ya<span>ply</span></div>
-  <a href="/" style="font-size:0.82rem;font-weight:600;color:var(--muted);text-decoration:none;">← Trip Planner</a>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-left">
+    <a href="/app" class="nav-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Dashboard</a>
+    <div style="width:1px;height:16px;background:var(--border);margin:0 2px;"></div>
+    <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <span class="nav-logo-name">Yaply</span>
+  </div>
+  <div class="nav-right">
+    <a class="nav-link" href="/plan">Trip Planner</a>
+    <a class="nav-link primary" href="/translate">Live Translate</a>
+  </div>
 </nav>
 
-<div class="hero">
-  <h1>You're <em>Travelling.</em><br/>We've Got You.</h1>
-  <p>Real-time help for every problem you face abroad — medical emergencies, scams, safety, flight rights and more.</p>
-</div>
-
-<!-- SOS Banner -->
-<div class="sos-banner">
-  <div class="sos-card" onclick="switchTool('medical')">
-    <div class="sos-icon">🚨</div>
-    <div class="sos-text">
-      <div class="sos-title">Medical Emergency?</div>
-      <div class="sos-sub">Translate symptoms instantly · Find nearest hospital · Get emergency phrases</div>
-    </div>
-    <div class="sos-arrow">›</div>
+<!-- HERO -->
+<div class="page-hero">
+  <!-- Floating SVGs -->
+  <div class="float-icons">
+    <div class="hero-fi" style="top:20%;left:8%;"><svg width="60" height="60" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    <div class="hero-fi" style="top:30%;right:12%;"><svg width="50" height="50" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5"/><path d="M16.05 2.11a20 20 0 0 1 5.94 5.94"/></svg></div>
+    <div class="hero-fi" style="bottom:30%;left:20%;"><svg width="45" height="45" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+    <div class="hero-fi" style="top:15%;right:30%;"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+    <div class="hero-fi" style="bottom:20%;right:8%;"><svg width="55" height="55" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+  </div>
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+  <div class="hero-orb orb3"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow"><div class="hero-dot"></div>Real-Time Travel Help</div>
+    <div class="hero-title">You're <span class="accent">Travelling.</span><br/>We've Got You.</div>
+    <div class="hero-sub">Medical emergencies, scam alerts, price checks, flight rights — every tool you need, right now.</div>
   </div>
 </div>
 
-<!-- Tools Nav -->
-<div class="tools-nav">
-  <button class="tool-nav-btn active" onclick="switchTool('medical')">
-    <span class="tnb-icon">🏥</span>Medical Help
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('price')">
-    <span class="tnb-icon">💰</span>Price Check
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('scams')">
-    <span class="tnb-icon">🚨</span>Scam Alerts
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('allergy')">
-    <span class="tnb-icon">🍜</span>Allergy Card
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('flight')">
-    <span class="tnb-icon">✈️</span>Flight Rights
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('safety')">
-    <span class="tnb-icon">🛡️</span>Safe Route
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('immigration')">
-    <span class="tnb-icon">🛂</span>Immigration
-  </button>
+<!-- SOS -->
+<div class="sos-wrap">
+  <div class="sos-card" onclick="switchTool('medical',event)">
+    <div class="sos-ico"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+    <div class="sos-text">
+      <div class="sos-title">Medical Emergency? Tap Here.</div>
+      <div class="sos-sub">Translate symptoms · Find hospital · Get emergency phrases instantly</div>
+    </div>
+    <span class="sos-arrow">›</span>
+  </div>
 </div>
 
+<!-- TOOLS NAV -->
+<div class="tools-nav-wrap">
+  <div class="tools-nav">
+    <button class="tnav-btn active" id="tn-medical" onclick="switchTool('medical',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>Medical
+    </button>
+    <button class="tnav-btn" id="tn-price" onclick="switchTool('price',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>Price Check
+    </button>
+    <button class="tnav-btn" id="tn-scams" onclick="switchTool('scams',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>Scam Alerts
+    </button>
+    <button class="tnav-btn" id="tn-allergy" onclick="switchTool('allergy',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>Allergy Card
+    </button>
+    <button class="tnav-btn" id="tn-flight" onclick="switchTool('flight',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>Flight Rights
+    </button>
+    <button class="tnav-btn" id="tn-safety" onclick="switchTool('safety',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Safe Route
+    </button>
+    <button class="tnav-btn" id="tn-immigration" onclick="switchTool('immigration',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>Immigration
+    </button>
+  </div>
+</div>
+
+<!-- MAIN -->
 <div class="main">
 
-  <!-- MEDICAL -->
+  <!-- ── MEDICAL ── -->
   <div class="tool-panel active" id="panel-medical">
     <div class="card">
+      <div class="card-accent-top red"></div>
       <div class="card-header">
-        <div class="card-title">🏥 Medical Emergency Translator</div>
-        <div class="badge badge-red">🚨 Emergency Tool</div>
+        <div class="card-title">
+          <div class="card-title-ico cti-red"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+          Medical Emergency Translator
+        </div>
+        <div class="card-badge cb-red">Emergency Tool</div>
       </div>
       <div class="card-body">
-        <div style="padding:12px 16px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);margin-bottom:20px;font-size:0.82rem;color:var(--muted);line-height:1.6;">
-          ⚠️ For life-threatening emergencies, call local emergency services immediately. This tool helps you communicate symptoms to medical staff.
+        <div style="background:var(--red-s);border:1px solid var(--red-m);border-radius:var(--r);padding:10px 13px;margin-bottom:16px;font-size:0.72rem;color:var(--red);line-height:1.6;">
+          For life-threatening emergencies, call local emergency services immediately. This tool helps you communicate symptoms to medical staff.
         </div>
-        <div class="form-group">
-          <label class="form-label">🤒 Describe Your Symptoms</label>
-          <textarea class="form-input" id="symptoms" rows="3" placeholder="e.g. I have severe stomach pain and fever since 2 hours. I feel nauseous and dizzy." style="resize:none;"></textarea>
+        <div class="fg">
+          <label class="fl">Describe Your Symptoms</label>
+          <textarea class="fi" id="symptoms" rows="3" placeholder="e.g. I have severe stomach pain and fever for 2 hours. I feel nauseous and dizzy." style="resize:none;"></textarea>
         </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">🌍 Where Are You?</label>
-            <input class="form-input" type="text" id="medDest" placeholder="e.g. Tokyo, Japan"/>
+        <div class="fg-grid">
+          <div class="fg">
+            <label class="fl">Where Are You?</label>
+            <input class="fi" type="text" id="medDest" placeholder="e.g. Tokyo, Japan"/>
           </div>
-          <div class="form-group">
-            <label class="form-label">🗣️ Local Language</label>
-            <select class="form-input" id="medLang">
-              <option value="Japanese">Japanese</option>
-              <option value="French">French</option>
-              <option value="Spanish">Spanish</option>
-              <option value="German">German</option>
-              <option value="Chinese">Chinese (Mandarin)</option>
-              <option value="Arabic">Arabic</option>
-              <option value="Thai">Thai</option>
-              <option value="Korean">Korean</option>
-              <option value="Portuguese">Portuguese</option>
-              <option value="Italian">Italian</option>
-              <option value="Turkish">Turkish</option>
-              <option value="Indonesian">Indonesian</option>
+          <div class="fg">
+            <label class="fl">Local Language</label>
+            <select class="fi" id="medLang">
+              <option>Japanese</option><option>French</option><option>Spanish</option>
+              <option>German</option><option>Chinese (Mandarin)</option><option>Arabic</option>
+              <option>Thai</option><option>Korean</option><option>Portuguese</option>
+              <option>Italian</option><option>Turkish</option><option>Indonesian</option>
             </select>
           </div>
         </div>
-        <button class="btn-primary btn-danger" onclick="getMedicalHelp()">🚨 Get Medical Help Now</button>
-        <div class="spinner" id="medical-spinner"><div class="spin-circle"></div>Translating symptoms...</div>
-        <div class="result-container" id="medical-result"></div>
+        <button class="btn btn-red" onclick="getMedicalHelp()">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Get Medical Help Now
+        </button>
+        <div class="spinner" id="medical-spinner"><div class="spin-ring"></div>Translating symptoms...</div>
+        <div class="result" id="medical-result"></div>
       </div>
     </div>
   </div>
 
-  <!-- PRICE CHECK -->
+  <!-- ── PRICE CHECK ── -->
   <div class="tool-panel" id="panel-price">
     <div class="card">
+      <div class="card-accent-top amber"></div>
       <div class="card-header">
-        <div class="card-title">💰 Price Fairness Checker</div>
-        <div class="badge badge-blue">Anti-Scam</div>
+        <div class="card-title">
+          <div class="card-title-ico cti-amber"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          Price Fairness Checker
+        </div>
+        <div class="card-badge" style="background:var(--amber-s);color:var(--amber);">Anti-Scam</div>
       </div>
       <div class="card-body">
-        <div class="form-group">
-          <label class="form-label">🏷️ What Are You Buying?</label>
-          <input class="form-input" type="text" id="priceItem" placeholder="e.g. Taxi from airport to city center / Street food meal / Museum ticket"/>
+        <div class="fg">
+          <label class="fl">What Are You Buying?</label>
+          <input class="fi" type="text" id="priceItem" placeholder="e.g. Taxi from airport to city / Street food meal / Museum ticket"/>
         </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">💵 Price Being Asked</label>
-            <input class="form-input" type="text" id="priceAmount" placeholder="e.g. 500"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">💱 Currency</label>
-            <input class="form-input" type="text" id="priceCurr" placeholder="e.g. THB, JPY, EUR"/>
-          </div>
+        <div class="fg-grid">
+          <div class="fg"><label class="fl">Price Being Asked</label><input class="fi" type="text" id="priceAmount" placeholder="e.g. 500"/></div>
+          <div class="fg"><label class="fl">Currency</label><input class="fi" type="text" id="priceCurr" placeholder="e.g. THB, JPY, EUR"/></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">📍 Where Are You?</label>
-          <input class="form-input" type="text" id="priceDest" placeholder="e.g. Bangkok, Thailand"/>
-        </div>
-        <button class="btn-primary" onclick="checkPrice()">💰 Is This Fair?</button>
-        <div class="spinner" id="price-spinner"><div class="spin-circle"></div>Checking local prices...</div>
-        <div class="result-container" id="price-result"></div>
+        <div class="fg"><label class="fl">Where Are You?</label><input class="fi" type="text" id="priceDest" placeholder="e.g. Bangkok, Thailand"/></div>
+        <button class="btn btn-teal" onclick="checkPrice()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Is This Price Fair?
+        </button>
+        <div class="spinner" id="price-spinner"><div class="spin-ring"></div>Checking local prices...</div>
+        <div class="result" id="price-result"></div>
       </div>
     </div>
   </div>
 
-  <!-- SCAMS -->
+  <!-- ── SCAM ALERTS ── -->
   <div class="tool-panel" id="panel-scams">
     <div class="card">
+      <div class="card-accent-top red"></div>
       <div class="card-header">
-        <div class="card-title">🚨 Scam Alert System</div>
+        <div class="card-title">
+          <div class="card-title-ico cti-red"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg></div>
+          Scam Alert System
+        </div>
       </div>
       <div class="card-body">
-        <div class="form-group">
-          <label class="form-label">📍 Your Current Destination</label>
-          <input class="form-input" type="text" id="scamDest" placeholder="e.g. Rome, Italy"/>
-        </div>
-        <button class="btn-primary" onclick="getScamAlerts()">🚨 Show Scam Alerts</button>
-        <div class="spinner" id="scams-spinner"><div class="spin-circle"></div>Loading scam database...</div>
-        <div class="result-container" id="scams-result"></div>
+        <div class="fg"><label class="fl">Your Current Destination</label><input class="fi" type="text" id="scamDest" placeholder="e.g. Rome, Italy"/></div>
+        <button class="btn btn-red" onclick="getScamAlerts()">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          Show All Scam Alerts
+        </button>
+        <div class="spinner" id="scams-spinner"><div class="spin-ring"></div>Loading scam database...</div>
+        <div class="result" id="scams-result"></div>
       </div>
     </div>
   </div>
 
-  <!-- ALLERGY -->
+  <!-- ── ALLERGY ── -->
   <div class="tool-panel" id="panel-allergy">
     <div class="card">
+      <div class="card-accent-top red"></div>
       <div class="card-header">
-        <div class="card-title">🍜 Food Allergy Safety Card</div>
-        <div class="badge badge-red">Medical</div>
+        <div class="card-title">
+          <div class="card-title-ico cti-red"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+          Food Allergy Safety Card
+        </div>
+        <div class="card-badge cb-red">Medical</div>
       </div>
       <div class="card-body">
-        <div class="form-group">
-          <label class="form-label">👤 Your Name</label>
-          <input class="form-input" type="text" id="allergyName" placeholder="Your name"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">⚠️ Select Your Allergies</label>
-          <div style="margin-bottom:12px;">
-            <div id="allergyTags">
-              <span class="allergy-tag" onclick="toggleAllergy(this,'Peanuts')">🥜 Peanuts</span>
-              <span class="allergy-tag" onclick="toggleAllergy(this,'Gluten')">🌾 Gluten</span>
-              <span class="allergy-tag" onclick="toggleAllergy(this,'Dairy')">🥛 Dairy</span>
-              <span class="allergy-tag" onclick="toggleAllergy(this,'Eggs')">🥚 Eggs</span>
-              <span class="allergy-tag" onclick="toggleAllergy(this,'Shellfish')">🦐 Shellfish</span>
-              <span class="allergy-tag" onclick="toggleAllergy(this,'Fish')">🐟 Fish</span>
-              <span class="allergy-tag" onclick="toggleAllergy(this,'Soy')">🫘 Soy</span>
-              <span class="allergy-tag" onclick="toggleAllergy(this,'Tree Nuts')">🌰 Tree Nuts</span>
-              <span class="allergy-tag" onclick="toggleAllergy(this,'Sesame')">🌿 Sesame</span>
-              <span class="allergy-tag" onclick="toggleAllergy(this,'Penicillin')">💊 Penicillin</span>
-            </div>
+        <div class="fg"><label class="fl">Your Name</label><input class="fi" type="text" id="allergyName" placeholder="Your full name"/></div>
+        <div class="fg">
+          <label class="fl">Select Your Allergies</label>
+          <div class="allergy-tags">
+            <button class="a-tag" onclick="toggleAllergy(this,'Peanuts')">Peanuts</button>
+            <button class="a-tag" onclick="toggleAllergy(this,'Gluten')">Gluten</button>
+            <button class="a-tag" onclick="toggleAllergy(this,'Dairy')">Dairy</button>
+            <button class="a-tag" onclick="toggleAllergy(this,'Eggs')">Eggs</button>
+            <button class="a-tag" onclick="toggleAllergy(this,'Shellfish')">Shellfish</button>
+            <button class="a-tag" onclick="toggleAllergy(this,'Fish')">Fish</button>
+            <button class="a-tag" onclick="toggleAllergy(this,'Soy')">Soy</button>
+            <button class="a-tag" onclick="toggleAllergy(this,'Tree Nuts')">Tree Nuts</button>
+            <button class="a-tag" onclick="toggleAllergy(this,'Sesame')">Sesame</button>
+            <button class="a-tag" onclick="toggleAllergy(this,'Penicillin')">Penicillin</button>
           </div>
-          <input class="form-input" type="text" id="allergyCustom" placeholder="+ Add custom allergy (optional)"/>
+          <input class="fi" type="text" id="allergyCustom" placeholder="+ Add custom allergy (optional)" style="margin-top:8px;"/>
         </div>
-        <div class="form-group">
-          <label class="form-label">📍 Destination</label>
-          <input class="form-input" type="text" id="allergyDest" placeholder="e.g. Tokyo, Japan"/>
-        </div>
-        <button class="btn-primary btn-danger" onclick="generateAllergyCard()">🍜 Generate Allergy Card</button>
-        <div class="spinner" id="allergy-spinner"><div class="spin-circle"></div>Generating your allergy card...</div>
-        <div class="result-container" id="allergy-result"></div>
+        <div class="fg"><label class="fl">Destination</label><input class="fi" type="text" id="allergyDest" placeholder="e.g. Tokyo, Japan"/></div>
+        <button class="btn btn-red" onclick="generateAllergyCard()">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Generate Allergy Card
+        </button>
+        <div class="spinner" id="allergy-spinner"><div class="spin-ring"></div>Generating your allergy card...</div>
+        <div class="result" id="allergy-result"></div>
       </div>
     </div>
   </div>
 
-  <!-- FLIGHT RIGHTS -->
+  <!-- ── FLIGHT RIGHTS ── -->
   <div class="tool-panel" id="panel-flight">
     <div class="card">
+      <div class="card-accent-top sky"></div>
       <div class="card-header">
-        <div class="card-title">✈️ Flight Rights & Compensation</div>
-        <div class="badge badge-blue">Know Your Rights</div>
+        <div class="card-title">
+          <div class="card-title-ico cti-sky"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+          Flight Rights & Compensation
+        </div>
+        <div class="card-badge cb-sky">Know Your Rights</div>
       </div>
       <div class="card-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">✈️ Airline</label>
-            <input class="form-input" type="text" id="flightAirline" placeholder="e.g. Air India, Emirates"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">🗺️ Route</label>
-            <input class="form-input" type="text" id="flightRoute" placeholder="e.g. Mumbai to London"/>
-          </div>
+        <div class="fg-grid">
+          <div class="fg"><label class="fl">Airline</label><input class="fi" type="text" id="flightAirline" placeholder="e.g. Air India, Emirates"/></div>
+          <div class="fg"><label class="fl">Route</label><input class="fi" type="text" id="flightRoute" placeholder="e.g. Mumbai to London"/></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">⚠️ What Happened?</label>
-          <select class="form-input" id="flightIssue">
-            <option value="Flight delayed by 2-3 hours">Delayed 2-3 hours</option>
+        <div class="fg">
+          <label class="fl">What Happened?</label>
+          <select class="fi" id="flightIssue">
+            <option value="Flight delayed by 2-3 hours">Delayed 2–3 hours</option>
             <option value="Flight delayed by 3+ hours">Delayed 3+ hours</option>
             <option value="Flight cancelled">Flight Cancelled</option>
             <option value="Denied boarding due to overbooking">Denied Boarding (Overbooking)</option>
             <option value="Lost baggage">Lost Baggage</option>
             <option value="Damaged baggage">Damaged Baggage</option>
-            <option value="Delayed baggage">Delayed Baggage</option>
             <option value="Missed connecting flight">Missed Connecting Flight</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">⏱️ Delay Duration (hours)</label>
-          <input class="form-input" type="number" id="flightDelay" placeholder="e.g. 4" value="3"/>
-        </div>
-        <button class="btn-primary" onclick="getFlightRights()">✈️ Know My Rights</button>
-        <div class="spinner" id="flight-spinner"><div class="spin-circle"></div>Checking aviation regulations...</div>
-        <div class="result-container" id="flight-result"></div>
+        <div class="fg"><label class="fl">Delay Duration (hours)</label><input class="fi" type="number" id="flightDelay" value="3" placeholder="e.g. 4"/></div>
+        <button class="btn btn-sky" onclick="getFlightRights()">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Know My Rights
+        </button>
+        <div class="spinner" id="flight-spinner"><div class="spin-ring"></div>Checking aviation regulations...</div>
+        <div class="result" id="flight-result"></div>
       </div>
     </div>
   </div>
 
-  <!-- SAFE ROUTE -->
+  <!-- ── SAFE ROUTE ── -->
   <div class="tool-panel" id="panel-safety">
     <div class="card">
+      <div class="card-accent-top green"></div>
       <div class="card-header">
-        <div class="card-title">🛡️ Safe Route Planner</div>
+        <div class="card-title">
+          <div class="card-title-ico cti-green"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          Safe Route Planner
+        </div>
       </div>
       <div class="card-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">📍 From</label>
-            <input class="form-input" type="text" id="routeFrom" placeholder="e.g. Shinjuku Station"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">🎯 To</label>
-            <input class="form-input" type="text" id="routeTo" placeholder="e.g. Shibuya"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">🌍 City</label>
-            <input class="form-input" type="text" id="routeCity" placeholder="e.g. Tokyo, Japan"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">🕐 Time of Day</label>
-            <select class="form-input" id="routeTime">
-              <option value="morning">Morning (6am-12pm)</option>
-              <option value="afternoon">Afternoon (12pm-6pm)</option>
-              <option value="evening" selected>Evening (6pm-10pm)</option>
-              <option value="night">Night (10pm-6am)</option>
+        <div class="fg-grid">
+          <div class="fg"><label class="fl">From</label><input class="fi" type="text" id="routeFrom" placeholder="e.g. Shinjuku Station"/></div>
+          <div class="fg"><label class="fl">To</label><input class="fi" type="text" id="routeTo" placeholder="e.g. Shibuya"/></div>
+          <div class="fg"><label class="fl">City / Country</label><input class="fi" type="text" id="routeCity" placeholder="e.g. Tokyo, Japan"/></div>
+          <div class="fg">
+            <label class="fl">Time of Day</label>
+            <select class="fi" id="routeTime">
+              <option value="morning">Morning (6am–12pm)</option>
+              <option value="afternoon">Afternoon (12pm–6pm)</option>
+              <option value="evening" selected>Evening (6pm–10pm)</option>
+              <option value="night">Night (10pm–6am)</option>
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">👤 Traveller Type</label>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="allergy-tag selected" onclick="setTraveller(this,'solo female')">👩 Solo Female</button>
-            <button class="allergy-tag" onclick="setTraveller(this,'solo male')">👨 Solo Male</button>
-            <button class="allergy-tag" onclick="setTraveller(this,'couple')">💑 Couple</button>
-            <button class="allergy-tag" onclick="setTraveller(this,'group')">👥 Group</button>
-            <button class="allergy-tag" onclick="setTraveller(this,'family with kids')">👨‍👩‍👧 Family</button>
+        <div class="fg">
+          <label class="fl" style="margin-bottom:8px;display:block;">Traveller Type</label>
+          <div class="traveller-opts">
+            <button class="t-opt sel" onclick="setTraveller(this,'solo female')">Solo Female</button>
+            <button class="t-opt" onclick="setTraveller(this,'solo male')">Solo Male</button>
+            <button class="t-opt" onclick="setTraveller(this,'couple')">Couple</button>
+            <button class="t-opt" onclick="setTraveller(this,'group')">Group</button>
+            <button class="t-opt" onclick="setTraveller(this,'family with kids')">Family</button>
           </div>
         </div>
-        <button class="btn-primary" onclick="getSafeRoute()">🛡️ Plan Safe Route</button>
-        <div class="spinner" id="safety-spinner"><div class="spin-circle"></div>Analyzing route safety...</div>
-        <div class="result-container" id="safety-result"></div>
+        <button class="btn btn-teal" onclick="getSafeRoute()">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Plan Safe Route
+        </button>
+        <div class="spinner" id="safety-spinner"><div class="spin-ring"></div>Analyzing route safety...</div>
+        <div class="result" id="safety-result"></div>
       </div>
     </div>
   </div>
 
-  <!-- IMMIGRATION -->
+  <!-- ── IMMIGRATION ── -->
   <div class="tool-panel" id="panel-immigration">
     <div class="card">
+      <div class="card-accent-top"></div>
       <div class="card-header">
-        <div class="card-title">🛂 Immigration Guide</div>
-        <div class="badge badge-blue">Border Help</div>
+        <div class="card-title">
+          <div class="card-title-ico cti-teal"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+          Immigration Guide
+        </div>
+        <div class="card-badge cb-sky">Border Help</div>
       </div>
       <div class="card-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">🌍 Destination Country</label>
-            <input class="form-input" type="text" id="immigDest" placeholder="e.g. Japan"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">🛂 Your Passport</label>
-            <select class="form-input" id="immigPassport">
-              <option value="India">🇮🇳 India</option>
-              <option value="USA">🇺🇸 USA</option>
-              <option value="UK">🇬🇧 UK</option>
-              <option value="UAE">🇦🇪 UAE</option>
-              <option value="Canada">🇨🇦 Canada</option>
-              <option value="Australia">🇦🇺 Australia</option>
+        <div class="fg-grid">
+          <div class="fg"><label class="fl">Destination Country</label><input class="fi" type="text" id="immigDest" placeholder="e.g. Japan"/></div>
+          <div class="fg">
+            <label class="fl">Your Passport</label>
+            <select class="fi" id="immigPassport">
+              <option value="India">India</option><option value="USA">USA</option>
+              <option value="UK">UK</option><option value="UAE">UAE</option>
+              <option value="Canada">Canada</option><option value="Australia">Australia</option>
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">🎯 Purpose of Visit</label>
-          <select class="form-input" id="immigPurpose">
-            <option value="Tourism">Tourism / Holiday</option>
-            <option value="Business">Business</option>
-            <option value="Study">Study</option>
-            <option value="Transit">Transit</option>
+        <div class="fg">
+          <label class="fl">Purpose of Visit</label>
+          <select class="fi" id="immigPurpose">
+            <option value="Tourism">Tourism / Holiday</option><option value="Business">Business</option>
+            <option value="Study">Study</option><option value="Transit">Transit</option>
             <option value="Medical">Medical Treatment</option>
           </select>
         </div>
-        <button class="btn-primary" onclick="getImmigrationHelp()">🛂 Get Immigration Guide</button>
-        <div class="spinner" id="immigration-spinner"><div class="spin-circle"></div>Loading immigration information...</div>
-        <div class="result-container" id="immigration-result"></div>
+        <button class="btn btn-teal" onclick="getImmigrationHelp()">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          Get Immigration Guide
+        </button>
+        <div class="spinner" id="immigration-spinner"><div class="spin-ring"></div>Loading immigration information...</div>
+        <div class="result" id="immigration-result"></div>
       </div>
     </div>
   </div>
 
-</div>
+</div><!-- /main -->
 
 <div class="toast" id="toast"></div>
-
+<script src="/static/yaply-nav.js"></script>
 <script>
 let selectedAllergies = [];
 let selectedTraveller = 'solo female';
 
-function switchTool(tool) {
+function switchTool(tool, e) {
   document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tnav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + tool).classList.add('active');
-  event.currentTarget.classList.add('active');
-  document.querySelector('.main').scrollIntoView({behavior:'smooth'});
+  document.getElementById('tn-' + tool)?.classList.add('active');
+  document.querySelector('.main').scrollIntoView({ behavior:'smooth' });
 }
 
-function showSpinner(id) { document.getElementById(id+'-spinner').classList.add('show'); }
-function hideSpinner(id) { document.getElementById(id+'-spinner').classList.remove('show'); }
-function showResult(id) { document.getElementById(id+'-result').classList.add('show'); }
+function showSpinner(id) { document.getElementById(id + '-spinner').classList.add('show'); }
+function hideSpinner(id) { document.getElementById(id + '-spinner').classList.remove('show'); }
+function showResult(id) { document.getElementById(id + '-result').classList.add('show'); }
 
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-function toggleAllergy(el, allergy) {
-  el.classList.toggle('selected');
-  if (selectedAllergies.includes(allergy)) {
-    selectedAllergies = selectedAllergies.filter(a => a !== allergy);
-  } else {
-    selectedAllergies.push(allergy);
-  }
+function toggleAllergy(el, v) {
+  el.classList.toggle('sel');
+  selectedAllergies.includes(v) ? (selectedAllergies = selectedAllergies.filter(a => a !== v)) : selectedAllergies.push(v);
 }
 
-function setTraveller(el, type) {
-  document.querySelectorAll('#panel-safety .allergy-tag').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedTraveller = type;
+function setTraveller(el, t) {
+  document.querySelectorAll('.t-opt').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedTraveller = t;
 }
 
 function copyText(text) {
-  navigator.clipboard.writeText(text);
-  showToast('✅ Copied!');
+  navigator.clipboard?.writeText(text);
+  showToast('Copied to clipboard');
+}
+
+function secTitle(t) {
+  return `<div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:8px;margin-top:14px;">${t}</div>`;
 }
 
 // ── MEDICAL ──
@@ -556,94 +693,53 @@ async function getMedicalHelp() {
   const dest = document.getElementById('medDest').value.trim();
   const lang = document.getElementById('medLang').value;
   if (!symptoms) { showToast('Please describe your symptoms'); return; }
-
   showSpinner('medical');
   document.getElementById('medical-result').classList.remove('show');
-
   try {
-    const res = await apiFetch('/medical-translate', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ symptoms, destination: dest, language: lang })
-    });
-    const data = await res.json();
-    if (data.success) renderMedical(data.data, lang);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
+    const d = await apiFetch('/api/medical-translate', { method:'POST', body: JSON.stringify({ symptoms, destination:dest, language:lang }) });
+    if (d.success) renderMedical(d.data, lang);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
   hideSpinner('medical');
 }
 
 function renderMedical(d, lang) {
+  const sevMap = { Minor:['#28B06A','var(--green-s)'], Moderate:['#E8823A','var(--amber-s)'], Severe:['#D84C3E','var(--red-s)'], Emergency:['#D84C3E','var(--red-s)'] };
+  const [col, bg] = sevMap[d.severity] || sevMap.Moderate;
   const el = document.getElementById('medical-result');
-  const sevColors = { Minor: '#27AE60', Moderate: '#E5930A', Severe: '#E85A20', Emergency: '#FF4757' };
-  const sevBg = { Minor: 'rgba(46,204,113,0.08)', Moderate: 'rgba(255,179,71,0.08)', Severe: 'rgba(255,100,50,0.08)', Emergency: 'rgba(255,71,87,0.08)' };
-  const color = sevColors[d.severity] || '#E5930A';
-  const bg = sevBg[d.severity] || 'rgba(255,179,71,0.08)';
-
   el.innerHTML = `
-    <div style="padding:20px;background:${bg};border:2px solid ${color};border-radius:var(--r-lg);margin-bottom:20px;text-align:center;">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${color};margin-bottom:8px;">Severity Assessment</div>
-      <div style="font-family:'Instrument Serif',serif;font-size:1.6rem;font-weight:700;color:${color};margin-bottom:6px;">${d.severity}</div>
-      ${d.possible_conditions ? `<div style="font-size:0.82rem;color:var(--muted);">Possible: ${d.possible_conditions.join(', ')}</div>` : ''}
+    <div style="background:${bg};border:1.5px solid ${col}30;border-radius:var(--r-lg);padding:16px;text-align:center;margin-bottom:14px;">
+      <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:${col};margin-bottom:6px;">Severity</div>
+      <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:${col};margin-bottom:4px;">${d.severity}</div>
+      ${d.possible_conditions ? `<div style="font-size:0.72rem;color:var(--muted);">Possible: ${d.possible_conditions.join(', ')}</div>` : ''}
     </div>
-
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:16px;">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🗣️ Say This to the Doctor (${lang})</div>
-      <div style="font-size:1.1rem;font-weight:700;color:var(--accent2);margin-bottom:6px;">${d.say_to_doctor}</div>
-      <div style="font-size:0.78rem;color:var(--muted);font-style:italic;margin-bottom:8px;">${d.say_pronunciation}</div>
-      <div style="font-size:0.82rem;color:var(--muted);">📝 English: ${d.say_to_doctor_english}</div>
-      <button onclick="copyText('${d.say_to_doctor?.replace(/'/g,"\\'")||''}')" style="margin-top:10px;padding:6px 16px;background:var(--accent);color:white;border:none;border-radius:100px;font-size:0.75rem;font-weight:700;cursor:pointer;">📋 Copy Phrase</button>
+    <div style="background:var(--teal-s);border:1px solid var(--teal-m);border-radius:var(--r-lg);padding:15px;margin-bottom:12px;">
+      ${secTitle('Say This to the Doctor (' + lang + ')')}
+      <div style="font-size:1rem;font-weight:700;color:var(--teal);margin-bottom:4px;">${d.say_to_doctor || ''}</div>
+      <div style="font-size:0.7rem;color:var(--muted);font-style:italic;margin-bottom:6px;">${d.say_pronunciation || ''}</div>
+      <div style="font-size:0.75rem;color:var(--muted);">English: ${d.say_to_doctor_english || ''}</div>
+      <button onclick="copyText('${(d.say_to_doctor||'').replace(/'/g,"\\'")}'')" style="margin-top:8px;padding:5px 14px;background:var(--teal);color:#fff;border:none;border-radius:100px;font-size:0.65rem;font-weight:700;cursor:pointer;">Copy Phrase</button>
     </div>
-
-    <div style="margin-bottom:16px;">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🚨 Immediate Actions</div>
-      ${(d.immediate_actions||[]).map((a,i) => `
-        <div class="step-card">
-          <div class="step-badge">${i+1}</div>
-          <div><div class="step-action">${a}</div></div>
-        </div>
-      `).join('')}
-    </div>
-
-    <div style="margin-bottom:16px;">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🗣️ Emergency Phrases</div>
-      ${(d.medical_phrases||[]).map(p => `
-        <div class="phrase-card">
-          <button class="copy-phrase" onclick="copyText('${p.local?.replace(/'/g,"\\'")||''}')">📋 Copy</button>
-          <div class="phrase-english">${p.english}</div>
-          <div class="phrase-local">${p.local}</div>
-          <div class="phrase-pron">🔊 ${p.pronunciation}</div>
-        </div>
-      `).join('')}
-    </div>
-
-    ${(d.medicines_to_ask||[]).length > 0 ? `
-      <div style="margin-bottom:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">💊 Medicines to Ask For</div>
-        ${d.medicines_to_ask.map(m => `
-          <div style="padding:12px 16px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-size:0.88rem;font-weight:700;">${m.english_name}</div>
-              <div style="font-size:0.75rem;color:var(--muted);">${m.purpose}</div>
-            </div>
-            <div style="font-size:0.82rem;color:var(--accent2);font-weight:600;">${m.local_name}</div>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-
-    <div style="padding:14px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:var(--r);">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:6px;">🚑 Call Ambulance If</div>
-      <div style="font-size:0.85rem;">${d.when_to_call_ambulance}</div>
-      ${d.emergency_number ? `<div style="font-size:1rem;font-weight:800;color:var(--red);margin-top:8px;">📞 Emergency: ${d.emergency_number}</div>` : ''}
-    </div>
-
-    ${d.home_remedies ? `
-      <div style="margin-top:12px;padding:14px;background:var(--accent-soft);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:6px;">🌿 Home Remedies (Minor Cases Only)</div>
-        ${(d.home_remedies||[]).map(r=>`<div style="font-size:0.82rem;padding:3px 0;">• ${r}</div>`).join('')}
-      </div>
-    ` : ''}
-  `;
+    ${secTitle('Immediate Actions')}
+    ${(d.immediate_actions||[]).map((a,i) => `<div class="step-item"><div class="step-num sn-red">${i+1}</div><div class="step-text">${a}</div></div>`).join('')}
+    ${secTitle('Emergency Phrases')}
+    ${(d.medical_phrases||[]).map(p => `
+      <div class="phrase-card">
+        <button class="phrase-copy" onclick="copyText('${(p.local||'').replace(/'/g,"\\'")}')">Copy</button>
+        <div class="phrase-eng">${p.english}</div>
+        <div class="phrase-local">${p.local}</div>
+        <div class="phrase-pron">${p.pronunciation}</div>
+      </div>`).join('')}
+    ${d.medicines_to_ask?.length ? secTitle('Medicines to Ask For') + d.medicines_to_ask.map(m => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;">
+        <div><div style="font-size:0.78rem;font-weight:700;">${m.english_name}</div><div style="font-size:0.65rem;color:var(--muted);">${m.purpose}</div></div>
+        <div style="font-size:0.75rem;font-weight:700;color:var(--teal);">${m.local_name}</div>
+      </div>`).join('') : ''}
+    <div style="background:var(--red-s);border:1px solid var(--red-m);border-radius:var(--r);padding:12px 14px;margin-top:12px;">
+      <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--red);margin-bottom:5px;">Call Ambulance If</div>
+      <div style="font-size:0.78rem;">${d.when_to_call_ambulance || ''}</div>
+      ${d.emergency_number ? `<div style="font-size:1rem;font-weight:800;color:var(--red);margin-top:7px;">${d.emergency_number}</div>` : ''}
+    </div>`;
   showResult('medical');
 }
 
@@ -654,85 +750,46 @@ async function checkPrice() {
   const curr = document.getElementById('priceCurr').value.trim();
   const dest = document.getElementById('priceDest').value.trim();
   if (!item || !amount || !dest) { showToast('Please fill all fields'); return; }
-
-  showSpinner('price');
-  document.getElementById('price-result').classList.remove('show');
-
+  showSpinner('price'); document.getElementById('price-result').classList.remove('show');
   try {
-    const res = await apiFetch('/price-check', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ item, price: amount, currency: curr, destination: dest })
-    });
-    const data = await res.json();
-    if (data.success) renderPrice(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
+    const d = await apiFetch('/api/price-check', { method:'POST', body: JSON.stringify({ item, price:amount, currency:curr, destination:dest }) });
+    if (d.success) renderPrice(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
   hideSpinner('price');
 }
 
 function renderPrice(d) {
-  const el = document.getElementById('price-result');
-  const colors = {
-    'Great Deal': { bg: 'rgba(46,204,113,0.08)', border: 'rgba(46,204,113,0.3)', text: '#27AE60', icon: '🎉' },
-    'Fair Price': { bg: 'rgba(74,144,217,0.08)', border: 'rgba(74,144,217,0.3)', text: '#4A90D9', icon: '✅' },
-    'Slightly Overpriced': { bg: 'rgba(255,179,71,0.08)', border: 'rgba(255,179,71,0.3)', text: '#E5930A', icon: '⚠️' },
-    'Overpriced': { bg: 'rgba(255,100,50,0.1)', border: 'rgba(255,100,50,0.3)', text: '#E85A20', icon: '❌' },
-    'Scam': { bg: 'rgba(255,71,87,0.1)', border: 'rgba(255,71,87,0.3)', text: '#FF4757', icon: '🚨' },
+  const vMap = {
+    'Great Deal': { col:'#28B06A', bg:'var(--green-s)', icon:'🎉' },
+    'Fair Price': { col:'var(--sky)', bg:'var(--sky-s)', icon:'✓' },
+    'Slightly Overpriced': { col:'var(--amber)', bg:'var(--amber-s)', icon:'⚠' },
+    'Overpriced': { col:'var(--red)', bg:'var(--red-s)', icon:'✗' },
+    'Scam': { col:'var(--red)', bg:'var(--red-s)', icon:'🚨' },
   };
-  const c = colors[d.verdict] || colors['Fair Price'];
-
+  const v = vMap[d.verdict] || vMap['Fair Price'];
+  const el = document.getElementById('price-result');
   el.innerHTML = `
-    <div class="verdict-card" style="background:${c.bg};border:2px solid ${c.border};">
-      <div class="verdict-icon">${c.icon}</div>
-      <div class="verdict-title" style="color:${c.text}">${d.verdict}</div>
-      <div class="verdict-sub">${d.verdict_explanation}</div>
-      ${d.overpaying_by ? `<div style="font-size:0.88rem;font-weight:700;color:${c.text};">Overpaying by: ${d.overpaying_by}</div>` : ''}
+    <div class="verdict-box" style="background:${v.bg};border:1.5px solid ${v.col}30;">
+      <div style="font-size:1.4rem;margin-bottom:6px;">${v.icon}</div>
+      <div class="verdict-title" style="color:${v.col};">${d.verdict}</div>
+      <div class="verdict-sub">${d.verdict_explanation || ''}</div>
+      ${d.overpaying_by ? `<div style="font-size:0.8rem;font-weight:700;color:${v.col};margin-top:6px;">Overpaying by: ${d.overpaying_by}</div>` : ''}
     </div>
-
     <div class="price-compare">
-      <div class="pc-item">
-        <div class="pc-label">You're Paying</div>
-        <div class="pc-value" style="color:${c.text}">${d.you_are_paying}</div>
-      </div>
-      <div class="pc-item">
-        <div class="pc-label">Fair Range</div>
-        <div class="pc-value">${d.fair_price_range}</div>
-      </div>
-      <div class="pc-item">
-        <div class="pc-label">Locals Pay</div>
-        <div class="pc-value" style="color:var(--accent2)">${d.local_price}</div>
-      </div>
+      <div class="pc-item"><div class="pc-label">You're Paying</div><div class="pc-val" style="color:${v.col};">${d.you_are_paying || '-'}</div></div>
+      <div class="pc-item"><div class="pc-label">Fair Range</div><div class="pc-val">${d.fair_price_range || '-'}</div></div>
+      <div class="pc-item"><div class="pc-label">Locals Pay</div><div class="pc-val" style="color:var(--green);">${d.local_price || '-'}</div></div>
     </div>
-
-    ${d.negotiation_tips ? `
-      <div style="margin-bottom:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">💬 How to Negotiate</div>
-        ${d.negotiation_tips.map(tip=>`<div style="padding:8px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:6px;display:flex;gap:8px;"><span>💡</span>${tip}</div>`).join('')}
-      </div>
-    ` : ''}
-
-    ${d.how_to_negotiate ? `
-      <div style="background:var(--accent-soft);border:1px solid rgba(0,201,167,0.2);border-radius:var(--r);padding:16px;margin-bottom:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:8px;">🗣️ Say This to Negotiate</div>
-        <div style="font-size:0.95rem;font-weight:600;color:var(--accent2);margin-bottom:4px;">${d.local_phrase_to_say}</div>
-        <div style="font-size:0.82rem;color:var(--muted);">English: ${d.how_to_negotiate}</div>
-        <button onclick="copyText('${d.local_phrase_to_say?.replace(/'/g,"\\'")||''}')" style="margin-top:8px;padding:5px 14px;background:var(--accent);color:white;border:none;border-radius:100px;font-size:0.72rem;font-weight:700;cursor:pointer;">📋 Copy Phrase</button>
-      </div>
-    ` : ''}
-
-    ${d.walk_away_price ? `
-      <div style="padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-size:0.85rem;">
-        <strong>Walk away if above:</strong> ${d.walk_away_price}
-      </div>
-    ` : ''}
-
-    ${d.scam_warning ? `
-      <div style="margin-top:12px;padding:16px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.2);border-radius:var(--r);">
-        <div style="font-weight:700;color:var(--red);margin-bottom:6px;">🚨 Scam Warning!</div>
-        <div style="font-size:0.85rem;">${d.scam_details}</div>
-      </div>
-    ` : ''}
-  `;
+    ${d.negotiation_tips?.length ? secTitle('How to Negotiate') + d.negotiation_tips.map(t => `<div style="padding:7px 11px;background:var(--bg);border-radius:var(--r);font-size:0.75rem;margin-bottom:5px;display:flex;gap:7px;"><span style="color:var(--teal);">✓</span>${t}</div>`).join('') : ''}
+    ${d.local_phrase_to_say ? `
+      <div style="background:var(--teal-s);border:1px solid var(--teal-m);border-radius:var(--r);padding:12px 14px;margin-top:10px;">
+        <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--teal);margin-bottom:5px;">Say This</div>
+        <div style="font-size:0.9rem;font-weight:700;color:var(--teal);margin-bottom:4px;">${d.local_phrase_to_say}</div>
+        <div style="font-size:0.72rem;color:var(--muted);">${d.how_to_negotiate || ''}</div>
+        <button onclick="copyText('${(d.local_phrase_to_say||'').replace(/'/g,"\\'")}')""style="margin-top:7px;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:100px;font-size:0.62rem;font-weight:700;cursor:pointer;">Copy</button>
+      </div>` : ''}
+    ${d.scam_warning ? `<div style="margin-top:10px;padding:11px 13px;background:var(--red-s);border:1px solid var(--red-m);border-radius:var(--r);font-size:0.75rem;"><strong style="color:var(--red);">Scam Warning:</strong> ${d.scam_details}</div>` : ''}`;
   showResult('price');
 }
 
@@ -740,179 +797,116 @@ function renderPrice(d) {
 async function getScamAlerts() {
   const dest = document.getElementById('scamDest').value.trim();
   if (!dest) { showToast('Please enter your destination'); return; }
-
-  showSpinner('scams');
-  document.getElementById('scams-result').classList.remove('show');
-
+  showSpinner('scams'); document.getElementById('scams-result').classList.remove('show');
   try {
-    const res = await apiFetch('/scam-alerts', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ destination: dest })
-    });
-    const data = await res.json();
-    if (data.success) renderScams(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
+    const d = await apiFetch('/api/scam-alerts', { method:'POST', body: JSON.stringify({ destination:dest }) });
+    if (d.success) renderScams(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
   hideSpinner('scams');
 }
 
 function renderScams(d) {
+  const rColors = { Low:'var(--green)', Medium:'var(--amber)', High:'var(--red)', 'Very High':'var(--red)' };
+  const col = rColors[d.scam_risk_level] || 'var(--amber)';
   const el = document.getElementById('scams-result');
-  const riskColors = { Low: '#27AE60', Medium: '#E5930A', High: '#E85A20', 'Very High': '#FF4757' };
-  const riskColor = riskColors[d.scam_risk_level] || '#E5930A';
-
   el.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--red-s);border:1px solid var(--red-m);border-radius:var(--r-lg);margin-bottom:14px;">
       <div>
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:4px;">Scam Risk Level</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.3rem;font-weight:700;color:${riskColor};">${d.scam_risk_level}</div>
+        <div style="font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:3px;">Scam Risk</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:${col};">${d.scam_risk_level}</div>
       </div>
-      <div style="text-align:right;">
-        <div style="font-size:0.72rem;color:var(--muted2);margin-bottom:4px;">Most Targeted</div>
-        <div style="font-size:0.82rem;font-weight:600;">${d.most_targeted}</div>
-      </div>
+      <div style="text-align:right;font-size:0.72rem;color:var(--muted);">Most targeted:<br/><strong>${d.most_targeted||'Tourists'}</strong></div>
     </div>
-
-    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">⚠️ ${(d.scams||[]).length} Common Scams in ${d.destination}</div>
-
-    ${(d.scams||[]).map((scam,i) => `
-      <div class="scam-card">
-        <div class="scam-header" onclick="toggleScam(${i})">
-          <div class="scam-icon">${scam.icon||'⚠️'}</div>
-          <div class="scam-name">${scam.name}</div>
-          <div class="scam-cat">${scam.category}</div>
-          <div class="scam-sev" style="background:${scam.severity==='Dangerous'?'rgba(255,71,87,0.1)':scam.severity==='Costly'?'rgba(255,179,71,0.1)':'rgba(0,201,167,0.1)'};color:${scam.severity==='Dangerous'?'var(--red)':scam.severity==='Costly'?'#E5930A':'var(--accent2)'};">${scam.severity}</div>
+    <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:10px;">${(d.scams||[]).length} Common Scams</div>
+    ${(d.scams||[]).map((s,i) => `
+      <div class="scam-card" id="sc-${i}">
+        <div class="scam-head" onclick="toggleScam(${i})">
+          <div class="scam-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div>
+          <div class="scam-name">${s.name}</div>
+          <div class="scam-sev ${s.severity==='Dangerous'?'sev-danger':s.severity==='Costly'?'sev-costly':'sev-minor'}">${s.severity||s.category}</div>
+          <div class="scam-expand"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
         </div>
         <div class="scam-body" id="scam-body-${i}">
-          <div class="scam-detail-label">How it works</div>
-          <div style="font-size:0.85rem;line-height:1.6;margin-bottom:8px;">${scam.how_it_works}</div>
-          <div class="scam-detail-label">🚩 Red Flags</div>
-          ${(scam.red_flags||[]).map(f=>`<div style="font-size:0.82rem;padding:3px 0;color:var(--red);">• ${f}</div>`).join('')}
-          <div class="scam-detail-label">✅ How to Avoid</div>
-          <div style="font-size:0.85rem;line-height:1.6;margin-bottom:8px;">${scam.how_to_avoid}</div>
-          <div class="scam-detail-label">💬 Say This</div>
-          <div style="background:var(--accent-soft);border-radius:var(--r);padding:12px;margin-bottom:8px;">
-            <div style="font-size:0.88rem;font-weight:600;color:var(--accent2);">${scam.what_to_say_local}</div>
-            <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">English: ${scam.what_to_say}</div>
+          <div class="scam-sec-title">How It Works</div>
+          <div style="font-size:0.75rem;line-height:1.6;margin-bottom:5px;">${s.how_it_works}</div>
+          <div class="scam-sec-title">Red Flags</div>
+          ${(s.red_flags||[]).map(f => `<div style="font-size:0.72rem;color:var(--red);padding:2px 0;">• ${f}</div>`).join('')}
+          <div class="scam-sec-title">How to Avoid</div>
+          <div style="font-size:0.75rem;line-height:1.6;">${s.how_to_avoid}</div>
+          <div class="scam-sec-title">Say This</div>
+          <div style="background:var(--teal-s);border-radius:var(--r);padding:9px 11px;">
+            <div style="font-size:0.82rem;font-weight:700;color:var(--teal);">${s.what_to_say_local||s.what_to_say}</div>
+            ${s.what_to_say_local ? `<div style="font-size:0.65rem;color:var(--muted);margin-top:2px;">${s.what_to_say}</div>` : ''}
           </div>
-          <div class="scam-detail-label">If You Fall For It</div>
-          <div style="font-size:0.82rem;line-height:1.5;">${scam.if_it_happens}</div>
         </div>
-      </div>
-    `).join('')}
-
-    ${d.general_rules ? `
-      <div style="margin-top:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🛡️ General Safety Rules</div>
-        ${d.general_rules.map(r=>`<div style="padding:8px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:6px;display:flex;gap:8px;"><span>✓</span>${r}</div>`).join('')}
-      </div>
-    ` : ''}
-  `;
+      </div>`).join('')}
+    ${d.general_rules?.length ? secTitle('General Safety Rules') + d.general_rules.map(r => `<div style="padding:7px 11px;background:var(--bg);border-radius:var(--r);font-size:0.75rem;margin-bottom:5px;display:flex;gap:7px;"><span style="color:var(--green);">✓</span>${r}</div>`).join('') : ''}`;
   showResult('scams');
 }
 
 function toggleScam(i) {
+  const card = document.getElementById('sc-' + i);
   const body = document.getElementById('scam-body-' + i);
+  card.classList.toggle('open');
   body.classList.toggle('open');
 }
 
-// ── ALLERGY CARD ──
+// ── ALLERGY ──
 async function generateAllergyCard() {
   const name = document.getElementById('allergyName').value.trim();
   const custom = document.getElementById('allergyCustom').value.trim();
   const dest = document.getElementById('allergyDest').value.trim();
-
-  if (custom) selectedAllergies.push(custom);
-  if (selectedAllergies.length === 0) { showToast('Please select at least one allergy'); return; }
+  if (custom && !selectedAllergies.includes(custom)) selectedAllergies.push(custom);
+  if (!selectedAllergies.length) { showToast('Please select at least one allergy'); return; }
   if (!dest) { showToast('Please enter your destination'); return; }
-
-  showSpinner('allergy');
-  document.getElementById('allergy-result').classList.remove('show');
-
+  showSpinner('allergy'); document.getElementById('allergy-result').classList.remove('show');
   try {
-    const res = await apiFetch('/allergy-card', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ name, allergies: selectedAllergies, destination: dest })
-    });
-    const data = await res.json();
-    if (data.success) renderAllergyCard(data.data, name);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
+    const d = await apiFetch('/api/allergy-card', { method:'POST', body: JSON.stringify({ name, allergies:selectedAllergies, destination:dest }) });
+    if (d.success) renderAllergyCard(d.data, name);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
   hideSpinner('allergy');
 }
 
 function renderAllergyCard(d, name) {
   const el = document.getElementById('allergy-result');
   el.innerHTML = `
-    <div class="allergy-card-visual" id="allergyCardPrint">
-      <div class="ac-logo">yaply allergy card</div>
-      <div class="ac-name">${name || 'Traveller'}</div>
-      <div class="ac-allergies">⚠️ ALLERGIC TO: ${(d.allergies||[]).join(' · ').toUpperCase()}</div>
-      <div class="ac-warning">${d.allergy_card_text?.english}</div>
-      <div class="ac-local">${d.allergy_card_text?.local_language}</div>
+    <div class="allergy-visual">
+      <div class="av-logo">Yaply Allergy Card</div>
+      <div class="av-name">${name || 'Traveller'}</div>
+      <div class="av-allergy">ALLERGIC TO: ${(d.allergies||selectedAllergies).join(' · ').toUpperCase()}</div>
+      <div class="av-warning">${d.allergy_card_text?.english || ''}</div>
+      <div class="av-local">${d.allergy_card_text?.local_language || ''}</div>
     </div>
-
-    <div style="display:flex;gap:10px;margin-bottom:20px;">
-      <button onclick="copyText('${(d.allergy_card_text?.local_language||'').replace(/'/g,"\\'")}')" style="flex:1;padding:12px;background:var(--accent);color:white;border:none;border-radius:100px;font-family:'Geist',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;">📋 Copy Local Translation</button>
-      <button onclick="printAllergyCard()" class="print-btn" style="margin-top:0;flex:1;">🖨️ Print Card</button>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button onclick="copyText('${(d.allergy_card_text?.local_language||'').replace(/'/g,"\\'")}')""style="flex:1;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;">Copy Translation</button>
     </div>
-
-    ${(d.dangerous_dishes||[]).length > 0 ? `
-      <div style="margin-bottom:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:12px;">🚫 Dishes to AVOID in ${d.destination}</div>
-        ${d.dangerous_dishes.map(dish=>`
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,71,87,0.04);border:1px solid rgba(255,71,87,0.12);border-radius:var(--r);margin-bottom:8px;">
-            <div>
-              <div style="font-size:0.88rem;font-weight:700;">${dish.dish_name}</div>
-              <div style="font-size:0.75rem;color:var(--muted);">${dish.why_dangerous}</div>
-            </div>
-            <div class="badge badge-${dish.severity==='High'?'red':'yellow'}">${dish.severity}</div>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-
-    ${(d.safe_dishes||[]).length > 0 ? `
-      <div style="margin-bottom:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:12px;">✅ Safe Dishes to Try</div>
-        ${d.safe_dishes.map(dish=>`
-          <div style="padding:10px 16px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:var(--r);margin-bottom:6px;font-size:0.85rem;">
-            ✓ <strong>${dish.dish_name}</strong> — ${dish.why_safe}
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-
-    <div style="margin-bottom:16px;">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🗣️ Phrases to Say at Restaurants</div>
-      ${(d.phrases_to_say||[]).map(p=>`
-        <div class="phrase-card">
-          <button class="copy-phrase" onclick="copyText('${p.local?.replace(/'/g,"\\'")||''}')">📋 Copy</button>
-          <div style="font-size:0.68rem;color:var(--accent2);font-weight:700;margin-bottom:4px;text-transform:uppercase;">${p.situation}</div>
-          <div class="phrase-english">${p.english}</div>
-          <div class="phrase-local">${p.local}</div>
-          <div class="phrase-pron">🔊 ${p.pronunciation}</div>
-        </div>
-      `).join('')}
-    </div>
-
-    ${d.emergency_protocol ? `
-      <div style="padding:16px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:10px;">🚨 If Allergic Reaction Happens</div>
-        ${d.emergency_protocol.map((s,i)=>`<div style="font-size:0.85rem;padding:5px 0;display:flex;gap:10px;"><strong style="color:var(--red);">${i+1}.</strong>${s}</div>`).join('')}
-        ${d.hospital_phrase ? `<div style="margin-top:10px;font-size:0.9rem;font-weight:700;color:var(--red);">🏥 ${d.hospital_phrase}</div>` : ''}
-      </div>
-    ` : ''}
-  `;
+    ${d.dangerous_dishes?.length ? secTitle('Dishes to Avoid') + d.dangerous_dishes.map(dish => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--red-s);border:1px solid var(--red-m);border-radius:var(--r);margin-bottom:6px;">
+        <div><div style="font-size:0.78rem;font-weight:700;">${dish.dish_name}</div><div style="font-size:0.65rem;color:var(--muted);">${dish.why_dangerous}</div></div>
+        <div style="font-size:0.6rem;font-weight:700;padding:2px 8px;border-radius:100px;background:${dish.severity==='High'?'var(--red)':'var(--amber)'};color:#fff;">${dish.severity}</div>
+      </div>`).join('') : ''}
+    ${d.safe_dishes?.length ? secTitle('Safe Dishes to Try') + d.safe_dishes.map(dish => `
+      <div style="padding:8px 12px;background:var(--green-s);border:1px solid rgba(40,176,106,.15);border-radius:var(--r);margin-bottom:5px;font-size:0.75rem;">
+        ✓ <strong>${dish.dish_name}</strong> — ${dish.why_safe}
+      </div>`).join('') : ''}
+    ${secTitle('Phrases at Restaurants')}
+    ${(d.phrases_to_say||[]).map(p => `
+      <div class="phrase-card">
+        <button class="phrase-copy" onclick="copyText('${(p.local||'').replace(/'/g,"\\'")}')">Copy</button>
+        <div style="font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--teal);margin-bottom:3px;">${p.situation}</div>
+        <div class="phrase-eng">${p.english}</div>
+        <div class="phrase-local">${p.local}</div>
+        <div class="phrase-pron">${p.pronunciation}</div>
+      </div>`).join('')}
+    ${d.emergency_protocol?.length ? `
+      <div style="padding:12px 14px;background:var(--red-s);border:1px solid var(--red-m);border-radius:var(--r);margin-top:12px;">
+        <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--red);margin-bottom:8px;">If Allergic Reaction Happens</div>
+        ${d.emergency_protocol.map((s,i) => `<div style="font-size:0.75rem;padding:3px 0;display:flex;gap:7px;"><strong style="color:var(--red);">${i+1}.</strong>${s}</div>`).join('')}
+        ${d.hospital_phrase ? `<div style="margin-top:8px;font-size:0.82rem;font-weight:700;color:var(--red);">${d.hospital_phrase}</div>` : ''}
+      </div>` : ''}`;
   showResult('allergy');
-}
-
-function printAllergyCard() {
-  const card = document.getElementById('allergyCardPrint').outerHTML;
-  const w = window.open('', '_blank');
-  w.document.write(`<html><head><title>Allergy Card</title><style>body{font-family:sans-serif;padding:20px;}.allergy-card-visual{background:linear-gradient(135deg,#FF4757,#FF6B6B);border-radius:20px;padding:28px;color:white;max-width:400px;}.ac-logo{font-size:0.8rem;opacity:0.5;margin-bottom:12px;}.ac-name{font-size:1.3rem;font-weight:700;margin-bottom:8px;}.ac-allergies{font-size:1rem;font-weight:800;margin-bottom:8px;}.ac-warning{font-size:0.75rem;opacity:0.85;line-height:1.5;}.ac-local{font-size:0.88rem;opacity:0.9;margin-top:12px;font-style:italic;}</style></head><body>${card}</body></html>`);
-  w.document.close();
-  w.print();
 }
 
 // ── FLIGHT RIGHTS ──
@@ -921,86 +915,48 @@ async function getFlightRights() {
   const route = document.getElementById('flightRoute').value.trim();
   const issue = document.getElementById('flightIssue').value;
   const delay = document.getElementById('flightDelay').value;
-  if (!airline || !route) { showToast('Please fill all fields'); return; }
-
-  showSpinner('flight');
-  document.getElementById('flight-result').classList.remove('show');
-
+  if (!airline || !route) { showToast('Please fill airline and route'); return; }
+  showSpinner('flight'); document.getElementById('flight-result').classList.remove('show');
   try {
-    const res = await apiFetch('/flight-rights', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ airline, route, issue, delay_hours: delay })
-    });
-    const data = await res.json();
-    if (data.success) renderFlightRights(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
+    const d = await apiFetch('/api/flight-rights', { method:'POST', body: JSON.stringify({ airline, route, issue, delay_hours:delay }) });
+    if (d.success) renderFlightRights(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
   hideSpinner('flight');
 }
 
 function renderFlightRights(d) {
   const el = document.getElementById('flight-result');
   el.innerHTML = `
-    <div style="padding:20px;background:${d.entitled_to_compensation?'rgba(46,204,113,0.08)':'rgba(255,179,71,0.08)'};border:2px solid ${d.entitled_to_compensation?'rgba(46,204,113,0.3)':'rgba(255,179,71,0.3)'};border-radius:var(--r-lg);margin-bottom:20px;text-align:center;">
-      <div style="font-size:2rem;margin-bottom:8px;">${d.entitled_to_compensation?'💰':'ℹ️'}</div>
-      <div style="font-family:'Instrument Serif',serif;font-size:1.3rem;font-weight:700;margin-bottom:6px;">${d.entitled_to_compensation?'You Are Entitled to Compensation!':'No Compensation This Time'}</div>
-      ${d.compensation_amount ? `<div style="font-size:1.1rem;font-weight:700;color:var(--accent2);">${d.compensation_amount}</div>` : ''}
-      ${d.compensation_basis ? `<div style="font-size:0.78rem;color:var(--muted);margin-top:4px;">${d.compensation_basis}</div>` : ''}
+    <div class="comp-box ${d.entitled_to_compensation ? 'yes' : 'no'}">
+      <div style="font-size:1.4rem;margin-bottom:6px;">${d.entitled_to_compensation ? '💰' : 'ℹ'}</div>
+      <div class="comp-amount" style="color:${d.entitled_to_compensation ? 'var(--green)' : 'var(--amber)'};">${d.entitled_to_compensation ? (d.compensation_amount || 'Compensation Due') : 'No Compensation'}</div>
+      <div class="comp-basis">${d.compensation_basis || ''}</div>
     </div>
-
-    <div style="margin-bottom:16px;">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">✅ Your Rights</div>
-      ${(d.your_rights||[]).map(r=>`<div style="padding:8px 14px;background:rgba(46,204,113,0.06);border-left:3px solid var(--green);border-radius:0 var(--r) var(--r) 0;font-size:0.82rem;margin-bottom:6px;">${r}</div>`).join('')}
-    </div>
-
-    ${(d.what_airline_must_provide||[]).length > 0 ? `
-      <div style="margin-bottom:16px;padding:16px;background:rgba(74,144,217,0.06);border:1px solid rgba(74,144,217,0.2);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:10px;">✈️ Airline Must Provide</div>
-        ${d.what_airline_must_provide.map(p=>`<div style="font-size:0.85rem;padding:4px 0;display:flex;gap:8px;"><span>•</span>${p}</div>`).join('')}
-      </div>
-    ` : ''}
-
-    <div style="margin-bottom:16px;">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">📋 Immediate Actions</div>
-      ${(d.immediate_actions||[]).map(a=>`
-        <div class="step-card">
-          <div class="step-badge">${a.step}</div>
-          <div>
-            <div class="step-action">${a.action}</div>
-            <div class="step-timing">${a.timing} · ${a.why}</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-
-    ${(d.exact_phrases_to_say||[]).length > 0 ? `
-      <div style="margin-bottom:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">💬 Say This to Airline Staff</div>
-        ${d.exact_phrases_to_say.map(p=>`
-          <div style="background:var(--accent-soft);border:1px solid rgba(0,201,167,0.2);border-radius:var(--r);padding:14px;margin-bottom:10px;">
-            <div style="font-size:0.65rem;color:var(--accent2);font-weight:700;text-transform:uppercase;margin-bottom:6px;">${p.situation}</div>
-            <div style="font-size:0.9rem;font-weight:600;">"${p.say_this}"</div>
-            <button onclick="copyText('${p.say_this?.replace(/'/g,"\\'")||''}')" style="margin-top:8px;padding:5px 14px;background:var(--accent);color:white;border:none;border-radius:100px;font-size:0.72rem;font-weight:700;cursor:pointer;">📋 Copy</button>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-
+    ${secTitle('Your Rights')}
+    ${(d.your_rights||[]).map(r => `<div style="padding:7px 11px;background:var(--green-s);border-left:3px solid var(--green);border-radius:0 var(--r) var(--r) 0;font-size:0.75rem;margin-bottom:5px;">${r}</div>`).join('')}
+    ${d.what_airline_must_provide?.length ? `
+      <div style="padding:13px;background:var(--sky-s);border:1px solid rgba(58,107,200,.15);border-radius:var(--r);margin:10px 0;">
+        ${secTitle('Airline Must Provide')}
+        ${d.what_airline_must_provide.map(p => `<div style="font-size:0.75rem;padding:3px 0;">• ${p}</div>`).join('')}
+      </div>` : ''}
+    ${secTitle('Immediate Actions')}
+    ${(d.immediate_actions||[]).map((a,i) => `
+      <div class="step-item">
+        <div class="step-num sn-sky">${a.step || i+1}</div>
+        <div><div class="step-text">${a.action}</div><div class="step-sub">${a.timing || ''} ${a.why ? '· ' + a.why : ''}</div></div>
+      </div>`).join('')}
+    ${d.exact_phrases_to_say?.length ? secTitle('Say This to Airline Staff') + d.exact_phrases_to_say.map(p => `
+      <div style="background:var(--teal-s);border:1px solid var(--teal-m);border-radius:var(--r);padding:11px;margin-bottom:7px;">
+        <div style="font-size:0.58rem;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">${p.situation}</div>
+        <div style="font-size:0.82rem;font-weight:700;">"${p.say_this}"</div>
+        <button onclick="copyText('${(p.say_this||'').replace(/'/g,"\\'")}')""style="margin-top:6px;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:100px;font-size:0.62rem;font-weight:700;cursor:pointer;">Copy</button>
+      </div>`).join('') : ''}
     ${d.claim_template ? `
-      <div style="margin-bottom:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">📧 Claim Email Template</div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;">${d.claim_template}</div>
-        <button onclick="copyText('${d.claim_template?.replace(/'/g,"\\'")||''}')" style="margin-top:8px;width:100%;padding:10px;background:var(--text);color:white;border:none;border-radius:100px;font-family:'Geist',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;">📋 Copy Email Template</button>
-      </div>
-    ` : ''}
-
-    ${d.claim_deadline ? `
-      <div style="padding:12px 16px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.2);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#E5930A;margin-bottom:4px;">⏰ Claim Deadline</div>
-        <div style="font-size:0.88rem;font-weight:600;">${d.claim_deadline}</div>
-      </div>
-    ` : ''}
-  `;
+      ${secTitle('Claim Email Template')}
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-size:0.72rem;line-height:1.7;white-space:pre-wrap;margin-bottom:7px;">${d.claim_template}</div>
+      <button onclick="copyText('${(d.claim_template||'').replace(/'/g,"\\'")}')""style="width:100%;padding:9px;background:var(--charcoal);color:#fff;border:none;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;">Copy Email Template</button>` : ''}
+    ${d.claim_deadline ? `<div style="padding:9px 13px;background:var(--gold-s);border:1px solid rgba(240,180,41,.2);border-radius:var(--r);margin-top:9px;font-size:0.75rem;"><strong style="color:var(--gold);">Claim Deadline:</strong> ${d.claim_deadline}</div>` : ''}`;
   showResult('flight');
 }
 
@@ -1011,100 +967,59 @@ async function getSafeRoute() {
   const city = document.getElementById('routeCity').value.trim();
   const time = document.getElementById('routeTime').value;
   if (!from || !to || !city) { showToast('Please fill all fields'); return; }
-
-  showSpinner('safety');
-  document.getElementById('safety-result').classList.remove('show');
-
+  showSpinner('safety'); document.getElementById('safety-result').classList.remove('show');
   try {
-    const res = await apiFetch('/safe-route', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ destination: city, from_location: from, to_location: to, time_of_day: time, traveller_type: selectedTraveller })
-    });
-    const data = await res.json();
-    if (data.success) renderSafeRoute(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
+    const d = await apiFetch('/api/safe-route', { method:'POST', body: JSON.stringify({ destination:city, from_location:from, to_location:to, time_of_day:time, traveller_type:selectedTraveller }) });
+    if (d.success) renderSafeRoute(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
   hideSpinner('safety');
 }
 
 function renderSafeRoute(d) {
+  const sColors = { Safe:'#28B06A', Moderate:'var(--amber)', 'Use Caution':'var(--amber)', 'Avoid at Night':'var(--red)' };
+  const col = sColors[d.route_safety] || 'var(--amber)';
   const el = document.getElementById('safety-result');
-  const safeColors = { Safe: '#27AE60', Moderate: '#E5930A', 'Use Caution': '#E85A20', 'Avoid at Night': '#FF4757' };
-  const color = safeColors[d.route_safety] || '#E5930A';
-
   el.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg);border:2px solid ${color}20;border-radius:var(--r-lg);margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--bg);border:2px solid ${col}30;border-radius:var(--r-lg);margin-bottom:12px;">
       <div>
-        <div style="font-size:0.72rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Route Safety</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:700;color:${color};">${d.route_safety}</div>
+        <div style="font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:3px;">Route Safety</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:${col};">${d.route_safety}</div>
       </div>
       <div style="text-align:right;">
-        <div style="font-family:'Instrument Serif',serif;font-size:1.8rem;font-weight:700;color:${color};">${d.safety_score}</div>
-        <div style="font-size:0.68rem;color:var(--muted2);">Safety Score</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:${col};">${d.safety_score}</div>
+        <div style="font-size:0.6rem;color:var(--muted2);">Safety Score</div>
       </div>
     </div>
-
-    <div style="margin-bottom:16px;">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🚗 Transport Options</div>
-      ${(d.transport_options||[]).map(opt=>`
-        <div class="route-option">
-          <div class="route-icon">${opt.mode.includes('Metro')||opt.mode.includes('Subway')?'🚇':opt.mode.includes('Bus')?'🚌':opt.mode.includes('Taxi')||opt.mode.includes('Cab')?'🚕':opt.mode.includes('Walk')?'🚶':'🚗'}</div>
-          <div style="flex:1;">
-            <div class="route-name">${opt.mode}</div>
-            <div class="route-details">${opt.duration} · ${opt.cost} · ${opt.tips}</div>
-            ${(opt.recommended_apps||[]).length > 0 ? `<div style="font-size:0.72rem;color:var(--accent2);margin-top:4px;">Apps: ${opt.recommended_apps.join(', ')}</div>` : ''}
-          </div>
-          <div class="route-safety" style="background:${opt.safety_rating==='Safe'?'rgba(46,204,113,0.1)':opt.safety_rating==='Moderate'?'rgba(255,179,71,0.1)':'rgba(255,71,87,0.1)'};color:${opt.safety_rating==='Safe'?'#27AE60':opt.safety_rating==='Moderate'?'#E5930A':'#FF4757'};">${opt.safety_rating}</div>
+    ${secTitle('Transport Options')}
+    ${(d.transport_options||[]).map(opt => `
+      <div class="route-opt">
+        <div class="ro-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/></svg></div>
+        <div style="flex:1;">
+          <div class="ro-name">${opt.mode}</div>
+          <div class="ro-detail">${opt.duration||''} · ${opt.cost||''} · ${opt.tips||''}</div>
+          ${opt.recommended_apps?.length ? `<div style="font-size:0.65rem;color:var(--teal);margin-top:2px;">${opt.recommended_apps.join(', ')}</div>` : ''}
         </div>
-      `).join('')}
+        <div class="ro-safety ${opt.safety_rating==='Safe'?'rs-safe':opt.safety_rating==='Moderate'?'rs-mod':'rs-risk'}">${opt.safety_rating}</div>
+      </div>`).join('')}
+    ${d.areas_to_avoid?.length ? `
+      <div style="padding:11px 13px;background:var(--red-s);border:1px solid var(--red-m);border-radius:var(--r);margin:10px 0;">
+        <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--red);margin-bottom:6px;">Avoid These Areas</div>
+        ${d.areas_to_avoid.map(a => `<div style="font-size:0.72rem;padding:2px 0;">• ${a}</div>`).join('')}
+      </div>` : ''}
+    ${d.if_harassed?.length ? secTitle('If Harassed or Followed') + d.if_harassed.map((s,i) => `<div class="step-item"><div class="step-num sn-red">${i+1}</div><div class="step-text">${s}</div></div>`).join('') : ''}
+    <div class="em-grid" style="margin-top:12px;">
+      ${d.trusted_contacts?.police ? `<div class="em-card"><div class="em-label">Police</div><div class="em-num">${d.trusted_contacts.police}</div></div>` : ''}
+      ${d.trusted_contacts?.women_helpline ? `<div class="em-card"><div class="em-label">Helpline</div><div class="em-num" style="color:var(--sky);">${d.trusted_contacts.women_helpline}</div></div>` : ''}
+      ${d.trusted_contacts?.tourist_helpline ? `<div class="em-card"><div class="em-label">Tourist</div><div class="em-num" style="color:var(--teal);">${d.trusted_contacts.tourist_helpline}</div></div>` : ''}
     </div>
-
-    ${(d.areas_to_avoid||[]).length > 0 ? `
-      <div style="margin-bottom:16px;padding:14px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px;">🚫 Avoid These Areas</div>
-        ${d.areas_to_avoid.map(a=>`<div style="font-size:0.82rem;padding:3px 0;">• ${a}</div>`).join('')}
-      </div>
-    ` : ''}
-
-    ${(d.if_harassed||[]).length > 0 ? `
-      <div style="margin-bottom:12px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">⚠️ If Harassed or Followed</div>
-        ${d.if_harassed.map((s,i)=>`<div style="font-size:0.85rem;padding:5px 0;display:flex;gap:10px;"><strong style="color:var(--red);">${i+1}.</strong>${s}</div>`).join('')}
-      </div>
-    ` : ''}
-
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
-      ${d.trusted_contacts ? `
-        <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;margin-bottom:4px;">POLICE</div>
-          <div style="font-size:1rem;font-weight:800;color:var(--red);">${d.trusted_contacts.police}</div>
-        </div>
-        <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;margin-bottom:4px;">HELPLINE</div>
-          <div style="font-size:1rem;font-weight:800;color:var(--blue);">${d.trusted_contacts.women_helpline||d.trusted_contacts.tourist_helpline}</div>
-        </div>
-        <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;margin-bottom:4px;">TOURIST</div>
-          <div style="font-size:1rem;font-weight:800;color:var(--accent2);">${d.trusted_contacts.tourist_helpline}</div>
-        </div>
-      ` : ''}
-    </div>
-
     ${d.local_phrase_help ? `
-      <div style="background:var(--accent-soft);border-radius:var(--r);padding:14px;margin-bottom:10px;">
-        <div style="font-size:0.65rem;color:var(--accent2);font-weight:700;text-transform:uppercase;margin-bottom:6px;">🗣️ If Lost — Say This</div>
-        <div style="font-size:0.95rem;font-weight:700;color:var(--accent2);">${d.local_phrase_help}</div>
-        <button onclick="copyText('${d.local_phrase_help?.replace(/'/g,"\\'")||''}')" style="margin-top:8px;padding:5px 14px;background:var(--accent);color:white;border:none;border-radius:100px;font-size:0.72rem;font-weight:700;cursor:pointer;">📋 Copy</button>
-      </div>
-    ` : ''}
-
-    ${(d.pro_tips||[]).length > 0 ? `
-      <div>
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">💡 Safety Tips</div>
-        ${d.pro_tips.map(tip=>`<div style="padding:8px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:6px;display:flex;gap:8px;"><span>✓</span>${tip}</div>`).join('')}
-      </div>
-    ` : ''}
-  `;
+      <div style="background:var(--teal-s);border:1px solid var(--teal-m);border-radius:var(--r);padding:11px 13px;margin-top:10px;">
+        <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--teal);margin-bottom:5px;">If Lost — Say This</div>
+        <div style="font-size:0.88rem;font-weight:700;color:var(--teal);">${d.local_phrase_help}</div>
+        <button onclick="copyText('${(d.local_phrase_help||'').replace(/'/g,"\\'")}')""style="margin-top:6px;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:100px;font-size:0.62rem;font-weight:700;cursor:pointer;">Copy</button>
+      </div>` : ''}
+    ${d.pro_tips?.length ? secTitle('Safety Tips') + d.pro_tips.map(t => `<div style="padding:7px 11px;background:var(--bg);border-radius:var(--r);font-size:0.75rem;margin-bottom:5px;display:flex;gap:7px;"><span style="color:var(--green);">✓</span>${t}</div>`).join('') : ''}`;
   showResult('safety');
 }
 
@@ -1114,80 +1029,57 @@ async function getImmigrationHelp() {
   const passport = document.getElementById('immigPassport').value;
   const purpose = document.getElementById('immigPurpose').value;
   if (!dest) { showToast('Please enter destination'); return; }
-
-  showSpinner('immigration');
-  document.getElementById('immigration-result').classList.remove('show');
-
+  showSpinner('immigration'); document.getElementById('immigration-result').classList.remove('show');
   try {
-    const res = await apiFetch('/immigration-help', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ destination: dest, passport, purpose })
-    });
-    const data = await res.json();
-    if (data.success) renderImmigration(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
+    const d = await apiFetch('/api/immigration-help', { method:'POST', body: JSON.stringify({ destination:dest, passport, purpose }) });
+    if (d.success) renderImmigration(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
   hideSpinner('immigration');
 }
 
 function renderImmigration(d) {
   const el = document.getElementById('immigration-result');
   el.innerHTML = `
-    <div style="padding:14px;background:rgba(74,144,217,0.08);border:1px solid rgba(74,144,217,0.2);border-radius:var(--r);margin-bottom:20px;font-size:0.85rem;line-height:1.6;">
-      <strong>Expected Wait:</strong> ${d.expected_wait_time} ${d.fast_track_options ? ` · Fast track: ${d.fast_track_options}` : ''}
+    <div style="padding:11px 13px;background:var(--sky-s);border:1px solid rgba(58,107,200,.15);border-radius:var(--r);margin-bottom:12px;font-size:0.75rem;line-height:1.6;">
+      <strong>Expected Wait:</strong> ${d.expected_wait_time || 'Varies'} ${d.fast_track_options ? `· Fast track: ${d.fast_track_options}` : ''}
     </div>
-
-    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">❓ Common Immigration Questions</div>
+    ${secTitle('Common Immigration Questions')}
     ${(d.common_questions||[]).map((q,i) => `
-      <div class="immig-q">
-        <div class="immig-q-header" onclick="toggleImmig(${i})">
+      <div class="immig-q" id="iq-${i}">
+        <div class="immig-head" onclick="toggleImmig(${i})">
           <span>${q.question_english}</span>
-          <span style="color:var(--muted2);">›</span>
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
-        <div class="immig-q-body" id="immig-${i}">
+        <div class="immig-body" id="ib-${i}">
           <div class="immig-label">Local Language</div>
-          <div style="font-size:0.9rem;font-weight:600;color:var(--accent2);">${q.question_local}</div>
+          <div style="font-size:0.82rem;font-weight:700;color:var(--teal);">${q.question_local}</div>
           <div class="immig-label">Best Answer</div>
-          <div style="font-size:0.88rem;padding:10px;background:rgba(46,204,113,0.06);border-radius:var(--r);border:1px solid rgba(46,204,113,0.15);">"${q.best_answer}"</div>
+          <div style="font-size:0.75rem;padding:8px 10px;background:var(--green-s);border-radius:var(--r);border:1px solid rgba(40,176,106,.15);">"${q.best_answer}"</div>
           <div class="immig-label">Why They Ask</div>
-          <div style="font-size:0.82rem;color:var(--muted);">${q.why_they_ask}</div>
-          ${q.avoid_saying ? `<div class="immig-label">Never Say</div><div style="font-size:0.82rem;color:var(--red);">✗ ${q.avoid_saying}</div>` : ''}
+          <div style="font-size:0.72rem;color:var(--muted);">${q.why_they_ask}</div>
+          ${q.avoid_saying ? `<div class="immig-label">Never Say</div><div style="font-size:0.72rem;color:var(--red);">✗ ${q.avoid_saying}</div>` : ''}
         </div>
-      </div>
-    `).join('')}
-
-    ${(d.documents_to_keep_ready||[]).length > 0 ? `
-      <div style="margin-top:16px;margin-bottom:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">📄 Documents to Keep Ready</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          ${d.documents_to_keep_ready.map(doc=>`<div style="padding:10px 14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);font-size:0.82rem;display:flex;gap:8px;"><span>📋</span>${doc}</div>`).join('')}
-        </div>
-      </div>
-    ` : ''}
-
-    ${(d.common_mistakes||[]).length > 0 ? `
-      <div style="padding:16px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);margin-bottom:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:10px;">❌ Common Mistakes to Avoid</div>
-        ${d.common_mistakes.map(m=>`<div style="font-size:0.82rem;padding:4px 0;">• ${m}</div>`).join('')}
-      </div>
-    ` : ''}
-
-    ${(d.pro_tips||[]).length > 0 ? `
-      <div>
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">💡 Pro Tips</div>
-        ${d.pro_tips.map(tip=>`<div style="padding:8px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:6px;display:flex;gap:8px;"><span>✓</span>${tip}</div>`).join('')}
-      </div>
-    ` : ''}
-  `;
+      </div>`).join('')}
+    ${d.documents_to_keep_ready?.length ? secTitle('Documents to Keep Ready') + `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        ${d.documents_to_keep_ready.map(doc => `<div style="padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-size:0.72rem;display:flex;gap:5px;"><span style="color:var(--teal);">📋</span>${doc}</div>`).join('')}
+      </div>` : ''}
+    ${d.common_mistakes?.length ? `
+      <div style="padding:12px 14px;background:var(--red-s);border:1px solid var(--red-m);border-radius:var(--r);margin:10px 0;">
+        <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--red);margin-bottom:7px;">Common Mistakes to Avoid</div>
+        ${d.common_mistakes.map(m => `<div style="font-size:0.72rem;padding:2px 0;">• ${m}</div>`).join('')}
+      </div>` : ''}
+    ${d.pro_tips?.length ? secTitle('Pro Tips') + d.pro_tips.map(t => `<div style="padding:7px 11px;background:var(--bg);border-radius:var(--r);font-size:0.75rem;margin-bottom:5px;display:flex;gap:7px;"><span style="color:var(--green);">✓</span>${t}</div>`).join('') : ''}`;
   showResult('immigration');
 }
 
 function toggleImmig(i) {
-  const body = document.getElementById('immig-' + i);
-  body.classList.toggle('open');
+  const q = document.getElementById('iq-' + i);
+  const b = document.getElementById('ib-' + i);
+  q.classList.toggle('open');
+  b.classList.toggle('open');
 }
 </script>
-<script src="/static/yaply-auth.js"></script>
-<script src="/static/yaply-nav.js"></script>
 </body>
 </html>

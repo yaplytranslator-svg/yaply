@@ -1,846 +1,1478 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Yaply — AI Travel Companion</title>
-<link rel="stylesheet" href="/static/yaply-design.css"/>
-<link rel="icon" href="/static/favicon.png" type="image/png"/>
-<style>
-/* ── APP SPECIFIC ── */
-.screen{display:none;min-height:100vh;flex-direction:column;animation:yFadeUp 0.35s ease both;padding-bottom:90px;}
-.screen.active{display:flex;}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yaply — Dashboard</title>
+  <link rel="icon" href="/static/favicon.png" type="image/png" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* SPLASH */
-#splash{
-  background:var(--ink);
-  align-items:center;justify-content:center;gap:16px;
-  padding-bottom:0!important;
-  position:relative;overflow:hidden;
-}
-#splash::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(244,100,42,0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(107,92,231,0.12) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(43,175,126,0.08) 0%, transparent 60%);
-}
-.splash-logo-wrap{position:relative;z-index:1;text-align:center;}
-.splash-logo-img{height:80px;width:auto;margin-bottom:10px;animation:yFloat 3s ease-in-out infinite;}
-.splash-logo-text{font-family:var(--font-display);font-size:3rem;letter-spacing:-1px;background:linear-gradient(135deg,var(--orange),var(--red),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.splash-sub{font-size:0.78rem;color:rgba(255,255,255,0.35);letter-spacing:3px;text-transform:uppercase;font-weight:700;position:relative;z-index:1;}
-.splash-bar{width:56px;height:3px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-top:40px;position:relative;z-index:1;}
-.splash-fill{height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--red),var(--purple));transition:width 1.6s ease;}
+    :root {
+      --teal: #1A8A72;
+      --teal-s: rgba(26, 138, 114, 0.08);
+      --teal-m: rgba(26, 138, 114, 0.18);
+      --amber: #E8823A;
+      --amber-s: rgba(232, 130, 58, 0.08);
+      --sky: #3A6BC8;
+      --sky-s: rgba(58, 107, 200, 0.08);
+      --charcoal: #2C2B28;
+      --stone: #C8C4B2;
+      --green: #28B06A;
+      --green-s: rgba(40, 176, 106, 0.08);
+      --red: #D84C3E;
+      --red-s: rgba(216, 76, 62, 0.08);
+      --purple: #8B5CF6;
+      --purple-s: rgba(139, 92, 246, 0.08);
+      --gold: #F0B429;
+      --gold-s: rgba(240, 180, 41, 0.08);
+      --bg: #F7F6F2;
+      --bg2: #EFEDE8;
+      --white: #FFFFFF;
+      --border: rgba(200, 196, 178, 0.35);
+      --border-md: rgba(200, 196, 178, 0.6);
+      --text: #2C2B28;
+      --muted: #6B6860;
+      --muted2: #9B9890;
+      --nav-h: 64px;
+      --sidebar-w: 240px;
+    }
 
-/* Floating emojis on splash */
-.splash-emoji{position:absolute;font-size:1.8rem;opacity:0.15;animation:yFloat ease-in-out infinite;}
+    html,
+    body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
 
-/* HOME */
-#home{padding-bottom:90px;}
-.home-hero{
-  padding:52px 22px 28px;
-  position:relative;overflow:hidden;
-  background:linear-gradient(160deg,#1A1A2E 0%,#2D1A3E 100%);
-}
-.home-hero::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(circle at 80% 20%,rgba(244,100,42,0.2) 0%,transparent 50%),
-    radial-gradient(circle at 20% 80%,rgba(107,92,231,0.15) 0%,transparent 50%),
-    radial-gradient(circle at 50% 50%,rgba(43,175,126,0.08) 0%,transparent 60%);
-}
-.home-greet{font-size:0.68rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;position:relative;z-index:1;font-family:var(--font-ui);}
-.home-title{font-family:var(--font-display);font-size:2.2rem;color:white;line-height:1.1;letter-spacing:-0.5px;position:relative;z-index:1;margin-bottom:4px;}
-.home-title span{background:linear-gradient(135deg,var(--orange),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.home-sub{font-size:0.8rem;color:rgba(255,255,255,0.4);position:relative;z-index:1;font-weight:600;}
+    /* ── NAV ── */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-h);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      z-index: 200;
+    }
 
-/* Trip pill */
-.trip-pill{
-  margin-top:18px;
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.12);
-  border-radius:100px;padding:11px 17px;
-  display:flex;align-items:center;gap:10px;
-  cursor:pointer;transition:all 0.2s;
-  position:relative;z-index:1;
-}
-.trip-pill:active{background:rgba(255,255,255,0.15);}
-.tp-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;animation:yPulse 2s infinite;box-shadow:0 0 8px var(--green);}
-.tp-dest{font-size:0.86rem;font-weight:800;color:white;flex:1;font-family:var(--font-body);}
-.tp-meta{font-size:0.68rem;color:rgba(255,255,255,0.4);font-weight:600;}
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-.new-trip-btn-hero{
-  margin-top:16px;position:relative;z-index:1;
-  display:inline-flex;align-items:center;gap:8px;
-  padding:11px 22px;
-  background:linear-gradient(135deg,var(--orange),var(--red));
-  color:white;border:none;border-radius:100px;
-  font-family:var(--font-body);font-size:0.82rem;font-weight:800;
-  cursor:pointer;transition:all 0.2s;
-  box-shadow:0 6px 20px rgba(244,100,42,0.35);
-}
-.new-trip-btn-hero:active{transform:scale(0.97);}
+    .nav-logo-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-/* Color stripe under hero */
-.hero-stripe{height:4px;background:linear-gradient(90deg,var(--blue),var(--orange),var(--red),var(--green),var(--gold),var(--purple));}
+    .nav-logo-mark svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2;
+    }
 
-/* Home content */
-.home-content{padding:18px 20px;}
+    .nav-logo-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--charcoal);
+      letter-spacing: -0.3px;
+    }
 
-/* Quick action grid */
-.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:20px;}
-.qa{
-  background:white;
-  border:1.5px solid var(--border);
-  border-radius:20px;padding:18px;
-  cursor:pointer;transition:all 0.2s;
-  position:relative;overflow:hidden;
-}
-.qa:active{transform:scale(0.96);}
-.qa.wide{grid-column:1/-1;display:flex;align-items:center;gap:16px;}
-.qa-ico{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:10px;flex-shrink:0;}
-.qa-lbl{font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:3px;font-family:var(--font-ui);}
-.qa-name{font-family:var(--font-display);font-size:1rem;color:var(--text);margin-bottom:2px;}
-.qa-desc{font-size:0.72rem;color:var(--muted);font-weight:600;}
-.qa-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;}
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-/* Saved trips mini */
-.trip-mini{
-  background:white;border:1.5px solid var(--border);
-  border-radius:var(--r);overflow:hidden;
-  cursor:pointer;transition:all 0.2s;margin-bottom:9px;
-  display:flex;align-items:stretch;
-}
-.trip-mini:active{transform:scale(0.98);}
-.tm-accent{width:5px;flex-shrink:0;}
-.tm-body{flex:1;padding:13px 14px;display:flex;align-items:center;gap:12px;}
-.tm-dest{font-size:0.88rem;font-weight:800;flex:1;font-family:var(--font-body);}
-.tm-meta{font-size:0.7rem;color:var(--muted);font-weight:600;}
-.tm-btn{padding:7px 14px;border:none;border-radius:100px;font-size:0.72rem;font-weight:800;cursor:pointer;font-family:var(--font-body);}
+    .nav-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--sky));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      border: 2px solid var(--border-md);
+    }
 
-/* ── NEW TRIP FORM ── */
-#newTrip{background:var(--bg);}
-.form-hero{
-  padding:52px 22px 28px;
-  background:linear-gradient(160deg,#1A1A2E,#2D1A3E);
-  position:relative;overflow:hidden;
-}
-.form-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 70% 30%,rgba(244,100,42,0.15) 0%,transparent 50%);}
-.fh-back{display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.45);font-size:0.78rem;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-weight:700;margin-bottom:16px;position:relative;z-index:1;}
-.fh-title{font-family:var(--font-display);font-size:2rem;color:white;position:relative;z-index:1;}
-.fh-sub{font-size:0.8rem;color:rgba(255,255,255,0.4);margin-top:6px;font-weight:600;position:relative;z-index:1;}
-.form-body{padding:20px;}
+    .nav-user-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
 
-/* Vibe pills */
-.vibe-wrap{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px;}
-.vp{
-  padding:7px 14px;border-radius:100px;
-  border:2px solid var(--border2);
-  background:none;cursor:pointer;
-  font-family:var(--font-body);font-size:0.76rem;font-weight:800;
-  color:var(--muted);transition:all 0.2s;
-}
-.vp.on{border-color:transparent;color:white;}
-.vp[data-vibe="Adventure"].on{background:linear-gradient(135deg,var(--orange),var(--red));}
-.vp[data-vibe="Cultural"].on{background:linear-gradient(135deg,var(--purple),#8B7AF0);}
-.vp[data-vibe="Relaxation"].on{background:linear-gradient(135deg,var(--blue),#5B8FE8);}
-.vp[data-vibe="Foodie"].on{background:linear-gradient(135deg,var(--red),var(--orange));}
-.vp[data-vibe="Budget"].on{background:linear-gradient(135deg,var(--green),#3CC89A);}
-.vp[data-vibe="Luxury"].on{background:linear-gradient(135deg,var(--gold),#FFB731);}
-.vp[data-vibe="Romantic"].on{background:linear-gradient(135deg,var(--red),var(--purple));}
-.vp[data-vibe="Family"].on{background:linear-gradient(135deg,var(--blue),var(--green));}
-.vp[data-vibe="Solo"].on{background:linear-gradient(135deg,var(--purple),var(--blue));}
-.vp[data-vibe="Wellness"].on{background:linear-gradient(135deg,var(--green),var(--blue));}
+    .nav-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-md);
+      background: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
 
-/* ── TRIP DASHBOARD ── */
-#tripDash{padding-bottom:90px;}
-.td-hero{
-  padding:52px 22px 22px;
-  background:linear-gradient(160deg,#1A1A2E,#0D2A1E);
-  position:relative;overflow:hidden;
-}
-.td-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 30%,rgba(43,175,126,0.2) 0%,transparent 50%);}
-.td-from-to{font-family:var(--font-display);font-size:1.7rem;color:white;line-height:1.15;letter-spacing:-0.3px;margin-bottom:6px;position:relative;z-index:1;}
-.td-meta{font-size:0.78rem;color:rgba(255,255,255,0.4);font-weight:600;position:relative;z-index:1;}
-.td-vibes{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;position:relative;z-index:1;}
-.td-vibe{padding:5px 13px;background:rgba(255,255,255,0.1);color:white;border-radius:100px;font-size:0.7rem;font-weight:800;border:1px solid rgba(255,255,255,0.15);font-family:var(--font-body);}
+    .nav-btn:hover {
+      background: var(--bg2);
+      color: var(--charcoal);
+    }
 
-/* Phase tabs */
-.phase-tabs{display:flex;background:white;border-bottom:1px solid var(--border);}
-.ptab{
-  flex:1;padding:14px 0;text-align:center;
-  font-size:0.72rem;font-weight:800;color:var(--muted2);
-  background:none;border:none;border-bottom:3px solid transparent;
-  cursor:pointer;font-family:var(--font-ui);letter-spacing:0.3px;
-  transition:all 0.2s;margin-bottom:-1px;text-transform:uppercase;
-}
-.ptab.on.t-orange{color:var(--orange);border-bottom-color:var(--orange);}
-.ptab.on.t-red{color:var(--red);border-bottom-color:var(--red);}
-.ptab.on.t-purple{color:var(--purple);border-bottom-color:var(--purple);}
-.ptab.on.t-green{color:var(--green);border-bottom-color:var(--green);}
+    .nav-btn.primary {
+      background: var(--teal);
+      color: #fff;
+      border-color: var(--teal);
+    }
 
-.phase{display:none;padding:16px 20px;animation:yFadeUp 0.3s ease;}
-.phase.on{display:block;}
+    .nav-btn.primary:hover {
+      background: #158068;
+    }
 
-/* Dashboard cards */
-.dc{
-  background:white;border:1.5px solid var(--border);
-  border-radius:20px;padding:16px;
-  display:flex;align-items:center;gap:14px;
-  cursor:pointer;transition:all 0.2s;margin-bottom:10px;
-}
-.dc:hover{transform:translateX(4px);box-shadow:var(--shadow-sm);}
-.dc:active{transform:scale(0.98);}
-.dc-icon{width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
-.dc-name{font-size:0.9rem;font-weight:800;margin-bottom:3px;font-family:var(--font-body);}
-.dc-desc{font-size:0.73rem;color:var(--muted);font-weight:600;}
-.dc-badge{font-size:0.62rem;font-weight:800;padding:5px 11px;border-radius:100px;flex-shrink:0;font-family:var(--font-ui);}
-.dc-arr{color:var(--border2);font-size:0.9rem;}
-
-/* ── TRANSLATE HUB ── */
-#translateHub{padding-bottom:90px;}
-.translate-hero{background:linear-gradient(160deg,#1A2A4E,#1A1A2E);padding:52px 22px 24px;position:relative;overflow:hidden;}
-.translate-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 70% 30%,rgba(74,127,212,0.2) 0%,transparent 50%);}
-
-.tm{
-  background:white;border:1.5px solid var(--border);
-  border-radius:20px;overflow:hidden;
-  cursor:pointer;transition:all 0.2s;margin-bottom:12px;
-  box-shadow:var(--shadow-sm);
-}
-.tm:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
-.tm:active{transform:scale(0.98);}
-.tm-top-bar{height:4px;}
-.tm-body{padding:18px;display:flex;align-items:center;gap:14px;}
-.tm-icon{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
-.tm-name{font-size:0.92rem;font-weight:800;margin-bottom:3px;font-family:var(--font-body);}
-.tm-desc{font-size:0.75rem;color:var(--muted);font-weight:600;}
-.tm-foot{padding:10px 18px;font-size:0.7rem;font-weight:800;font-family:var(--font-ui);letter-spacing:0.3px;}
-
-/* ── DISCOVER HUB ── */
-#discoverHub{padding-bottom:90px;}
-.discover-hero{background:linear-gradient(160deg,#2A1A4E,#1A1A2E);padding:52px 22px 24px;position:relative;overflow:hidden;}
-.discover-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 60% 40%,rgba(107,92,231,0.2) 0%,transparent 50%);}
-
-.disc-opt{
-  background:white;border:1.5px solid var(--border);
-  border-radius:20px;padding:22px;
-  cursor:pointer;transition:all 0.2s;margin-bottom:12px;
-  box-shadow:var(--shadow-sm);
-}
-.disc-opt:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
-.disc-opt:active{transform:scale(0.98);}
-.disc-opt-icon{font-size:2.2rem;margin-bottom:12px;}
-.disc-opt-name{font-family:var(--font-display);font-size:1.15rem;color:var(--text);margin-bottom:7px;}
-.disc-opt-desc{font-size:0.82rem;color:var(--muted);line-height:1.65;font-weight:600;}
-
-/* ── PROFILE ── */
-#profile{padding-bottom:90px;}
-.profile-hero{
-  padding:52px 22px 26px;
-  background:linear-gradient(160deg,#1A1A2E,#2D1A3E);
-  position:relative;overflow:hidden;
-}
-.profile-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(107,92,231,0.2) 0%,transparent 50%);}
-.profile-av{
-  width:72px;height:72px;border-radius:50%;
-  background:linear-gradient(135deg,var(--orange),var(--red),var(--purple));
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.8rem;margin-bottom:14px;
-  overflow:hidden;position:relative;z-index:1;
-  border:3px solid rgba(255,255,255,0.15);
-}
-.profile-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.profile-name{font-family:var(--font-display);font-size:1.6rem;color:white;margin-bottom:4px;position:relative;z-index:1;}
-.profile-email{font-size:0.78rem;color:rgba(255,255,255,0.35);font-weight:600;position:relative;z-index:1;}
-.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px;position:relative;z-index:1;}
-.pstat{background:rgba(255,255,255,0.08);border-radius:14px;padding:13px;text-align:center;border:1px solid rgba(255,255,255,0.1);}
-.pstat-num{font-family:var(--font-display);font-size:1.5rem;color:white;}
-.pstat-lbl{font-size:0.6rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-top:3px;font-family:var(--font-ui);font-weight:700;}
-
-.settings-item{
-  background:white;border:1.5px solid var(--border);
-  border-radius:var(--r);padding:14px 16px;
-  display:flex;align-items:center;gap:12px;
-  cursor:pointer;transition:all 0.2s;margin-bottom:8px;
-}
-.settings-item:active{transform:scale(0.98);}
-.si-ico{font-size:1.1rem;width:32px;text-align:center;}
-.si-lbl{flex:1;font-size:0.88rem;font-weight:800;font-family:var(--font-body);}
-.si-arr{color:var(--border2);}
-
-/* Empty state */
-.empty{text-align:center;padding:40px 20px;}
-.empty-ico{font-size:3rem;margin-bottom:12px;}
-.empty-title{font-family:var(--font-display);font-size:1.2rem;color:var(--text);margin-bottom:6px;}
-.empty-desc{font-size:0.82rem;color:var(--muted);line-height:1.65;font-weight:600;}
-
-/* Spin wrap */
-.spin-wrap{display:flex;align-items:center;justify-content:center;padding:32px;gap:10px;color:var(--muted);font-size:0.82rem;font-weight:700;}
-</style>
-</head>
-<body>
-
-<!-- ── SPLASH ── -->
-<div class="screen active" id="splash" style="min-height:100vh;">
-  <div class="splash-emoji" style="top:15%;left:10%;animation-duration:5s;">✈️</div>
-  <div class="splash-emoji" style="top:25%;right:12%;animation-duration:7s;animation-delay:1s;">🌍</div>
-  <div class="splash-emoji" style="bottom:30%;left:8%;animation-duration:6s;animation-delay:2s;">🏝️</div>
-  <div class="splash-emoji" style="bottom:20%;right:10%;animation-duration:8s;animation-delay:0.5s;">🗺️</div>
-  <div class="splash-emoji" style="top:60%;left:50%;animation-duration:9s;animation-delay:1.5s;">⭐</div>
-  <div class="splash-logo-wrap">
-    <img src="/static/yaply-logo.png" alt="Yaply" class="splash-logo-img"
-         onerror="this.style.display='none';document.getElementById('splashText').style.display='block'"/>
-    <div class="splash-logo-text" id="splashText" style="display:none;">Yaply</div>
-    <div class="splash-sub" style="margin-top:8px;">AI Travel Companion</div>
-    <div class="splash-bar" style="margin:32px auto 0;"><div class="splash-fill" id="splashFill"></div></div>
-  </div>
-</div>
-
-<!-- ── HOME ── -->
-<div class="screen" id="home">
-  <div class="home-hero">
-    <div class="home-greet" id="homeGreet">Good morning 👋</div>
-    <div class="home-title">Where are you <span>going?</span></div>
-    <div class="home-sub" id="homeSub">Your AI travel companion is ready</div>
-    <div id="tripPillSection" style="margin-top:18px;position:relative;z-index:1;"></div>
-  </div>
-  <div class="hero-stripe"></div>
-
-  <div class="home-content">
-    <div class="qa-grid" style="margin-top:4px;">
-      <div class="qa" onclick="go('newTrip')">
-        <div class="qa-accent" style="background:linear-gradient(90deg,var(--orange),var(--red));"></div>
-        <div class="qa-ico" style="background:var(--orange-soft);">✈️</div>
-        <div class="qa-lbl">Plan</div>
-        <div class="qa-name">New Trip</div>
-        <div class="qa-desc">Full AI itinerary</div>
-      </div>
-      <div class="qa" onclick="go('discoverHub')">
-        <div class="qa-accent" style="background:linear-gradient(90deg,var(--purple),var(--blue));"></div>
-        <div class="qa-ico" style="background:var(--purple-soft);">🔍</div>
-        <div class="qa-lbl">Discover</div>
-        <div class="qa-name">Find Places</div>
-        <div class="qa-desc">From photos</div>
-      </div>
-      <div class="qa wide" onclick="go('translateHub')">
-        <div class="qa-accent" style="background:linear-gradient(90deg,var(--blue),var(--green));"></div>
-        <div class="qa-ico" style="background:var(--blue-soft);">🎙️</div>
-        <div style="flex:1;">
-          <div class="qa-lbl">Live</div>
-          <div class="qa-name">Translate</div>
-          <div class="qa-desc">Voice · Camera · Conversation</div>
-        </div>
-        <div style="color:var(--border2);font-size:1.1rem;">›</div>
-      </div>
-    </div>
-
-    <!-- Emergency (shown when trip active) -->
-    <div id="emergencyBar" style="display:none;margin-bottom:16px;">
-      <div class="y-flex-between y-mb">
-        <div class="y-section-title">🆘 Emergency Tools</div>
-        <button class="y-section-action" onclick="openF('/during','during')">Open all →</button>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <div class="y-card y-card-red y-card-clickable" style="padding:14px;margin-bottom:0;" onclick="openF('/during','during')">
-          <div style="font-size:1.3rem;margin-bottom:6px;">🏥</div>
-          <div style="font-size:0.8rem;font-weight:800;">Medical Help</div>
-          <div style="font-size:0.7rem;color:var(--muted);font-weight:600;">Translate symptoms</div>
-        </div>
-        <div class="y-card y-card-gold y-card-clickable" style="padding:14px;margin-bottom:0;" onclick="openF('/during','during')">
-          <div style="font-size:1.3rem;margin-bottom:6px;">🚨</div>
-          <div style="font-size:0.8rem;font-weight:800;">Scam Alerts</div>
-          <div style="font-size:0.7rem;color:var(--muted);font-weight:600;">Stay safe</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Saved trips -->
-    <div>
-      <div class="y-flex-between y-mb">
-        <div class="y-section-title">🗺️ My Trips</div>
-        <button class="y-section-action" onclick="go('profile')">View all →</button>
-      </div>
-      <div id="tripsList"><div class="spin-wrap"><div class="y-spinner"></div> Loading trips...</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ── NEW TRIP ── -->
-<div class="screen" id="newTrip">
-  <div class="form-hero">
-    <button class="fh-back" onclick="go('home')">← Back</button>
-    <div class="fh-title">Plan Your Trip</div>
-    <div class="fh-sub">Tell us everything — we handle the rest ✨</div>
-  </div>
-  <div class="hero-stripe"></div>
-  <div class="form-body">
-    <div class="fg"><label class="y-label">🛫 Flying From</label><input class="y-input" type="text" id="nt_from" placeholder="Mumbai, India"/></div>
-    <div class="fg"><label class="y-label">🛬 Going To</label><input class="y-input" type="text" id="nt_dest" placeholder="Tokyo, Japan"/></div>
-    <div class="y-grid-2">
-      <div class="fg"><label class="y-label">📅 Days</label><input class="y-input" type="number" id="nt_days" value="7" min="1" max="60"/></div>
-      <div class="fg"><label class="y-label">👥 People</label><input class="y-input" type="number" id="nt_people" value="2" min="1"/></div>
-    </div>
-    <div class="fg"><label class="y-label">💰 Budget</label>
-      <div style="display:flex;gap:8px;">
-        <select class="y-input" id="nt_cur" style="width:85px;flex-shrink:0;">
-          <option value="INR">₹ INR</option><option value="USD">$ USD</option>
-          <option value="EUR">€ EUR</option><option value="GBP">£ GBP</option>
-        </select>
-        <input class="y-input" type="text" id="nt_budget" placeholder="80,000" style="flex:1;"/>
-      </div>
-    </div>
-    <div class="fg"><label class="y-label">🌐 Passport</label>
-      <select class="y-input" id="nt_pass">
-        <option value="India">🇮🇳 India</option><option value="USA">🇺🇸 USA</option>
-        <option value="UK">🇬🇧 UK</option><option value="UAE">🇦🇪 UAE</option>
-        <option value="Canada">🇨🇦 Canada</option><option value="Australia">🇦🇺 Australia</option>
-      </select>
-    </div>
-    <div class="fg"><label class="y-label">🎭 Travel Vibe</label>
-      <div class="vibe-wrap">
-        <button class="vp on" data-vibe="Adventure" onclick="tv(this,'Adventure')">🏔️ Adventure</button>
-        <button class="vp" data-vibe="Cultural" onclick="tv(this,'Cultural')">🏛️ Cultural</button>
-        <button class="vp" data-vibe="Relaxation" onclick="tv(this,'Relaxation')">🏖️ Relax</button>
-        <button class="vp" data-vibe="Foodie" onclick="tv(this,'Foodie')">🍜 Foodie</button>
-        <button class="vp" data-vibe="Budget" onclick="tv(this,'Budget')">💸 Budget</button>
-        <button class="vp" data-vibe="Luxury" onclick="tv(this,'Luxury')">✨ Luxury</button>
-        <button class="vp" data-vibe="Romantic" onclick="tv(this,'Romantic')">💑 Romantic</button>
-        <button class="vp" data-vibe="Family" onclick="tv(this,'Family')">👨‍👩‍👧 Family</button>
-        <button class="vp" data-vibe="Solo" onclick="tv(this,'Solo')">🧳 Solo</button>
-        <button class="vp" data-vibe="Wellness" onclick="tv(this,'Wellness')">🧘 Wellness</button>
-      </div>
-    </div>
-    <button class="y-btn y-btn-primary y-btn-full y-btn-lg" id="saveTripBtn" onclick="saveTrip()" style="margin-top:8px;">
-      🚀 Start My Trip
-    </button>
-  </div>
-</div>
-
-<!-- ── TRIP DASHBOARD ── -->
-<div class="screen" id="tripDash">
-  <div class="td-hero">
-    <button class="fh-back" onclick="go('home')">← Home</button>
-    <div class="td-from-to" id="tdFromTo">Loading...</div>
-    <div class="td-meta" id="tdMeta"></div>
-    <div class="td-vibes" id="tdVibes"></div>
-  </div>
-  <div class="hero-stripe"></div>
-
-  <div class="phase-tabs">
-    <button class="ptab on t-orange" onclick="switchPhase(this,'pb-before')">✈️ Before</button>
-    <button class="ptab t-red" onclick="switchPhase(this,'pb-during')">🌍 During</button>
-    <button class="ptab t-purple" onclick="switchPhase(this,'pb-after')">📖 After</button>
-    <button class="ptab t-green" onclick="switchPhase(this,'pb-tools')">🛠️ Tools</button>
-  </div>
-
-  <!-- BEFORE -->
-  <div class="phase on" id="pb-before">
-    <div class="dc" onclick="openF('/plan','before')"><div class="dc-icon" style="background:var(--orange-soft);">📅</div><div style="flex:1;"><div class="dc-name">AI Trip Itinerary</div><div class="dc-desc">Full day-by-day plan with real destination photos</div></div><div class="dc-badge" style="background:var(--orange-soft);color:var(--orange);">AI ✨</div></div>
-    <div class="dc" onclick="openF('/plan','before')"><div class="dc-icon" style="background:var(--blue-soft);">🗺️</div><div style="flex:1;"><div class="dc-name">Door-to-Door Journey</div><div class="dc-desc">Airports, transport and flight costs from your city</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/plan','before')"><div class="dc-icon" style="background:var(--blue-soft);">🌤️</div><div style="flex:1;"><div class="dc-name">Weather Forecast</div><div class="dc-desc">7-day forecast for your destination</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/plan','before')"><div class="dc-icon" style="background:var(--green-soft);">💱</div><div style="flex:1;"><div class="dc-name">Currency Converter</div><div class="dc-desc">Live exchange rates</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/plan','before')"><div class="dc-icon" style="background:var(--gold-soft);">🛂</div><div style="flex:1;"><div class="dc-name">Visa Requirements</div><div class="dc-desc">Everything you need to enter the country</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/plan','before')"><div class="dc-icon" style="background:var(--purple-soft);">🌍</div><div style="flex:1;"><div class="dc-name">Cultural Guide</div><div class="dc-desc">Dos, don'ts, dress code, tipping culture</div></div><div class="dc-arr">›</div></div>
-  </div>
-
-  <!-- DURING -->
-  <div class="phase" id="pb-during">
-    <div class="dc" onclick="openF('/during','during')"><div class="dc-icon" style="background:var(--red-soft);">🏥</div><div style="flex:1;"><div class="dc-name">Medical Emergency</div><div class="dc-desc">Translate symptoms, find hospitals, emergency phrases</div></div><div class="dc-badge" style="background:var(--red-soft);color:var(--red);">SOS</div></div>
-    <div class="dc" onclick="openF('/during','during')"><div class="dc-icon" style="background:var(--green-soft);">💰</div><div style="flex:1;"><div class="dc-name">Price Checker</div><div class="dc-desc">Is this taxi fare fair? Get local price instantly</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/during','during')"><div class="dc-icon" style="background:var(--gold-soft);">🚨</div><div style="flex:1;"><div class="dc-name">Scam Alerts</div><div class="dc-desc">Every tourist scam at your destination</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/during','during')"><div class="dc-icon" style="background:var(--red-soft);">🍜</div><div style="flex:1;"><div class="dc-name">Food Allergy Card</div><div class="dc-desc">Your allergies in the local language, printable</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/during','during')"><div class="dc-icon" style="background:var(--blue-soft);">✈️</div><div style="flex:1;"><div class="dc-name">Flight Rights</div><div class="dc-desc">Delays, cancellations and compensation</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/during','during')"><div class="dc-icon" style="background:var(--green-soft);">🛡️</div><div style="flex:1;"><div class="dc-name">Safe Route Planner</div><div class="dc-desc">Safe paths especially for solo travellers</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/during','during')"><div class="dc-icon" style="background:var(--purple-soft);">🛂</div><div style="flex:1;"><div class="dc-name">Immigration Guide</div><div class="dc-desc">What to say at border control</div></div><div class="dc-arr">›</div></div>
-  </div>
-
-  <!-- AFTER -->
-  <div class="phase" id="pb-after">
-    <div class="dc" onclick="openF('/after','after')"><div class="dc-icon" style="background:var(--purple-soft);">📖</div><div style="flex:1;"><div class="dc-name">AI Trip Journal</div><div class="dc-desc">Writes your travel story beautifully</div></div><div class="dc-badge" style="background:var(--purple-soft);color:var(--purple);">AI ✨</div></div>
-    <div class="dc" onclick="openF('/after','after')"><div class="dc-icon" style="background:var(--green-soft);">💰</div><div style="flex:1;"><div class="dc-name">Expense Tracker</div><div class="dc-desc">Log and analyse your spending</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/after','after')"><div class="dc-icon" style="background:var(--blue-soft);">🤝</div><div style="flex:1;"><div class="dc-name">Split Bill</div><div class="dc-desc">Settle group expenses fairly</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/after','after')"><div class="dc-icon" style="background:var(--gold-soft);">🏆</div><div style="flex:1;"><div class="dc-name">Trip Stats</div><div class="dc-desc">Achievements + perfect Instagram caption</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/after','after')"><div class="dc-icon" style="background:var(--gold-soft);">⭐</div><div style="flex:1;"><div class="dc-name">Write Reviews</div><div class="dc-desc">AI generates perfect Google & TripAdvisor reviews</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/after','after')"><div class="dc-icon" style="background:var(--orange-soft);">🗺️</div><div style="flex:1;"><div class="dc-name">Next Adventure</div><div class="dc-desc">Where should you go next?</div></div><div class="dc-arr">›</div></div>
-  </div>
-
-  <!-- TOOLS -->
-  <div class="phase" id="pb-tools">
-    <div class="dc" onclick="openF('/tools','tools')"><div class="dc-icon" style="background:var(--blue-soft);">🛂</div><div style="flex:1;"><div class="dc-name">Passport Checker</div><div class="dc-desc">Is your passport valid enough for this trip?</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/tools','tools')"><div class="dc-icon" style="background:var(--green-soft);">🛡️</div><div style="flex:1;"><div class="dc-name">Safety Index</div><div class="dc-desc">Crime, water safety, health risks</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/tools','tools')"><div class="dc-icon" style="background:var(--red-soft);">⚖️</div><div style="flex:1;"><div class="dc-name">Local Laws</div><div class="dc-desc">Don't accidentally break any laws abroad</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/tools','tools')"><div class="dc-icon" style="background:var(--purple-soft);">😴</div><div style="flex:1;"><div class="dc-name">Jet Lag Calculator</div><div class="dc-desc">Recover faster with a personalised plan</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/tools','tools')"><div class="dc-icon" style="background:var(--gold-soft);">🎉</div><div style="flex:1;"><div class="dc-name">Festival Calendar</div><div class="dc-desc">Events and holidays during your trip</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/tools','tools')"><div class="dc-icon" style="background:var(--green-soft);">💰</div><div style="flex:1;"><div class="dc-name">Budget Planner</div><div class="dc-desc">Is your budget realistic?</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/tools','tools')"><div class="dc-icon" style="background:var(--blue-soft);">🧳</div><div style="flex:1;"><div class="dc-name">Luggage Rules</div><div class="dc-desc">Airline limits and duty free allowances</div></div><div class="dc-arr">›</div></div>
-    <div class="dc" onclick="openF('/tools','tools')"><div class="dc-icon" style="background:var(--red-soft);">🆘</div><div style="flex:1;"><div class="dc-name">Emergency Card</div><div class="dc-desc">Printable card with all emergency numbers</div></div><div class="dc-arr">›</div></div>
-  </div>
-</div>
-
-<!-- ── TRANSLATE HUB ── -->
-<div class="screen" id="translateHub">
-  <div class="translate-hero">
-    <button class="fh-back" onclick="go('home')">← Back</button>
-    <div class="fh-title" style="font-family:var(--font-display);">Translate</div>
-    <div class="fh-sub">Break every language barrier 🌍</div>
-  </div>
-  <div class="hero-stripe"></div>
-  <div style="padding:18px 20px;">
-    <div class="tm" onclick="openF('/translate','translate')">
-      <div class="tm-top-bar" style="background:linear-gradient(90deg,var(--blue),var(--purple));"></div>
-      <div class="tm-body">
-        <div class="tm-icon" style="background:var(--blue-soft);">🎙️</div>
-        <div style="flex:1;">
-          <div class="tm-name">Live Voice Translation</div>
-          <div class="tm-desc">Speak — Yaply translates and speaks back instantly</div>
-        </div>
-        <div style="color:var(--border2);font-size:1.1rem;">›</div>
-      </div>
-      <div class="tm-foot" style="background:var(--blue-soft);color:var(--blue);">Best for: Conversations · Asking directions</div>
-    </div>
-    <div class="tm" onclick="openF('/convo','translate')">
-      <div class="tm-top-bar" style="background:linear-gradient(90deg,var(--green),var(--blue));"></div>
-      <div class="tm-body">
-        <div class="tm-icon" style="background:var(--green-soft);">💬</div>
-        <div style="flex:1;">
-          <div class="tm-name">Two-Person Conversation</div>
-          <div class="tm-desc">Two people, two languages — talk naturally</div>
-        </div>
-        <div style="color:var(--border2);font-size:1.1rem;">›</div>
-      </div>
-      <div class="tm-foot" style="background:var(--green-soft);color:var(--green);">Best for: Taxi · Shopkeepers · Hotel staff</div>
-    </div>
-    <div class="tm" onclick="openF('/camera','translate')">
-      <div class="tm-top-bar" style="background:linear-gradient(90deg,var(--purple),var(--red));"></div>
-      <div class="tm-body">
-        <div class="tm-icon" style="background:var(--purple-soft);">📸</div>
-        <div style="flex:1;">
-          <div class="tm-name">Camera Text Scanner</div>
-          <div class="tm-desc">Point at any sign, menu or document</div>
-        </div>
-        <div style="color:var(--border2);font-size:1.1rem;">›</div>
-      </div>
-      <div class="tm-foot" style="background:var(--purple-soft);color:var(--purple);">Best for: Menus · Signs · Forms · Receipts</div>
-    </div>
-  </div>
-</div>
-
-<!-- ── DISCOVER HUB ── -->
-<div class="screen" id="discoverHub">
-  <div class="discover-hero">
-    <button class="fh-back" onclick="go('home')">← Back</button>
-    <div class="fh-title" style="font-family:var(--font-display);">Discover</div>
-    <div class="fh-sub">Find any place from photos 🔍</div>
-  </div>
-  <div class="hero-stripe"></div>
-  <div style="padding:18px 20px;">
-    <div class="disc-opt" onclick="openF('/discover','discover')">
-      <div class="disc-opt-icon">📸</div>
-      <div class="disc-opt-name">Upload a Photo</div>
-      <div class="disc-opt-desc">Screenshot from Instagram or TikTok — AI identifies the exact location, country, best time to visit and nearby attractions</div>
-    </div>
-    <div class="disc-opt" onclick="openF('/discover','discover')">
-      <div class="disc-opt-icon">💬</div>
-      <div class="disc-opt-name">Describe the Place</div>
-      <div class="disc-opt-desc">Type what you remember — "blue caves with turquoise water" — AI finds it instantly</div>
-    </div>
-    <div style="padding:15px;background:var(--purple-soft);border:1.5px solid rgba(107,92,231,0.2);border-radius:var(--r);">
-      <div style="font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:5px;font-family:var(--font-ui);">💎 Saved Places</div>
-      <div id="savedPlacesInfo" style="font-size:0.82rem;color:var(--muted);font-weight:600;">Loading...</div>
-    </div>
-  </div>
-</div>
-
-<!-- ── PROFILE ── -->
-<div class="screen" id="profile">
-  <div class="profile-hero">
-    <div class="profile-av" id="profileAvatar">🌍</div>
-    <div class="profile-name" id="profileName">Loading...</div>
-    <div class="profile-email" id="profileEmail"></div>
-    <div class="profile-stats">
-      <div class="pstat"><div class="pstat-num" id="pTrips">—</div><div class="pstat-lbl">Trips</div></div>
-      <div class="pstat"><div class="pstat-num" id="pDays">—</div><div class="pstat-lbl">Days</div></div>
-      <div class="pstat"><div class="pstat-num" id="pPlaces">—</div><div class="pstat-lbl">Places</div></div>
-    </div>
-  </div>
-  <div class="hero-stripe"></div>
-  <div style="padding:18px 20px;">
-    <div class="y-mb"><div class="y-section-title y-mb">My Trips</div><div id="profileTrips"><div class="spin-wrap"><div class="y-spinner"></div></div></div></div>
-    <div class="y-mb-lg"><div class="y-section-title y-mb">Settings</div>
-      <div class="settings-item" onclick="go('home')"><div class="si-ico">🏠</div><div class="si-lbl">Home</div><div class="si-arr">›</div></div>
-      <div class="settings-item" onclick="YaplyAuth.logout()" style="color:var(--orange);"><div class="si-ico">🚪</div><div class="si-lbl" style="color:var(--orange);">Sign Out</div><div class="si-arr">›</div></div>
-      <div class="settings-item" onclick="deleteAccount()" style="color:var(--red);"><div class="si-ico">🗑️</div><div class="si-lbl" style="color:var(--red);">Delete Account</div><div class="si-arr">›</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- BOTTOM NAV -->
-<nav class="y-bottom-nav" id="bottomNav" style="display:none;">
-  <button class="y-nav-item active" id="bn-home" onclick="go('home')">
-    <div class="y-nav-icon">🏠</div><div class="y-nav-label">Home</div>
-  </button>
-  <button class="y-nav-item" id="bn-trip" onclick="showDash()">
-    <div class="y-nav-icon">✈️</div><div class="y-nav-label">My Trip</div>
-  </button>
-  <button class="y-nav-item" id="bn-translate" onclick="go('translateHub')">
-    <div class="y-nav-icon">🎙️</div><div class="y-nav-label">Translate</div>
-  </button>
-  <button class="y-nav-item" id="bn-discover" onclick="go('discoverHub')">
-    <div class="y-nav-icon">🔍</div><div class="y-nav-label">Discover</div>
-  </button>
-  <button class="y-nav-item" id="bn-profile" onclick="go('profile')">
-    <div class="y-nav-icon">👤</div><div class="y-nav-label">Profile</div>
-  </button>
-</nav>
-
-<div class="y-toast" id="toast"></div>
-
-<script>
-// ── AUTH CHECK ──
-const TOKEN = localStorage.getItem('yaply_token');
-const USER  = JSON.parse(localStorage.getItem('yaply_user') || 'null');
-if (!TOKEN) window.location.href = '/login';
-
-// ── API ──
-async function api(url, method='GET', body=null) {
-  const opts = { method, headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+TOKEN } };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(url, opts);
-  if (res.status === 401) { YaplyAuth.logout(); return {success:false}; }
-  return res.json();
-}
-
-// ── STATE ──
-let vibes = ['Adventure'];
-let activeTrip = JSON.parse(localStorage.getItem('yaply_active_trip') || 'null');
-
-// ── INIT ──
-function init() {
-  setTimeout(() => document.getElementById('splashFill').style.width = '100%', 100);
-  const h = new Date().getHours();
-  const greets = ['Good morning 👋','Good afternoon 👋','Good evening 👋'];
-  document.getElementById('homeGreet').textContent = h<12?greets[0]:h<17?greets[1]:greets[2];
-  if (USER) document.getElementById('homeSub').textContent = `Welcome back, ${USER.name?.split(' ')[0] || ''}! ✈️`;
-  setTimeout(() => { go('home', false); loadHome(); }, 1800);
-}
-
-// ── SCREEN ──
-function go(id, updateNav=true) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  const hideNav = ['splash','newTrip'];
-  document.getElementById('bottomNav').style.display = hideNav.includes(id) ? 'none' : 'flex';
-  if (updateNav) {
-    document.querySelectorAll('.y-nav-item').forEach(b => b.classList.remove('active'));
-    const m = {home:'bn-home',tripDash:'bn-trip',translateHub:'bn-translate',discoverHub:'bn-discover',profile:'bn-profile'};
-    if (m[id]) document.getElementById(m[id]).classList.add('active');
-  }
-  window.scrollTo(0,0);
-  if (id==='profile') loadProfile();
-  if (id==='discoverHub') loadPlaces();
-}
-
-// ── HOME ──
-async function loadHome() {
-  const pill = document.getElementById('tripPillSection');
-  if (activeTrip) {
-    pill.innerHTML = `
-      <div class="trip-pill" onclick="showDash()">
-        <div class="tp-dot"></div>
-        <div style="flex:1;">
-          <div class="tp-dest">✈️ ${activeTrip.origin||'?'} → ${activeTrip.destination}</div>
-          <div class="tp-meta">${activeTrip.days}d · ${activeTrip.currency} ${activeTrip.budget} · ${activeTrip.vibeString||''}</div>
-        </div>
-        <div style="color:rgba(255,255,255,0.25);font-size:1.1rem;">›</div>
-      </div>`;
-    document.getElementById('emergencyBar').style.display = 'block';
-  } else {
-    pill.innerHTML = `<button class="new-trip-btn-hero" onclick="go('newTrip')">+ Plan a Trip ✈️</button>`;
-  }
-
-  const tl = document.getElementById('tripsList');
-  try {
-    const data = await api('/api/trips');
-    if (data.success && data.trips) {
-      if (data.trips.length === 0) {
-        tl.innerHTML = `<div class="empty"><div class="empty-ico">🗺️</div><div class="empty-title">No trips yet!</div><div class="empty-desc">Plan your first adventure and start exploring the world ✈️</div></div>`;
-      } else {
-        const colors = ['var(--orange)','var(--blue)','var(--green)','var(--purple)','var(--gold)','var(--red)'];
-        tl.innerHTML = data.trips.slice(0,3).map((t,i) => `
-          <div class="trip-mini" onclick="loadTrip(${t.id})">
-            <div class="tm-accent" style="background:${colors[i%colors.length]};"></div>
-            <div class="tm-body">
-              <div style="flex:1;">
-                <div class="tm-dest">${t.destination}</div>
-                <div class="tm-meta">${t.days} days · ${t.vibes||'Adventure'}</div>
-              </div>
-              <button class="tm-btn" style="background:${colors[i%colors.length]}20;color:${colors[i%colors.length]};" onclick="event.stopPropagation();loadTrip(${t.id})">Open →</button>
-            </div>
-          </div>`).join('');
+    @media(max-width:600px) {
+      .nav-user-name {
+        display: none;
       }
     }
-  } catch(e) {
-    tl.innerHTML = `<div style="font-size:0.82rem;color:var(--muted);padding:12px 0;font-weight:600;">Could not load trips</div>`;
-  }
-}
 
-// ── VIBES ──
-function tv(el, vibe) {
-  if (vibes.includes(vibe)) {
-    if (vibes.length===1) return;
-    vibes = vibes.filter(v=>v!==vibe);
-    el.classList.remove('on');
-  } else {
-    vibes.push(vibe);
-    el.classList.add('on');
-  }
-}
+    /* ── LAYOUT ── */
+    .layout {
+      display: flex;
+      padding-top: var(--nav-h);
+      min-height: 100vh;
+    }
 
-// ── SAVE TRIP ──
-async function saveTrip() {
-  const dest = document.getElementById('nt_dest').value.trim();
-  const from = document.getElementById('nt_from').value.trim();
-  if (!dest) { toast('Enter your destination 📍'); document.getElementById('nt_dest').focus(); return; }
-  if (!from) { toast('Enter where you are flying from ✈️'); document.getElementById('nt_from').focus(); return; }
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      position: fixed;
+      top: var(--nav-h);
+      left: 0;
+      bottom: 0;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      z-index: 100;
+    }
 
-  const btn = document.getElementById('saveTripBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="y-spinner" style="border-top-color:white;margin:0 auto;"></div>';
+    @media(max-width:768px) {
+      .sidebar {
+        display: none;
+      }
+    }
 
-  const tripData = {
-    destination:dest, origin:from,
-    days:parseInt(document.getElementById('nt_days').value)||7,
-    people:parseInt(document.getElementById('nt_people').value)||2,
-    budget:document.getElementById('nt_budget').value||'80000',
-    currency:document.getElementById('nt_cur').value||'INR',
-    passport:document.getElementById('nt_pass').value||'India',
-    vibes:vibes.join(' + ')
-  };
+    .sidebar-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--muted2);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 6px 12px;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
 
-  try {
-    const data = await api('/api/trips','POST',tripData);
-    if (data.success) {
-      const ctx = {...tripData,id:data.trip_id,vibes,vibeString:vibes.join(' + '),savedAt:new Date().toISOString()};
-      localStorage.setItem('yaply_active_trip',JSON.stringify(ctx));
-      activeTrip = ctx;
-      toast('✅ Trip saved!');
-      setTimeout(() => { showDash(); loadHome(); }, 400);
-    } else { toast('Error: '+(data.error||'Could not save trip')); }
-  } catch(e) { toast('Connection error'); }
+    .sidebar-label:first-child {
+      margin-top: 0;
+    }
 
-  btn.disabled = false;
-  btn.innerHTML = '🚀 Start My Trip';
-}
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 9px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.15s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
 
-// ── TRIP DASH ──
-function showDash() {
-  if (!activeTrip) { toast('Plan a trip first!'); go('newTrip'); return; }
-  document.getElementById('tdFromTo').textContent = `${activeTrip.origin||'?'} → ${activeTrip.destination}`;
-  document.getElementById('tdMeta').textContent = `${activeTrip.days} days · ${activeTrip.people} people · ${activeTrip.currency} ${activeTrip.budget}`;
-  const vibeArr = Array.isArray(activeTrip.vibes) ? activeTrip.vibes : (activeTrip.vibeString||'Adventure').split(' + ');
-  const vColors = ['var(--orange)','var(--blue)','var(--green)','var(--purple)','var(--gold)','var(--red)'];
-  document.getElementById('tdVibes').innerHTML = vibeArr.map((v,i) =>
-    `<span class="td-vibe" style="background:${vColors[i%vColors.length]}22;border-color:${vColors[i%vColors.length]}44;">${v}</span>`
-  ).join('');
-  go('tripDash');
-  document.getElementById('bn-trip').classList.add('active');
-}
+    .nav-item:hover {
+      background: var(--bg);
+      color: var(--charcoal);
+    }
 
-function switchPhase(el, id) {
-  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById(id).classList.add('on');
-  window.scrollTo(0,0);
-}
+    .nav-item.active {
+      background: var(--teal-s);
+      color: var(--teal);
+      font-weight: 700;
+    }
 
-function openF(url, ctx) {
-  if (activeTrip) localStorage.setItem('yaply_nav_ctx', JSON.stringify({from:ctx,trip:activeTrip}));
-  window.location.href = url;
-}
+    .nav-item.active .ni-icon {
+      color: var(--teal);
+    }
 
-async function loadTrip(tripId) {
-  const data = await api(`/api/trips/${tripId}`);
-  if (!data.success) { toast('Could not load trip'); return; }
-  const t = data.trip;
-  const ctx = {
-    id:t.id, destination:t.destination, origin:t.origin,
-    days:t.days, people:t.people, budget:t.budget, currency:t.currency, passport:t.passport,
-    vibes:t.vibes?t.vibes.split(' + '):['Adventure'],
-    vibeString:t.vibes||'Adventure', loadedPlan:t.plan_data
-  };
-  localStorage.setItem('yaply_active_trip',JSON.stringify(ctx));
-  activeTrip = ctx;
-  showDash(); loadHome();
-}
+    .ni-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: var(--bg2);
+    }
 
-// ── PROFILE ──
-async function loadProfile() {
-  const data = await api('/api/profile');
-  if (!data.success) return;
-  const u = data.user; const stats = data.stats;
-  const av = document.getElementById('profileAvatar');
-  if (u.avatar) av.innerHTML = `<img src="${u.avatar}" alt="avatar"/>`;
-  document.getElementById('profileName').textContent = u.name||'Traveller';
-  document.getElementById('profileEmail').textContent = u.email||'';
-  document.getElementById('pTrips').textContent = stats.trips||0;
-  document.getElementById('pDays').textContent = stats.days||0;
-  document.getElementById('pPlaces').textContent = stats.places||0;
+    .nav-item.active .ni-icon {
+      background: var(--teal-m);
+    }
 
-  const td = await api('/api/trips');
-  const pt = document.getElementById('profileTrips');
-  const colors = ['var(--orange)','var(--blue)','var(--green)','var(--purple)','var(--gold)','var(--red)'];
-  if (td.success && td.trips.length > 0) {
-    pt.innerHTML = td.trips.map((t,i) => `
-      <div class="trip-mini" onclick="loadTrip(${t.id})">
-        <div class="tm-accent" style="background:${colors[i%colors.length]};"></div>
-        <div class="tm-body">
-          <div style="flex:1;"><div class="tm-dest">${t.destination}</div><div class="tm-meta">${t.days} days · ${t.vibes||'Adventure'}</div></div>
-          <button class="tm-btn" style="background:var(--red-soft);color:var(--red);" onclick="event.stopPropagation();delTrip(${t.id})">🗑️</button>
+    .ni-icon svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+    }
+
+    .ni-badge {
+      margin-left: auto;
+      background: var(--amber);
+      color: #fff;
+      font-size: 0.55rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 100px;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 9px;
+      width: 100%;
+      border: none;
+      background: none;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .logout-btn:hover {
+      background: var(--red-s);
+      color: var(--red);
+    }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      padding: 32px 36px;
+      max-width: 1100px;
+    }
+
+    @media(max-width:768px) {
+      .main {
+        margin-left: 0;
+        padding: 20px 16px;
+      }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      border-radius: 20px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1A8A72 0%, #0D6B57 50%, #1e3a5f 100%);
+      padding: 36px 40px;
+      margin-bottom: 28px;
+      position: relative;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      right: -60px;
+      top: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      pointer-events: none;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      right: 60px;
+      bottom: -80px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(232, 130, 58, 0.12);
+      pointer-events: none;
+    }
+
+    .hero-greeting {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.55);
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+
+    .hero-sub {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.55);
+      line-height: 1.65;
+      max-width: 420px;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      padding: 11px 22px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 9px;
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .hero-cta:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .hero-cta svg {
+      width: 14px;
+      height: 14px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(40, 176, 106, 0.2);
+      border: 1px solid rgba(40, 176, 106, 0.3);
+      border-radius: 100px;
+      padding: 4px 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #4ADE80;
+      margin-bottom: 14px;
+    }
+
+    .hero-badge-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #4ADE80;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    @media(max-width:900px) {
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: all 0.2s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-md);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(44, 43, 40, 0.07);
+    }
+
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-icon svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+    }
+
+    .si-teal {
+      background: var(--teal-s);
+      color: var(--teal);
+    }
+
+    .si-amber {
+      background: var(--amber-s);
+      color: var(--amber);
+    }
+
+    .si-sky {
+      background: var(--sky-s);
+      color: var(--sky);
+    }
+
+    .si-purple {
+      background: var(--purple-s);
+      color: var(--purple);
+    }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--charcoal);
+      line-height: 1;
+    }
+
+    .stat-lbl {
+      font-size: 0.68rem;
+      color: var(--muted2);
+      font-weight: 500;
+      margin-top: 3px;
+    }
+
+    /* ── SECTION HEADER ── */
+    .sec-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .sec-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--charcoal);
+      letter-spacing: -0.2px;
+    }
+
+    .sec-link {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--teal);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* ── FEATURE GRID ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    @media(max-width:900px) {
+      .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media(max-width:500px) {
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .feat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .feat-card:hover {
+      border-color: var(--border-md);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(44, 43, 40, 0.09);
+    }
+
+    .feat-card:hover::before {
+      opacity: 1;
+    }
+
+    .fc-teal::before {
+      background: linear-gradient(135deg, rgba(26, 138, 114, 0.03), transparent);
+    }
+
+    .fc-amber::before {
+      background: linear-gradient(135deg, rgba(232, 130, 58, 0.03), transparent);
+    }
+
+    .fc-sky::before {
+      background: linear-gradient(135deg, rgba(58, 107, 200, 0.03), transparent);
+    }
+
+    .fc-green::before {
+      background: linear-gradient(135deg, rgba(40, 176, 106, 0.03), transparent);
+    }
+
+    .fc-purple::before {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.03), transparent);
+    }
+
+    .fc-gold::before {
+      background: linear-gradient(135deg, rgba(240, 180, 41, 0.03), transparent);
+    }
+
+    .feat-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feat-card-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .fi-teal {
+      background: var(--teal-s);
+      color: var(--teal);
+    }
+
+    .fi-amber {
+      background: var(--amber-s);
+      color: var(--amber);
+    }
+
+    .fi-sky {
+      background: var(--sky-s);
+      color: var(--sky);
+    }
+
+    .fi-green {
+      background: var(--green-s);
+      color: var(--green);
+    }
+
+    .fi-purple {
+      background: var(--purple-s);
+      color: var(--purple);
+    }
+
+    .fi-gold {
+      background: var(--gold-s);
+      color: var(--gold);
+    }
+
+    .feat-card-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 5px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feat-card-desc {
+      font-size: 0.74rem;
+      color: var(--muted);
+      line-height: 1.55;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feat-card-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: var(--bg2);
+      margin-top: 14px;
+      margin-left: auto;
+      position: relative;
+      z-index: 1;
+      transition: all 0.2s;
+    }
+
+    .feat-card:hover .feat-card-arrow {
+      background: var(--teal);
+      color: #fff;
+    }
+
+    .feat-card-arrow svg {
+      width: 12px;
+      height: 12px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+
+    /* ── TRIPS ── */
+    .trips-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .trip-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .trip-card:hover {
+      border-color: var(--border-md);
+      transform: translateX(3px);
+      box-shadow: 0 4px 16px rgba(44, 43, 40, 0.07);
+    }
+
+    .trip-dest-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--teal-s), var(--sky-s));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .trip-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .trip-dest {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 3px;
+    }
+
+    .trip-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .trip-status {
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .ts-planning {
+      background: var(--gold-s);
+      color: var(--gold);
+    }
+
+    .ts-active {
+      background: var(--green-s);
+      color: var(--green);
+    }
+
+    .ts-completed {
+      background: var(--teal-s);
+      color: var(--teal);
+    }
+
+    .trip-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted2);
+      font-size: 0.82rem;
+      font-weight: 500;
+      line-height: 1.7;
+      background: var(--white);
+      border: 1px dashed var(--border-md);
+      border-radius: 14px;
+    }
+
+    .trip-empty strong {
+      display: block;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+    }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    @media(max-width:700px) {
+      .quick-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .quick-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .quick-card:hover {
+      border-color: var(--teal);
+      background: var(--teal-s);
+      transform: translateY(-2px);
+    }
+
+    .quick-card:hover .qc-label {
+      color: var(--teal);
+    }
+
+    .qc-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: var(--bg2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qc-icon svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: var(--muted);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+    }
+
+    .quick-card:hover .qc-icon {
+      background: var(--teal-m);
+    }
+
+    .quick-card:hover .qc-icon svg {
+      stroke: var(--teal);
+    }
+
+    .qc-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+
+    /* ── MOBILE NAV ── */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+      z-index: 200;
+    }
+
+    @media(max-width:768px) {
+      .mobile-nav {
+        display: flex;
+        justify-content: space-around;
+      }
+    }
+
+    .mn-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 10px;
+      border-radius: 9px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--muted2);
+      border: none;
+      background: none;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+    }
+
+    .mn-item.active {
+      color: var(--teal);
+    }
+
+    .mn-item svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+    }
+
+    .mn-label {
+      font-size: 0.58rem;
+      font-weight: 600;
+    }
+
+    @media(max-width:768px) {
+      .main {
+        padding-bottom: 80px;
+      }
+    }
+
+    /* ── LOADING ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg2) 25%, var(--border) 50%, var(--bg2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    /* ── NOTIFICATION ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: var(--charcoal);
+      color: #fff;
+      padding: 11px 22px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      z-index: 9999;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media(max-width:768px) {
+      .toast {
+        bottom: 80px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-left">
+      <div class="nav-logo-mark">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+      </div>
+      <span class="nav-logo-name">Yaply</span>
+    </div>
+    <div class="nav-right">
+      <span class="nav-user-name" id="navUserName">Loading...</span>
+      <div class="nav-avatar" id="navAvatar">Y</div>
+      <button class="nav-btn" onclick="logout()">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-label">Plan</div>
+      <a class="nav-item active" href="/plan">
+        <span class="ni-icon si-teal">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+        </span>
+        Trip Planner
+        <span class="ni-badge">New</span>
+      </a>
+      <a class="nav-item" href="/tools">
+        <span class="ni-icon">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
+          </svg>
+        </span>
+        Pre-Trip Tools
+      </a>
+
+      <div class="sidebar-label">During</div>
+      <a class="nav-item" href="/translate">
+        <span class="ni-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 5h12M9 3v2m-3.5 8.5L3 21l4.5-3.5M12 5l-4 11M5 8h7M21 12h-5m0 0l3 3m-3-3l3-3" />
+          </svg>
+        </span>
+        Live Translate
+      </a>
+      <a class="nav-item" href="/convo">
+        <span class="ni-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </span>
+        Conversation
+      </a>
+      <a class="nav-item" href="/camera">
+        <span class="ni-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+        </span>
+        Camera Scan
+      </a>
+      <a class="nav-item" href="/during">
+        <span class="ni-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </span>
+        Safety Tools
+      </a>
+
+      <div class="sidebar-label">Explore</div>
+      <a class="nav-item" href="/discover">
+        <span class="ni-icon">
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </span>
+        Discover Places
+      </a>
+
+      <div class="sidebar-label">After</div>
+      <a class="nav-item" href="/after">
+        <span class="ni-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+        </span>
+        Trip Journal
+      </a>
+
+      <div class="sidebar-bottom">
+        <button class="logout-btn" onclick="logout()">
+          <span class="ni-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </span>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- HERO -->
+      <div class="hero">
+        <div class="hero-badge">
+          <div class="hero-badge-dot"></div>AI Ready
         </div>
-      </div>`).join('');
-  } else {
-    pt.innerHTML = `<div style="font-size:0.82rem;color:var(--muted);padding:8px 0;font-weight:600;">No trips yet</div>`;
-  }
-}
+        <div class="hero-greeting" id="heroGreeting">Good morning</div>
+        <div class="hero-title" id="heroTitle">Where are you going next?</div>
+        <div class="hero-sub">Your AI travel companion is ready. Plan a trip, translate on the go, or discover your next
+          destination.</div>
+        <a class="hero-cta" href="/plan">
+          Plan a New Trip
+          <svg viewBox="0 0 24 24">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </a>
+      </div>
 
-async function delTrip(id) {
-  if (!confirm('Delete this trip?')) return;
-  await api(`/api/trips/${id}`,'DELETE');
-  if (activeTrip?.id===id) { localStorage.removeItem('yaply_active_trip'); activeTrip=null; }
-  loadProfile(); loadHome(); toast('Trip deleted');
-}
+      <!-- STATS -->
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card">
+          <div class="stat-icon si-teal">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="statTrips">0</div>
+            <div class="stat-lbl">Trips Planned</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-amber">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="statDays">0</div>
+            <div class="stat-lbl">Days Travelled</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-sky">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num" id="statPlaces">0</div>
+            <div class="stat-lbl">Places Saved</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-purple">
+            <svg viewBox="0 0 24 24">
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+          </div>
+          <div>
+            <div class="stat-num">25+</div>
+            <div class="stat-lbl">AI Features</div>
+          </div>
+        </div>
+      </div>
 
-async function deleteAccount() {
-  if (!confirm('Delete your account? This cannot be undone.')) return;
-  await api('/api/auth/delete-account','POST',{});
-  localStorage.clear(); window.location.href='/login';
-}
+      <!-- QUICK ACTIONS -->
+      <div class="sec-header">
+        <div class="sec-title">Quick Access</div>
+      </div>
+      <div class="quick-grid" style="margin-bottom:28px;">
+        <a class="quick-card" href="/translate">
+          <div class="qc-icon"><svg viewBox="0 0 24 24">
+              <path d="M3 5h12M9 3v2m-3.5 8.5L3 21l4.5-3.5M12 5l-4 11" />
+            </svg></div>
+          <span class="qc-label">Live Translate</span>
+        </a>
+        <a class="quick-card" href="/camera">
+          <div class="qc-icon"><svg viewBox="0 0 24 24">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg></div>
+          <span class="qc-label">Camera Scan</span>
+        </a>
+        <a class="quick-card" href="/discover">
+          <div class="qc-icon"><svg viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg></div>
+          <span class="qc-label">Discover</span>
+        </a>
+        <a class="quick-card" href="/during">
+          <div class="qc-icon"><svg viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg></div>
+          <span class="qc-label">Safety Tools</span>
+        </a>
+      </div>
 
-async function loadPlaces() {
-  const data = await api('/api/places');
-  const el = document.getElementById('savedPlacesInfo');
-  if (data.success) el.textContent = data.places.length > 0 ? `${data.places.length} places saved ✨` : 'No saved places yet — try Discover! 🔍';
-}
+      <!-- FEATURES -->
+      <div class="sec-header">
+        <div class="sec-title">All Features</div>
+      </div>
+      <div class="feature-grid">
+        <a class="feat-card fc-teal" href="/plan">
+          <div class="feat-card-icon fi-teal">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </div>
+          <div class="feat-card-title">Trip Planner</div>
+          <div class="feat-card-desc">Full AI itinerary, visa, budget, packing and more in seconds.</div>
+          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg></div>
+        </a>
+        <a class="feat-card fc-sky" href="/translate">
+          <div class="feat-card-icon fi-sky">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 5h12M9 3v2m-3.5 8.5L3 21l4.5-3.5M12 5l-4 11M5 8h7M21 12h-5m0 0l3 3m-3-3l3-3" />
+            </svg>
+          </div>
+          <div class="feat-card-title">Live Translation</div>
+          <div class="feat-card-desc">Speak, translate and hear back in 50+ languages instantly.</div>
+          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg></div>
+        </a>
+        <a class="feat-card fc-amber" href="/convo">
+          <div class="feat-card-icon fi-amber">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
+          <div class="feat-card-title">Conversation Mode</div>
+          <div class="feat-card-desc">Two people, two languages — real-time two-way translation.</div>
+          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg></div>
+        </a>
+        <a class="feat-card fc-green" href="/camera">
+          <div class="feat-card-icon fi-green">
+            <svg viewBox="0 0 24 24">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+          </div>
+          <div class="feat-card-title">Camera Translator</div>
+          <div class="feat-card-desc">Point at any sign, menu or document for instant translation.</div>
+          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg></div>
+        </a>
+        <a class="feat-card fc-purple" href="/discover">
+          <div class="feat-card-icon fi-purple">
+            <svg viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </div>
+          <div class="feat-card-title">Place Finder</div>
+          <div class="feat-card-desc">Upload any photo and AI identifies the exact location.</div>
+          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg></div>
+        </a>
+        <a class="feat-card fc-gold" href="/during">
+          <div class="feat-card-icon fi-gold">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <div class="feat-card-title">Safety & Tools</div>
+          <div class="feat-card-desc">Scam alerts, price checker, medical translate and more.</div>
+          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg></div>
+        </a>
+      </div>
 
-// ── TOAST ──
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
+      <!-- RECENT TRIPS -->
+      <div class="sec-header">
+        <div class="sec-title">Recent Trips</div>
+        <a class="sec-link" href="/plan">Plan new trip</a>
+      </div>
+      <div class="trips-grid" id="tripsGrid">
+        <div class="trip-empty skeleton" style="height:60px;border:none;"></div>
+      </div>
 
-window.YaplyAuth = {
-  logout() {
-    localStorage.removeItem('yaply_token');
-    localStorage.removeItem('yaply_user');
-    localStorage.removeItem('yaply_active_trip');
-    window.location.href = '/login';
-  }
-};
+    </main>
+  </div>
 
-init();
-</script>
-<script src='/static/yaply-nav.js'></script></body>
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-nav">
+    <a class="mn-item active" href="/app">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      </svg>
+      <span class="mn-label">Home</span>
+    </a>
+    <a class="mn-item" href="/plan">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+      <span class="mn-label">Plan</span>
+    </a>
+    <a class="mn-item" href="/translate">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 5h12M9 3v2m-3.5 8.5L3 21l4.5-3.5M12 5l-4 11" />
+      </svg>
+      <span class="mn-label">Translate</span>
+    </a>
+    <a class="mn-item" href="/discover">
+      <svg viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <span class="mn-label">Discover</span>
+    </a>
+    <a class="mn-item" href="/during">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+      <span class="mn-label">Safety</span>
+    </a>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+  <script src="/static/yaply-nav.js"></script>
+  <script>
+    // ── AUTH CHECK ──
+    const token = getToken();
+    const user = getUser();
+    if (!token) { window.location.href = '/login'; }
+
+    // ── GREET ──
+    function greet() {
+      const h = new Date().getHours();
+      return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    }
+
+    // ── INIT ──
+    async function init() {
+      // Set greeting
+      document.getElementById('heroGreeting').textContent = greet();
+
+      if (user) {
+        const first = user.name?.split(' ')[0] || 'Traveller';
+        document.getElementById('heroTitle').textContent = `Where are you going next, ${first}?`;
+        document.getElementById('navUserName').textContent = user.name || '';
+        document.getElementById('navAvatar').textContent = (user.name || 'Y')[0].toUpperCase();
+      }
+
+      // Load stats + trips
+      try {
+        const [profileRes, tripsRes] = await Promise.all([
+          apiFetch('/api/profile'),
+          apiFetch('/api/trips')
+        ]);
+
+        if (profileRes.success && profileRes.stats) {
+          document.getElementById('statTrips').textContent = profileRes.stats.trips || 0;
+          document.getElementById('statDays').textContent = profileRes.stats.days || 0;
+          document.getElementById('statPlaces').textContent = profileRes.stats.places || 0;
+        }
+
+        if (tripsRes.success) renderTrips(tripsRes.trips || []);
+        else renderTrips([]);
+      } catch (e) {
+        renderTrips([]);
+      }
+    }
+
+    function renderTrips(trips) {
+      const grid = document.getElementById('tripsGrid');
+      if (!trips.length) {
+        grid.innerHTML = `<div class="trip-empty">
+      <strong>No trips yet</strong>
+      Start by planning your first trip with AI — it takes under 30 seconds.
+    </div>`;
+        return;
+      }
+      const flags = ['🗺', '✈', '🌍', '🏖', '🏔', '🏯', '🗼', '🌴'];
+      grid.innerHTML = trips.slice(0, 5).map((t, i) => {
+        const statusClass = t.status === 'active' ? 'ts-active' : t.status === 'completed' ? 'ts-completed' : 'ts-planning';
+        const statusLabel = t.status === 'active' ? 'Active' : t.status === 'completed' ? 'Completed' : 'Planning';
+        return `<div class="trip-card" onclick="window.location.href='/plan'">
+      <div class="trip-dest-icon">${flags[i % flags.length]}</div>
+      <div class="trip-info">
+        <div class="trip-dest">${t.destination}</div>
+        <div class="trip-meta">${t.days} days · ${t.people} traveller${t.people > 1 ? 's' : ''} · ${t.currency} ${t.budget}</div>
+      </div>
+      <span class="trip-status ${statusClass}">${statusLabel}</span>
+    </div>`;
+      }).join('');
+    }
+
+    function logout() {
+      clearAuth();
+      window.location.href = '/login';
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // Highlight active sidebar item
+    const path = window.location.pathname;
+    document.querySelectorAll('.nav-item').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === path);
+    });
+    document.querySelectorAll('.mn-item').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === path);
+    });
+
+    init();
+  </script>
+</body>
+
 </html>

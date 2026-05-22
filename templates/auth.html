@@ -4,398 +4,567 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>Yaply — Sign In</title>
-<link rel="stylesheet" href="/static/yaply-design.css"/>
 <link rel="icon" href="/static/favicon.png" type="image/png"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-body {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: var(--bg);
-  position: relative;
-  overflow: hidden;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --teal:#1A8A72;     --teal-s:rgba(26,138,114,0.1);  --teal-m:rgba(26,138,114,0.2);
+  --amber:#E8823A;    --amber-s:rgba(232,130,58,0.1);
+  --sky:#3A6BC8;      --sky-s:rgba(58,107,200,0.1);
+  --charcoal:#2C2B28; --stone:#C8C4B2;
+  --green:#28B06A;    --green-s:rgba(40,176,106,0.1);
+  --red:#D84C3E;      --red-s:rgba(216,76,62,0.1);
+  --purple:#8B5CF6;
+  --gold:#F0B429;
+  --bg:#F7F6F2;
+  --white:#FFFFFF;
+  --border:rgba(200,196,178,0.4);
+  --border-strong:rgba(200,196,178,0.7);
+  --text:#2C2B28;
+  --muted:#6B6860;
+  --muted2:#9B9890;
+  --shadow:0 4px 24px rgba(44,43,40,0.08);
+  --shadow-lg:0 16px 64px rgba(44,43,40,0.12);
 }
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+body{display:flex;min-height:100vh;overflow:hidden;}
 
-/* Colorful background blobs */
-.bg-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.18;
-  pointer-events: none;
+/* ── LEFT PANEL ── */
+.left{
+  flex:1;position:relative;overflow:hidden;
+  background:linear-gradient(145deg,#1A8A72 0%,#0D6B57 40%,#2C2B28 100%);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:48px;
 }
-.blob-1 { width:350px;height:350px;background:var(--orange);top:-100px;right:-80px;animation:yFloat 6s ease-in-out infinite; }
-.blob-2 { width:300px;height:300px;background:var(--blue);bottom:-80px;left:-60px;animation:yFloat 8s 1s ease-in-out infinite; }
-.blob-3 { width:200px;height:200px;background:var(--purple);top:40%;right:5%;animation:yFloat 7s 2s ease-in-out infinite; }
-.blob-4 { width:180px;height:180px;background:var(--green);bottom:20%;left:5%;animation:yFloat 9s 0.5s ease-in-out infinite; }
+@media(max-width:900px){.left{display:none;}}
 
-/* Color strip top */
-.top-strip {
-  position:fixed;top:0;left:0;right:0;height:5px;z-index:100;
-  background:linear-gradient(90deg,var(--blue),var(--orange),var(--red),var(--green),var(--gold),var(--purple));
+.left-logo{display:flex;align-items:center;gap:10px;}
+.left-logo-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;
 }
+.left-logo-name{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-0.5px;}
 
-/* Card */
-.auth-card {
-  width:100%;max-width:400px;
-  background:white;
-  border-radius:28px;
-  padding:36px 32px;
-  box-shadow:0 20px 80px rgba(0,0,0,0.1),0 4px 20px rgba(0,0,0,0.06);
-  position:relative;z-index:1;
-  animation:yFadeUp 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
-  border:1px solid var(--border);
+.left-hero{margin-top:auto;margin-bottom:auto;}
+.left-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);
+  border-radius:100px;padding:5px 14px;
+  font-size:0.7rem;font-weight:600;color:rgba(255,255,255,0.7);
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;
 }
+.left-eyebrow-dot{width:5px;height:5px;background:#28B06A;border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 
-/* Logo area */
-.auth-logo-wrap {
-  text-align:center;
-  margin-bottom:28px;
+.left-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(2.2rem,3.5vw,3rem);
+  font-weight:800;color:#fff;
+  line-height:1.1;letter-spacing:-1.5px;
+  margin-bottom:20px;
 }
-.auth-logo-img {
-  height:60px;
-  width:auto;
-  margin-bottom:8px;
+.left-title span{color:#E8823A;}
+
+.left-desc{font-size:0.9rem;color:rgba(255,255,255,0.55);line-height:1.75;max-width:380px;font-weight:400;}
+
+.left-stats{
+  display:flex;gap:32px;margin-top:40px;
+  padding-top:32px;border-top:1px solid rgba(255,255,255,0.1);
 }
-.auth-logo-text {
-  font-family:var(--font-display);
-  font-size:2rem;
-  background:linear-gradient(135deg,var(--orange),var(--red),var(--purple));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-  letter-spacing:-0.5px;
+.left-stat-num{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;}
+.left-stat-lbl{font-size:0.68rem;color:rgba(255,255,255,0.4);font-weight:500;margin-top:2px;letter-spacing:0.3px;}
+
+/* Feature list */
+.feature-list{display:flex;flex-direction:column;gap:14px;margin-top:32px;}
+.feature-item{display:flex;align-items:center;gap:12px;}
+.feature-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:rgba(255,255,255,0.1);
+  display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;
 }
-.auth-tagline {
-  font-size:0.78rem;
-  color:var(--muted);
-  font-weight:600;
-  margin-top:4px;
+.feature-text{font-size:0.82rem;color:rgba(255,255,255,0.65);font-weight:500;}
+
+/* Decorative circles */
+.deco-circle{
+  position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,0.06);
+  pointer-events:none;
 }
+.dc1{width:400px;height:400px;bottom:-150px;right:-150px;}
+.dc2{width:250px;height:250px;bottom:-30px;right:-30px;background:rgba(255,255,255,0.03);}
+.dc3{width:120px;height:120px;top:60px;right:60px;background:rgba(232,130,58,0.1);border-color:rgba(232,130,58,0.15);}
+
+/* ── RIGHT PANEL ── */
+.right{
+  width:480px;flex-shrink:0;
+  display:flex;flex-direction:column;
+  background:var(--white);
+  overflow-y:auto;
+}
+@media(max-width:900px){.right{width:100%;}}
+
+.right-inner{
+  flex:1;display:flex;flex-direction:column;
+  justify-content:center;
+  padding:48px 48px;
+  min-height:100vh;
+}
+@media(max-width:480px){.right-inner{padding:32px 24px;}}
+
+/* Mobile logo */
+.mobile-logo{
+  display:none;align-items:center;gap:8px;margin-bottom:32px;
+}
+@media(max-width:900px){.mobile-logo{display:flex;}}
+.mobile-logo-mark{
+  width:32px;height:32px;border-radius:9px;
+  background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:1rem;
+}
+.mobile-logo-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--charcoal);}
+
+/* Header */
+.form-header{margin-bottom:32px;}
+.form-title{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;color:var(--charcoal);letter-spacing:-0.5px;margin-bottom:6px;}
+.form-sub{font-size:0.83rem;color:var(--muted);font-weight:400;line-height:1.6;}
 
 /* Tabs */
-.auth-tabs {
-  display:flex;
-  background:var(--bg2);
-  border-radius:100px;
-  padding:4px;
-  margin-bottom:24px;
-  gap:2px;
+.tabs{
+  display:flex;background:var(--bg);border-radius:12px;
+  padding:4px;margin-bottom:28px;border:1px solid var(--border);
 }
-.auth-tab {
-  flex:1;padding:9px;border-radius:100px;
-  font-family:var(--font-body);
-  font-size:0.82rem;font-weight:800;
-  cursor:pointer;transition:all 0.25s;
-  background:none;border:none;color:var(--muted);
+.tab{
+  flex:1;padding:9px 16px;border-radius:9px;
+  font-family:'Inter',sans-serif;font-size:0.8rem;font-weight:600;
+  cursor:pointer;border:none;background:none;
+  color:var(--muted);transition:all 0.2s;
 }
-.auth-tab.active {
-  background:white;
-  color:var(--orange);
-  box-shadow:0 2px 12px rgba(0,0,0,0.08);
-}
+.tab.active{background:var(--white);color:var(--teal);box-shadow:0 1px 8px rgba(0,0,0,0.07);font-weight:700;}
 
-/* Form */
-.fg { margin-bottom:16px; }
-.fi-wrap { position:relative; }
-.fi-icon { position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:0.9rem; }
+/* Form elements */
+.field{margin-bottom:18px;}
+.field-label{display:block;font-size:0.72rem;font-weight:700;color:var(--charcoal);letter-spacing:0.3px;margin-bottom:7px;text-transform:uppercase;}
+.field-wrap{position:relative;}
+.field-input{
+  width:100%;padding:12px 16px;
+  background:var(--bg);
+  border:1.5px solid var(--border-strong);
+  border-radius:10px;
+  font-family:'Inter',sans-serif;font-size:0.88rem;
+  color:var(--charcoal);font-weight:500;
+  outline:none;transition:all 0.2s;
+  -webkit-appearance:none;
+}
+.field-input:focus{
+  border-color:var(--teal);
+  background:var(--white);
+  box-shadow:0 0 0 3px rgba(26,138,114,0.12);
+}
+.field-input::placeholder{color:var(--muted2);font-weight:400;}
+.field-input.has-suffix{padding-right:44px;}
+.field-suffix{
+  position:absolute;right:13px;top:50%;transform:translateY(-50%);
+  cursor:pointer;color:var(--muted2);font-size:0.8rem;
+  transition:color 0.2s;padding:4px;
+}
+.field-suffix:hover{color:var(--charcoal);}
 
 /* Password strength */
-.pw-strength {
-  height:4px;border-radius:2px;
-  background:var(--bg2);margin-top:6px;overflow:hidden;
-}
-.pw-fill { height:100%;border-radius:2px;transition:all 0.35s;width:0; }
+.pw-bar{height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden;}
+.pw-bar-fill{height:100%;border-radius:2px;width:0;transition:all 0.35s;}
+.pw-hint{font-size:0.65rem;color:var(--muted2);margin-top:5px;font-weight:500;}
 
 /* Alert */
-.y-alert {
-  padding:12px 16px;border-radius:12px;
-  font-size:0.8rem;font-weight:700;
-  margin-bottom:16px;display:none;
-  align-items:center;gap:8px;
-  font-family:var(--font-body);
+.alert{
+  padding:11px 14px;border-radius:10px;
+  font-size:0.78rem;font-weight:600;
+  margin-bottom:18px;display:none;align-items:center;gap:8px;
+  line-height:1.45;
 }
-.y-alert.error { background:var(--red-soft);color:var(--red);border:1px solid rgba(232,71,74,0.2); }
-.y-alert.success { background:var(--green-soft);color:var(--green);border:1px solid rgba(43,175,126,0.2); }
-.y-alert.show { display:flex; }
+.alert.show{display:flex;}
+.alert.error{background:var(--red-s);color:var(--red);border:1px solid rgba(216,76,62,0.15);}
+.alert.success{background:var(--green-s);color:var(--green);border:1px solid rgba(40,176,106,0.15);}
+.alert-icon{font-size:0.9rem;flex-shrink:0;}
 
-/* Google btn */
-.google-btn {
-  width:100%;padding:13px;
-  background:white;color:var(--text);
-  border:2px solid var(--border2);
-  border-radius:100px;
-  font-family:var(--font-body);
-  font-size:0.88rem;font-weight:800;
+/* Buttons */
+.btn-primary{
+  width:100%;padding:13px 20px;
+  background:var(--teal);color:#fff;
+  border:none;border-radius:10px;
+  font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:700;
+  cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  letter-spacing:0.1px;
+}
+.btn-primary:hover{background:#158068;transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,138,114,0.3);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none;}
+
+.btn-google{
+  width:100%;padding:12px 20px;
+  background:var(--white);color:var(--charcoal);
+  border:1.5px solid var(--border-strong);border-radius:10px;
+  font-family:'Inter',sans-serif;font-size:0.85rem;font-weight:600;
   cursor:pointer;transition:all 0.2s;
   display:flex;align-items:center;justify-content:center;gap:10px;
 }
-.google-btn:hover { border-color:var(--orange);color:var(--orange);transform:translateY(-2px);box-shadow:var(--shadow-sm); }
+.btn-google:hover{border-color:var(--stone);background:var(--bg);transform:translateY(-1px);box-shadow:var(--shadow);}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:14px;margin:20px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.divider-text{font-size:0.72rem;color:var(--muted2);font-weight:600;white-space:nowrap;}
 
 /* Screen */
-.auth-screen { display:none; }
-.auth-screen.active { display:block; }
+.screen{display:none;}
+.screen.active{display:block;}
 
-/* Fun travel icons */
-.travel-icons {
-  position:absolute;
-  font-size:1.5rem;
-  opacity:0.12;
-  pointer-events:none;
-}
+/* Footer link */
+.form-footer{text-align:center;margin-top:22px;font-size:0.78rem;color:var(--muted);}
+.form-footer a{color:var(--teal);font-weight:700;text-decoration:none;}
+.form-footer a:hover{text-decoration:underline;}
 
-/* Bottom link */
-.auth-footer { text-align:center;margin-top:18px;font-size:0.78rem;color:var(--muted);font-weight:600; }
-.auth-footer a { color:var(--orange);text-decoration:none;font-weight:800; }
+/* Terms */
+.terms{font-size:0.67rem;color:var(--muted2);text-align:center;margin-top:16px;line-height:1.6;}
+.terms a{color:var(--teal);text-decoration:none;}
 
-/* Btn loading */
-.btn-spinner {
-  width:16px;height:16px;
-  border:2px solid rgba(255,255,255,0.3);
-  border-top-color:white;
-  border-radius:50%;
-  animation:ySpin 0.7s linear infinite;
-  display:inline-block;
-}
+/* Spinner */
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
 
-<!-- Color strip -->
-<div class="top-strip"></div>
+<!-- LEFT PANEL -->
+<div class="left">
+  <div class="deco-circle dc1"></div>
+  <div class="deco-circle dc2"></div>
+  <div class="deco-circle dc3"></div>
 
-<!-- Background blobs -->
-<div class="bg-blob blob-1"></div>
-<div class="bg-blob blob-2"></div>
-<div class="bg-blob blob-3"></div>
-<div class="bg-blob blob-4"></div>
-
-<!-- Floating travel emojis -->
-<div class="travel-icons" style="top:15%;left:8%;animation:yFloat 5s ease-in-out infinite;">✈️</div>
-<div class="travel-icons" style="top:70%;right:10%;animation:yFloat 7s 1s ease-in-out infinite;">🌍</div>
-<div class="travel-icons" style="top:40%;left:3%;animation:yFloat 6s 2s ease-in-out infinite;">🗺️</div>
-<div class="travel-icons" style="bottom:15%;right:5%;animation:yFloat 8s 0.5s ease-in-out infinite;">🏝️</div>
-<div class="travel-icons" style="top:10%;right:12%;animation:yFloat 9s 1.5s ease-in-out infinite;">🏔️</div>
-
-<!-- Auth Card -->
-<div class="auth-card">
-
-  <!-- Logo -->
-  <div class="auth-logo-wrap">
-    <img src="/static/yaply-logo.png" alt="Yaply" class="auth-logo-img"
-         onerror="this.style.display='none';document.getElementById('logoText').style.display='block'"/>
-    <div class="auth-logo-text" id="logoText">Yaply</div>
-    <div class="auth-tagline">✈️ Your AI Travel Companion</div>
+  <div class="left-logo">
+    <div class="left-logo-mark">✈</div>
+    <div class="left-logo-name">Yaply</div>
   </div>
 
-  <!-- Tabs -->
-  <div class="auth-tabs">
-    <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
-    <button class="auth-tab" onclick="switchTab('signup')">Create Account</button>
-  </div>
-
-  <!-- Alert -->
-  <div class="y-alert" id="alert"></div>
-
-  <!-- LOGIN -->
-  <div class="auth-screen active" id="loginScreen">
-    <div class="fg">
-      <label class="y-label">📧 Email Address</label>
-      <input class="y-input" type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"/>
+  <div class="left-hero">
+    <div class="left-eyebrow">
+      <div class="left-eyebrow-dot"></div>
+      AI-Powered Travel
     </div>
-    <div class="fg">
-      <label class="y-label">🔒 Password</label>
-      <div class="fi-wrap">
-        <input class="y-input" type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password" style="padding-right:44px;"/>
-        <span class="fi-icon" onclick="togglePw('loginPassword',this)">👁️</span>
+    <div class="left-title">
+      Travel smarter.<br/>
+      Worry <span>less.</span>
+    </div>
+    <div class="left-desc">
+      From planning to landing — Yaply handles every part of your journey with AI. Itineraries, live translation, scam alerts and more.
+    </div>
+
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-icon">🗓</div>
+        <div class="feature-text">Complete trip itineraries in under 30 seconds</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🎙</div>
+        <div class="feature-text">Live voice translation in 50+ languages</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-text">Identify any place from a photo instantly</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🛡</div>
+        <div class="feature-text">Scam alerts and safety guides for every city</div>
       </div>
     </div>
-    <button class="y-btn y-btn-primary y-btn-full y-btn-lg" id="loginBtn" onclick="doLogin()" style="margin-top:4px;">
-      Sign In ✈️
-    </button>
-    <div class="y-divider">or continue with</div>
-    <button class="google-btn" onclick="googleSignIn()">
-      <svg width="18" height="18" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      Continue with Google
-    </button>
-    <div class="auth-footer">No account? <a href="#" onclick="switchTab('signup')">Create one free</a></div>
   </div>
 
-  <!-- SIGNUP -->
-  <div class="auth-screen" id="signupScreen">
-    <div class="fg">
-      <label class="y-label">👤 Full Name</label>
-      <input class="y-input" type="text" id="signupName" placeholder="Your full name" autocomplete="name"/>
+  <div class="left-stats">
+    <div>
+      <div class="left-stat-num">25+</div>
+      <div class="left-stat-lbl">AI Features</div>
     </div>
-    <div class="fg">
-      <label class="y-label">📧 Email Address</label>
-      <input class="y-input" type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email"/>
+    <div>
+      <div class="left-stat-num">50+</div>
+      <div class="left-stat-lbl">Languages</div>
     </div>
-    <div class="fg">
-      <label class="y-label">🔒 Password</label>
-      <div class="fi-wrap">
-        <input class="y-input" type="password" id="signupPassword" placeholder="Min 8 characters" autocomplete="new-password" style="padding-right:44px;" oninput="checkStrength(this.value)"/>
-        <span class="fi-icon" onclick="togglePw('signupPassword',this)">👁️</span>
+    <div>
+      <div class="left-stat-num">190+</div>
+      <div class="left-stat-lbl">Countries</div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right">
+  <div class="right-inner">
+
+    <!-- Mobile Logo -->
+    <div class="mobile-logo">
+      <div class="mobile-logo-mark">✈</div>
+      <div class="mobile-logo-name">Yaply</div>
+    </div>
+
+    <!-- Header -->
+    <div class="form-header" id="formHeader">
+      <div class="form-title">Welcome back</div>
+      <div class="form-sub">Sign in to your Yaply account to continue planning.</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+    </div>
+
+    <!-- Alert -->
+    <div class="alert" id="alert">
+      <span class="alert-icon" id="alertIcon"></span>
+      <span id="alertMsg"></span>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div class="screen active" id="loginScreen">
+      <div class="field">
+        <label class="field-label">Email Address</label>
+        <input class="field-input" type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"/>
       </div>
-      <div class="pw-strength"><div class="pw-fill" id="psFill"></div></div>
+      <div class="field">
+        <label class="field-label">Password</label>
+        <div class="field-wrap">
+          <input class="field-input has-suffix" type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password"/>
+          <span class="field-suffix" id="loginEye" onclick="togglePw('loginPassword','loginEye')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </span>
+        </div>
+      </div>
+      <button class="btn-primary" id="loginBtn" onclick="doLogin()">
+        Sign In
+      </button>
+      <div class="divider"><span class="divider-text">or continue with</span></div>
+      <button class="btn-google" onclick="googleSignIn()">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+      <div class="form-footer">No account yet? <a href="#" onclick="switchTab('signup')">Create one — it's free</a></div>
     </div>
-    <button class="y-btn y-btn-primary y-btn-full y-btn-lg" id="signupBtn" onclick="doSignup()" style="margin-top:4px;">
-      Create Account 🚀
-    </button>
-    <div class="y-divider">or</div>
-    <button class="google-btn" onclick="googleSignIn()">
-      <svg width="18" height="18" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      Sign up with Google
-    </button>
-    <div class="auth-footer">Already have an account? <a href="#" onclick="switchTab('login')">Sign in</a></div>
-  </div>
 
+    <!-- SIGNUP SCREEN -->
+    <div class="screen" id="signupScreen">
+      <div class="field">
+        <label class="field-label">Full Name</label>
+        <input class="field-input" type="text" id="signupName" placeholder="Your full name" autocomplete="name"/>
+      </div>
+      <div class="field">
+        <label class="field-label">Email Address</label>
+        <input class="field-input" type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label class="field-label">Password</label>
+        <div class="field-wrap">
+          <input class="field-input has-suffix" type="password" id="signupPassword" placeholder="Minimum 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)"/>
+          <span class="field-suffix" id="signupEye" onclick="togglePw('signupPassword','signupEye')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </span>
+        </div>
+        <div class="pw-bar"><div class="pw-bar-fill" id="pwFill"></div></div>
+        <div class="pw-hint" id="pwHint">Use 8+ characters for a strong password</div>
+      </div>
+      <button class="btn-primary" id="signupBtn" onclick="doSignup()">
+        Create Account
+      </button>
+      <div class="divider"><span class="divider-text">or</span></div>
+      <button class="btn-google" onclick="googleSignIn()">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign up with Google
+      </button>
+      <div class="terms">By creating an account, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></div>
+      <div class="form-footer">Already have an account? <a href="#" onclick="switchTab('login')">Sign in</a></div>
+    </div>
+
+  </div>
 </div>
 
 <script>
 const GOOGLE_CLIENT_ID = '{{ google_client_id }}';
 
-// Check already logged in
+// Redirect if already logged in
 (function(){
   const token = localStorage.getItem('yaply_token');
-  if(token){
-    fetch('/api/auth/me',{headers:{'Authorization':'Bearer '+token}})
-    .then(r=>r.json()).then(d=>{
-      if(d.success){
-        const redirect=new URLSearchParams(window.location.search).get('redirect')||'/app';
-        window.location.href=redirect;
+  if (!token) return;
+  fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        const next = new URLSearchParams(window.location.search).get('next') || '/app';
+        window.location.href = next;
       }
-    }).catch(()=>{});
-  }
+    }).catch(() => {});
 })();
 
-function switchTab(tab){
-  document.getElementById('loginScreen').classList.toggle('active',tab==='login');
-  document.getElementById('signupScreen').classList.toggle('active',tab==='signup');
-  document.querySelectorAll('.auth-tab').forEach((t,i)=>{
-    t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='signup'));
-  });
+function switchTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('loginScreen').classList.toggle('active', isLogin);
+  document.getElementById('signupScreen').classList.toggle('active', !isLogin);
+  document.getElementById('tab-login').classList.toggle('active', isLogin);
+  document.getElementById('tab-signup').classList.toggle('active', !isLogin);
+  document.getElementById('formHeader').querySelector('.form-title').textContent = isLogin ? 'Welcome back' : 'Create your account';
+  document.getElementById('formHeader').querySelector('.form-sub').textContent = isLogin
+    ? 'Sign in to your Yaply account to continue planning.'
+    : 'Join thousands of travellers planning smarter with AI.';
   hideAlert();
 }
 
-function showAlert(msg,type='error'){
-  const el=document.getElementById('alert');
-  el.textContent=(type==='error'?'⚠️ ':'✅ ')+msg;
-  el.className=`y-alert ${type} show`;
-}
-function hideAlert(){ document.getElementById('alert').className='y-alert'; }
-
-function togglePw(id,icon){
-  const inp=document.getElementById(id);
-  if(inp.type==='password'){inp.type='text';icon.textContent='🙈';}
-  else{inp.type='password';icon.textContent='👁️';}
+function showAlert(msg, type = 'error') {
+  const el = document.getElementById('alert');
+  document.getElementById('alertIcon').textContent = type === 'error' ? '⚠' : '✓';
+  document.getElementById('alertMsg').textContent = msg;
+  el.className = `alert ${type} show`;
 }
 
-function checkStrength(pw){
-  const fill=document.getElementById('psFill');
-  let score=0;
-  if(pw.length>=8)score++;
-  if(pw.length>=12)score++;
-  if(/[A-Z]/.test(pw))score++;
-  if(/[0-9]/.test(pw))score++;
-  if(/[^A-Za-z0-9]/.test(pw))score++;
-  const colors=['','#E8474A','#F5A623','#F4642A','#2BAF7E','#2BAF7E'];
-  const widths=['0%','20%','40%','60%','80%','100%'];
-  fill.style.width=widths[score];
-  fill.style.background=colors[score];
+function hideAlert() {
+  document.getElementById('alert').className = 'alert';
 }
 
-function setLoading(btnId,loading){
-  const btn=document.getElementById(btnId);
-  if(loading){
-    btn.disabled=true;
-    btn.innerHTML='<div class="btn-spinner"></div>';
-  } else {
-    btn.disabled=false;
-    btn.innerHTML=btnId==='loginBtn'?'Sign In ✈️':'Create Account 🚀';
+function togglePw(inputId, eyeId) {
+  const inp = document.getElementById(inputId);
+  const eye = document.getElementById(eyeId);
+  const isHidden = inp.type === 'password';
+  inp.type = isHidden ? 'text' : 'password';
+  eye.innerHTML = isHidden
+    ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+}
+
+function checkStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const fill = document.getElementById('pwFill');
+  const hint = document.getElementById('pwHint');
+  const map = [
+    { w: '0%',   c: '',          t: 'Use 8+ characters for a strong password' },
+    { w: '20%',  c: '#D84C3E',   t: 'Too weak — add more characters' },
+    { w: '40%',  c: '#E8823A',   t: 'Fair — try adding numbers or symbols' },
+    { w: '60%',  c: '#F0B429',   t: 'Good — almost there' },
+    { w: '80%',  c: '#28B06A',   t: 'Strong password' },
+    { w: '100%', c: '#1A8A72',   t: 'Very strong — excellent!' },
+  ];
+  fill.style.width = map[score].w;
+  fill.style.background = map[score].c;
+  hint.textContent = map[score].t;
+  hint.style.color = map[score].c || 'var(--muted2)';
+}
+
+function setLoading(btnId, loading, originalText) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? '<div class="spinner"></div>'
+    : originalText;
+}
+
+async function doLogin() {
+  hideAlert();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) { showAlert('Please fill in all fields'); return; }
+  setLoading('loginBtn', true);
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('yaply_token', data.token);
+      localStorage.setItem('yaply_user', JSON.stringify(data.user));
+      showAlert(data.message || 'Welcome back!', 'success');
+      setTimeout(() => {
+        const next = new URLSearchParams(window.location.search).get('next') || '/app';
+        window.location.href = next;
+      }, 600);
+    } else {
+      showAlert(data.error || 'Login failed. Please try again.');
+      setLoading('loginBtn', false, 'Sign In');
+    }
+  } catch (e) {
+    showAlert('Could not connect. Please check your internet.');
+    setLoading('loginBtn', false, 'Sign In');
   }
 }
 
-async function doLogin(){
+async function doSignup() {
   hideAlert();
-  const email=document.getElementById('loginEmail').value.trim();
-  const password=document.getElementById('loginPassword').value;
-  if(!email||!password){showAlert('Please fill in all fields');return;}
-  setLoading('loginBtn',true);
-  try{
-    const res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const data=await res.json();
-    if(data.success){
-      localStorage.setItem('yaply_token',data.token);
-      localStorage.setItem('yaply_user',JSON.stringify(data.user));
-      showAlert(data.message,'success');
-      setTimeout(()=>{
-        const redirect=new URLSearchParams(window.location.search).get('redirect')||'/app';
-        window.location.href=redirect;
-      },700);
-    } else { showAlert(data.error||'Login failed'); }
-  } catch(e){ showAlert('Connection error. Please try again.'); }
-  setLoading('loginBtn',false);
-}
-
-async function doSignup(){
-  hideAlert();
-  const name=document.getElementById('signupName').value.trim();
-  const email=document.getElementById('signupEmail').value.trim();
-  const password=document.getElementById('signupPassword').value;
-  if(!name||!email||!password){showAlert('Please fill in all fields');return;}
-  if(password.length<8){showAlert('Password must be at least 8 characters');return;}
-  setLoading('signupBtn',true);
-  try{
-    const res=await fetch('/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password})});
-    const data=await res.json();
-    if(data.success){
-      localStorage.setItem('yaply_token',data.token);
-      localStorage.setItem('yaply_user',JSON.stringify(data.user));
-      showAlert(data.message,'success');
-      setTimeout(()=>window.location.href='/app',700);
-    } else { showAlert(data.error||'Signup failed'); }
-  } catch(e){ showAlert('Connection error. Please try again.'); }
-  setLoading('signupBtn',false);
-}
-
-function googleSignIn(){
-  if(!GOOGLE_CLIENT_ID||GOOGLE_CLIENT_ID===''){
-    showAlert('Google login not set up yet. Please use email login.','error');return;
+  const name     = document.getElementById('signupName').value.trim();
+  const email    = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  if (!name || !email || !password) { showAlert('Please fill in all fields'); return; }
+  if (password.length < 8) { showAlert('Password must be at least 8 characters'); return; }
+  setLoading('signupBtn', true);
+  try {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('yaply_token', data.token);
+      localStorage.setItem('yaply_user', JSON.stringify(data.user));
+      showAlert(data.message || 'Account created!', 'success');
+      setTimeout(() => { window.location.href = '/app'; }, 600);
+    } else {
+      showAlert(data.error || 'Could not create account. Please try again.');
+      setLoading('signupBtn', false, 'Create Account');
+    }
+  } catch (e) {
+    showAlert('Could not connect. Please check your internet.');
+    setLoading('signupBtn', false, 'Create Account');
   }
-  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleCallback,auto_select:false});
+}
+
+function googleSignIn() {
+  if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === '') {
+    showAlert('Google sign-in is not configured. Please use email login.');
+    return;
+  }
+  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCallback });
   google.accounts.id.prompt();
 }
 
-async function handleGoogleCallback(response){
-  try{
-    const res=await fetch('/api/auth/google',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id_token:response.credential})});
-    const data=await res.json();
-    if(data.success){
-      localStorage.setItem('yaply_token',data.token);
-      localStorage.setItem('yaply_user',JSON.stringify(data.user));
-      showAlert(data.message,'success');
-      setTimeout(()=>window.location.href='/app',700);
-    } else { showAlert(data.error||'Google login failed'); }
-  } catch(e){ showAlert('Google login failed. Please use email.'); }
+async function handleGoogleCallback(response) {
+  try {
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_token: response.credential })
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('yaply_token', data.token);
+      localStorage.setItem('yaply_user', JSON.stringify(data.user));
+      showAlert(data.message || 'Welcome!', 'success');
+      setTimeout(() => { window.location.href = '/app'; }, 600);
+    } else {
+      showAlert(data.error || 'Google sign-in failed. Please use email.');
+    }
+  } catch (e) {
+    showAlert('Google sign-in failed. Please use email login.');
+  }
 }
 
-document.addEventListener('keydown',e=>{
-  if(e.key!=='Enter')return;
-  if(document.getElementById('loginScreen').classList.contains('active'))doLogin();
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('loginScreen').classList.contains('active')) doLogin();
   else doSignup();
 });
 </script>

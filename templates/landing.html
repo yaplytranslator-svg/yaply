@@ -3,1163 +3,1213 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Yaply — AI Travel Companion</title>
-<meta name="description" content="The only app that solves every travel problem — before, during and after your trip. AI-powered. Free forever."/>
-<link rel="icon" href="/static/favicon.png" type="image/png"/>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Righteous&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<title>Yaply — AI Travel Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
-/* ═══════════════════════════════
-   YAPLY LANDING PAGE
-   Full brand palette from logo
-═══════════════════════════════ */
-
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-
 :root{
-  --blue:#4A7FD4;   --blue-s:rgba(74,127,212,0.12);
-  --orange:#F4642A; --orange-s:rgba(244,100,42,0.12);
-  --red:#E8474A;    --red-s:rgba(232,71,74,0.12);
-  --green:#2BAF7E;  --green-s:rgba(43,175,126,0.12);
-  --gold:#F5A623;   --gold-s:rgba(245,166,35,0.12);
-  --purple:#6B5CE7; --purple-s:rgba(107,92,231,0.12);
-  --ink:#0E0E1A;
-  --ink2:#1A1A2E;
-  --surface:rgba(255,255,255,0.04);
-  --border:rgba(255,255,255,0.08);
-  --text-dim:rgba(255,255,255,0.45);
-  --text-dimmer:rgba(255,255,255,0.25);
+  --black:#0A0A0A;--white:#FFFFFF;--bg:#F5F5F0;
+  --orange:#FF6B35;--orange2:#FF8C42;
+  --dark:#1A1A1A;--card:#FFFFFF;
+  --grey:#F0F0EB;--grey2:#E8E8E2;
+  --text:#1A1A1A;--muted:#666;--muted2:#999;
+  --border:rgba(0,0,0,0.08);
 }
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
 
-body{
-  font-family:'Nunito',sans-serif;
-  background:var(--ink);
-  color:white;
-  overflow-x:hidden;
-  cursor:none;
-}
-
-/* ── CUSTOM CURSOR ── */
-.cursor{
-  position:fixed;width:10px;height:10px;
-  border-radius:50%;pointer-events:none;
-  z-index:99999;transform:translate(-50%,-50%);
-  background:var(--orange);
-  transition:width 0.3s,height 0.3s,background 0.3s;
-  mix-blend-mode:screen;
-}
-.cursor-ring{
-  position:fixed;width:36px;height:36px;
-  border:1.5px solid rgba(244,100,42,0.4);
-  border-radius:50%;pointer-events:none;z-index:99998;
-  transform:translate(-50%,-50%);
-}
-body:has(a:hover) .cursor,
-body:has(button:hover) .cursor{width:24px;height:24px;background:var(--gold);}
-
-/* ── NAV ── */
+/* NAV */
 nav{
-  position:fixed;top:0;left:0;right:0;z-index:1000;
+  position:fixed;top:0;left:0;right:0;
   display:flex;align-items:center;justify-content:space-between;
-  padding:22px 48px;
-  transition:all 0.4s ease;
-}
-nav.scrolled{
-  background:rgba(14,14,26,0.95);
-  backdrop-filter:blur(24px);
-  padding:14px 48px;
+  padding:16px 48px;
+  background:rgba(245,245,240,0.92);
+  backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);
+  z-index:1000;
 }
-@media(max-width:768px){nav{padding:18px 20px;} nav.scrolled{padding:12px 20px;}}
+.nav-logo{font-size:1.25rem;font-weight:800;color:var(--dark);letter-spacing:-0.5px;text-decoration:none;}
+.nav-links{display:flex;align-items:center;gap:32px;list-style:none;}
+.nav-links a{font-size:0.85rem;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s;}
+.nav-links a:hover{color:var(--dark);}
+.nav-dl{
+  padding:10px 22px;background:var(--dark);color:#fff;
+  border-radius:100px;font-size:0.82rem;font-weight:600;
+  text-decoration:none;transition:all .2s;white-space:nowrap;
+}
+.nav-dl:hover{background:var(--orange);transform:translateY(-1px);}
+@media(max-width:768px){nav{padding:14px 20px;}.nav-links{display:none;}}
 
-/* Rainbow strip */
-nav::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,var(--blue),var(--orange),var(--red),var(--green),var(--gold),var(--purple));
-  opacity:0;transition:opacity 0.4s;
-}
-nav.scrolled::before{opacity:1;}
-
-.nav-logo{
-  font-family:'Righteous',sans-serif;
-  font-size:1.6rem;letter-spacing:-0.3px;
-  text-decoration:none;
-  background:linear-gradient(135deg,var(--orange),var(--red),var(--purple));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.nav-links{display:flex;align-items:center;gap:28px;}
-@media(max-width:768px){.nav-links{gap:12px;}}
-.nav-link{
-  font-size:0.82rem;font-weight:700;
-  color:var(--text-dim);text-decoration:none;
-  transition:color 0.2s;
-}
-.nav-link:hover{color:white;}
-@media(max-width:640px){.nav-link:not(.nav-cta){display:none;}}
-.nav-cta{
-  padding:9px 22px;border-radius:100px;
-  background:linear-gradient(135deg,var(--orange),var(--red));
-  color:white;font-weight:800;font-size:0.82rem;
-  border:none;cursor:pointer;
-  font-family:'Nunito',sans-serif;
-  text-decoration:none;display:inline-block;
-  box-shadow:0 4px 20px rgba(244,100,42,0.35);
-  transition:all 0.25s;
-}
-.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(244,100,42,0.5);}
-
-/* ── HERO ── */
+/* HERO */
 .hero{
-  position:relative;min-height:100vh;
-  display:flex;align-items:center;
-  overflow:hidden;
-  padding:0 48px;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  padding:100px 24px 60px;
+  position:relative;overflow:hidden;
+  background:var(--black);
 }
-@media(max-width:768px){.hero{padding:0 24px;}}
-
-/* Animated mesh gradient background */
-.hero-bg{
-  position:absolute;inset:0;z-index:0;
-  background:var(--ink);
-}
-.hero-bg::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 70% 50% at 60% 40%,rgba(244,100,42,0.12) 0%,transparent 60%),
-    radial-gradient(ellipse 50% 60% at 90% 20%,rgba(107,92,231,0.1) 0%,transparent 50%),
-    radial-gradient(ellipse 40% 40% at 10% 70%,rgba(74,127,212,0.08) 0%,transparent 50%),
-    radial-gradient(ellipse 60% 40% at 50% 90%,rgba(43,175,126,0.06) 0%,transparent 60%);
-}
-
-/* Floating particles */
-.particles{position:absolute;inset:0;z-index:1;pointer-events:none;}
-.p{position:absolute;border-radius:50%;animation:pFloat linear infinite;}
-@keyframes pFloat{
-  from{transform:translateY(110vh) rotate(0deg);opacity:0;}
-  5%{opacity:1;}90%{opacity:0.4;}
-  to{transform:translateY(-10vh) rotate(360deg);opacity:0;}
-}
-
-/* 3D Globe canvas */
-.globe-wrap{
-  position:absolute;right:-8%;top:50%;
-  transform:translateY(-50%);
-  width:55vw;max-width:680px;
-  aspect-ratio:1;z-index:1;
-  opacity:0.6;
-}
-@media(max-width:900px){.globe-wrap{width:100vw;right:-20%;opacity:0.15;top:60%;}}
-
-.hero-content{
-  position:relative;z-index:2;
-  max-width:680px;
-  padding:120px 0 80px;
-}
-@media(max-width:768px){.hero-content{padding:100px 0 60px;max-width:100%;}}
-
 .hero-badge{
   display:inline-flex;align-items:center;gap:8px;
-  padding:7px 16px;border-radius:100px;
-  background:var(--orange-s);
-  border:1px solid rgba(244,100,42,0.25);
-  font-size:0.72rem;font-weight:800;
-  letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--orange);margin-bottom:28px;
-  animation:fadeUp 0.7s 0.2s ease both;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:100px;padding:6px 16px;
+  font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.7);
+  letter-spacing:0.5px;margin-bottom:32px;
+  animation:fadeUp .8s ease both;
 }
-.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.6)}}
+.badge-ping{
+  width:6px;height:6px;background:#4ADE80;border-radius:50%;
+  animation:ping 2s ease-in-out infinite;
+}
+@keyframes ping{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
 
-.hero-h1{
-  font-family:'Righteous',sans-serif;
-  font-size:clamp(3rem,7vw,6rem);
-  line-height:1.0;letter-spacing:-1px;
+.hero h1{
+  font-size:clamp(3.5rem,9vw,7.5rem);
+  font-weight:900;
+  line-height:.9;
+  letter-spacing:-4px;
+  color:#fff;
   margin-bottom:24px;
-  animation:fadeUp 0.7s 0.35s ease both;
+  animation:fadeUp .8s ease .1s both;
 }
-.hero-h1 .line-1{display:block;color:white;}
-.hero-h1 .line-2{display:block;color:white;}
-.hero-h1 .line-3{
-  display:block;
-  background:linear-gradient(135deg,var(--orange),var(--gold),var(--red));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
+.hero h1 .orange{color:var(--orange);}
 
 .hero-sub{
-  font-size:1.05rem;color:var(--text-dim);
-  line-height:1.85;max-width:480px;
-  margin-bottom:40px;font-weight:500;
-  animation:fadeUp 0.7s 0.5s ease both;
+  font-size:clamp(.95rem,2vw,1.1rem);
+  font-weight:400;
+  color:rgba(255,255,255,.5);
+  max-width:460px;
+  line-height:1.7;
+  margin:0 auto 44px;
+  animation:fadeUp .8s ease .2s both;
 }
-
 .hero-btns{
-  display:flex;align-items:center;gap:14px;
-  flex-wrap:wrap;
-  animation:fadeUp 0.7s 0.65s ease both;
+  display:flex;align-items:center;gap:12px;justify-content:center;
+  flex-wrap:wrap;animation:fadeUp .8s ease .3s both;
 }
-.btn-hero-primary{
-  display:inline-flex;align-items:center;gap:10px;
-  padding:16px 32px;border-radius:100px;
-  background:linear-gradient(135deg,var(--orange),var(--red));
-  color:white;font-family:'Nunito',sans-serif;
-  font-size:0.95rem;font-weight:800;
-  border:none;cursor:pointer;
-  box-shadow:0 8px 32px rgba(244,100,42,0.4);
-  transition:all 0.3s;text-decoration:none;
+.btn-hero{
+  padding:14px 32px;background:var(--orange);color:#fff;
+  border:none;border-radius:100px;font-family:'Inter',sans-serif;
+  font-size:.88rem;font-weight:700;cursor:pointer;
+  text-decoration:none;transition:all .25s;
+  box-shadow:0 8px 32px rgba(255,107,53,.35);
 }
-.btn-hero-primary:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(244,100,42,0.55);}
-.btn-hero-secondary{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:16px 28px;border-radius:100px;
-  background:rgba(255,255,255,0.07);
-  color:white;font-family:'Nunito',sans-serif;
-  font-size:0.9rem;font-weight:700;
-  border:1px solid var(--border);
-  cursor:pointer;transition:all 0.3s;text-decoration:none;
+.btn-hero:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,107,53,.45);}
+.btn-hero2{
+  padding:14px 32px;background:rgba(255,255,255,.08);color:#fff;
+  border:1px solid rgba(255,255,255,.15);border-radius:100px;
+  font-family:'Inter',sans-serif;font-size:.88rem;font-weight:500;
+  cursor:pointer;text-decoration:none;transition:all .25s;
 }
-.btn-hero-secondary:hover{background:rgba(255,255,255,0.12);transform:translateY(-2px);}
+.btn-hero2:hover{background:rgba(255,255,255,.14);}
 
-/* Social proof */
-.social-proof{
-  display:flex;align-items:center;gap:14px;
-  margin-top:40px;
-  animation:fadeUp 0.7s 0.8s ease both;
+/* SOCIAL PROOF */
+.hero-proof{
+  display:flex;align-items:center;gap:12px;
+  margin-top:48px;animation:fadeUp .8s ease .4s both;
 }
-.sp-avs{display:flex;}
-.sp-av{
-  width:30px;height:30px;border-radius:50%;
-  border:2px solid var(--ink);
-  margin-left:-8px;font-size:0.85rem;
+.proof-avatars{display:flex;}
+.proof-av{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--black);
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  margin-left:-8px;font-size:.7rem;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;
+}
+.proof-av:first-child{margin-left:0;}
+.proof-text{font-size:.78rem;color:rgba(255,255,255,.5);}
+.proof-text strong{color:rgba(255,255,255,.9);}
+
+/* PHONE MOCKUP HERO */
+.hero-phone-wrap{
+  position:relative;margin-top:64px;
+  animation:fadeUp .8s ease .5s both;
+}
+.hero-phone{
+  width:280px;
+  background:var(--dark);
+  border-radius:48px;
+  border:8px solid #2a2a2a;
+  overflow:hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.06),
+    0 50px 100px rgba(0,0,0,.9),
+    0 0 80px rgba(255,107,53,.08);
+  position:relative;
+  animation:phoneFloat 6s ease-in-out infinite;
+}
+@keyframes phoneFloat{
+  0%,100%{transform:translateY(0) rotate(-1deg);}
+  50%{transform:translateY(-12px) rotate(1deg);}
+}
+.phone-screen{padding:0;overflow:hidden;}
+.phone-status{
+  height:40px;background:#111;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;
+}
+.phone-notch-inner{
+  width:80px;height:24px;background:#000;
+  border-radius:0 0 16px 16px;
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+}
+.phone-content{padding:16px 14px;}
+.ph-title{font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.5px;}
+.ph-sub{font-size:.65rem;color:rgba(255,255,255,.4);margin-bottom:14px;}
+
+/* Trip card in phone */
+.ph-trip-card{
+  background:#1E1E1E;border-radius:16px;padding:12px;
+  margin-bottom:8px;display:flex;gap:10px;align-items:center;
+}
+.ph-trip-ico{
+  width:36px;height:36px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;
+  font-size:1rem;flex-shrink:0;
 }
-.sp-av:first-child{margin-left:0;}
-.sp-text{font-size:0.78rem;color:var(--text-dim);font-weight:600;}
-.sp-text strong{color:var(--gold);}
+.ph-trip-name{font-size:.72rem;font-weight:700;color:#fff;margin-bottom:2px;}
+.ph-trip-det{font-size:.6rem;color:rgba(255,255,255,.4);}
+.ph-trip-cost{margin-left:auto;font-size:.68rem;font-weight:700;color:var(--orange);}
 
-/* Floating cards */
-.float-card{
-  position:absolute;
-  background:rgba(255,255,255,0.06);
-  backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:16px;padding:13px 17px;
-  z-index:2;animation:cardFloat ease-in-out infinite;
-  font-family:'Nunito',sans-serif;
+.ph-budget{
+  background:linear-gradient(135deg,var(--orange),var(--orange2));
+  border-radius:14px;padding:12px 14px;margin-top:10px;
 }
-@keyframes cardFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.fc-label{font-size:0.58rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:4px;}
-.fc-value{font-size:0.88rem;font-weight:800;color:white;}
-.fc-sub{font-size:0.68rem;color:rgba(255,255,255,0.35);margin-top:2px;font-weight:600;}
+.ph-bl{font-size:.6rem;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.ph-bval{font-size:1.1rem;font-weight:900;color:#fff;letter-spacing:-.5px;}
+.ph-bsub{font-size:.58rem;color:rgba(255,255,255,.65);margin-top:1px;}
 
-/* ── MARQUEE ── */
-.marquee-wrap{
-  overflow:hidden;padding:18px 0;
-  background:linear-gradient(135deg,var(--orange),var(--red));
+/* GLOW UNDER PHONE */
+.phone-glow{
+  position:absolute;bottom:-40px;left:50%;transform:translateX(-50%);
+  width:200px;height:80px;
+  background:radial-gradient(ellipse,rgba(255,107,53,.4),transparent 70%);
+  filter:blur(20px);pointer-events:none;
+}
+
+/* =================== SECTIONS =================== */
+section{padding:100px 48px;}
+.section-inner{max-width:1100px;margin:0 auto;}
+@media(max-width:768px){section{padding:64px 20px;}}
+
+/* =================== FOOD ICONS SECTION (-> DESTINATION VIBES) =================== */
+.vibes-sec{background:var(--bg);padding:80px 48px;}
+.vibes-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+@media(max-width:768px){.vibes-inner{grid-template-columns:1fr;}}
+.vibes-text h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px;}
+.vibes-text p{font-size:.9rem;color:var(--muted);line-height:1.7;}
+.vibes-text small{display:block;margin-top:12px;font-size:.75rem;color:var(--muted2);}
+
+.vibe-icons-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+}
+.vibe-icon-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:16px 8px;border-radius:20px;
+  background:var(--card);border:1px solid var(--border);
+  cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
+}
+.vibe-icon-wrap:hover{transform:scale(1.08);box-shadow:0 8px 32px rgba(0,0,0,.1);border-color:var(--orange);}
+.vibe-icon-wrap .vi-emoji{font-size:2.2rem;transition:transform .3s;}
+.vibe-icon-wrap:hover .vi-emoji{transform:scale(1.15) rotate(-5deg);}
+.vi-label{font-size:.62rem;font-weight:600;color:var(--muted);}
+.vi-badge{
+  position:absolute;top:6px;right:6px;
+  font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:100px;
+}
+.vi-yes{background:#DCFCE7;color:#16A34A;}
+.vi-no{background:#FEE2E2;color:#DC2626;}
+
+/* =================== EXPLODE SECTION (-> TRIP COMPONENTS) =================== */
+.explode-sec{background:#fff;padding:100px 48px;}
+.explode-inner{max-width:1000px;margin:0 auto;text-align:center;}
+.explode-inner h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;letter-spacing:-1.5px;margin-bottom:12px;}
+.explode-inner p{font-size:.9rem;color:var(--muted);max-width:440px;margin:0 auto 56px;line-height:1.7;}
+
+.explode-stack{
+  position:relative;width:480px;margin:0 auto;
+  height:320px;
+}
+.layer{
+  position:absolute;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:14px 20px;
+  box-shadow:0 2px 16px rgba(0,0,0,.06);
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);
+  cursor:pointer;
+}
+.layer:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,.1);}
+.layer-1{bottom:0;transform:translateY(0);z-index:5;}
+.layer-2{bottom:40px;transform:translateY(0) scale(.97);z-index:4;opacity:.9;}
+.layer-3{bottom:80px;transform:translateY(0) scale(.94);z-index:3;opacity:.75;}
+.layer-4{bottom:120px;transform:translateY(0) scale(.91);z-index:2;opacity:.6;}
+.layer-5{bottom:160px;transform:translateY(0) scale(.88);z-index:1;opacity:.45;}
+.explode-stack:hover .layer-1{transform:translateY(0);}
+.explode-stack:hover .layer-2{transform:translateY(-56px) scale(1);}
+.explode-stack:hover .layer-3{transform:translateY(-112px) scale(1);}
+.explode-stack:hover .layer-4{transform:translateY(-168px) scale(1);}
+.explode-stack:hover .layer-5{transform:translateY(-224px) scale(1);}
+.explode-stack:hover .layer-2,.explode-stack:hover .layer-3,.explode-stack:hover .layer-4,.explode-stack:hover .layer-5{opacity:1;}
+.l-left{display:flex;align-items:center;gap:12px;}
+.l-ico{font-size:1.4rem;}
+.l-name{font-size:.85rem;font-weight:700;}
+.l-sub{font-size:.68rem;color:var(--muted);}
+.l-cost{font-size:.9rem;font-weight:800;color:var(--orange);}
+.explode-hint{margin-top:24px;font-size:.75rem;color:var(--muted2);font-style:italic;}
+
+/* =================== HOW IT WORKS (3 STEPS) =================== */
+.how-sec{background:var(--black);padding:100px 48px;}
+.how-inner{max-width:1100px;margin:0 auto;}
+.how-top{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;margin-bottom:64px;}
+@media(max-width:768px){.how-top{grid-template-columns:1fr;}}
+.how-top h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;letter-spacing:-1.5px;color:#fff;line-height:1.1;}
+.how-top p{font-size:.9rem;color:rgba(255,255,255,.4);line-height:1.7;}
+
+.steps-tabs{display:flex;gap:4px;margin-bottom:0;}
+.step-tab{
+  padding:8px 20px;border-radius:100px;border:none;
+  background:rgba(255,255,255,.06);
+  font-family:'Inter',sans-serif;font-size:.8rem;font-weight:500;
+  color:rgba(255,255,255,.4);cursor:pointer;transition:all .2s;
+}
+.step-tab.active{background:var(--orange);color:#fff;font-weight:700;}
+
+.steps-content{
+  display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;
+}
+@media(max-width:768px){.steps-content{grid-template-columns:1fr;}}
+
+.step-panel{display:none;}
+.step-panel.active{display:block;}
+.step-num{font-size:4rem;font-weight:900;color:rgba(255,255,255,.06);letter-spacing:-3px;line-height:1;margin-bottom:16px;}
+.step-title{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:10px;letter-spacing:-.5px;}
+.step-desc{font-size:.88rem;color:rgba(255,255,255,.45);line-height:1.7;}
+
+/* Step phone */
+.step-phone{
+  background:#1A1A1A;border-radius:32px;
+  border:6px solid #252525;overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,.8);
   position:relative;
 }
-.marquee-track{
-  display:flex;gap:0;
-  animation:marquee 22s linear infinite;
-  width:max-content;
-}
-.mi{
-  padding:0 28px;
-  font-size:0.76rem;font-weight:800;
-  letter-spacing:2px;text-transform:uppercase;
-  color:white;white-space:nowrap;
-  display:flex;align-items:center;gap:14px;
-  font-family:'Nunito',sans-serif;
-}
-.mi-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.4);}
-@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-
-/* ── SECTIONS ── */
-.section{padding:110px 48px;}
-@media(max-width:768px){.section{padding:70px 24px;}}
-.smax{max-width:1140px;margin:0 auto;}
-
-.eyebrow{
-  font-size:0.7rem;font-weight:800;
-  letter-spacing:2.5px;text-transform:uppercase;
-  color:var(--orange);margin-bottom:14px;
-  display:flex;align-items:center;gap:10px;
-}
-.eyebrow::after{content:'';width:32px;height:1.5px;background:var(--orange);}
-
-.stitle{
-  font-family:'Righteous',sans-serif;
-  font-size:clamp(2.2rem,5vw,3.8rem);
-  line-height:1.05;letter-spacing:-0.5px;
-  margin-bottom:14px;
-}
-.ssub{
-  font-size:0.95rem;color:var(--text-dim);
-  line-height:1.85;max-width:500px;font-weight:500;
-}
-
-/* ── HOW IT WORKS ── */
-.steps{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  gap:1px;margin-top:64px;
-  background:var(--border);
-  border:1px solid var(--border);
-  border-radius:24px;overflow:hidden;
-}
-@media(max-width:900px){.steps{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:500px){.steps{grid-template-columns:1fr;}}
-
-.step{
-  padding:32px 26px;background:var(--ink2);
-  transition:background 0.3s;position:relative;overflow:hidden;
-}
-.step:hover{background:rgba(244,100,42,0.06);}
-.step::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  transform:scaleX(0);transform-origin:left;transition:transform 0.4s;
-}
-.step:nth-child(1)::before{background:var(--orange);}
-.step:nth-child(2)::before{background:var(--blue);}
-.step:nth-child(3)::before{background:var(--green);}
-.step:nth-child(4)::before{background:var(--purple);}
-.step:hover::before{transform:scaleX(1);}
-
-.step-num{
-  font-family:'Righteous',sans-serif;
-  font-size:3rem;color:rgba(244,100,42,0.12);
-  line-height:1;margin-bottom:14px;
-}
-.step-ico{font-size:1.7rem;margin-bottom:12px;}
-.step-t{font-size:0.95rem;font-weight:800;margin-bottom:7px;color:white;}
-.step-d{font-size:0.8rem;color:var(--text-dim);line-height:1.7;font-weight:500;}
-
-/* ── STATS ── */
-.stats-strip{
-  padding:70px 48px;
-  border-top:1px solid var(--border);
-  border-bottom:1px solid var(--border);
-  background:rgba(255,255,255,0.02);
-}
-@media(max-width:768px){.stats-strip{padding:50px 24px;}}
-.stats-grid{
-  max-width:1140px;margin:0 auto;
-  display:grid;grid-template-columns:repeat(4,1fr);gap:32px;
-  text-align:center;
-}
-@media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr);gap:24px;}}
-.stat-num{
-  font-family:'Righteous',sans-serif;
-  font-size:3.8rem;line-height:1;margin-bottom:8px;
-}
-.s1 .stat-num{background:linear-gradient(135deg,var(--orange),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.s2 .stat-num{background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.s3 .stat-num{background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.s4 .stat-num{background:linear-gradient(135deg,var(--purple),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.stat-lbl{font-size:0.72rem;color:var(--text-dimmer);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;}
-
-/* ── BENTO FEATURES ── */
-.bento{
-  display:grid;
-  grid-template-columns:repeat(12,1fr);
-  gap:12px;margin-top:64px;
-}
-@media(max-width:900px){.bento{grid-template-columns:1fr 1fr;}}
-@media(max-width:550px){.bento{grid-template-columns:1fr;}}
-
-.bc{
-  background:rgba(255,255,255,0.03);
-  border:1px solid var(--border);
-  border-radius:22px;padding:26px;
-  transition:all 0.3s;overflow:hidden;position:relative;
-}
-.bc:hover{background:rgba(244,100,42,0.06);border-color:rgba(244,100,42,0.2);transform:translateY(-3px);}
-.bc.c7{grid-column:span 7;}
-.bc.c5{grid-column:span 5;}
-.bc.c4{grid-column:span 4;}
-.bc.c8{grid-column:span 8;}
-.bc.c6{grid-column:span 6;}
-@media(max-width:900px){.bc.c7,.bc.c5,.bc.c4,.bc.c8,.bc.c6{grid-column:span 1;}}
-
-.bc-tag{
-  display:inline-block;font-size:0.6rem;font-weight:800;
-  letter-spacing:1.5px;text-transform:uppercase;
-  padding:4px 12px;border-radius:100px;margin-bottom:12px;
-  font-family:'Nunito',sans-serif;
-}
-.bc-ico{font-size:2rem;margin-bottom:14px;}
-.bc-title{
-  font-family:'Righteous',sans-serif;
-  font-size:1.4rem;line-height:1.2;margin-bottom:9px;color:white;
-}
-.bc-title.lg{font-size:1.9rem;}
-.bc-desc{font-size:0.8rem;color:var(--text-dim);line-height:1.7;font-weight:500;}
-
-/* Feature pills */
-.fp{display:flex;flex-direction:column;gap:7px;margin-top:14px;}
-.fp-item{
-  display:flex;align-items:center;gap:9px;
-  padding:9px 12px;
-  background:rgba(255,255,255,0.04);
-  border-radius:10px;font-size:0.78rem;font-weight:700;
-  border:1px solid rgba(255,255,255,0.05);
-}
-.fp-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
-
-/* Translation demo */
-.td-demo{display:flex;flex-direction:column;gap:7px;margin-top:14px;}
-.td-msg{padding:9px 12px;border-radius:11px;font-size:0.8rem;max-width:82%;font-weight:700;}
-.td-you{background:linear-gradient(135deg,var(--orange),var(--red));color:white;align-self:flex-end;border-radius:11px 11px 2px 11px;}
-.td-ai{background:rgba(255,255,255,0.08);border-radius:11px 11px 11px 2px;}
-.td-lang{font-size:0.56rem;color:rgba(255,255,255,0.25);margin-top:2px;font-weight:600;}
-.typing{display:flex;gap:3px;align-items:center;padding:9px 12px;background:rgba(255,255,255,0.06);border-radius:11px;width:fit-content;}
-.td-d{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.4);animation:typingB 1.4s infinite;}
-.td-d:nth-child(2){animation-delay:0.2s;}
-.td-d:nth-child(3){animation-delay:0.4s;}
-@keyframes typingB{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
-
-/* ── PHONE MOCKUP ── */
-.phone-section{
-  padding:110px 48px;
-  background:linear-gradient(to bottom,var(--ink),#0E1A12,var(--ink));
-  overflow:hidden;position:relative;
-}
-@media(max-width:768px){.phone-section{padding:70px 24px;}}
-.phone-glow{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  width:500px;height:500px;
-  background:radial-gradient(circle,rgba(43,175,126,0.12),transparent 70%);
-  pointer-events:none;
-}
-.phone-inner{
-  max-width:1140px;margin:0 auto;
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:80px;align-items:center;
-}
-@media(max-width:800px){.phone-inner{grid-template-columns:1fr;gap:48px;}}
-
-.phone-wrap{position:relative;display:flex;justify-content:center;}
-.phone-frame{
-  width:250px;
-  background:#0E1A0E;
-  border-radius:44px;padding:11px;
-  box-shadow:
-    0 0 0 2px rgba(255,255,255,0.07),
-    0 40px 80px rgba(0,0,0,0.6),
-    inset 0 0 0 1px rgba(255,255,255,0.04);
-  position:relative;z-index:2;
-}
-.phone-notch{
-  position:absolute;top:0;left:50%;
-  transform:translateX(-50%);
-  width:72px;height:24px;
-  background:#0E1A0E;
-  border-radius:0 0 16px 16px;z-index:3;
-}
-.phone-screen{
-  background:#0E0E1A;
-  border-radius:36px;
-  aspect-ratio:9/19;
-  overflow:hidden;position:relative;
-}
-.psc{height:100%;display:flex;flex-direction:column;background:linear-gradient(160deg,#1A0E0E,#0E0E1A);}
-.psh{padding:36px 14px 14px;background:linear-gradient(135deg,#2A0E07,#1A0E0E);}
-.psh-g{font-size:0.46rem;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;font-weight:700;}
-.psh-t{font-family:'Righteous',sans-serif;font-size:1rem;color:white;line-height:1.2;}
-.psh-t em{background:linear-gradient(135deg,var(--orange),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-style:normal;}
-.psh-pill{margin-top:10px;background:rgba(255,255,255,0.07);border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:6px;}
-.psh-dot{width:4px;height:4px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;box-shadow:0 0 5px var(--green);}
-.psh-txt{font-size:0.46rem;font-weight:800;color:rgba(255,255,255,0.7);}
-.psb{padding:10px;flex:1;}
-.psc-card{background:rgba(255,255,255,0.06);border-radius:10px;padding:10px;margin-bottom:7px;border:1px solid rgba(255,255,255,0.05);}
-.psc-l{font-size:0.38rem;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:700;}
-.psc-t{font-size:0.58rem;font-weight:800;color:white;margin-bottom:2px;}
-.psc-d{font-size:0.44rem;color:rgba(255,255,255,0.3);font-weight:600;}
-.psc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;}
-.psc-mini{border-radius:6px;padding:6px;text-align:center;font-size:0.44rem;font-weight:800;}
-.ps-nav{display:flex;justify-content:space-around;padding:6px 0 10px;border-top:1px solid rgba(255,255,255,0.05);}
-.ps-ni{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.ps-nlab{font-size:0.33rem;color:rgba(255,255,255,0.25);font-weight:700;}
-
-/* Phone float cards */
-.ph-fc{
-  position:absolute;
-  background:rgba(255,255,255,0.07);
-  backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:12px;padding:10px 14px;
-  font-size:0.72rem;white-space:nowrap;
-  font-family:'Nunito',sans-serif;
-}
-.ph-fc-1{top:12%;right:-28%;animation:cardFloat 5s 0s ease-in-out infinite;}
-.ph-fc-2{bottom:22%;right:-32%;animation:cardFloat 5s 1.2s ease-in-out infinite;}
-.ph-fc-3{top:42%;left:-32%;animation:cardFloat 5s 2.2s ease-in-out infinite;}
-@media(max-width:800px){.ph-fc{display:none;}}
-
-/* Phone feature list */
-.phone-features{display:flex;flex-direction:column;gap:14px;}
-.pf{display:flex;align-items:center;gap:14px;}
-.pf-icon{
-  width:44px;height:44px;border-radius:14px;
+.step-phone-notch{
+  height:36px;background:#111;
   display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;flex-shrink:0;
 }
-.pf-name{font-size:0.88rem;font-weight:800;margin-bottom:2px;color:white;}
-.pf-desc{font-size:0.75rem;color:var(--text-dim);font-weight:500;}
+.step-phone-notch-inner{width:72px;height:20px;background:#000;border-radius:0 0 12px 12px;}
+.sp-content{padding:16px 14px;}
 
-/* ── TESTIMONIALS ── */
-.testi-wrap{overflow-x:auto;scrollbar-width:none;display:flex;gap:14px;padding-bottom:8px;margin-top:56px;}
-.testi-wrap::-webkit-scrollbar{display:none;}
-.testi{
-  background:rgba(255,255,255,0.04);
-  border:1px solid var(--border);
-  border-radius:20px;padding:22px;
-  min-width:290px;max-width:310px;
-  flex-shrink:0;transition:all 0.3s;
+/* Plan phone UI */
+.sp-search{
+  display:flex;align-items:center;gap:8px;
+  background:#252525;border-radius:10px;padding:10px 12px;margin-bottom:14px;
 }
-.testi:hover{background:rgba(244,100,42,0.06);border-color:rgba(244,100,42,0.2);transform:translateY(-4px);}
-.testi-stars{font-size:0.85rem;letter-spacing:2px;margin-bottom:11px;}
-.testi-txt{font-size:0.85rem;color:rgba(255,255,255,0.65);line-height:1.8;margin-bottom:16px;font-style:italic;font-weight:500;}
-.testi-auth{display:flex;align-items:center;gap:9px;}
-.testi-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;}
-.testi-name{font-size:0.82rem;font-weight:800;color:white;}
-.testi-meta{font-size:0.7rem;color:var(--text-dimmer);font-weight:600;}
-
-/* ── CTA ── */
-.cta-section{
-  padding:110px 48px;
+.sp-search-ico{font-size:1rem;}
+.sp-search-text{font-size:.72rem;color:rgba(255,255,255,.3);}
+.sp-result-card{
+  background:linear-gradient(135deg,#1E3A5F,#0F2040);
+  border-radius:16px;padding:14px;margin-bottom:8px;
   position:relative;overflow:hidden;
 }
-@media(max-width:768px){.cta-section{padding:80px 24px;}}
-.cta-bg{
+.sp-dest{font-size:1rem;font-weight:800;color:#fff;margin-bottom:2px;}
+.sp-meta{font-size:.62rem;color:rgba(255,255,255,.5);}
+.sp-badge-ai{
+  position:absolute;top:10px;right:10px;
+  background:var(--orange);color:#fff;
+  font-size:.55rem;font-weight:800;padding:3px 8px;border-radius:100px;
+}
+.sp-days{display:flex;gap:6px;margin-top:10px;}
+.sp-day{
+  flex:1;background:rgba(255,255,255,.08);border-radius:8px;
+  padding:6px 4px;text-align:center;font-size:.6rem;color:rgba(255,255,255,.6);font-weight:500;
+}
+.sp-day.today{background:var(--orange);color:#fff;font-weight:700;}
+
+/* Translate phone UI */
+.sp-lang-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.sp-lang-pill{
+  flex:1;background:#252525;border-radius:10px;padding:10px 12px;
+  font-size:.72rem;font-weight:600;color:#fff;text-align:center;
+}
+.sp-arrow{font-size:1rem;color:rgba(255,255,255,.3);}
+.sp-bubble-u{
+  background:var(--orange);border-radius:12px 12px 4px 12px;
+  padding:10px 13px;font-size:.72rem;color:#fff;margin-bottom:8px;
+  max-width:80%;
+}
+.sp-bubble-a{
+  background:#252525;border-radius:12px 12px 12px 4px;
+  padding:10px 13px;font-size:.72rem;color:rgba(255,255,255,.8);margin-bottom:8px;
+  max-width:80%;margin-left:auto;
+}
+.sp-typing{display:flex;align-items:center;gap:4px;padding:10px 13px;}
+.sp-typing span{width:5px;height:5px;background:rgba(255,255,255,.3);border-radius:50%;animation:tdot .8s ease-in-out infinite;}
+.sp-typing span:nth-child(2){animation-delay:.15s;}
+.sp-typing span:nth-child(3){animation-delay:.3s;}
+@keyframes tdot{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+
+/* Discover phone UI */
+.sp-discover-img{
+  width:100%;height:130px;border-radius:12px;
+  background:linear-gradient(135deg,#1a3a2a,#0a2010);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.5rem;margin-bottom:10px;position:relative;overflow:hidden;
+}
+.sp-scan-overlay{
   position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 70% 60% at 50% 50%,rgba(244,100,42,0.15),transparent 70%),
-    radial-gradient(ellipse 40% 40% at 20% 80%,rgba(107,92,231,0.08),transparent 60%),
-    var(--ink);
+  display:flex;align-items:center;justify-content:center;
 }
-.cta-content{position:relative;z-index:1;max-width:700px;margin:0 auto;text-align:center;}
-.cta-title{
-  font-family:'Righteous',sans-serif;
-  font-size:clamp(2.5rem,5vw,4.2rem);
-  line-height:1.05;letter-spacing:-0.5px;margin-bottom:18px;
+.sp-scan-corner{
+  position:absolute;width:60px;height:60px;
 }
-.cta-title span{
-  background:linear-gradient(135deg,var(--orange),var(--gold),var(--red));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+.sp-scan-corner.tl{top:10px;left:10px;border-top:2px solid var(--orange);border-left:2px solid var(--orange);}
+.sp-scan-corner.tr{top:10px;right:10px;border-top:2px solid var(--orange);border-right:2px solid var(--orange);}
+.sp-scan-corner.bl{bottom:10px;left:10px;border-bottom:2px solid var(--orange);border-left:2px solid var(--orange);}
+.sp-scan-corner.br{bottom:10px;right:10px;border-bottom:2px solid var(--orange);border-right:2px solid var(--orange);}
+.sp-scan-line{
+  position:absolute;left:10px;right:10px;height:2px;
+  background:linear-gradient(to right,transparent,var(--orange),transparent);
+  animation:scan 2s ease-in-out infinite;
 }
-.cta-sub{font-size:0.95rem;color:var(--text-dim);line-height:1.85;margin-bottom:40px;font-weight:500;}
-.cta-row{
-  display:flex;gap:10px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid var(--border);
-  border-radius:100px;
-  padding:5px 5px 5px 22px;
-  max-width:460px;margin:0 auto 18px;
-}
-.cta-inp{
-  flex:1;background:none;border:none;outline:none;
-  font-family:'Nunito',sans-serif;font-size:0.88rem;
-  color:white;font-weight:600;
-}
-.cta-inp::placeholder{color:rgba(255,255,255,0.22);}
-.cta-note{font-size:0.73rem;color:var(--text-dimmer);font-weight:600;}
+@keyframes scan{0%{top:15px;}100%{top:calc(100% - 15px);}}
+.sp-result-row{display:flex;align-items:center;justify-content:space-between;background:#252525;border-radius:10px;padding:10px 12px;}
+.sp-result-place{font-size:.72rem;font-weight:700;color:#fff;}
+.sp-result-country{font-size:.6rem;color:rgba(255,255,255,.4);}
+.sp-result-conf{font-size:.72rem;font-weight:800;color:var(--orange);}
 
-/* ── FOOTER ── */
-footer{
-  padding:56px 48px 36px;
-  border-top:1px solid var(--border);
+/* =================== SMARTER TOOLS (FEATURES GRID) =================== */
+.tools-sec{background:var(--bg);padding:100px 48px;}
+.tools-inner{max-width:1100px;margin:0 auto;}
+.tools-header{margin-bottom:56px;}
+.tools-header h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;letter-spacing:-1.5px;margin-bottom:12px;line-height:1.1;}
+.tools-header p{font-size:.9rem;color:var(--muted);max-width:480px;line-height:1.7;}
+
+.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:768px){.tools-grid{grid-template-columns:1fr;}}
+
+.tool-card{
+  background:#fff;border:1px solid var(--border);border-radius:24px;
+  overflow:hidden;transition:all .3s;cursor:pointer;
 }
-@media(max-width:768px){footer{padding:44px 24px 28px;}}
-.footer-in{
-  max-width:1140px;margin:0 auto;
-  display:grid;grid-template-columns:1fr auto;
-  gap:48px;align-items:start;
+.tool-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.1);}
+
+/* Budget tracker card */
+.budget-card-visual{padding:28px;}
+.bc-title{font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.bc-emoji{font-size:1.3rem;margin-bottom:8px;}
+.bc-heading{font-size:1.5rem;font-weight:900;letter-spacing:-1px;margin-bottom:20px;}
+.bc-week{display:flex;gap:6px;align-items:flex-end;margin-bottom:20px;}
+.bc-day{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.bc-bar{width:100%;border-radius:4px;background:var(--grey2);}
+.bc-bar.active{background:var(--orange);}
+.bc-dname{font-size:.6rem;color:var(--muted2);font-weight:500;}
+.bc-text{font-size:.82rem;color:var(--muted);line-height:1.6;}
+.bc-text strong{color:var(--dark);font-weight:700;}
+
+/* Meal plan card */
+.meal-card-visual{padding:28px;}
+.mc-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.mc-item{
+  display:flex;align-items:center;gap:10px;
+  background:var(--grey);border-radius:12px;padding:10px 13px;
 }
-@media(max-width:600px){.footer-in{grid-template-columns:1fr;}}
-.footer-logo{
-  font-family:'Righteous',sans-serif;font-size:1.5rem;
-  background:linear-gradient(135deg,var(--orange),var(--red),var(--purple));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  margin-bottom:8px;
+.mc-ico{font-size:1.1rem;}
+.mc-name{font-size:.78rem;font-weight:600;flex:1;}
+.mc-cal{font-size:.72rem;font-weight:700;color:var(--muted);}
+.mc-date{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;}
+.mc-date-item{
+  padding:6px 12px;border-radius:100px;font-size:.65rem;font-weight:600;
+  background:var(--grey2);color:var(--muted);white-space:nowrap;cursor:pointer;
+  flex-shrink:0;transition:all .2s;
 }
-.footer-desc{font-size:0.8rem;color:var(--text-dimmer);line-height:1.7;max-width:280px;font-weight:600;}
-.footer-links{display:flex;gap:20px;flex-wrap:wrap;}
-.footer-link{font-size:0.78rem;color:var(--text-dimmer);text-decoration:none;font-weight:700;transition:color 0.2s;}
-.footer-link:hover{color:var(--orange);}
-.footer-bottom{
-  max-width:1140px;margin:36px auto 0;
-  padding-top:20px;border-top:1px solid var(--border);
+.mc-date-item.active{background:var(--dark);color:#fff;}
+
+/* =================== AI BUILDER SECTION =================== */
+.builder-sec{background:#fff;padding:100px 48px;}
+.builder-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+@media(max-width:768px){.builder-inner{grid-template-columns:1fr;}}
+.builder-text h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;letter-spacing:-1.5px;margin-bottom:16px;line-height:1.1;}
+.builder-text p{font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:24px;}
+
+.builder-visual{
+  background:var(--dark);border-radius:24px;padding:20px;
+  box-shadow:0 24px 64px rgba(0,0,0,.15);
+}
+.bv-header{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+.bv-dots{display:flex;gap:5px;}
+.bv-dot{width:10px;height:10px;border-radius:50%;}
+.bv-title{font-size:.75rem;font-weight:600;color:rgba(255,255,255,.3);margin-left:auto;}
+
+.bv-plate{
+  background:#1A1A1A;border-radius:16px;
+  min-height:180px;display:flex;align-items:center;justify-content:center;
+  margin-bottom:14px;position:relative;overflow:hidden;font-size:2.5rem;
+  transition:all .5s;
+}
+.bv-ingredients{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.bv-ing{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.05);border-radius:10px;padding:9px 12px;
+  animation:slideR .4s ease both;
+}
+@keyframes slideR{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
+.bv-ing:nth-child(1){animation-delay:.1s;}
+.bv-ing:nth-child(2){animation-delay:.25s;}
+.bv-ing:nth-child(3){animation-delay:.4s;}
+.bv-ing:nth-child(4){animation-delay:.55s;}
+.bv-ing-ico{font-size:1rem;}
+.bv-ing-name{font-size:.72rem;font-weight:600;color:rgba(255,255,255,.8);flex:1;}
+.bv-ing-val{font-size:.65rem;color:var(--orange);font-weight:700;}
+.bv-status{
+  display:flex;align-items:center;gap:8px;
+  font-size:.72rem;color:rgba(255,255,255,.3);
+  padding:8px;
+}
+.bv-status-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:blink 1.2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+.bv-input{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:10px 14px;
+}
+.bv-input-text{font-size:.72rem;color:rgba(255,255,255,.4);flex:1;}
+.bv-input-btn{
+  padding:6px 14px;background:var(--orange);color:#fff;
+  border:none;border-radius:8px;font-family:'Inter',sans-serif;
+  font-size:.65rem;font-weight:700;cursor:pointer;
+}
+
+/* =================== PEOPLE RESULTS =================== */
+.results-sec{background:var(--black);padding:100px 48px;}
+.results-inner{max-width:1100px;margin:0 auto;}
+.results-inner h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;letter-spacing:-1.5px;color:#fff;margin-bottom:12px;}
+.results-inner>p{font-size:.9rem;color:rgba(255,255,255,.35);margin-bottom:56px;line-height:1.7;}
+
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:768px){.testi-grid{grid-template-columns:1fr;}}
+.testi-card{
+  background:#141414;border:1px solid rgba(255,255,255,.06);
+  border-radius:20px;padding:24px;transition:all .3s;
+}
+.testi-card:hover{border-color:rgba(255,107,53,.2);transform:translateY(-4px);}
+.testi-stars{color:var(--orange);font-size:.75rem;letter-spacing:2px;margin-bottom:12px;}
+.testi-quote{font-size:.82rem;line-height:1.7;color:rgba(255,255,255,.55);margin-bottom:20px;font-style:italic;}
+.testi-author{display:flex;align-items:center;gap:10px;}
+.testi-av{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:800;flex-shrink:0;
+}
+.testi-name{font-size:.78rem;font-weight:700;color:#fff;}
+.testi-trip{font-size:.65rem;color:rgba(255,255,255,.3);}
+
+/* =================== PRICING =================== */
+.pricing-sec{background:var(--bg);padding:100px 48px;}
+.pricing-inner{max-width:960px;margin:0 auto;}
+.pricing-inner h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;letter-spacing:-1.5px;margin-bottom:12px;}
+.pricing-inner>p{font-size:.9rem;color:var(--muted);margin-bottom:56px;line-height:1.7;}
+
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+
+.price-card{
+  background:#fff;border:1px solid var(--border);
+  border-radius:24px;padding:28px;transition:all .3s;position:relative;overflow:hidden;
+}
+.price-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.1);}
+.price-card.featured{background:var(--dark);border-color:transparent;}
+.price-card.featured::before{
+  content:'POPULAR';position:absolute;top:16px;right:16px;
+  background:var(--orange);color:#fff;
+  font-size:.55rem;font-weight:800;padding:3px 9px;border-radius:100px;letter-spacing:.8px;
+}
+.pt{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:14px;}
+.price-card.featured .pt{color:rgba(255,255,255,.4);}
+.pa{font-size:2.8rem;font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:3px;}
+.price-card.featured .pa{color:#fff;}
+.pp{font-size:.75rem;color:var(--muted);margin-bottom:22px;}
+.price-card.featured .pp{color:rgba(255,255,255,.35);}
+.pdiv{height:1px;background:var(--border);margin-bottom:18px;}
+.price-card.featured .pdiv{background:rgba(255,255,255,.08);}
+.pfeats{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px;}
+.pfeats li{display:flex;gap:8px;align-items:center;font-size:.78rem;}
+.pfeats li::before{content:'✓';font-weight:800;color:var(--orange);font-size:.72rem;}
+.price-card.featured .pfeats li{color:rgba(255,255,255,.7);}
+.pb{
+  width:100%;padding:13px;border-radius:100px;
+  border:1.5px solid var(--border);background:transparent;
+  font-family:'Inter',sans-serif;font-size:.8rem;font-weight:700;
+  cursor:pointer;transition:all .2s;color:var(--dark);
+}
+.pb:hover{background:var(--dark);color:#fff;border-color:var(--dark);}
+.pb.fb{background:var(--orange);color:#fff;border-color:transparent;}
+.pb.fb:hover{background:#e55a25;}
+
+/* =================== FAQ =================== */
+.faq-sec{background:#fff;padding:100px 48px;}
+.faq-inner{max-width:700px;margin:0 auto;}
+.faq-inner h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;letter-spacing:-1.5px;margin-bottom:12px;}
+.faq-inner>p{font-size:.9rem;color:var(--muted);margin-bottom:48px;line-height:1.7;}
+.faq-item{border-bottom:1px solid var(--border);padding:20px 0;}
+.faq-q{
   display:flex;align-items:center;justify-content:space-between;
-  font-size:0.72rem;color:rgba(255,255,255,0.15);flex-wrap:wrap;gap:10px;font-weight:600;
+  font-size:.9rem;font-weight:700;cursor:pointer;gap:16px;
 }
-.footer-badge{
-  display:flex;align-items:center;gap:6px;
-  padding:5px 12px;
-  background:var(--orange-s);
-  border:1px solid rgba(244,100,42,0.2);
-  border-radius:100px;
-  font-size:0.68rem;color:var(--orange);font-weight:800;
+.faq-icon{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--grey);display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;flex-shrink:0;transition:all .3s;
 }
+.faq-item.open .faq-icon{background:var(--dark);color:#fff;transform:rotate(45deg);}
+.faq-a{
+  font-size:.82rem;color:var(--muted);line-height:1.7;
+  max-height:0;overflow:hidden;transition:all .35s ease;
+}
+.faq-item.open .faq-a{max-height:200px;margin-top:12px;}
 
-/* ── ANIMATIONS ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-@keyframes cardFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+/* =================== FINAL CTA =================== */
+.cta-sec{
+  background:var(--dark);padding:100px 48px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.cta-sec::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:600px;height:400px;
+  background:radial-gradient(ellipse,rgba(255,107,53,.12),transparent 70%);
+  pointer-events:none;
+}
+.cta-inner{max-width:600px;margin:0 auto;position:relative;}
+.cta-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:100px;padding:5px 14px;
+  font-size:.7rem;font-weight:600;color:rgba(255,255,255,.5);
+  margin-bottom:24px;
+}
+.cta-inner h2{
+  font-size:clamp(2.2rem,5vw,4rem);font-weight:900;
+  letter-spacing:-2.5px;line-height:.95;color:#fff;margin-bottom:20px;
+}
+.cta-inner h2 span{color:var(--orange);}
+.cta-inner p{font-size:.9rem;color:rgba(255,255,255,.35);line-height:1.7;margin-bottom:36px;}
+.cta-url{display:block;margin-top:18px;font-size:.72rem;color:rgba(255,255,255,.25);letter-spacing:.5px;}
+.cta-url em{color:rgba(255,107,53,.7);font-style:normal;}
 
-/* Scroll reveal */
-.reveal{opacity:0;transform:translateY(32px);transition:opacity 0.65s ease,transform 0.65s ease;}
-.reveal.vis{opacity:1;transform:translateY(0);}
-.d1{transition-delay:0.1s;}.d2{transition-delay:0.2s;}
-.d3{transition-delay:0.3s;}.d4{transition-delay:0.4s;}
+/* FOOTER */
+footer{
+  background:var(--dark);padding:40px 48px;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.footer-inner{
+  max-width:1100px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
+}
+.footer-logo{font-size:1.1rem;font-weight:900;color:#fff;letter-spacing:-.5px;}
+.footer-logo span{color:var(--orange);}
+.footer-copy{font-size:.72rem;color:rgba(255,255,255,.25);}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-size:.72rem;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:#fff;}
+@media(max-width:768px){footer{padding:28px 20px;}}
 
-/* Color bar */
-.y-strip{height:4px;background:linear-gradient(90deg,var(--blue),var(--orange),var(--red),var(--green),var(--gold),var(--purple));}
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.reveal{opacity:0;transform:translateY(28px);transition:all .7s cubic-bezier(.25,.46,.45,.94);}
+.reveal.visible{opacity:1;transform:translateY(0);}
 </style>
 </head>
 <body>
 
-<!-- Cursor -->
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
-
-<!-- Color strip -->
-<div class="y-strip" style="position:fixed;top:0;left:0;right:0;z-index:9999;"></div>
-
 <!-- NAV -->
-<nav id="nav" style="margin-top:4px;">
-  <a href="/" class="nav-logo">Yaply</a>
-  <div class="nav-links">
-    <a href="#features" class="nav-link">Features</a>
-    <a href="#how" class="nav-link">How It Works</a>
-    <a href="#stories" class="nav-link">Stories</a>
-    <a href="/app" class="nav-cta">Try Free ✈️</a>
-  </div>
+<nav>
+  <a href="#" class="nav-logo">Yaply</a>
+  <ul class="nav-links">
+    <li><a href="#how">How it Works</a></li>
+    <li><a href="#stories">Stories</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQs</a></li>
+  </ul>
+  <a href="https://www.yaply.live/login" class="nav-dl">Plan a Trip →</a>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="particles" id="particles"></div>
-  <div class="globe-wrap"><canvas id="globe" style="width:100%;height:100%;"></canvas></div>
-
-  <!-- Floating cards -->
-  <div class="float-card" style="top:28%;right:53%;animation-duration:5s;">
-    <div class="fc-label">📍 Identified</div>
-    <div class="fc-value">Santorini, Greece 🇬🇷</div>
-    <div class="fc-sub">98% confidence · 2 sec</div>
-  </div>
-  <div class="float-card" style="top:64%;right:50%;animation-duration:6s;animation-delay:1.5s;">
-    <div class="fc-label">🎙️ Translated</div>
-    <div class="fc-value">こんにちは！</div>
-    <div class="fc-sub">English → Japanese</div>
+<!-- =================== HERO =================== -->
+<div class="hero">
+  <div class="hero-badge">
+    <div class="badge-ping"></div>
+    5,000+ trips planned this month
   </div>
 
-  <div class="hero-content">
-    <div class="hero-badge">
-      <div class="badge-dot"></div>
-      AI Travel Companion
+  <h1>Your trip<br/><span class="orange">under control.</span></h1>
+
+  <p class="hero-sub">Tell Yaply where you're going and get a complete AI-powered trip plan, live translation, scam protection and more — all in one app.</p>
+
+  <div class="hero-btns">
+    <a href="https://www.yaply.live" class="btn-hero">Plan Your Trip Free</a>
+    <a href="#how" class="btn-hero2">See How it Works</a>
+  </div>
+
+  <div class="hero-proof">
+    <div class="proof-avatars">
+      <div class="proof-av">P</div>
+      <div class="proof-av" style="background:linear-gradient(135deg,#f093fb,#f5576c);">R</div>
+      <div class="proof-av" style="background:linear-gradient(135deg,#4facfe,#00f2fe);">A</div>
+      <div class="proof-av" style="background:linear-gradient(135deg,#43e97b,#38f9d7);">S</div>
+      <div class="proof-av" style="background:linear-gradient(135deg,#fa709a,#fee140);">M</div>
     </div>
-    <h1 class="hero-h1">
-      <span class="line-1">Every trip.</span>
-      <span class="line-2">Every language.</span>
-      <span class="line-3">Every problem solved.</span>
-    </h1>
-    <p class="hero-sub">From planning your first flight to navigating a foreign emergency — Yaply is the only travel app you'll ever need. Built with AI that actually works.</p>
-    <div class="hero-btns">
-      <a href="/app" class="btn-hero-primary">✈️ Start Planning Free</a>
-      <a href="#features" class="btn-hero-secondary">See What It Does →</a>
-    </div>
-    <div class="social-proof">
-      <div class="sp-avs">
-        <div class="sp-av" style="background:linear-gradient(135deg,var(--orange),var(--red));">🧑</div>
-        <div class="sp-av" style="background:linear-gradient(135deg,var(--blue),var(--purple));">👩</div>
-        <div class="sp-av" style="background:linear-gradient(135deg,var(--green),var(--blue));">🧔</div>
-        <div class="sp-av" style="background:linear-gradient(135deg,var(--purple),var(--red));">👩‍🦱</div>
-        <div class="sp-av" style="background:linear-gradient(135deg,var(--gold),var(--orange));">🧕</div>
-      </div>
-      <div class="sp-text">Join <strong>1,000+ travellers</strong> already using Yaply</div>
-    </div>
+    <div class="proof-text"><strong>10,000+</strong> happy travellers worldwide</div>
   </div>
-</section>
 
-<!-- MARQUEE -->
-<div class="marquee-wrap">
-  <div class="marquee-track">
-    <div class="mi">✈️ Trip Planner<div class="mi-dot"></div></div>
-    <div class="mi">🔍 Place Finder<div class="mi-dot"></div></div>
-    <div class="mi">🎙️ Live Translation<div class="mi-dot"></div></div>
-    <div class="mi">🏥 Medical Help<div class="mi-dot"></div></div>
-    <div class="mi">💰 Price Check<div class="mi-dot"></div></div>
-    <div class="mi">🚨 Scam Alerts<div class="mi-dot"></div></div>
-    <div class="mi">📖 Trip Journal<div class="mi-dot"></div></div>
-    <div class="mi">🛂 Visa Guide<div class="mi-dot"></div></div>
-    <div class="mi">🌤️ Weather<div class="mi-dot"></div></div>
-    <div class="mi">😴 Jet Lag Fix<div class="mi-dot"></div></div>
-    <div class="mi">🤝 Bill Splitter<div class="mi-dot"></div></div>
-    <div class="mi">⚖️ Local Laws<div class="mi-dot"></div></div>
-    <!-- duplicate -->
-    <div class="mi">✈️ Trip Planner<div class="mi-dot"></div></div>
-    <div class="mi">🔍 Place Finder<div class="mi-dot"></div></div>
-    <div class="mi">🎙️ Live Translation<div class="mi-dot"></div></div>
-    <div class="mi">🏥 Medical Help<div class="mi-dot"></div></div>
-    <div class="mi">💰 Price Check<div class="mi-dot"></div></div>
-    <div class="mi">🚨 Scam Alerts<div class="mi-dot"></div></div>
-    <div class="mi">📖 Trip Journal<div class="mi-dot"></div></div>
-    <div class="mi">🛂 Visa Guide<div class="mi-dot"></div></div>
-    <div class="mi">🌤️ Weather<div class="mi-dot"></div></div>
-    <div class="mi">😴 Jet Lag Fix<div class="mi-dot"></div></div>
-    <div class="mi">🤝 Bill Splitter<div class="mi-dot"></div></div>
-    <div class="mi">⚖️ Local Laws<div class="mi-dot"></div></div>
-  </div>
-</div>
+  <!-- HERO PHONE -->
+  <div class="hero-phone-wrap">
+    <div class="hero-phone">
+      <div class="phone-screen">
+        <div class="phone-status">
+          <div class="phone-notch-inner"></div>
+        </div>
+        <div class="phone-content">
+          <div class="ph-title">Tokyo, Japan 🇯🇵</div>
+          <div class="ph-sub">5 days · 2 people · ₹80,000</div>
 
-<!-- HOW IT WORKS -->
-<section class="section" id="how">
-  <div class="smax">
-    <div class="eyebrow reveal">How It Works</div>
-    <h2 class="stitle reveal d1">From zero to <span style="background:linear-gradient(135deg,var(--orange),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">fully planned</span><br/>in minutes.</h2>
-    <p class="ssub reveal d2">Tell us where you're going once — Yaply handles everything.</p>
-    <div class="steps reveal d3">
-      <div class="step">
-        <div class="step-num">01</div>
-        <div class="step-ico">📍</div>
-        <div class="step-t">Enter Your Trip</div>
-        <div class="step-d">Where you're flying from, going to, budget and travel vibe. 60 seconds.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">02</div>
-        <div class="step-ico">🤖</div>
-        <div class="step-t">AI Plans Everything</div>
-        <div class="step-d">Full itinerary, visa checks, packing list, cultural guide and restaurants.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">03</div>
-        <div class="step-ico">🌍</div>
-        <div class="step-t">Travel With Confidence</div>
-        <div class="step-d">Live translation, emergency help, price checks and scam alerts on demand.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">04</div>
-        <div class="step-ico">📖</div>
-        <div class="step-t">Relive & Plan Again</div>
-        <div class="step-d">AI writes your travel journal, splits group bills and suggests next trip.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- STATS -->
-<div class="stats-strip">
-  <div class="stats-grid">
-    <div class="stat s1 reveal"><div class="stat-num" data-count="25">0</div><div class="stat-lbl">AI Features</div></div>
-    <div class="stat s2 reveal d1"><div class="stat-num" data-count="50">0</div><div class="stat-lbl">Languages</div></div>
-    <div class="stat s3 reveal d2"><div class="stat-num" data-count="190">0</div><div class="stat-lbl">Countries</div></div>
-    <div class="stat s4 reveal d3"><div class="stat-num" data-count="100">0</div><div class="stat-lbl">% Free</div></div>
-  </div>
-</div>
-
-<!-- BENTO FEATURES -->
-<section class="section" id="features">
-  <div class="smax">
-    <div class="eyebrow reveal">Everything You Need</div>
-    <h2 class="stitle reveal d1">One app. <span style="background:linear-gradient(135deg,var(--blue),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Every journey.</span></h2>
-    <div class="bento">
-
-      <!-- Place Finder — big -->
-      <div class="bc c7 reveal">
-        <div class="bc-tag" style="background:var(--purple-s);color:var(--purple);">🔍 Discover</div>
-        <div class="bc-title lg">Saw it on a reel?<br/><span style="background:linear-gradient(135deg,var(--orange),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Find it instantly.</span></div>
-        <div class="bc-desc" style="max-width:360px;">Screenshot from Instagram or TikTok — AI identifies the exact location, tells you how to get there and adds it to your trip.</div>
-        <div style="margin-top:18px;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px;border:1px solid var(--border);">
-          <div style="display:flex;gap:12px;align-items:center;">
-            <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--purple-s),var(--red-s));display:flex;align-items:center;justify-content:center;font-size:1.4rem;">📸</div>
+          <div class="ph-trip-card">
+            <div class="ph-trip-ico" style="background:rgba(255,107,53,.15);">🌅</div>
             <div>
-              <div style="font-size:0.82rem;font-weight:800;margin-bottom:2px;">Santorini, Greece 🇬🇷</div>
-              <div style="font-size:0.68rem;color:var(--text-dim);font-weight:600;">98% confidence · Identified in 2.1 seconds</div>
-              <div style="display:flex;gap:5px;margin-top:7px;">
-                <span style="padding:3px 9px;background:var(--orange-s);color:var(--orange);border-radius:100px;font-size:0.62rem;font-weight:800;">📍 Europe</span>
-                <span style="padding:3px 9px;background:rgba(255,255,255,0.06);border-radius:100px;font-size:0.62rem;font-weight:700;">Best: Jun–Sep</span>
-              </div>
+              <div class="ph-trip-name">Senso-ji Temple</div>
+              <div class="ph-trip-det">Asakusa · 9:00 AM</div>
             </div>
+            <div class="ph-trip-cost">₹0</div>
+          </div>
+
+          <div class="ph-trip-card">
+            <div class="ph-trip-ico" style="background:rgba(74,222,128,.12);">🍜</div>
+            <div>
+              <div class="ph-trip-name">Ichiran Ramen</div>
+              <div class="ph-trip-det">Shinjuku · Lunch</div>
+            </div>
+            <div class="ph-trip-cost">₹800</div>
+          </div>
+
+          <div class="ph-trip-card">
+            <div class="ph-trip-ico" style="background:rgba(139,92,246,.15);">🌃</div>
+            <div>
+              <div class="ph-trip-name">Shibuya Crossing</div>
+              <div class="ph-trip-det">Evening · Iconic</div>
+            </div>
+            <div class="ph-trip-cost">₹0</div>
+          </div>
+
+          <div class="ph-budget">
+            <div class="ph-bl">💰 Budget Tracker</div>
+            <div class="ph-bval">₹38,400 spent</div>
+            <div class="ph-bsub">₹41,600 remaining · Day 3 of 5</div>
           </div>
         </div>
       </div>
-
-      <!-- Translation -->
-      <div class="bc c5 reveal d1">
-        <div class="bc-tag" style="background:var(--blue-s);color:var(--blue);">🎙️ Translate</div>
-        <div class="bc-title">Live in any<br/>language</div>
-        <div class="td-demo">
-          <div class="td-msg td-you">I need a doctor urgently</div>
-          <div class="td-lang" style="text-align:right;padding-right:4px;">English</div>
-          <div class="typing"><div class="td-d"></div><div class="td-d"></div><div class="td-d"></div></div>
-          <div class="td-msg td-ai">医者が緊急に必要です</div>
-          <div class="td-lang" style="padding-left:4px;">Japanese · DeepL</div>
-        </div>
-      </div>
-
-      <!-- Before trip -->
-      <div class="bc c4 reveal">
-        <div class="bc-ico">✈️</div>
-        <div class="bc-tag" style="background:var(--orange-s);color:var(--orange);">Before Trip</div>
-        <div class="bc-title">Complete AI trip plan</div>
-        <div class="fp">
-          <div class="fp-item"><div class="fp-dot" style="background:var(--orange);"></div>Day-by-day itinerary with photos</div>
-          <div class="fp-item"><div class="fp-dot" style="background:var(--orange);"></div>Door-to-door journey planner</div>
-          <div class="fp-item"><div class="fp-dot" style="background:var(--orange);"></div>Visa · Weather · Packing</div>
-        </div>
-      </div>
-
-      <!-- During trip -->
-      <div class="bc c4 reveal d1">
-        <div class="bc-ico">🆘</div>
-        <div class="bc-tag" style="background:var(--red-s);color:var(--red);">During Trip</div>
-        <div class="bc-title">Help when you need it</div>
-        <div class="fp">
-          <div class="fp-item"><div class="fp-dot" style="background:var(--red);"></div>Medical symptom translator</div>
-          <div class="fp-item"><div class="fp-dot" style="background:var(--red);"></div>Price fairness checker</div>
-          <div class="fp-item"><div class="fp-dot" style="background:var(--red);"></div>Scam alert system</div>
-        </div>
-      </div>
-
-      <!-- After trip -->
-      <div class="bc c4 reveal d2">
-        <div class="bc-ico">📖</div>
-        <div class="bc-tag" style="background:var(--purple-s);color:var(--purple);">After Trip</div>
-        <div class="bc-title">Relive every moment</div>
-        <div class="fp">
-          <div class="fp-item"><div class="fp-dot" style="background:var(--purple);"></div>AI trip journal writer</div>
-          <div class="fp-item"><div class="fp-dot" style="background:var(--purple);"></div>Group bill splitter</div>
-          <div class="fp-item"><div class="fp-dot" style="background:var(--purple);"></div>Next trip suggester</div>
-        </div>
-      </div>
-
-      <!-- Camera -->
-      <div class="bc c6 reveal" style="background:linear-gradient(160deg,rgba(244,100,42,0.07),rgba(232,71,74,0.04));">
-        <div style="display:flex;gap:18px;align-items:center;">
-          <div style="font-size:2.8rem;">📸</div>
-          <div>
-            <div class="bc-tag" style="background:var(--orange-s);color:var(--orange);">Camera</div>
-            <div class="bc-title">Point. Scan.<br/>Understand.</div>
-            <div class="bc-desc">Point at any menu, sign or document — instant translation in 50+ languages.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tools -->
-      <div class="bc c6 reveal d1">
-        <div class="bc-tag" style="background:var(--green-s);color:var(--green);">🛠️ Smart Tools</div>
-        <div class="bc-title">8 essential tools</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:14px;">
-          <div style="padding:8px 11px;background:rgba(255,255,255,0.04);border-radius:10px;font-size:0.73rem;font-weight:800;border:1px solid var(--border);">🛂 Passport Check</div>
-          <div style="padding:8px 11px;background:rgba(255,255,255,0.04);border-radius:10px;font-size:0.73rem;font-weight:800;border:1px solid var(--border);">😴 Jet Lag Fix</div>
-          <div style="padding:8px 11px;background:rgba(255,255,255,0.04);border-radius:10px;font-size:0.73rem;font-weight:800;border:1px solid var(--border);">🎉 Festival Calendar</div>
-          <div style="padding:8px 11px;background:rgba(255,255,255,0.04);border-radius:10px;font-size:0.73rem;font-weight:800;border:1px solid var(--border);">⚖️ Local Laws</div>
-          <div style="padding:8px 11px;background:rgba(255,255,255,0.04);border-radius:10px;font-size:0.73rem;font-weight:800;border:1px solid var(--border);">🧳 Luggage Rules</div>
-          <div style="padding:8px 11px;background:rgba(255,255,255,0.04);border-radius:10px;font-size:0.73rem;font-weight:800;border:1px solid var(--border);">🆘 Emergency Card</div>
-        </div>
-      </div>
-
     </div>
+    <div class="phone-glow"></div>
   </div>
-</section>
+</div>
 
-<!-- PHONE MOCKUP -->
-<div class="phone-section">
-  <div class="phone-glow"></div>
-  <div class="phone-inner">
-    <div class="reveal">
-      <div class="eyebrow">In Your Pocket</div>
-      <h2 class="stitle" style="margin-bottom:20px;">Everything in<br/><span style="background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">one beautiful app.</span></h2>
-      <p style="font-size:0.9rem;color:var(--text-dim);line-height:1.9;margin-bottom:28px;font-weight:500;">Plan on desktop, use on mobile. Every feature works perfectly on any device.</p>
-      <div class="phone-features">
-        <div class="pf"><div class="pf-icon" style="background:var(--orange-s);">🌐</div><div><div class="pf-name">Works in any browser</div><div class="pf-desc">No app store needed</div></div></div>
-        <div class="pf"><div class="pf-icon" style="background:var(--green-s);">⚡</div><div><div class="pf-name">Instant AI responses</div><div class="pf-desc">Powered by Groq + DeepL</div></div></div>
-        <div class="pf"><div class="pf-icon" style="background:var(--blue-s);">🆓</div><div><div class="pf-name">Completely free</div><div class="pf-desc">No credit card required</div></div></div>
-        <div class="pf"><div class="pf-icon" style="background:var(--purple-s);">🔒</div><div><div class="pf-name">Your data is safe</div><div class="pf-desc">All trips saved securely</div></div></div>
-      </div>
-      <a href="/app" class="btn-hero-primary" style="margin-top:32px;display:inline-flex;">✈️ Try It Now — Free</a>
+<!-- =================== DESTINATION VIBES =================== -->
+<div class="vibes-sec">
+  <div class="vibes-inner">
+    <div class="vibes-text reveal">
+      <h2>Helps you find where you should travel.</h2>
+      <p>Tell Yaply your vibe — adventure, relaxation, food, culture — and it recommends the perfect destination with a complete plan.</p>
+      <small>Hover over the travel styles below</small>
     </div>
-
-    <div class="phone-wrap reveal d2">
-      <div class="phone-frame">
-        <div class="phone-notch"></div>
-        <div class="phone-screen">
-          <div class="psc">
-            <div class="psh">
-              <div class="psh-g">Good morning 👋</div>
-              <div class="psh-t">Where are you <em>going?</em></div>
-              <div class="psh-pill">
-                <div class="psh-dot"></div>
-                <div class="psh-txt">✈️ Mumbai → Tokyo · 7 days · ₹80,000</div>
-              </div>
-            </div>
-            <div class="psb">
-              <div class="psc-card" style="background:rgba(244,100,42,0.12);border-color:rgba(244,100,42,0.2);">
-                <div class="psc-l">Active Trip</div>
-                <div class="psc-t">Tokyo, Japan 🇯🇵</div>
-                <div class="psc-d">Day 3 of 7 · Adventure + Foodie</div>
-                <div class="psc-l" style="margin-top:5px;color:var(--orange);">View Plan →</div>
-              </div>
-              <div class="psc-card">
-                <div class="psc-l">Quick Access</div>
-                <div class="psc-grid">
-                  <div class="psc-mini" style="background:var(--blue-s);color:var(--blue);">🎙️<br/>Translate</div>
-                  <div class="psc-mini" style="background:var(--red-s);color:var(--red);">🆘<br/>Emergency</div>
-                  <div class="psc-mini" style="background:var(--green-s);color:var(--green);">💰<br/>Price Check</div>
-                  <div class="psc-mini" style="background:var(--purple-s);color:var(--purple);">🔍<br/>Discover</div>
-                </div>
-              </div>
-            </div>
-            <div class="ps-nav">
-              <div class="ps-ni"><div style="font-size:0.7rem;">🏠</div><div class="ps-nlab">Home</div></div>
-              <div class="ps-ni"><div style="font-size:0.7rem;background:var(--orange-s);border-radius:6px;padding:1px 5px;">✈️</div><div class="ps-nlab" style="color:var(--orange);">Trip</div></div>
-              <div class="ps-ni"><div style="font-size:0.7rem;">🎙️</div><div class="ps-nlab">Translate</div></div>
-              <div class="ps-ni"><div style="font-size:0.7rem;">👤</div><div class="ps-nlab">Profile</div></div>
-            </div>
-          </div>
-        </div>
+    <div class="vibe-icons-grid reveal">
+      <div class="vibe-icon-wrap" onclick="setVibe(this,'adventure')">
+        <span class="vi-emoji">🏔️</span>
+        <div class="vi-badge vi-yes">Yes</div>
+        <div class="vi-label">Adventure</div>
       </div>
-      <div class="ph-fc ph-fc-1"><div style="font-size:0.58rem;color:rgba(255,255,255,0.35);margin-bottom:3px;font-weight:700;">Translated</div><div style="font-size:0.8rem;font-weight:800;">こんにちは！🇯🇵</div></div>
-      <div class="ph-fc ph-fc-2"><div style="font-size:0.58rem;color:rgba(255,255,255,0.35);margin-bottom:3px;font-weight:700;">Price Check</div><div style="font-size:0.8rem;font-weight:800;color:var(--green);">✅ Fair Price</div></div>
-      <div class="ph-fc ph-fc-3"><div style="font-size:0.58rem;color:rgba(255,255,255,0.35);margin-bottom:3px;font-weight:700;">Visa Status</div><div style="font-size:0.8rem;font-weight:800;">🆓 Visa Free</div></div>
+      <div class="vibe-icon-wrap" onclick="setVibe(this,'foodie')">
+        <span class="vi-emoji">🍜</span>
+        <div class="vi-badge vi-yes">Yes</div>
+        <div class="vi-label">Foodie</div>
+      </div>
+      <div class="vibe-icon-wrap" onclick="setVibe(this,'relax')">
+        <span class="vi-emoji">🏖️</span>
+        <div class="vi-badge vi-yes">Yes</div>
+        <div class="vi-label">Relax</div>
+      </div>
+      <div class="vibe-icon-wrap" onclick="setVibe(this,'cultural')">
+        <span class="vi-emoji">🏛️</span>
+        <div class="vi-badge vi-yes">Yes</div>
+        <div class="vi-label">Cultural</div>
+      </div>
+      <div class="vibe-icon-wrap" onclick="setVibe(this,'luxury')">
+        <span class="vi-emoji">✨</span>
+        <div class="vi-badge vi-no">No</div>
+        <div class="vi-label">Luxury</div>
+      </div>
+      <div class="vibe-icon-wrap" onclick="setVibe(this,'romantic')">
+        <span class="vi-emoji">💑</span>
+        <div class="vi-badge vi-no">No</div>
+        <div class="vi-label">Romantic</div>
+      </div>
+      <div class="vibe-icon-wrap" onclick="setVibe(this,'solo')">
+        <span class="vi-emoji">🧳</span>
+        <div class="vi-badge vi-yes">Yes</div>
+        <div class="vi-label">Solo</div>
+      </div>
+      <div class="vibe-icon-wrap" onclick="setVibe(this,'wellness')">
+        <span class="vi-emoji">🧘</span>
+        <div class="vi-badge vi-no">No</div>
+        <div class="vi-label">Wellness</div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- TESTIMONIALS -->
-<section class="section" id="stories">
-  <div class="smax">
-    <div class="eyebrow reveal">Real Travellers</div>
-    <h2 class="stitle reveal d1">Stories from<br/><span style="background:linear-gradient(135deg,var(--gold),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">the road.</span></h2>
-    <div class="testi-wrap">
-      <div class="testi">
-        <div class="testi-stars" style="color:var(--gold);">★★★★★</div>
-        <div class="testi-txt">"Pointed my camera at a Japanese menu and Yaply translated everything instantly. Ordered perfectly. This is genuinely magic."</div>
-        <div class="testi-auth"><div class="testi-av" style="background:var(--orange-s);">👩</div><div><div class="testi-name">Priya S.</div><div class="testi-meta">Backpacker · Tokyo, Japan</div></div></div>
-      </div>
-      <div class="testi">
-        <div class="testi-stars" style="color:var(--gold);">★★★★★</div>
-        <div class="testi-txt">"The price checker saved me from a taxi scam in Bangkok. Showed the driver the fair price and he immediately agreed."</div>
-        <div class="testi-auth"><div class="testi-av" style="background:var(--blue-s);">🧔</div><div><div class="testi-name">Arjun K.</div><div class="testi-meta">Solo traveller · Bangkok</div></div></div>
-      </div>
-      <div class="testi">
-        <div class="testi-stars" style="color:var(--gold);">★★★★★</div>
-        <div class="testi-txt">"Used the place finder and found the exact beach from a reel I saw. Booked flights the same day. Absolutely incredible!"</div>
-        <div class="testi-auth"><div class="testi-av" style="background:var(--purple-s);">👩‍🦱</div><div><div class="testi-name">Sneha M.</div><div class="testi-meta">Content Creator · Santorini</div></div></div>
-      </div>
-      <div class="testi">
-        <div class="testi-stars" style="color:var(--gold);">★★★★★</div>
-        <div class="testi-txt">"My friend got sick in Spain. Used the medical translator to explain symptoms to the doctor. It literally saved our trip."</div>
-        <div class="testi-auth"><div class="testi-av" style="background:var(--green-s);">🧑</div><div><div class="testi-name">Rohan T.</div><div class="testi-meta">Group travel · Barcelona</div></div></div>
-      </div>
-      <div class="testi">
-        <div class="testi-stars" style="color:var(--gold);">★★★★★</div>
-        <div class="testi-txt">"The AI trip journal was more beautiful than anything I could have written. Shared it with family, everyone loved it so much."</div>
-        <div class="testi-auth"><div class="testi-av" style="background:var(--gold-s);">👩</div><div><div class="testi-name">Meera R.</div><div class="testi-meta">Honeymoon · Maldives</div></div></div>
-      </div>
-    </div>
-  </div>
-</section>
+<!-- =================== EXPLODE (TRIP LAYERS) =================== -->
+<div class="explode-sec">
+  <div class="explode-inner">
+    <h2 class="reveal">Decode your entire trip</h2>
+    <p class="reveal">See every part of your journey broken down — from the first train to the final dinner. Every component, every cost.</p>
 
-<!-- CTA -->
-<section class="cta-section">
-  <div class="cta-bg"></div>
-  <div class="cta-content reveal">
-    <div class="eyebrow" style="justify-content:center;margin-bottom:16px;">Start Today — It's Free</div>
-    <h2 class="cta-title">Your next adventure<br/>starts <span>here.</span></h2>
-    <p class="cta-sub">Free forever. No app store. No credit card.<br/>Just tell us where you're going.</p>
-    <div class="cta-row">
-      <input class="cta-inp" id="ctaInput" type="text" placeholder="Where are you going?"/>
-      <a href="/app" class="btn-hero-primary" style="padding:12px 22px;font-size:0.85rem;white-space:nowrap;">Plan My Trip →</a>
+    <div class="explode-stack reveal">
+      <div class="layer layer-5">
+        <div class="l-left"><div class="l-ico">🏨</div><div><div class="l-name">Hotel Shinjuku Granbell</div><div class="l-sub">Night 3 · Shinjuku, Tokyo</div></div></div>
+        <div class="l-cost">₹4,200/night</div>
+      </div>
+      <div class="layer layer-4">
+        <div class="l-left"><div class="l-ico">🍜</div><div><div class="l-name">Dinner — Gonpachi</div><div class="l-sub">Izakaya · Shibuya</div></div></div>
+        <div class="l-cost">₹1,800</div>
+      </div>
+      <div class="layer layer-3">
+        <div class="l-left"><div class="l-ico">🚇</div><div><div class="l-name">JR Pass — Day 3</div><div class="l-sub">Unlimited train travel</div></div></div>
+        <div class="l-cost">₹1,200</div>
+      </div>
+      <div class="layer layer-2">
+        <div class="l-left"><div class="l-ico">🌸</div><div><div class="l-name">Ueno Park — Cherry Blossoms</div><div class="l-sub">Morning activity</div></div></div>
+        <div class="l-cost">₹0 free</div>
+      </div>
+      <div class="layer layer-1">
+        <div class="l-left"><div class="l-ico">✈️</div><div><div class="l-name">IndiGo · BOM → NRT</div><div class="l-sub">Return flight included</div></div></div>
+        <div class="l-cost">₹28,000</div>
+      </div>
     </div>
-    <div class="cta-note">✓ No signup needed &nbsp;·&nbsp; ✓ AI-powered &nbsp;·&nbsp; ✓ 190+ countries</div>
+    <div class="explode-hint reveal">Hover over the cards to see your full trip breakdown</div>
   </div>
-</section>
+</div>
+
+<!-- =================== HOW IT WORKS =================== -->
+<div class="how-sec" id="how">
+  <div class="how-inner">
+    <div class="how-top reveal">
+      <div>
+        <h2>How Yaply works</h2>
+        <p style="color:rgba(255,255,255,.35);line-height:1.7;margin-top:12px;">From planning to landing — Yaply is with you every step of the way.</p>
+      </div>
+      <div>
+        <div class="steps-tabs">
+          <button class="step-tab active" onclick="switchStep(0,this)">1 Plan Trip</button>
+          <button class="step-tab" onclick="switchStep(1,this)">2 Translate</button>
+          <button class="step-tab" onclick="switchStep(2,this)">3 Discover</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="steps-content">
+      <!-- Step panels text -->
+      <div>
+        <div class="step-panel active" id="sp0">
+          <div class="step-num">01</div>
+          <div class="step-title">Plan your entire trip in seconds</div>
+          <div class="step-desc">Enter your destination, budget, passport and vibe. Yaply generates a complete day-by-day itinerary with restaurants, hotels, hidden gems, visa info and packing list — instantly.</div>
+        </div>
+        <div class="step-panel" id="sp1">
+          <div class="step-num">02</div>
+          <div class="step-title">Translate live in any language</div>
+          <div class="step-desc">Speak in your language. Yaply translates and speaks back in theirs. 50+ languages supported. Works for conversations, menus, signs and medical emergencies.</div>
+        </div>
+        <div class="step-panel" id="sp2">
+          <div class="step-num">03</div>
+          <div class="step-title">Find any place from a photo</div>
+          <div class="step-desc">Screenshot a beautiful location from Instagram. Yaply's AI identifies the exact place, country, best time to visit and adds it to your trip plan in 2 seconds.</div>
+        </div>
+      </div>
+
+      <!-- Step phone -->
+      <div>
+        <div class="step-phone" id="stepPhone">
+          <div class="step-phone-notch"><div class="step-phone-notch-inner"></div></div>
+          <div class="sp-content" id="spContent0" style="display:block;">
+            <div class="sp-search">
+              <div class="sp-search-ico">🔍</div>
+              <div class="sp-search-text">Where do you want to go?</div>
+            </div>
+            <div class="sp-result-card">
+              <div class="sp-badge-ai">AI Generated</div>
+              <div class="sp-dest">Tokyo, Japan 🇯🇵</div>
+              <div class="sp-meta">5 days · ₹80,000 for 2 people</div>
+              <div class="sp-days">
+                <div class="sp-day today">Day 1</div>
+                <div class="sp-day">Day 2</div>
+                <div class="sp-day">Day 3</div>
+                <div class="sp-day">Day 4</div>
+                <div class="sp-day">Day 5</div>
+              </div>
+            </div>
+            <div style="background:#1E1E1E;border-radius:14px;padding:12px;margin-top:8px;">
+              <div style="font-size:.6rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Today's Plan</div>
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:.85rem;">🌅</span><div style="font-size:.68rem;color:rgba(255,255,255,.7);">Senso-ji Temple · 9AM</div></div>
+                <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:.85rem;">🍜</span><div style="font-size:.68rem;color:rgba(255,255,255,.7);">Ichiran Ramen · Lunch</div></div>
+                <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:.85rem;">🌃</span><div style="font-size:.68rem;color:rgba(255,255,255,.7);">Shibuya Crossing · Evening</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="sp-content" id="spContent1" style="display:none;">
+            <div class="sp-lang-row">
+              <div class="sp-lang-pill">🇮🇳 Hindi</div>
+              <div class="sp-arrow">⇄</div>
+              <div class="sp-lang-pill">🇯🇵 Japanese</div>
+            </div>
+            <div class="sp-bubble-u">यह कितने का है?</div>
+            <div style="font-size:.6rem;color:rgba(255,255,255,.25);margin-bottom:8px;text-align:right;padding-right:4px;">Translating...</div>
+            <div class="sp-bubble-a">これはいくらですか？</div>
+            <div style="font-size:.6rem;color:rgba(255,255,255,.25);margin-bottom:12px;padding-left:4px;font-style:italic;">Kore wa ikura desu ka?</div>
+            <div class="sp-typing" style="background:#1E1E1E;border-radius:12px 12px 4px 12px;max-width:60%;">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="sp-content" id="spContent2" style="display:none;">
+            <div class="sp-discover-img">
+              🏯
+              <div class="sp-scan-overlay">
+                <div class="sp-scan-corner tl"></div>
+                <div class="sp-scan-corner tr"></div>
+                <div class="sp-scan-corner bl"></div>
+                <div class="sp-scan-corner br"></div>
+                <div class="sp-scan-line"></div>
+              </div>
+            </div>
+            <div style="background:#1E1E1E;border-radius:12px;padding:12px;margin-bottom:8px;">
+              <div style="font-size:.55rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">⚡ Identified</div>
+              <div style="font-size:.88rem;font-weight:800;color:#fff;margin-bottom:2px;">Fushimi Inari Shrine</div>
+              <div style="font-size:.65rem;color:var(--orange);">Kyoto, Japan · 97% confidence</div>
+            </div>
+            <div class="sp-result-row">
+              <div>
+                <div class="sp-result-place">Best Time</div>
+                <div class="sp-result-country">March – May</div>
+              </div>
+              <div class="sp-result-conf">Add to Trip →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== SMARTER TOOLS =================== -->
+<div class="tools-sec">
+  <div class="tools-inner">
+    <div class="tools-header reveal">
+      <h2>Smarter tools for your travels</h2>
+      <p>Plan. Translate. Scan. Protect. Your travel journey gets easier with AI features that think ahead, so you don't have to.</p>
+    </div>
+
+    <div class="tools-grid">
+      <!-- Budget Tracker Card -->
+      <div class="tool-card reveal">
+        <div class="budget-card-visual">
+          <div class="bc-title">Budget Tracker</div>
+          <div class="bc-emoji">💰</div>
+          <div class="bc-heading">₹38,400 / ₹80,000</div>
+          <div class="bc-week">
+            <div class="bc-day"><div class="bc-bar" style="height:28px;"></div><div class="bc-dname">Mon</div></div>
+            <div class="bc-day"><div class="bc-bar active" style="height:44px;"></div><div class="bc-dname">Tue</div></div>
+            <div class="bc-day"><div class="bc-bar" style="height:36px;"></div><div class="bc-dname">Wed</div></div>
+            <div class="bc-day"><div class="bc-bar active" style="height:52px;"></div><div class="bc-dname">Thu</div></div>
+            <div class="bc-day"><div class="bc-bar" style="height:24px;"></div><div class="bc-dname">Fri</div></div>
+            <div class="bc-day"><div class="bc-bar active" style="height:40px;"></div><div class="bc-dname">Sat</div></div>
+            <div class="bc-day"><div class="bc-bar" style="height:32px;"></div><div class="bc-dname">Sun</div></div>
+          </div>
+          <div class="bc-text">Track your trip spending day by day. <strong>₹41,600 remaining</strong> — you're on track!</div>
+        </div>
+      </div>
+
+      <!-- Trip Plan Card -->
+      <div class="tool-card reveal">
+        <div class="meal-card-visual">
+          <div class="bc-title">Today's Itinerary</div>
+          <div class="mc-date">
+            <div class="mc-date-item active">Day 1</div>
+            <div class="mc-date-item">Day 2</div>
+            <div class="mc-date-item">Day 3</div>
+            <div class="mc-date-item">Day 4</div>
+            <div class="mc-date-item">Day 5</div>
+          </div>
+          <div class="mc-list">
+            <div class="mc-item"><div class="mc-ico">🌅</div><div class="mc-name">Senso-ji Temple</div><div class="mc-cal">9:00 AM</div></div>
+            <div class="mc-item"><div class="mc-ico">🍜</div><div class="mc-name">Ichiran Ramen Lunch</div><div class="mc-cal">1:00 PM</div></div>
+            <div class="mc-item"><div class="mc-ico">🏯</div><div class="mc-name">TeamLab Planets</div><div class="mc-cal">3:00 PM</div></div>
+            <div class="mc-item"><div class="mc-ico">🌃</div><div class="mc-name">Shibuya Crossing Night</div><div class="mc-cal">8:00 PM</div></div>
+          </div>
+          <div class="bc-text">Your AI-planned itinerary. <strong>Every activity editable</strong> with budget auto-update.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== AI BUILDER (YAPLY AI TRIP BUILDER) =================== -->
+<div class="builder-sec">
+  <div class="builder-inner">
+    <div class="builder-text reveal">
+      <h2>Build your trip with Yaply AI</h2>
+      <p>Tell the AI what you want and watch it build your complete trip plan — destination, hotels, activities, restaurants and budget — all perfectly balanced for your style.</p>
+      <a href="https://www.yaply.live/plan" class="btn-hero" style="display:inline-flex;align-items:center;gap:7px;">Try Trip Planner →</a>
+    </div>
+    <div class="builder-visual reveal">
+      <div class="bv-header">
+        <div class="bv-dots">
+          <div class="bv-dot" style="background:#FF5F57;"></div>
+          <div class="bv-dot" style="background:#FFBD2E;"></div>
+          <div class="bv-dot" style="background:#28CA41;"></div>
+        </div>
+        <div class="bv-title">Yaply AI Trip Builder</div>
+      </div>
+      <div class="bv-plate" id="bvPlate">🌍</div>
+      <div class="bv-ingredients" id="bvIngredients">
+        <div class="bv-ing"><div class="bv-ing-ico">✈️</div><div class="bv-ing-name">Flights — IndiGo BOM→NRT</div><div class="bv-ing-val">₹28,000</div></div>
+        <div class="bv-ing"><div class="bv-ing-ico">🏨</div><div class="bv-ing-name">Hotel — 5 nights Shinjuku</div><div class="bv-ing-val">₹21,000</div></div>
+        <div class="bv-ing"><div class="bv-ing-ico">🍜</div><div class="bv-ing-name">Food budget — 5 days</div><div class="bv-ing-val">₹12,000</div></div>
+        <div class="bv-ing"><div class="bv-ing-ico">🎌</div><div class="bv-ing-name">Activities — temples, parks</div><div class="bv-ing-val">₹8,000</div></div>
+      </div>
+      <div class="bv-status"><div class="bv-status-dot"></div>Yaply AI is planning your trip...</div>
+      <div class="bv-input">
+        <div class="bv-input-text">Plan a 5-day Tokyo trip under ₹80,000...</div>
+        <button class="bv-input-btn">Plan →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== PEOPLE RESULTS =================== -->
+<div class="results-sec" id="stories">
+  <div class="results-inner">
+    <h2 class="reveal">People who travelled smarter.</h2>
+    <p class="reveal">Real travellers. Real trips. Real results — from small towns to 40 countries.</p>
+
+    <div class="testi-grid">
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"I was in Tokyo and had a medical emergency. Yaply translated my symptoms into Japanese and gave me exact phrases to say to the doctor. It literally saved my trip."</div>
+        <div class="testi-author">
+          <div class="testi-av" style="background:linear-gradient(135deg,var(--orange),#e55a25);">P</div>
+          <div><div class="testi-name">Priya S.</div><div class="testi-trip">Mumbai → Tokyo · 7 days</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"I screenshot a reel of some beautiful shrine and Yaply told me it was Fushimi Inari in Kyoto. Then it planned my whole Kyoto day around it. Mind blown."</div>
+        <div class="testi-author">
+          <div class="testi-av" style="background:linear-gradient(135deg,#667eea,#764ba2);">R</div>
+          <div><div class="testi-name">Rohan M.</div><div class="testi-trip">Delhi → Kyoto · 10 days</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"I'm from Rajkot. Yaply found my nearest airport, the train to get there, flights to Bangkok and planned my entire Thailand trip. I never thought this was possible for me."</div>
+        <div class="testi-author">
+          <div class="testi-av" style="background:linear-gradient(135deg,#43e97b,#38f9d7);">A</div>
+          <div><div class="testi-name">Arjun K.</div><div class="testi-trip">Rajkot → Bangkok · 8 days</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== PRICING =================== -->
+<div class="pricing-sec" id="pricing">
+  <div class="pricing-inner">
+    <h2 class="reveal">Start free, go pro when you're ready.</h2>
+    <p class="reveal">No limits to start. No pressure to upgrade. Plan your first trip completely free.</p>
+
+    <div class="pricing-grid">
+      <div class="price-card reveal">
+        <div class="pt">Explorer</div>
+        <div class="pa">₹0</div>
+        <div class="pp">Forever free</div>
+        <div class="pdiv"></div>
+        <ul class="pfeats">
+          <li>AI trip planning</li>
+          <li>Visa & weather checker</li>
+          <li>Currency converter</li>
+          <li>5 trips per month</li>
+          <li>Basic translation</li>
+        </ul>
+        <button class="pb" onclick="location.href='https://www.yaply.live/login'">Start for Free</button>
+      </div>
+
+      <div class="price-card featured reveal">
+        <div class="pt">Pro</div>
+        <div class="pa" style="color:#fff;">₹299</div>
+        <div class="pp">per month</div>
+        <div class="pdiv"></div>
+        <ul class="pfeats">
+          <li>Everything in Free</li>
+          <li>Unlimited AI trips</li>
+          <li>Live voice translation</li>
+          <li>Camera text scanner</li>
+          <li>Scam & price checker</li>
+          <li>Trip journal & stats</li>
+        </ul>
+        <button class="pb fb">Start Pro →</button>
+      </div>
+
+      <div class="price-card reveal">
+        <div class="pt">Business</div>
+        <div class="pa">₹999</div>
+        <div class="pp">per month</div>
+        <div class="pdiv"></div>
+        <ul class="pfeats">
+          <li>Everything in Pro</li>
+          <li>Team access</li>
+          <li>API access</li>
+          <li>White label option</li>
+          <li>Priority support</li>
+        </ul>
+        <button class="pb" onclick="location.href='https://www.yaply.live/login'">Contact Sales</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== FAQ =================== -->
+<div class="faq-sec" id="faq">
+  <div class="faq-inner">
+    <h2 class="reveal">Frequently asked questions</h2>
+    <p class="reveal">Start free, go pro when you're ready. No limits, no pressure.</p>
+
+    <div class="faq-item reveal">
+      <div class="faq-q" onclick="toggleFaq(this)">How accurate is Yaply's AI trip planning?<div class="faq-icon">+</div></div>
+      <div class="faq-a">Yaply uses the most advanced AI models (Groq with Llama) to generate detailed, personalised itineraries. All prices are verified against real data and you can edit every detail after generation.</div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q" onclick="toggleFaq(this)">What makes Yaply's AI translator different?<div class="faq-icon">+</div></div>
+      <div class="faq-a">Yaply combines DeepL (world's most accurate translation engine) with AI voice recognition. It works in real time for live conversations and supports 50+ languages including Japanese, Arabic, Hindi, Chinese and more.</div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q" onclick="toggleFaq(this)">Can I track my trip budget in real time?<div class="faq-icon">+</div></div>
+      <div class="faq-a">Yes! The live budget tracker updates every time you edit your itinerary. It shows spending by day, remaining budget, per-person costs and gives you alerts if you're going over budget.</div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q" onclick="toggleFaq(this)">Do I need to pay to use Yaply?<div class="faq-icon">+</div></div>
+      <div class="faq-a">No! You can start completely free and plan up to 5 trips per month. Upgrade to Pro for unlimited trips, live translation, camera scanning, scam alerts and all premium features.</div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q" onclick="toggleFaq(this)">Does Yaply work for travellers from small towns?<div class="faq-icon">+</div></div>
+      <div class="faq-a">Absolutely. The door-to-door journey feature finds your nearest airport and shows you exactly how to reach it by train, bus or cab — even from towns with no direct transport links.</div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== CTA =================== -->
+<div class="cta-sec">
+  <div class="cta-inner reveal">
+    <div class="cta-pill">🌍 Live at www.yaply.live</div>
+    <h2>Your next trip<br/>starts <span>here.</span></h2>
+    <p>Join thousands of travellers who plan smarter, translate live and travel safer with Yaply — completely free to start.</p>
+    <a href="https://www.yaply.live" class="btn-hero" style="font-size:.95rem;padding:16px 42px;">Plan Your Trip Free →</a>
+    <div class="cta-url">Live at <em>www.yaply.live</em> · No credit card required · Free forever plan</div>
+  </div>
+</div>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-in">
-    <div>
-      <div class="footer-logo">Yaply</div>
-      <div class="footer-desc">AI-powered travel companion. Plan, travel and remember every adventure — all in one place.</div>
-    </div>
+  <div class="footer-inner">
+    <div class="footer-logo">Yaply<span>.</span></div>
+    <div class="footer-copy">© 2026 Yaply · Built by Piyush, age 17 · India 🇮🇳</div>
     <div class="footer-links">
-      <a href="/app" class="footer-link">App</a>
-      <a href="#features" class="footer-link">Features</a>
-      <a href="#how" class="footer-link">How It Works</a>
-      <a href="#stories" class="footer-link">Stories</a>
-      <a href="/login" class="footer-link">Sign In</a>
+      <a href="https://www.yaply.live">App</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
     </div>
   </div>
-  <div class="footer-bottom">
-    <div>© 2025 Yaply · Built with ❤️ for travellers everywhere</div>
-    <div class="footer-badge">🤖 Powered by Groq AI</div>
-  </div>
-  <div class="y-strip" style="margin-top:28px;border-radius:100px;"></div>
 </footer>
 
 <script>
-// ── CURSOR ──
-const cursor=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
-(function animRing(){rx+=(mx-rx)*0.1;ry+=(my-ry)*0.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
-
-// ── NAV ──
-window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>60));
-
-// ── PARTICLES ──
-(function(){
-  const c=document.getElementById('particles');
-  const emojis=['✈️','🌍','🗺️','🏝️','🏔️','🌅','⭐','🎯','🌊','💫'];
-  for(let i=0;i<32;i++){
-    const p=document.createElement('div');
-    p.className='p';
-    const useEmoji=Math.random()>0.6;
-    if(useEmoji){
-      p.textContent=emojis[Math.floor(Math.random()*emojis.length)];
-      p.style.cssText=`font-size:${Math.random()*8+9}px;left:${Math.random()*100}%;animation-duration:${Math.random()*22+18}s;animation-delay:${Math.random()*-22}s;opacity:0.2;`;
-    }else{
-      const s=Math.random()*10+4;
-      const colors=['244,100,42','74,127,212','232,71,74','43,175,126','245,166,35','107,92,231'];
-      const c2=colors[Math.floor(Math.random()*colors.length)];
-      p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;background:rgba(${c2},${Math.random()*0.2+0.05});animation-duration:${Math.random()*18+14}s;animation-delay:${Math.random()*-18}s;`;
-    }
-    c.appendChild(p);
-  }
-})();
-
-// ── 3D GLOBE ──
-(function(){
-  const canvas=document.getElementById('globe');
-  const ctx=canvas.getContext('2d');
-  function resize(){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;}
-  resize();window.addEventListener('resize',resize);
-
-  const numDots=120;const dots=[];
-  for(let i=0;i<numDots;i++){
-    const phi=Math.acos(-1+(2*i)/numDots);
-    const theta=Math.sqrt(numDots*Math.PI)*phi;
-    dots.push({phi,theta});
-  }
-  const routes=[[8,42],[18,58],[4,78],[14,98],[28,68],[24,48],[38,88],[48,108],[58,28],[68,78],[78,38],[88,92],[3,55],[45,100]];
-  const routeColors=['244,100,42','74,127,212','43,175,126','107,92,231','245,166,35','232,71,74'];
-
-  let angle=0;
-  function project(phi,theta,r){
-    const size=Math.min(canvas.width,canvas.height)*0.44;
-    const cx=canvas.width*0.5,cy=canvas.height*0.5;
-    const x=Math.sin(phi)*Math.cos(theta+r);
-    const y=Math.cos(phi);
-    const z=Math.sin(phi)*Math.sin(theta+r);
-    const sc=(z+1.5)/2.5;
-    return{px:cx+x*size,py:cy+y*size,z,sc,vis:z>-0.15};
-  }
-
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    angle+=0.003;const r=angle;
-    const size=Math.min(canvas.width,canvas.height)*0.44;
-    const cx=canvas.width*0.5,cy=canvas.height*0.5;
-
-    // Glow
-    const grd=ctx.createRadialGradient(cx,cy,size*0.5,cx,cy,size*1.2);
-    grd.addColorStop(0,'rgba(244,100,42,0.04)');grd.addColorStop(1,'transparent');
-    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(cx,cy,size*1.2,0,Math.PI*2);ctx.fill();
-
-    // Lat lines
-    for(let lat=-75;lat<=75;lat+=20){
-      const phi=(90-lat)*Math.PI/180;
-      ctx.beginPath();let first=true;
-      for(let lon=0;lon<=360;lon+=6){
-        const p=project(phi,lon*Math.PI/180,r);
-        if(p.vis){if(first){ctx.moveTo(p.px,p.py);first=false;}else ctx.lineTo(p.px,p.py);}
-      }
-      ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=0.5;ctx.stroke();
-    }
-    // Lon lines
-    for(let lon=0;lon<360;lon+=30){
-      const theta=lon*Math.PI/180;
-      ctx.beginPath();let first=true;
-      for(let lat=-90;lat<=90;lat+=6){
-        const p=project((90-lat)*Math.PI/180,theta,r);
-        if(p.vis){if(first){ctx.moveTo(p.px,p.py);first=false;}else ctx.lineTo(p.px,p.py);}
-      }
-      ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;ctx.stroke();
-    }
-
-    // Dots with colors
-    dots.forEach((d,i)=>{
-      const p=project(d.phi,d.theta,r);
-      if(!p.vis)return;
-      const a=(p.z+1)/2*0.6+0.1;
-      const colors=['244,100,42','74,127,212','43,175,126','107,92,231','245,166,35','232,71,74'];
-      const c=colors[i%colors.length];
-      ctx.beginPath();ctx.arc(p.px,p.py,p.sc*2.4,0,Math.PI*2);
-      ctx.fillStyle=`rgba(${c},${a*0.5})`;ctx.fill();
-    });
-
-    // Routes with colors
-    routes.forEach(([a,b],i)=>{
-      const da=dots[a%dots.length],db=dots[b%dots.length];
-      const pa=project(da.phi,da.theta,r),pb=project(db.phi,db.theta,r);
-      if(!pa.vis||!pb.vis)return;
-      const prog=((angle*50+i*20)%100)/100;
-      const alpha=Math.sin(prog*Math.PI)*0.6;
-      const c=routeColors[i%routeColors.length];
-      ctx.beginPath();ctx.moveTo(pa.px,pa.py);
-      ctx.quadraticCurveTo((pa.px+pb.px)/2,(pa.py+pb.py)/2-28,pb.px,pb.py);
-      ctx.strokeStyle=`rgba(${c},${alpha})`;ctx.lineWidth=1.5;ctx.stroke();
-      const dx=pa.px+(pb.px-pa.px)*prog;
-      const dy=pa.py+(pb.py-pa.py)*prog-Math.sin(prog*Math.PI)*20;
-      ctx.beginPath();ctx.arc(dx,dy,3,0,Math.PI*2);
-      ctx.fillStyle=`rgba(${c},${alpha*1.5})`;ctx.fill();
-    });
-
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
-
-// ── SCROLL REVEAL ──
-const io=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');});
-},{threshold:0.08,rootMargin:'0px 0px -40px 0px'});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-
-// ── COUNTER ──
-const co=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
+// SCROLL REVEAL
+const rvEls=document.querySelectorAll('.reveal');
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{
     if(e.isIntersecting){
-      const t=parseInt(e.target.dataset.count);
-      let cur=0;const inc=t/55;
-      const tm=setInterval(()=>{
-        cur+=inc;if(cur>=t){cur=t;clearInterval(tm);}
-        e.target.textContent=Math.round(cur)+(t===100?'%':'+');
-      },18);
-      co.unobserve(e.target);
+      setTimeout(()=>e.target.classList.add('visible'),i*60);
+      obs.unobserve(e.target);
     }
   });
-},{threshold:0.5});
-document.querySelectorAll('[data-count]').forEach(el=>co.observe(el));
+},{threshold:0.08});
+rvEls.forEach(el=>obs.observe(el));
 
-// ── PARALLAX ──
+// NAV SCROLL
 window.addEventListener('scroll',()=>{
-  const sy=scrollY;
-  const hc=document.querySelector('.hero-content');
-  const gw=document.querySelector('.globe-wrap');
-  if(hc)hc.style.transform=`translateY(${sy*0.22}px)`;
-  if(gw)gw.style.transform=`translateY(calc(-50% + ${sy*0.1}px))`;
+  document.querySelector('nav').style.boxShadow=window.scrollY>40?'0 2px 20px rgba(0,0,0,.08)':'none';
 });
 
-// ── CTA INPUT ──
-document.getElementById('ctaInput').addEventListener('keydown',e=>{
-  if(e.key==='Enter'){
-    const d=e.target.value.trim();
-    if(d)window.location.href='/app?dest='+encodeURIComponent(d);
-    else window.location.href='/app';
+// VIBE ICONS
+function setVibe(el,v){
+  document.querySelectorAll('.vibe-icon-wrap').forEach(w=>{
+    const badge=w.querySelector('.vi-badge');
+    badge.className='vi-badge '+(Math.random()>.5?'vi-yes':'vi-no');
+    badge.textContent=badge.classList.contains('vi-yes')?'Yes':'No';
+  });
+  const badge=el.querySelector('.vi-badge');
+  badge.className='vi-badge vi-yes';badge.textContent='Yes';
+}
+
+// STEP TABS
+function switchStep(idx,btn){
+  document.querySelectorAll('.step-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('sp'+idx).classList.add('active');
+  document.querySelectorAll('.sp-content').forEach(c=>c.style.display='none');
+  document.getElementById('spContent'+idx).style.display='block';
+}
+
+// FAQ
+function toggleFaq(el){
+  const item=el.closest('.faq-item');
+  const wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!wasOpen)item.classList.add('open');
+}
+
+// BUILDER ANIMATION
+const destinations=['Tokyo, Japan 🇯🇵','Paris, France 🇫🇷','Bali, Indonesia 🇮🇩','Dubai, UAE 🇦🇪','Bangkok, Thailand 🇹🇭'];
+const emojis=['🗼','🗽','🌴','🏙️','🛺'];
+const trips=[
+  [{ico:'✈️',name:'IndiGo · BOM→NRT',val:'₹28,000'},{ico:'🏨',name:'Hotel 5 nights Shinjuku',val:'₹21,000'},{ico:'🍜',name:'Food budget · 5 days',val:'₹12,000'},{ico:'🎌',name:'Activities · temples,parks',val:'₹8,000'}],
+  [{ico:'✈️',name:'Air France · DEL→CDG',val:'₹55,000'},{ico:'🏨',name:'Hotel 5 nights Montmartre',val:'₹28,000'},{ico:'🥐',name:'Food budget · 5 days',val:'₹15,000'},{ico:'🗼',name:'Eiffel,Louvre,Versailles',val:'₹6,000'}],
+  [{ico:'✈️',name:'IndiGo · BOM→DPS',val:'₹22,000'},{ico:'🏨',name:'Villa 5 nights Ubud',val:'₹15,000'},{ico:'🍛',name:'Food budget · 5 days',val:'₹8,000'},{ico:'🌺',name:'Temples,spa,surfing',val:'₹9,000'}],
+];
+let di=0;
+setInterval(()=>{
+  di=(di+1)%3;
+  const plate=document.getElementById('bvPlate');
+  if(plate){plate.textContent=emojis[di];}
+  const ings=document.getElementById('bvIngredients');
+  if(ings){
+    ings.innerHTML=trips[di].map(t=>`<div class="bv-ing"><div class="bv-ing-ico">${t.ico}</div><div class="bv-ing-name">${t.name}</div><div class="bv-ing-val">${t.val}</div></div>`).join('');
   }
+},3000);
+
+// MC DATE ITEMS
+document.querySelectorAll('.mc-date-item').forEach(item=>{
+  item.addEventListener('click',function(){
+    document.querySelectorAll('.mc-date-item').forEach(i=>i.classList.remove('active'));
+    this.classList.add('active');
+  });
 });
 </script>
 </body>

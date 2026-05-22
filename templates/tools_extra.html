@@ -4,533 +4,397 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Yaply — Travel Tools</title>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="icon" href="/static/favicon.png" type="image/png"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --bg: #F7F5F0;
-  --bg2: #EFECEA;
-  --surface: #FFFFFF;
-  --border: rgba(0,0,0,0.07);
-  --border2: rgba(0,0,0,0.12);
-  --text: #0A0A0A;
-  --muted: #6B6B6B;
-  --muted2: #9B9B9B;
-  --accent: #00C9A7;
-  --accent2: #00A896;
-  --accent-soft: rgba(0,201,167,0.1);
-  --red: #FF4757;
-  --gold: #FFB347;
-  --blue: #4A90D9;
-  --green: #2ECC71;
-  --shadow: 0 2px 12px rgba(0,0,0,0.06);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
-  --r: 16px;
-  --r-lg: 24px;
-}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+:root{
+  --teal:#1A8A72;--teal-s:rgba(26,138,114,0.08);--teal-m:rgba(26,138,114,0.16);
+  --amber:#E8823A;--amber-s:rgba(232,130,58,0.08);--amber-m:rgba(232,130,58,0.18);
+  --sky:#3A6BC8;--sky-s:rgba(58,107,200,0.08);--sky-m:rgba(58,107,200,0.16);
+  --green:#28B06A;--green-s:rgba(40,176,106,0.08);--green-m:rgba(40,176,106,0.16);
+  --red:#D84C3E;--red-s:rgba(216,76,62,0.08);--red-m:rgba(216,76,62,0.16);
+  --purple:#8B5CF6;--purple-s:rgba(139,92,246,0.08);
+  --gold:#F0B429;--gold-s:rgba(240,180,41,0.08);--gold-m:rgba(240,180,41,0.18);
+  --charcoal:#2C2B28;--stone:#C8C4B2;
+  --bg:#F7F6F2;--bg2:#EFEDE8;--white:#FFFFFF;
+  --border:rgba(200,196,178,0.35);--border-md:rgba(200,196,178,0.6);
+  --text:#2C2B28;--muted:#6B6860;--muted2:#9B9890;
+  --nav-h:64px;--r:10px;--r-lg:16px;--r-xl:20px;
+  --shadow:0 2px 12px rgba(44,43,40,0.06);
+  --shadow-lg:0 12px 40px rgba(44,43,40,0.1);
+}
+html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-/* NAV */
-nav{
-  position:fixed;top:0;left:0;right:0;
-  background:rgba(247,245,240,0.95);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  padding:16px 24px;
-  display:flex;align-items:center;justify-content:space-between;
-  z-index:100;
-}
-.nav-logo{font-family:'Instrument Serif',serif;font-size:1.3rem;font-style:italic;color:var(--text);}
-.nav-logo span{color:var(--accent);}
-.nav-back{
-  display:flex;align-items:center;gap:6px;
-  font-size:0.82rem;font-weight:600;color:var(--muted);
-  text-decoration:none;transition:color 0.2s;
-}
-.nav-back:hover{color:var(--text);}
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:200;}
+.nav-left{display:flex;align-items:center;gap:9px;}
+.nav-back{display:flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .15s;}
+.nav-back:hover{background:var(--bg2);color:var(--charcoal);}
+.nav-back svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+.nav-logo-mark{width:28px;height:28px;border-radius:8px;background:var(--teal);display:flex;align-items:center;justify-content:center;}
+.nav-logo-mark svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2;}
+.nav-logo{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--charcoal);}
+.nav-right a{padding:6px 14px;border-radius:7px;background:var(--teal);color:#fff;text-decoration:none;font-size:.72rem;font-weight:700;transition:all .15s;}
+.nav-right a:hover{background:#158068;}
 
-/* HERO */
-.hero{
-  padding:88px 24px 40px;
-  max-width:900px;margin:0 auto;
-  text-align:center;
-}
-.hero h1{
-  font-family:'Instrument Serif',serif;
-  font-size:clamp(2rem,5vw,3rem);
-  line-height:1.1;letter-spacing:-0.5px;
-  margin-bottom:12px;
-}
-.hero h1 em{color:var(--accent);font-style:italic;}
-.hero p{font-size:0.95rem;color:var(--muted);max-width:500px;margin:0 auto;line-height:1.7;}
-
-/* TOOLS GRID */
-.tools-nav{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-  max-width:900px;margin:0 auto 40px;
-  padding:0 24px;
-}
-@media(max-width:700px){.tools-nav{grid-template-columns:repeat(2,1fr);}}
-.tool-nav-btn{
-  display:flex;flex-direction:column;
-  align-items:center;gap:8px;
-  padding:16px 12px;
-  background:var(--surface);
-  border:1.5px solid var(--border);
-  border-radius:var(--r);
-  cursor:pointer;transition:all 0.2s;
-  font-family:'Geist',sans-serif;
-  font-size:0.78rem;font-weight:600;
-  color:var(--muted);text-align:center;
-}
-.tool-nav-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
-.tool-nav-btn.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent2);}
-.tnb-icon{font-size:1.5rem;}
-
-/* MAIN */
-.main{max-width:900px;margin:0 auto;padding:0 24px 80px;}
-
-/* TOOL PANELS */
-.tool-panel{display:none;animation:fadeUp 0.4s ease both;}
-.tool-panel.active{display:block;}
-
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-
-/* CARDS */
-.card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--r-lg);
-  overflow:hidden;
-  box-shadow:var(--shadow);
-  margin-bottom:20px;
-}
-.card-header{
-  padding:20px 24px;
-  border-bottom:1px solid var(--border);
-  background:var(--bg2);
-  display:flex;align-items:center;
-  justify-content:space-between;
-}
-.card-title{
-  font-family:'Instrument Serif',serif;
-  font-size:1.1rem;
-  display:flex;align-items:center;gap:10px;
-}
-.card-body{padding:24px;}
-
-/* FORM ELEMENTS */
-.form-group{margin-bottom:16px;}
-.form-label{
-  display:block;font-size:0.72rem;font-weight:700;
-  letter-spacing:0.8px;text-transform:uppercase;
-  color:var(--muted2);margin-bottom:6px;
-}
-.form-input{
-  width:100%;background:var(--bg);
-  border:1.5px solid var(--border2);
-  border-radius:var(--r);
-  padding:12px 16px;
-  font-family:'Geist',sans-serif;
-  font-size:0.92rem;color:var(--text);
-  outline:none;transition:border-color 0.2s;
-}
-.form-input:focus{border-color:var(--accent);background:white;}
-.form-input::placeholder{color:var(--muted2);}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
-
-/* BUTTONS */
-.btn-primary{
-  width:100%;padding:14px;
-  background:var(--text);color:white;
-  border:none;border-radius:100px;
-  font-family:'Geist',sans-serif;
-  font-size:0.92rem;font-weight:700;
-  cursor:pointer;transition:all 0.2s;
-  display:flex;align-items:center;
-  justify-content:center;gap:10px;
-}
-.btn-primary:hover{background:#1a1a2e;transform:translateY(-1px);}
-.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-
-/* RESULT CONTAINERS */
-.result-container{
-  display:none;margin-top:20px;
-  animation:fadeUp 0.4s ease both;
-}
-.result-container.show{display:block;}
-
-/* STATUS BADGES */
-.badge{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:6px 14px;border-radius:100px;
-  font-size:0.78rem;font-weight:700;
-}
-.badge-green{background:rgba(46,204,113,0.1);color:#27AE60;}
-.badge-yellow{background:rgba(255,179,71,0.12);color:#E5930A;}
-.badge-red{background:rgba(255,71,87,0.1);color:var(--red);}
-.badge-blue{background:rgba(74,144,217,0.1);color:var(--blue);}
-
-/* INFO ROWS */
-.info-row{
-  display:flex;align-items:center;
-  justify-content:space-between;
-  padding:12px 0;
-  border-bottom:1px solid var(--border);
-  font-size:0.88rem;
-}
-.info-row:last-child{border-bottom:none;}
-.info-row-label{color:var(--muted);font-weight:500;}
-.info-row-value{font-weight:700;text-align:right;}
-
-/* SCORE CIRCLE */
-.score-wrap{
-  display:flex;align-items:center;
-  justify-content:center;
-  padding:32px 0 24px;
-}
-.score-circle{
+/* ── PAGE HERO ── */
+.page-hero{
+  padding:calc(var(--nav-h) + 36px) 24px 32px;
+  max-width:920px;margin:0 auto;
   position:relative;
-  width:120px;height:120px;
 }
-.score-svg{transform:rotate(-90deg);}
-.score-track{fill:none;stroke:var(--bg2);stroke-width:8;}
-.score-fill{
-  fill:none;stroke-width:8;
-  stroke-linecap:round;
-  transition:stroke-dashoffset 1.5s cubic-bezier(0.34,1.56,0.64,1);
-}
-.score-text{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-}
-.score-num{
-  font-family:'Instrument Serif',serif;
-  font-size:2rem;font-weight:700;line-height:1;
-}
-.score-label{font-size:0.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--teal-s);border:1px solid var(--teal-m);border-radius:100px;padding:4px 12px;font-size:.62rem;font-weight:700;color:var(--teal);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;}
+.hb-dot{width:4px;height:4px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.page-hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;color:var(--charcoal);letter-spacing:-1px;margin-bottom:8px;}
+.page-hero h1 em{color:var(--teal);font-style:normal;}
+.page-hero p{font-size:.85rem;color:var(--muted);max-width:480px;line-height:1.75;}
 
-/* STEPS */
-.steps-list{display:flex;flex-direction:column;gap:12px;}
-.step-item{
-  display:flex;align-items:flex-start;gap:14px;
-  padding:14px;background:var(--bg);
-  border-radius:var(--r);border:1px solid var(--border);
-}
-.step-num-badge{
-  width:28px;height:28px;border-radius:50%;
-  background:var(--accent);color:white;
-  font-size:0.72rem;font-weight:700;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
-.step-content{}
-.step-title{font-size:0.88rem;font-weight:700;margin-bottom:2px;}
-.step-desc{font-size:0.78rem;color:var(--muted);line-height:1.5;}
+/* ── TOOLS NAV ── */
+.tools-nav-wrap{max-width:920px;margin:0 auto;padding:0 24px 20px;}
+.tools-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+@media(max-width:700px){.tools-nav{grid-template-columns:repeat(2,1fr);}}
 
-/* LAW CARDS */
-.law-card{
-  border-radius:var(--r);
-  padding:16px;margin-bottom:10px;
-  border:1px solid var(--border);
-  display:flex;align-items:flex-start;gap:14px;
+.tnav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  padding:14px 8px;background:var(--white);
+  border:1.5px solid var(--border);border-radius:var(--r-lg);
+  cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;
+  font-size:.68rem;font-weight:600;color:var(--muted);text-align:center;
 }
-.law-card.high{border-left:3px solid var(--red);background:rgba(255,71,87,0.03);}
-.law-card.medium{border-left:3px solid var(--gold);background:rgba(255,179,71,0.03);}
-.law-card.low{border-left:3px solid var(--accent);background:rgba(0,201,167,0.03);}
-.law-icon{font-size:1.3rem;flex-shrink:0;}
-.law-name{font-size:0.9rem;font-weight:700;margin-bottom:4px;}
-.law-penalty{font-size:0.78rem;color:var(--muted);}
-.law-severity{
-  margin-left:auto;padding:3px 10px;
-  border-radius:100px;font-size:0.68rem;font-weight:700;
-  flex-shrink:0;
-}
-.sev-high{background:rgba(255,71,87,0.1);color:var(--red);}
-.sev-medium{background:rgba(255,179,71,0.12);color:#E5930A;}
-.sev-low{background:var(--accent-soft);color:var(--accent2);}
+.tnav-btn:hover{border-color:var(--teal);color:var(--teal);transform:translateY(-2px);box-shadow:var(--shadow);}
+.tnav-btn.active{border-color:var(--teal);background:var(--teal-s);color:var(--teal);}
+.tnav-btn.active .tnb-ico{background:var(--teal-m);}
+.tnav-btn.active .tnb-ico svg{stroke:var(--teal);}
+.tnb-ico{width:34px;height:34px;border-radius:9px;background:var(--bg2);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.tnb-ico svg{width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;transition:stroke .2s;}
 
-/* BUDGET DONUT */
-.budget-visual{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:20px;align-items:center;
-  margin-bottom:20px;
-}
-@media(max-width:500px){.budget-visual{grid-template-columns:1fr;}}
-.donut-wrap{
-  display:flex;align-items:center;
-  justify-content:center;
-}
-.budget-legend{display:flex;flex-direction:column;gap:8px;}
-.legend-item{
-  display:flex;align-items:center;gap:10px;
-  font-size:0.82rem;
-}
-.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.legend-label{flex:1;color:var(--muted);}
-.legend-amount{font-weight:700;font-size:0.85rem;}
+/* ── MAIN ── */
+.main{max-width:920px;margin:0 auto;padding:0 24px 80px;}
+.tool-panel{display:none;}
+.tool-panel.active{display:block;animation:fadeUp .35s cubic-bezier(.22,1,.36,1);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 
-/* EMERGENCY CARD PRINT */
-.emergency-card-visual{
-  background:linear-gradient(135deg,var(--text),#1a1a3e);
-  border-radius:20px;
-  padding:28px;
-  color:white;
-  margin-bottom:20px;
-  position:relative;overflow:hidden;
-}
-.ec-logo{
-  font-family:'Instrument Serif',serif;
-  font-size:0.9rem;font-style:italic;
-  color:rgba(255,255,255,0.4);
-  margin-bottom:20px;
-}
-.ec-name{font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:700;margin-bottom:4px;}
-.ec-details{font-size:0.82rem;color:rgba(255,255,255,0.6);margin-bottom:20px;}
-.ec-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.ec-item{}
-.ec-item-label{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:3px;}
-.ec-item-value{font-size:0.85rem;font-weight:600;}
-.ec-stripe{
-  position:absolute;top:0;right:0;bottom:0;
-  width:6px;
-  background:linear-gradient(to bottom,var(--accent),#00E5C9);
-}
-.print-btn{
-  width:100%;padding:12px;
-  background:none;border:1.5px solid var(--border2);
-  border-radius:100px;
-  font-family:'Geist',sans-serif;
-  font-size:0.85rem;font-weight:700;
-  color:var(--text);cursor:pointer;
-  transition:all 0.2s;
-  display:flex;align-items:center;
-  justify-content:center;gap:8px;
-}
-.print-btn:hover{border-color:var(--accent);color:var(--accent);}
+/* ── CARD ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow);margin-bottom:12px;position:relative;}
+.card-accent{height:3px;}
+.ca-teal{background:linear-gradient(90deg,var(--teal),var(--sky));}
+.ca-amber{background:linear-gradient(90deg,var(--amber),var(--gold));}
+.ca-red{background:linear-gradient(90deg,var(--red),var(--amber));}
+.ca-sky{background:linear-gradient(90deg,var(--sky),var(--purple));}
+.ca-green{background:linear-gradient(90deg,var(--green),var(--teal));}
+.ca-gold{background:linear-gradient(90deg,var(--gold),var(--amber));}
+.ca-purple{background:linear-gradient(90deg,var(--purple),var(--sky));}
+.ca-charcoal{background:linear-gradient(90deg,var(--charcoal),var(--sky));}
 
-/* FESTIVAL TIMELINE */
-.festival-item{
-  display:flex;gap:16px;
-  padding:16px;background:var(--bg);
-  border-radius:var(--r);border:1px solid var(--border);
-  margin-bottom:10px;
-}
-.festival-icon{font-size:1.5rem;flex-shrink:0;}
-.festival-name{font-size:0.92rem;font-weight:700;margin-bottom:4px;}
-.festival-dates{font-size:0.75rem;color:var(--accent2);font-weight:600;margin-bottom:4px;}
-.festival-desc{font-size:0.8rem;color:var(--muted);line-height:1.5;}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to right,var(--bg),var(--white));}
+.card-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--charcoal);display:flex;align-items:center;gap:8px;}
+.ct-ico{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;}
+.ct-ico svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;}
+.cti-teal{background:var(--teal-s);color:var(--teal);}
+.cti-amber{background:var(--amber-s);color:var(--amber);}
+.cti-red{background:var(--red-s);color:var(--red);}
+.cti-sky{background:var(--sky-s);color:var(--sky);}
+.cti-green{background:var(--green-s);color:var(--green);}
+.cti-gold{background:var(--gold-s);color:var(--gold);}
+.cti-purple{background:var(--purple-s);color:var(--purple);}
+.cti-charcoal{background:var(--bg2);color:var(--charcoal);}
 
-/* JETLAG TIMELINE */
-.jl-phase{
-  border-radius:var(--r);
-  border:1px solid var(--border);
-  margin-bottom:12px;
-  overflow:hidden;
-}
-.jl-phase-header{
-  padding:12px 16px;
-  font-size:0.78rem;font-weight:700;
-  text-transform:uppercase;letter-spacing:0.8px;
-  border-bottom:1px solid var(--border);
-}
-.jl-phase-header.before{background:rgba(74,144,217,0.08);color:var(--blue);}
-.jl-phase-header.during{background:rgba(255,179,71,0.08);color:#E5930A;}
-.jl-phase-header.after{background:var(--accent-soft);color:var(--accent2);}
-.jl-action{
-  display:flex;align-items:flex-start;gap:12px;
-  padding:12px 16px;
-  border-bottom:1px solid var(--border);
-}
-.jl-action:last-child{border-bottom:none;}
-.jl-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:var(--accent);flex-shrink:0;margin-top:5px;
-}
-.jl-action-text{font-size:0.85rem;font-weight:500;}
-.jl-action-time{font-size:0.75rem;color:var(--muted);margin-top:2px;}
+.card-badge{font-size:.58rem;font-weight:700;padding:3px 8px;border-radius:100px;letter-spacing:.5px;}
+.cb-teal{background:var(--teal-s);color:var(--teal);}
+.cb-red{background:var(--red-s);color:var(--red);}
+.cb-sky{background:var(--sky-s);color:var(--sky);}
+.card-body{padding:16px 18px;}
 
-/* Loading spinner */
-.spinner{
-  display:none;align-items:center;
-  justify-content:center;gap:12px;
-  padding:24px;color:var(--muted);
-  font-size:0.85rem;
-}
+/* ── FORM ── */
+.fg{margin-bottom:12px;}
+.fl{display:block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);margin-bottom:5px;}
+.fi{width:100%;background:var(--bg);border:1.5px solid var(--border-md);border-radius:var(--r);padding:9px 12px;font-family:'Inter',sans-serif;font-size:.82rem;color:var(--text);font-weight:500;outline:none;transition:all .2s;-webkit-appearance:none;}
+.fi:focus{border-color:var(--teal);background:var(--white);box-shadow:0 0 0 3px var(--teal-s);}
+.fi::placeholder{color:var(--muted2);font-weight:400;}
+.fg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:540px){.fg-grid{grid-template-columns:1fr;}}
+
+/* ── BTN ── */
+.btn{width:100%;padding:11px;border:none;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:hover{background:#158068;transform:translateY(-1px);box-shadow:0 5px 18px rgba(26,138,114,.3);}
+.btn-red{background:var(--red);color:#fff;}
+.btn-red:hover{background:#B83830;transform:translateY(-1px);}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
+
+/* ── SPINNER ── */
+.spinner{display:none;align-items:center;justify-content:center;gap:9px;padding:18px;font-size:.75rem;color:var(--muted);}
 .spinner.show{display:flex;}
-.spin-circle{
-  width:20px;height:20px;
-  border:2px solid rgba(0,201,167,0.3);
-  border-top-color:var(--accent);
-  border-radius:50%;
-  animation:spin 0.8s linear infinite;
-}
+.sp-ring{width:16px;height:16px;border:2px solid var(--teal-m);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* Toast */
-.toast{
-  position:fixed;bottom:24px;right:24px;
-  background:var(--text);color:white;
-  padding:12px 20px;border-radius:100px;
-  font-size:0.82rem;font-weight:500;
-  opacity:0;transform:translateY(10px);
-  transition:all 0.3s;z-index:200;
-}
-.toast.show{opacity:1;transform:translateY(0);}
+/* ── RESULT ── */
+.result{display:none;margin-top:12px;animation:fadeUp .35s ease both;}
+.result.show{display:block;}
 
-/* Luggage card */
-.luggage-grid{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:16px;margin-bottom:16px;
+/* ── MINI CARDS ── */
+.mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+.mini-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+@media(max-width:480px){.mini-grid-3{grid-template-columns:1fr;}.mini-grid{grid-template-columns:1fr;}}
+.mini-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px;}
+.mc-label{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:4px;}
+.mc-value{font-size:.88rem;font-weight:700;color:var(--charcoal);}
+.mc-sub{font-size:.65rem;color:var(--muted);margin-top:2px;}
+
+/* ── INFO ROWS ── */
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.info-row:last-child{border-bottom:none;}
+.ir-label{color:var(--muted);font-weight:500;}
+.ir-value{font-weight:700;}
+
+/* ── VERDICT BOX ── */
+.verdict-box{border-radius:var(--r-lg);padding:14px 16px;margin-bottom:12px;}
+.vb-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;margin-bottom:4px;}
+.vb-sub{font-size:.72rem;line-height:1.6;}
+
+/* ── SCORE RING ── */
+.score-wrap{display:flex;flex-direction:column;align-items:center;padding:20px 0 12px;}
+.score-ring{position:relative;width:100px;height:100px;}
+.score-svg{transform:rotate(-90deg);}
+.sc-track{fill:none;stroke:var(--bg2);stroke-width:7;}
+.sc-fill{fill:none;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.34,1.56,.64,1);}
+.score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-num{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;line-height:1;}
+.score-lbl{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-top:2px;}
+
+/* ── BADGE ── */
+.bdg{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:.62rem;font-weight:700;}
+.bdg-green{background:var(--green-s);color:var(--green);}
+.bdg-amber{background:var(--amber-s);color:var(--amber);}
+.bdg-red{background:var(--red-s);color:var(--red);}
+.bdg-sky{background:var(--sky-s);color:var(--sky);}
+.bdg-teal{background:var(--teal-s);color:var(--teal);}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── STEP LIST ── */
+.step-item{display:flex;align-items:flex-start;gap:9px;padding:9px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:6px;}
+.step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#fff;flex-shrink:0;}
+.sn-teal{background:var(--teal);}
+.sn-sky{background:var(--sky);}
+.sn-red{background:var(--red);}
+.sn-amber{background:var(--amber);}
+.step-text{font-size:.77rem;line-height:1.55;}
+.step-sub{font-size:.65rem;color:var(--muted);margin-top:2px;}
+
+/* ── LAW CARD ── */
+.law-card{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:var(--r);border:1px solid var(--border);margin-bottom:7px;border-left:3px solid;}
+.lc-high{border-left-color:var(--red);background:var(--red-s);}
+.lc-medium{border-left-color:var(--amber);background:var(--amber-s);}
+.lc-low{border-left-color:var(--teal);background:var(--teal-s);}
+.lc-ico{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.lc-ico svg{width:12px;height:12px;stroke:var(--charcoal);fill:none;stroke-width:2;}
+.lc-name{font-size:.8rem;font-weight:700;margin-bottom:2px;}
+.lc-penalty{font-size:.68rem;color:var(--muted);}
+.lc-sev{margin-left:auto;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:100px;flex-shrink:0;align-self:flex-start;}
+
+/* ── JETLAG PHASE ── */
+.phase-block{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:9px;}
+.phase-head{padding:9px 13px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);}
+.ph-before{background:var(--sky-s);color:var(--sky);}
+.ph-during{background:var(--gold-s);color:var(--gold);}
+.ph-after{background:var(--green-s);color:var(--green);}
+.phase-action{display:flex;align-items:flex-start;gap:9px;padding:9px 13px;border-bottom:1px solid var(--border);}
+.phase-action:last-child{border-bottom:none;}
+.pa-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.pa-text{font-size:.77rem;line-height:1.5;}
+.pa-time{font-size:.65rem;color:var(--muted);margin-top:2px;}
+
+/* ── FESTIVAL CARD ── */
+.fest-card{display:flex;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;}
+.fc-ico{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--sky));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.fc-name{font-size:.82rem;font-weight:700;margin-bottom:2px;}
+.fc-dates{font-size:.65rem;font-weight:700;color:var(--teal);margin-bottom:3px;}
+.fc-desc{font-size:.72rem;color:var(--muted);line-height:1.55;}
+.fc-tip{font-size:.65rem;color:var(--sky);background:var(--sky-s);padding:3px 8px;border-radius:7px;margin-top:5px;display:inline-block;}
+
+/* ── BUDGET BARS ── */
+.budget-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.bbr-label{font-size:.75rem;font-weight:500;width:90px;flex-shrink:0;text-transform:capitalize;}
+.bbr-bar{flex:1;height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+.bbr-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.22,1,.36,1);}
+.bbr-amount{font-size:.75rem;font-weight:700;width:70px;text-align:right;flex-shrink:0;}
+
+/* ── LUGGAGE GRID ── */
+.luggage-visual{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+@media(max-width:460px){.luggage-visual{grid-template-columns:1fr;}}
+.lug-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;}
+.lug-ico{width:40px;height:40px;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;}
+.lug-ico svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.lug-label{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:4px;}
+.lug-value{font-size:.95rem;font-weight:800;color:var(--charcoal);}
+.lug-sub{font-size:.65rem;color:var(--muted);margin-top:2px;}
+
+/* ── EMERGENCY CARD ── */
+.em-card-visual{
+  background:linear-gradient(135deg,var(--charcoal),#1e2a3a);
+  border-radius:var(--r-xl);padding:22px;color:#fff;
+  margin-bottom:12px;position:relative;overflow:hidden;
 }
-@media(max-width:500px){.luggage-grid{grid-template-columns:1fr;}}
-.luggage-item{
-  background:var(--bg);border-radius:var(--r);
-  padding:16px;border:1px solid var(--border);
-  text-align:center;
-}
-.li-icon{font-size:2rem;margin-bottom:8px;}
-.li-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:4px;}
-.li-value{font-size:1.1rem;font-weight:700;}
-.li-sub{font-size:0.75rem;color:var(--muted);margin-top:2px;}
+.em-card-visual::before{content:'';position:absolute;top:0;right:0;bottom:0;width:5px;background:linear-gradient(to bottom,var(--teal),var(--sky));}
+.em-card-visual::after{content:'';position:absolute;right:-40px;top:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.04);}
+.ec-logo-text{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px;}
+.ec-name-text{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:4px;}
+.ec-details-text{font-size:.7rem;color:rgba(255,255,255,.55);margin-bottom:16px;line-height:1.5;}
+.ec-em-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ec-em-item{}
+.ec-em-label{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.35);margin-bottom:2px;}
+.ec-em-num{font-size:.88rem;font-weight:800;color:#fff;}
+
+.print-btn{width:100%;padding:10px;background:none;border:1.5px solid var(--border-md);border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.print-btn:hover{border-color:var(--teal);color:var(--teal);}
+.print-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--charcoal);color:#fff;padding:9px 18px;border-radius:100px;font-size:.72rem;font-weight:600;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.2);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── NOTE BOX ── */
+.note-box{border-radius:var(--r);padding:10px 13px;font-size:.72rem;line-height:1.65;margin-bottom:12px;}
+.nb-red{background:var(--red-s);border:1px solid var(--red-m);color:var(--red);}
+.nb-teal{background:var(--teal-s);border:1px solid var(--teal-m);color:var(--teal);}
+.nb-amber{background:var(--amber-s);border:1px solid var(--amber-m);color:var(--amber);}
+.nb-sky{background:var(--sky-s);border:1px solid var(--sky-m);color:var(--sky);}
+.nb-gold{background:var(--gold-s);border:1px solid var(--gold-m);color:#8B6914;}
+
+/* tip row */
+.tip-row{display:flex;gap:7px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border);font-size:.75rem;line-height:1.55;}
+.tip-row:last-child{border-bottom:none;}
+.tip-row svg{width:11px;height:11px;stroke:var(--teal);fill:none;stroke-width:2;flex-shrink:0;margin-top:2px;}
 </style>
-<link rel="stylesheet" href="/static/yaply-theme.css"/>
 </head>
 <body>
 
-<nav>
-  <div class="nav-logo">ya<span>ply</span></div>
-  <a href="/" class="nav-back">← Back to Trip Planner</a>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-left">
+    <a href="/plan" class="nav-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Trip Planner</a>
+    <div style="width:1px;height:16px;background:var(--border);margin:0 2px;"></div>
+    <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <div class="nav-logo">Yaply</div>
+  </div>
+  <div class="nav-right"><a href="/app">Dashboard</a></div>
 </nav>
 
-<div class="hero">
+<!-- HERO -->
+<div class="page-hero">
+  <div class="hero-badge"><div class="hb-dot"></div>8 AI-Powered Tools</div>
   <h1>Travel <em>Smart Tools</em></h1>
-  <p>Everything you need to prepare perfectly — from passport checks to emergency cards. All AI-powered, all accurate.</p>
+  <p>Passport validity, safety scores, local laws, jetlag fixes, festivals, budgets, luggage rules, emergency cards — all AI-powered.</p>
 </div>
 
-<!-- Tools Navigation -->
-<div class="tools-nav">
-  <button class="tool-nav-btn active" onclick="switchTool('passport')">
-    <span class="tnb-icon">🛂</span>Passport Check
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('safety')">
-    <span class="tnb-icon">🛡️</span>Safety Index
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('laws')">
-    <span class="tnb-icon">⚖️</span>Local Laws
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('jetlag')">
-    <span class="tnb-icon">😴</span>Jet Lag Fix
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('festivals')">
-    <span class="tnb-icon">🎉</span>Festivals
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('budget')">
-    <span class="tnb-icon">💰</span>Budget Plan
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('luggage')">
-    <span class="tnb-icon">🧳</span>Luggage Rules
-  </button>
-  <button class="tool-nav-btn" onclick="switchTool('emergency')">
-    <span class="tnb-icon">🆘</span>Emergency Card
-  </button>
+<!-- TOOLS NAV -->
+<div class="tools-nav-wrap">
+  <div class="tools-nav">
+    <button class="tnav-btn active" id="tn-passport" onclick="switchTool('passport',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>Passport
+    </button>
+    <button class="tnav-btn" id="tn-safety" onclick="switchTool('safety',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Safety
+    </button>
+    <button class="tnav-btn" id="tn-laws" onclick="switchTool('laws',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>Local Laws
+    </button>
+    <button class="tnav-btn" id="tn-jetlag" onclick="switchTool('jetlag',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>Jet Lag
+    </button>
+    <button class="tnav-btn" id="tn-festivals" onclick="switchTool('festivals',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>Festivals
+    </button>
+    <button class="tnav-btn" id="tn-budget" onclick="switchTool('budget',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>Budget
+    </button>
+    <button class="tnav-btn" id="tn-luggage" onclick="switchTool('luggage',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>Luggage
+    </button>
+    <button class="tnav-btn" id="tn-emergency" onclick="switchTool('emergency',event)">
+      <div class="tnb-ico"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>SOS Card
+    </button>
+  </div>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
-  <!-- ── PASSPORT CHECK ── -->
+  <!-- ── PASSPORT ── -->
   <div class="tool-panel active" id="panel-passport">
     <div class="card">
+      <div class="card-accent ca-teal"></div>
       <div class="card-header">
-        <div class="card-title">🛂 Passport Validity Checker</div>
+        <div class="card-title"><div class="ct-ico cti-teal"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>Passport Validity Checker</div>
+        <div class="card-badge cb-teal">Instant</div>
       </div>
       <div class="card-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">📅 Passport Expiry Date</label>
-            <input class="form-input" type="date" id="passportExpiry"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">✈️ Travel Date</label>
-            <input class="form-input" type="date" id="travelDate"/>
-          </div>
+        <div class="fg-grid">
+          <div class="fg"><label class="fl">Passport Expiry Date</label><input class="fi" type="date" id="passportExpiry"/></div>
+          <div class="fg"><label class="fl">Travel Date</label><input class="fi" type="date" id="travelDate"/></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">🌍 Destination Country</label>
-          <input class="form-input" type="text" id="passportDest" placeholder="e.g. Japan, France, UAE"/>
-        </div>
-        <button class="btn-primary" onclick="checkPassport()">🛂 Check My Passport</button>
-        <div class="spinner" id="passport-spinner"><div class="spin-circle"></div>Checking requirements...</div>
-        <div class="result-container" id="passport-result"></div>
+        <div class="fg"><label class="fl">Destination Country</label><input class="fi" type="text" id="passportDest" placeholder="e.g. Japan, France, UAE"/></div>
+        <button class="btn btn-teal" onclick="checkPassport()"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Check My Passport</button>
+        <div class="spinner" id="passport-spinner"><div class="sp-ring"></div>Checking requirements...</div>
+        <div class="result" id="passport-result"></div>
       </div>
     </div>
   </div>
 
-  <!-- ── SAFETY INDEX ── -->
+  <!-- ── SAFETY ── -->
   <div class="tool-panel" id="panel-safety">
     <div class="card">
+      <div class="card-accent ca-green"></div>
       <div class="card-header">
-        <div class="card-title">🛡️ Safety Index</div>
+        <div class="card-title"><div class="ct-ico cti-green"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Safety Index</div>
       </div>
       <div class="card-body">
-        <div class="form-group">
-          <label class="form-label">🌍 Destination</label>
-          <input class="form-input" type="text" id="safetyDest" placeholder="e.g. Bangkok, Thailand"/>
-        </div>
-        <button class="btn-primary" onclick="checkSafety()">🛡️ Check Safety</button>
-        <div class="spinner" id="safety-spinner"><div class="spin-circle"></div>Analyzing safety data...</div>
-        <div class="result-container" id="safety-result"></div>
+        <div class="fg"><label class="fl">Destination</label><input class="fi" type="text" id="safetyDest" placeholder="e.g. Bangkok, Thailand"/></div>
+        <button class="btn btn-teal" onclick="checkSafety()"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Check Safety</button>
+        <div class="spinner" id="safety-spinner"><div class="sp-ring"></div>Analyzing safety data...</div>
+        <div class="result" id="safety-result"></div>
       </div>
     </div>
   </div>
 
-  <!-- ── LOCAL LAWS ── -->
+  <!-- ── LAWS ── -->
   <div class="tool-panel" id="panel-laws">
     <div class="card">
+      <div class="card-accent ca-amber"></div>
       <div class="card-header">
-        <div class="card-title">⚖️ Local Laws & Rules</div>
+        <div class="card-title"><div class="ct-ico cti-amber"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>Local Laws & Rules</div>
       </div>
       <div class="card-body">
-        <div class="form-group">
-          <label class="form-label">🌍 Destination Country/City</label>
-          <input class="form-input" type="text" id="lawsDest" placeholder="e.g. Singapore, Dubai, Japan"/>
-        </div>
-        <button class="btn-primary" onclick="checkLaws()">⚖️ Check Local Laws</button>
-        <div class="spinner" id="laws-spinner"><div class="spin-circle"></div>Loading legal information...</div>
-        <div class="result-container" id="laws-result"></div>
+        <div class="fg"><label class="fl">Destination Country / City</label><input class="fi" type="text" id="lawsDest" placeholder="e.g. Singapore, Dubai, Japan"/></div>
+        <button class="btn btn-teal" onclick="checkLaws()"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/></svg>Check Local Laws</button>
+        <div class="spinner" id="laws-spinner"><div class="sp-ring"></div>Loading legal information...</div>
+        <div class="result" id="laws-result"></div>
       </div>
     </div>
   </div>
 
-  <!-- ── JET LAG ── -->
+  <!-- ── JETLAG ── -->
   <div class="tool-panel" id="panel-jetlag">
     <div class="card">
+      <div class="card-accent ca-sky"></div>
       <div class="card-header">
-        <div class="card-title">😴 Jet Lag Calculator</div>
+        <div class="card-title"><div class="ct-ico cti-sky"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>Jet Lag Calculator</div>
       </div>
       <div class="card-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">🛫 Flying From</label>
-            <input class="form-input" type="text" id="jlFrom" placeholder="e.g. Mumbai, India"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">🛬 Flying To</label>
-            <input class="form-input" type="text" id="jlTo" placeholder="e.g. New York, USA"/>
-          </div>
+        <div class="fg-grid">
+          <div class="fg"><label class="fl">Flying From</label><input class="fi" type="text" id="jlFrom" placeholder="e.g. Mumbai, India"/></div>
+          <div class="fg"><label class="fl">Flying To</label><input class="fi" type="text" id="jlTo" placeholder="e.g. New York, USA"/></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">📅 Travel Date</label>
-          <input class="form-input" type="date" id="jlDate"/>
-        </div>
-        <button class="btn-primary" onclick="calcJetlag()">😴 Calculate Jet Lag</button>
-        <div class="spinner" id="jetlag-spinner"><div class="spin-circle"></div>Calculating timezone difference...</div>
-        <div class="result-container" id="jetlag-result"></div>
+        <div class="fg"><label class="fl">Travel Date</label><input class="fi" type="date" id="jlDate"/></div>
+        <button class="btn btn-teal" onclick="calcJetlag()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Calculate Jet Lag</button>
+        <div class="spinner" id="jetlag-spinner"><div class="sp-ring"></div>Calculating timezone difference...</div>
+        <div class="result" id="jetlag-result"></div>
       </div>
     </div>
   </div>
@@ -538,63 +402,45 @@ nav{
   <!-- ── FESTIVALS ── -->
   <div class="tool-panel" id="panel-festivals">
     <div class="card">
+      <div class="card-accent ca-gold"></div>
       <div class="card-header">
-        <div class="card-title">🎉 Festival & Holiday Calendar</div>
+        <div class="card-title"><div class="ct-ico cti-gold"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>Festival & Holiday Calendar</div>
       </div>
       <div class="card-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">🌍 Destination</label>
-            <input class="form-input" type="text" id="festDest" placeholder="e.g. Tokyo, Japan"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">📅 Travel Date</label>
-            <input class="form-input" type="date" id="festDate"/>
-          </div>
+        <div class="fg-grid">
+          <div class="fg"><label class="fl">Destination</label><input class="fi" type="text" id="festDest" placeholder="e.g. Tokyo, Japan"/></div>
+          <div class="fg"><label class="fl">Travel Date</label><input class="fi" type="date" id="festDate"/></div>
         </div>
-        <button class="btn-primary" onclick="checkFestivals()">🎉 Check Events</button>
-        <div class="spinner" id="festivals-spinner"><div class="spin-circle"></div>Loading festival calendar...</div>
-        <div class="result-container" id="festivals-result"></div>
+        <button class="btn btn-teal" onclick="checkFestivals()"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Check Events</button>
+        <div class="spinner" id="festivals-spinner"><div class="sp-ring"></div>Loading festival calendar...</div>
+        <div class="result" id="festivals-result"></div>
       </div>
     </div>
   </div>
 
-  <!-- ── BUDGET PLAN ── -->
+  <!-- ── BUDGET ── -->
   <div class="tool-panel" id="panel-budget">
     <div class="card">
+      <div class="card-accent ca-teal"></div>
       <div class="card-header">
-        <div class="card-title">💰 Budget Planner</div>
+        <div class="card-title"><div class="ct-ico cti-teal"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>Budget Planner</div>
       </div>
       <div class="card-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">🌍 Destination</label>
-            <input class="form-input" type="text" id="budgetDest" placeholder="e.g. Bali, Indonesia"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">📅 Number of Days</label>
-            <input class="form-input" type="number" id="budgetDays" value="7" min="1" max="30"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">👥 Number of People</label>
-            <input class="form-input" type="number" id="budgetPeople" value="2" min="1"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">💵 Total Budget</label>
-            <div style="display:flex;gap:8px;">
-              <select class="form-input" id="budgetCurr" style="width:100px;flex-shrink:0;">
-                <option value="INR">INR</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-              </select>
-              <input class="form-input" type="text" id="budgetAmount" placeholder="80,000" style="flex:1;"/>
+        <div class="fg-grid">
+          <div class="fg"><label class="fl">Destination</label><input class="fi" type="text" id="budgetDest" placeholder="e.g. Bali, Indonesia"/></div>
+          <div class="fg"><label class="fl">Number of Days</label><input class="fi" type="number" id="budgetDays" value="7" min="1" max="30"/></div>
+          <div class="fg"><label class="fl">Number of People</label><input class="fi" type="number" id="budgetPeople" value="2" min="1"/></div>
+          <div class="fg">
+            <label class="fl">Total Budget</label>
+            <div style="display:grid;grid-template-columns:72px 1fr;gap:6px;">
+              <select class="fi" id="budgetCurr"><option value="INR">INR</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select>
+              <input class="fi" type="text" id="budgetAmount" placeholder="80,000"/>
             </div>
           </div>
         </div>
-        <button class="btn-primary" onclick="planBudget()">💰 Plan My Budget</button>
-        <div class="spinner" id="budget-spinner"><div class="spin-circle"></div>Calculating budget breakdown...</div>
-        <div class="result-container" id="budget-result"></div>
+        <button class="btn btn-teal" onclick="planBudget()"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Plan My Budget</button>
+        <div class="spinner" id="budget-spinner"><div class="sp-ring"></div>Calculating budget breakdown...</div>
+        <div class="result" id="budget-result"></div>
       </div>
     </div>
   </div>
@@ -602,32 +448,19 @@ nav{
   <!-- ── LUGGAGE ── -->
   <div class="tool-panel" id="panel-luggage">
     <div class="card">
+      <div class="card-accent ca-purple"></div>
       <div class="card-header">
-        <div class="card-title">🧳 Luggage & Duty Free Guide</div>
+        <div class="card-title"><div class="ct-ico cti-purple"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>Luggage & Duty Free</div>
       </div>
       <div class="card-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">✈️ Airline</label>
-            <input class="form-input" type="text" id="luggageAirline" placeholder="e.g. Air India, Emirates"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">💺 Cabin Class</label>
-            <select class="form-input" id="luggageClass">
-              <option value="Economy">Economy</option>
-              <option value="Premium Economy">Premium Economy</option>
-              <option value="Business">Business</option>
-              <option value="First">First Class</option>
-            </select>
-          </div>
+        <div class="fg-grid">
+          <div class="fg"><label class="fl">Airline</label><input class="fi" type="text" id="luggageAirline" placeholder="e.g. Air India, Emirates"/></div>
+          <div class="fg"><label class="fl">Cabin Class</label><select class="fi" id="luggageClass"><option value="Economy">Economy</option><option value="Premium Economy">Premium Economy</option><option value="Business">Business</option><option value="First">First Class</option></select></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">🌍 Destination</label>
-          <input class="form-input" type="text" id="luggageDest" placeholder="e.g. London, UK"/>
-        </div>
-        <button class="btn-primary" onclick="checkLuggage()">🧳 Check Luggage Rules</button>
-        <div class="spinner" id="luggage-spinner"><div class="spin-circle"></div>Loading airline rules...</div>
-        <div class="result-container" id="luggage-result"></div>
+        <div class="fg"><label class="fl">Destination</label><input class="fi" type="text" id="luggageDest" placeholder="e.g. London, UK"/></div>
+        <button class="btn btn-teal" onclick="checkLuggage()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>Check Luggage Rules</button>
+        <div class="spinner" id="luggage-spinner"><div class="sp-ring"></div>Loading airline rules...</div>
+        <div class="result" id="luggage-result"></div>
       </div>
     </div>
   </div>
@@ -635,43 +468,22 @@ nav{
   <!-- ── EMERGENCY CARD ── -->
   <div class="tool-panel" id="panel-emergency">
     <div class="card">
+      <div class="card-accent ca-red"></div>
       <div class="card-header">
-        <div class="card-title">🆘 Emergency Contact Card Generator</div>
+        <div class="card-title"><div class="ct-ico cti-red"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>Emergency Contact Card</div>
+        <div class="card-badge cb-red">Print & Carry</div>
       </div>
       <div class="card-body">
-        <div style="padding:14px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);margin-bottom:20px;font-size:0.82rem;color:var(--muted);line-height:1.6;">
-          💡 Generate a personalised emergency card with local emergency numbers, embassy contacts, and medical info in the local language. Save or print it before your trip.
+        <div class="note-box nb-red" style="font-size:.72rem;">Generate a personalised emergency card with local emergency numbers, embassy contacts, and medical phrases — save or print before your trip.</div>
+        <div class="fg-grid">
+          <div class="fg"><label class="fl">Your Name</label><input class="fi" type="text" id="ecName" placeholder="Your full name"/></div>
+          <div class="fg"><label class="fl">Blood Group</label><select class="fi" id="ecBlood"><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="O+">O+</option><option value="O-">O-</option><option value="AB+">AB+</option><option value="AB-">AB-</option></select></div>
         </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">👤 Your Name</label>
-            <input class="form-input" type="text" id="ecName" placeholder="Your full name"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">🩸 Blood Group</label>
-            <select class="form-input" id="ecBlood">
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">⚠️ Allergies (if any)</label>
-          <input class="form-input" type="text" id="ecAllergies" placeholder="e.g. Penicillin, Peanuts (or type None)"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">🌍 Destination</label>
-          <input class="form-input" type="text" id="ecDest" placeholder="e.g. Tokyo, Japan"/>
-        </div>
-        <button class="btn-primary" onclick="generateEmergencyCard()">🆘 Generate Emergency Card</button>
-        <div class="spinner" id="emergency-spinner"><div class="spin-circle"></div>Generating your emergency card...</div>
-        <div class="result-container" id="emergency-result"></div>
+        <div class="fg"><label class="fl">Allergies (if any)</label><input class="fi" type="text" id="ecAllergies" placeholder="e.g. Penicillin, Peanuts (or None)"/></div>
+        <div class="fg"><label class="fl">Destination</label><input class="fi" type="text" id="ecDest" placeholder="e.g. Tokyo, Japan"/></div>
+        <button class="btn btn-red" onclick="generateEmergencyCard()"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Generate Emergency Card</button>
+        <div class="spinner" id="emergency-spinner"><div class="sp-ring"></div>Generating your card...</div>
+        <div class="result" id="emergency-result"></div>
       </div>
     </div>
   </div>
@@ -679,370 +491,187 @@ nav{
 </div>
 
 <div class="toast" id="toast"></div>
-
+<script src="/static/yaply-nav.js"></script>
 <script>
-// ── NAVIGATION ──
-function switchTool(tool) {
+// ── NAV ──
+function switchTool(tool, e) {
   document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tnav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + tool).classList.add('active');
-  event.currentTarget.classList.add('active');
-  document.querySelector('.main').scrollIntoView({behavior:'smooth'});
+  document.getElementById('tn-' + tool).classList.add('active');
+  document.querySelector('.main').scrollIntoView({ behavior:'smooth' });
 }
 
-function showSpinner(id) { document.getElementById(id + '-spinner').classList.add('show'); }
-function hideSpinner(id) { document.getElementById(id + '-spinner').classList.remove('show'); }
-function showResult(id) { document.getElementById(id + '-result').classList.add('show'); }
+const showSpin = id => document.getElementById(id+'-spinner').classList.add('show');
+const hideSpin = id => document.getElementById(id+'-spinner').classList.remove('show');
+const showRes  = id => document.getElementById(id+'-result').classList.add('show');
+const hideRes  = id => document.getElementById(id+'-result').classList.remove('show');
 
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ── PASSPORT CHECK ──
+function secT(label) {
+  return `<div class="sec-title">${label}</div>`;
+}
+
+// ── PASSPORT ──
 async function checkPassport() {
   const expiry = document.getElementById('passportExpiry').value;
   const travel = document.getElementById('travelDate').value;
-  const dest = document.getElementById('passportDest').value.trim();
+  const dest   = document.getElementById('passportDest').value.trim();
   if (!expiry || !travel || !dest) { showToast('Please fill all fields'); return; }
-
-  showSpinner('passport');
-  document.getElementById('passport-result').classList.remove('show');
-
+  showSpin('passport'); hideRes('passport');
   try {
-    const res = await apiFetch('/passport-check', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ expiry_date: expiry, travel_date: travel, destination: dest })
-    });
-    const data = await res.json();
-    if (data.success) renderPassport(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
-  hideSpinner('passport');
+    const d = await apiFetch('/api/passport-check', { method:'POST', body: JSON.stringify({ expiry_date:expiry, travel_date:travel, destination:dest }) });
+    if (d.success) renderPassport(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
+  hideSpin('passport');
 }
 
 function renderPassport(d) {
-  const el = document.getElementById('passport-result');
-  const statusColor = d.validity_status === 'Safe' ? 'green' : d.validity_status === 'Warning' ? 'yellow' : 'red';
-  const statusIcon = d.validity_status === 'Safe' ? '✅' : d.validity_status === 'Warning' ? '⚠️' : '❌';
-
+  const ok = d.validity_status === 'Safe';
+  const warn = d.validity_status === 'Warning';
+  const col = ok ? 'var(--green)' : warn ? 'var(--amber)' : 'var(--red)';
+  const bg  = ok ? 'var(--green-s)' : warn ? 'var(--amber-s)' : 'var(--red-s)';
+  const cls = ok ? 'bdg-green' : warn ? 'bdg-amber' : 'bdg-red';
+  const el  = document.getElementById('passport-result');
   el.innerHTML = `
-    <div style="padding:20px;background:${statusColor==='green'?'rgba(46,204,113,0.06)':statusColor==='yellow'?'rgba(255,179,71,0.06)':'rgba(255,71,87,0.06)'};border:1px solid ${statusColor==='green'?'rgba(46,204,113,0.2)':statusColor==='yellow'?'rgba(255,179,71,0.2)':'rgba(255,71,87,0.2)'};border-radius:var(--r);margin-bottom:16px;">
-      <div style="font-size:1.5rem;margin-bottom:8px;">${statusIcon}</div>
-      <div style="font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:700;margin-bottom:6px;">${d.verdict}</div>
-      <div class="badge badge-${statusColor==='green'?'green':statusColor==='yellow'?'yellow':'red'}">${d.validity_status}</div>
+    <div style="background:${bg};border-radius:var(--r-lg);padding:14px 16px;margin-bottom:12px;border:1.5px solid ${col}25;">
+      <div class="vb-title" style="color:${col};">${d.verdict}</div>
+      <div class="vb-sub">${d.days_remaining} days until expiry · ${d.days_after_travel} days valid after travel</div>
+      <div style="margin-top:8px;"><span class="bdg ${cls}">${d.validity_status}</span></div>
     </div>
-
-    <div class="card" style="box-shadow:none;">
-      <div class="card-body" style="padding:16px;">
-        <div class="info-row"><span class="info-row-label">Days until expiry</span><span class="info-row-value">${d.days_remaining} days</span></div>
-        <div class="info-row"><span class="info-row-label">Valid after travel date</span><span class="info-row-value" style="color:${d.days_after_travel<180?'var(--red)':'var(--green)'}">${d.days_after_travel} days</span></div>
-        <div class="info-row"><span class="info-row-label">${dest} requires</span><span class="info-row-value">${d.destination_requirement}</span></div>
-        <div class="info-row"><span class="info-row-label">Renewal urgency</span><span class="info-row-value">${d.renewal_urgency}</span></div>
-      </div>
-    </div>
-
+    <div class="info-row"><span class="ir-label">Destination requires</span><span class="ir-value">${d.destination_requirement}</span></div>
+    <div class="info-row"><span class="ir-label">Renewal urgency</span><span class="ir-value">${d.renewal_urgency}</span></div>
     ${d.renewal_urgency !== 'Not needed' ? `
-      <div style="margin-top:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🔄 Renewal Options</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div style="padding:16px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-            <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:6px;">Normal Renewal</div>
-            <div style="font-size:0.9rem;font-weight:700;">${d.renewal_time}</div>
-            <div style="font-size:0.78rem;color:var(--muted);">${d.renewal_cost}</div>
-          </div>
-          ${d.tatkal_available ? `
-            <div style="padding:16px;background:rgba(0,201,167,0.06);border-radius:var(--r);border:1px solid rgba(0,201,167,0.2);">
-              <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:6px;">⚡ Tatkal</div>
-              <div style="font-size:0.9rem;font-weight:700;">${d.tatkal_time}</div>
-              <div style="font-size:0.78rem;color:var(--muted);">${d.tatkal_cost}</div>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-    ` : ''}
-
-    ${d.tips ? `
-      <div style="margin-top:16px;">
-        ${d.tips.map(tip => `<div style="padding:10px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:8px;display:flex;gap:8px;"><span>💡</span>${tip}</div>`).join('')}
-      </div>
-    ` : ''}
-  `;
-  showResult('passport');
+      <div style="margin-top:10px;" class="mini-grid">
+        <div class="mini-card"><div class="mc-label">Normal Renewal</div><div class="mc-value">${d.renewal_time||'—'}</div><div class="mc-sub">${d.renewal_cost||''}</div></div>
+        ${d.tatkal_available ? `<div class="mini-card" style="border-color:var(--teal-m);background:var(--teal-s);"><div class="mc-label" style="color:var(--teal);">Tatkal</div><div class="mc-value">${d.tatkal_time||'—'}</div><div class="mc-sub">${d.tatkal_cost||''}</div></div>` : ''}
+      </div>` : ''}
+    ${d.tips?.length ? secT('Tips') + d.tips.map(t=>`<div class="tip-row"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>${t}</div>`).join('') : ''}`;
+  showRes('passport');
 }
 
 // ── SAFETY ──
 async function checkSafety() {
   const dest = document.getElementById('safetyDest').value.trim();
   if (!dest) { showToast('Please enter a destination'); return; }
-
-  showSpinner('safety');
-  document.getElementById('safety-result').classList.remove('show');
-
+  showSpin('safety'); hideRes('safety');
   try {
-    const res = await apiFetch('/safety-check', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ destination: dest })
-    });
-    const data = await res.json();
-    if (data.success) renderSafety(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
-  hideSpinner('safety');
+    const d = await apiFetch('/api/safety-check', { method:'POST', body: JSON.stringify({ destination:dest }) });
+    if (d.success) renderSafety(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
+  hideSpin('safety');
 }
 
 function renderSafety(d) {
+  const scoreColor = d.safety_score >= 70 ? 'var(--green)' : d.safety_score >= 50 ? 'var(--amber)' : 'var(--red)';
+  const circ = 2 * Math.PI * 42;
+  const off  = circ - (d.safety_score / 100) * circ;
   const el = document.getElementById('safety-result');
-  const scoreColor = d.safety_score >= 70 ? '#27AE60' : d.safety_score >= 50 ? '#E5930A' : '#FF4757';
-  const circumference = 2 * Math.PI * 45;
-  const offset = circumference - (d.safety_score / 100) * circumference;
-
   el.innerHTML = `
     <div class="score-wrap">
-      <div class="score-circle">
-        <svg class="score-svg" width="120" height="120" viewBox="0 0 120 120">
-          <circle class="score-track" cx="60" cy="60" r="45"/>
-          <circle class="score-fill" cx="60" cy="60" r="45"
-            stroke="${scoreColor}"
-            stroke-dasharray="${circumference}"
-            stroke-dashoffset="${offset}"/>
+      <div class="score-ring">
+        <svg class="score-svg" width="100" height="100" viewBox="0 0 100 100">
+          <circle class="sc-track" cx="50" cy="50" r="42"/>
+          <circle class="sc-fill" cx="50" cy="50" r="42" stroke="${scoreColor}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/>
         </svg>
-        <div class="score-text">
-          <div class="score-num" style="color:${scoreColor}">${d.safety_score}</div>
-          <div class="score-label">Safety</div>
+        <div class="score-inner">
+          <div class="score-num" style="color:${scoreColor};">${d.safety_score}</div>
+          <div class="score-lbl">Safety</div>
         </div>
       </div>
+      <div style="margin-top:8px;"><span class="bdg ${d.safety_score>=70?'bdg-green':d.safety_score>=50?'bdg-amber':'bdg-red'}">${d.safety_level}</span></div>
     </div>
-
-    <div style="text-align:center;margin-bottom:20px;">
-      <div class="badge badge-${d.safety_score>=70?'green':d.safety_score>=50?'yellow':'red'}" style="margin:0 auto;">${d.safety_level}</div>
+    <div class="mini-grid" style="margin-bottom:10px;">
+      <div class="mini-card"><div class="mc-label">Water</div><div class="mc-value" style="color:${d.water_safe?'var(--green)':'var(--red)'};">${d.water_safe?'Safe to drink':'Avoid tap water'}</div><div class="mc-sub">${d.water_advice||''}</div></div>
+      <div class="mini-card"><div class="mc-label">Food Safety</div><div class="mc-value">${d.food_safety||'—'}</div></div>
+      <div class="mini-card"><div class="mc-label">Solo Female</div><div class="mc-value">${d.solo_female_safety||'—'}</div></div>
+      <div class="mini-card"><div class="mc-label">Travel Advisory</div><div class="mc-value">${d.travel_advisory||'—'}</div></div>
     </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-      <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-        <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:4px;">🚰 Water</div>
-        <div style="font-size:0.88rem;font-weight:700;color:${d.water_safe?'var(--green)':'var(--red)'};">${d.water_safe ? '✅ Safe to drink' : '❌ ' + d.water_advice}</div>
-      </div>
-      <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-        <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:4px;">🍜 Food</div>
-        <div style="font-size:0.88rem;font-weight:700;">${d.food_safety}</div>
-      </div>
-      <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-        <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:4px;">👩 Solo Female</div>
-        <div style="font-size:0.85rem;font-weight:700;">${d.solo_female_safety}</div>
-      </div>
-      <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-        <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:4px;">🏛️ Advisory</div>
-        <div style="font-size:0.85rem;font-weight:700;">${d.travel_advisory}</div>
-      </div>
-    </div>
-
-    ${(d.scams_to_avoid||[]).length > 0 ? `
-      <div style="margin-bottom:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:10px;">⚠️ Common Scams to Avoid</div>
-        ${d.scams_to_avoid.map(s=>`<div style="padding:10px 14px;background:rgba(255,71,87,0.04);border-left:3px solid var(--red);border-radius:0 var(--r) var(--r) 0;font-size:0.82rem;margin-bottom:8px;">${s}</div>`).join('')}
-      </div>
-    ` : ''}
-
-    ${(d.best_safety_tips||[]).length > 0 ? `
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">✅ Safety Tips</div>
-      ${d.best_safety_tips.map((tip,i)=>`
-        <div class="step-item" style="margin-bottom:8px;">
-          <div class="step-num-badge">${i+1}</div>
-          <div class="step-content"><div class="step-title">${tip}</div></div>
-        </div>
-      `).join('')}
-    ` : ''}
-
-    ${d.embassy_phone ? `
-      <div style="margin-top:16px;padding:16px;background:rgba(74,144,217,0.06);border:1px solid rgba(74,144,217,0.2);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:8px;">🏛️ Indian Embassy</div>
-        <div style="font-size:0.85rem;font-weight:600;margin-bottom:4px;">${d.emergency_embassy}</div>
-        <div style="font-size:0.85rem;color:var(--blue);font-weight:700;">📞 ${d.embassy_phone}</div>
-      </div>
-    ` : ''}
-  `;
-  showResult('safety');
+    ${d.scams_to_avoid?.length ? secT('Scams to Avoid') + d.scams_to_avoid.map(s=>`<div style="padding:7px 10px;background:var(--red-s);border-left:2px solid var(--red);border-radius:0 var(--r) var(--r) 0;font-size:.75rem;margin-bottom:5px;">${s}</div>`).join('') : ''}
+    ${d.best_safety_tips?.length ? secT('Safety Tips') + d.best_safety_tips.map((t,i)=>`<div class="step-item"><div class="step-num sn-teal">${i+1}</div><div class="step-text">${t}</div></div>`).join('') : ''}
+    ${d.embassy_phone ? `<div class="note-box nb-sky" style="margin-top:10px;"><strong>Embassy:</strong> ${d.emergency_embassy} · <strong>${d.embassy_phone}</strong></div>` : ''}`;
+  showRes('safety');
 }
 
-// ── LOCAL LAWS ──
+// ── LAWS ──
 async function checkLaws() {
   const dest = document.getElementById('lawsDest').value.trim();
   if (!dest) { showToast('Please enter a destination'); return; }
-
-  showSpinner('laws');
-  document.getElementById('laws-result').classList.remove('show');
-
+  showSpin('laws'); hideRes('laws');
   try {
-    const res = await apiFetch('/local-laws', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ destination: dest })
-    });
-    const data = await res.json();
-    if (data.success) renderLaws(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
-  hideSpinner('laws');
+    const d = await apiFetch('/api/local-laws', { method:'POST', body: JSON.stringify({ destination:dest }) });
+    if (d.success) renderLaws(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
+  hideSpin('laws');
 }
 
 function renderLaws(d) {
   const el = document.getElementById('laws-result');
   el.innerHTML = `
-    <div style="padding:16px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);margin-bottom:20px;">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:6px;">⚖️ Most Important</div>
-      <div style="font-size:0.92rem;font-weight:600;">${d.legal_tip}</div>
-    </div>
-
-    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">📋 Laws You Must Know</div>
+    <div class="note-box nb-amber">${d.legal_tip}</div>
+    ${secT('Laws You Must Know')}
     ${(d.strict_laws||[]).map(law => `
-      <div class="law-card ${law.severity?.toLowerCase()||'medium'}">
-        <div class="law-icon">${law.icon||'⚖️'}</div>
-        <div style="flex:1;">
-          <div class="law-name">${law.law}</div>
-          <div class="law-penalty">Penalty: ${law.penalty}</div>
-        </div>
-        <div class="law-severity sev-${law.severity?.toLowerCase()||'medium'}">${law.severity}</div>
-      </div>
-    `).join('')}
-
-    ${d.drug_laws ? `
-      <div style="margin-top:16px;padding:16px;background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:6px;">💊 Drug Laws</div>
-        <div style="font-size:0.85rem;">${d.drug_laws}</div>
-      </div>
-    ` : ''}
-
-    ${d.alcohol_rules ? `
-      <div style="margin-top:10px;padding:14px;background:rgba(255,179,71,0.06);border:1px solid rgba(255,179,71,0.2);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#E5930A;margin-bottom:6px;">🍺 Alcohol Rules</div>
-        <div style="font-size:0.85rem;">${d.alcohol_rules}</div>
-      </div>
-    ` : ''}
-
-    ${(d.photography_rules||[]).length > 0 ? `
-      <div style="margin-top:10px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">📸 Photography Rules</div>
-        ${d.photography_rules.map(r=>`<div style="padding:8px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:6px;display:flex;gap:8px;"><span>🚫</span>${r}</div>`).join('')}
-      </div>
-    ` : ''}
-
+      <div class="law-card ${law.severity?.toLowerCase()==='high'?'lc-high':law.severity?.toLowerCase()==='low'?'lc-low':'lc-medium'}">
+        <div class="lc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/></svg></div>
+        <div style="flex:1;"><div class="lc-name">${law.law}</div><div class="lc-penalty">Penalty: ${law.penalty}</div></div>
+        <div class="lc-sev bdg ${law.severity?.toLowerCase()==='high'?'bdg-red':law.severity?.toLowerCase()==='low'?'bdg-teal':'bdg-amber'}">${law.severity}</div>
+      </div>`).join('')}
+    ${d.drug_laws ? `<div class="note-box nb-red" style="margin-top:10px;"><strong>Drug Laws:</strong> ${d.drug_laws}</div>` : ''}
+    ${d.alcohol_rules ? `<div class="note-box nb-amber"><strong>Alcohol:</strong> ${d.alcohol_rules}</div>` : ''}
+    ${d.photography_rules?.length ? secT('Photography Rules') + d.photography_rules.map(r=>`<div class="tip-row"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>${r}</div>`).join('') : ''}
     ${d.customs_limits ? `
-      <div style="margin-top:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🛃 Customs Limits</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-            <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">💵 Cash</div>
-            <div style="font-size:0.85rem;font-weight:600;">${d.customs_limits.cash}</div>
-          </div>
-          <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-            <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">🚬 Cigarettes</div>
-            <div style="font-size:0.85rem;font-weight:600;">${d.customs_limits.cigarettes}</div>
-          </div>
-        </div>
-      </div>
-    ` : ''}
-  `;
-  showResult('laws');
+      ${secT('Customs Limits')}
+      <div class="mini-grid">
+        <div class="mini-card"><div class="mc-label">Cash</div><div class="mc-value">${d.customs_limits.cash||'—'}</div></div>
+        <div class="mini-card"><div class="mc-label">Cigarettes</div><div class="mc-value">${d.customs_limits.cigarettes||'—'}</div></div>
+      </div>` : ''}`;
+  showRes('laws');
 }
 
 // ── JETLAG ──
 async function calcJetlag() {
   const from = document.getElementById('jlFrom').value.trim();
-  const to = document.getElementById('jlTo').value.trim();
+  const to   = document.getElementById('jlTo').value.trim();
   const date = document.getElementById('jlDate').value;
   if (!from || !to) { showToast('Please enter both cities'); return; }
-
-  showSpinner('jetlag');
-  document.getElementById('jetlag-result').classList.remove('show');
-
+  showSpin('jetlag'); hideRes('jetlag');
   try {
-    const res = await apiFetch('/jetlag', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ from_city: from, to_city: to, travel_date: date||'upcoming' })
-    });
-    const data = await res.json();
-    if (data.success) renderJetlag(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
-  hideSpinner('jetlag');
+    const d = await apiFetch('/api/jetlag', { method:'POST', body: JSON.stringify({ from_city:from, to_city:to, travel_date:date||'upcoming' }) });
+    if (d.success) renderJetlag(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
+  hideSpin('jetlag');
 }
 
 function renderJetlag(d) {
+  const sevColor = d.jet_lag_severity==='Mild'?'var(--green)':d.jet_lag_severity==='Moderate'?'var(--amber)':'var(--red)';
   const el = document.getElementById('jetlag-result');
-  const sevColor = d.jet_lag_severity === 'Mild' ? 'var(--green)' : d.jet_lag_severity === 'Moderate' ? 'var(--gold)' : 'var(--red)';
-
   el.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
-      <div style="padding:16px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Time Difference</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.4rem;font-weight:700;">${d.time_difference}</div>
-      </div>
-      <div style="padding:16px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Jet Lag</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.4rem;font-weight:700;color:${sevColor};">${d.jet_lag_severity}</div>
-      </div>
-      <div style="padding:16px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Recovery</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.4rem;font-weight:700;">${d.recovery_days} days</div>
-      </div>
+    <div class="mini-grid-3">
+      <div class="mini-card"><div class="mc-label">Time Difference</div><div class="mc-value">${d.time_difference}</div></div>
+      <div class="mini-card"><div class="mc-label">Jet Lag</div><div class="mc-value" style="color:${sevColor};">${d.jet_lag_severity}</div></div>
+      <div class="mini-card"><div class="mc-label">Recovery</div><div class="mc-value">${d.recovery_days} days</div></div>
     </div>
-
-    ${d.recovery_tip ? `
-      <div style="padding:16px;background:var(--accent-soft);border:1px solid rgba(0,201,167,0.2);border-radius:var(--r);margin-bottom:20px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:6px;">⭐ Top Tip</div>
-        <div style="font-size:0.9rem;font-weight:600;">${d.recovery_tip}</div>
-      </div>
-    ` : ''}
-
-    <div class="jl-phase">
-      <div class="jl-phase-header before">✈️ Before Your Flight</div>
-      ${(d.before_flight||[]).map(a=>`
-        <div class="jl-action">
-          <div class="jl-dot"></div>
-          <div>
-            <div class="jl-action-text">${a.action}</div>
-            <div class="jl-action-time">⏰ ${a.timing} · ${a.why}</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-
-    <div class="jl-phase">
-      <div class="jl-phase-header during">🛫 During Flight</div>
-      ${(d.during_flight||[]).map(a=>`
-        <div class="jl-action">
-          <div class="jl-dot" style="background:var(--gold);"></div>
-          <div>
-            <div class="jl-action-text">${a.action}</div>
-            <div class="jl-action-time">⏰ ${a.timing} · ${a.why}</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-
-    <div class="jl-phase">
-      <div class="jl-phase-header after">🛬 After Arrival</div>
-      ${(d.after_arrival||[]).map(a=>`
-        <div class="jl-action">
-          <div class="jl-dot" style="background:var(--accent);"></div>
-          <div>
-            <div class="jl-action-text">${a.action}</div>
-            <div class="jl-action-time">⏰ ${a.timing} · ${a.why}</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-
-    ${d.avoid ? `
-      <div style="margin-top:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:10px;">🚫 Things to Avoid</div>
-        ${d.avoid.map(a=>`<div style="padding:8px 14px;background:rgba(255,71,87,0.04);border-left:3px solid var(--red);border-radius:0 var(--r) var(--r) 0;font-size:0.82rem;margin-bottom:6px;">${a}</div>`).join('')}
-      </div>
-    ` : ''}
-  `;
-  showResult('jetlag');
+    ${d.recovery_tip ? `<div class="note-box nb-teal">${d.recovery_tip}</div>` : ''}
+    ${d.before_flight?.length ? `
+      <div class="phase-block"><div class="phase-head ph-before">Before Your Flight</div>
+      ${d.before_flight.map(a=>`<div class="phase-action"><div class="pa-dot" style="background:var(--sky);"></div><div><div class="pa-text">${a.action}</div><div class="pa-time">${a.timing||''} ${a.why?'· '+a.why:''}</div></div></div>`).join('')}</div>` : ''}
+    ${d.during_flight?.length ? `
+      <div class="phase-block"><div class="phase-head ph-during">During Flight</div>
+      ${d.during_flight.map(a=>`<div class="phase-action"><div class="pa-dot" style="background:var(--gold);"></div><div><div class="pa-text">${a.action}</div><div class="pa-time">${a.timing||''} ${a.why?'· '+a.why:''}</div></div></div>`).join('')}</div>` : ''}
+    ${d.after_arrival?.length ? `
+      <div class="phase-block"><div class="phase-head ph-after">After Arrival</div>
+      ${d.after_arrival.map(a=>`<div class="phase-action"><div class="pa-dot" style="background:var(--green);"></div><div><div class="pa-text">${a.action}</div><div class="pa-time">${a.timing||''} ${a.why?'· '+a.why:''}</div></div></div>`).join('')}</div>` : ''}
+    ${d.avoid?.length ? `<div class="note-box nb-red" style="margin-top:8px;"><strong>Avoid:</strong> ${d.avoid.join(' · ')}</div>` : ''}`;
+  showRes('jetlag');
 }
 
 // ── FESTIVALS ──
@@ -1050,367 +679,207 @@ async function checkFestivals() {
   const dest = document.getElementById('festDest').value.trim();
   const date = document.getElementById('festDate').value;
   if (!dest) { showToast('Please enter a destination'); return; }
-
-  showSpinner('festivals');
-  document.getElementById('festivals-result').classList.remove('show');
-
+  showSpin('festivals'); hideRes('festivals');
   try {
-    const res = await apiFetch('/festivals', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ destination: dest, travel_date: date||new Date().toISOString().split('T')[0] })
-    });
-    const data = await res.json();
-    if (data.success) renderFestivals(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
-  hideSpinner('festivals');
+    const d = await apiFetch('/api/festivals', { method:'POST', body: JSON.stringify({ destination:dest, travel_date:date||new Date().toISOString().split('T')[0] }) });
+    if (d.success) renderFestivals(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
+  hideSpin('festivals');
 }
 
 function renderFestivals(d) {
+  const crowdCol = d.crowd_level==='Very Crowded'?'var(--red)':d.crowd_level==='Crowded'?'var(--amber)':'var(--green)';
   const el = document.getElementById('festivals-result');
-  const crowdColor = d.crowd_level === 'Very Crowded' ? 'var(--red)' : d.crowd_level === 'Crowded' ? 'var(--gold)' : 'var(--accent2)';
-
   el.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
-      <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Season</div>
-        <div style="font-size:0.88rem;font-weight:700;">${d.season_type}</div>
-      </div>
-      <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Crowds</div>
-        <div style="font-size:0.88rem;font-weight:700;color:${crowdColor};">${d.crowd_level}</div>
-      </div>
-      <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Prices</div>
-        <div style="font-size:0.88rem;font-weight:700;">${d.price_impact}</div>
-      </div>
+    <div class="mini-grid-3">
+      <div class="mini-card"><div class="mc-label">Season</div><div class="mc-value">${d.season_type}</div></div>
+      <div class="mini-card"><div class="mc-label">Crowds</div><div class="mc-value" style="color:${crowdCol};">${d.crowd_level}</div></div>
+      <div class="mini-card"><div class="mc-label">Price Impact</div><div class="mc-value">${d.price_impact}</div></div>
     </div>
-
-    ${(d.festivals||[]).length > 0 ? `
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🎉 Festivals & Events</div>
-      ${d.festivals.map(f=>`
-        <div class="festival-item">
-          <div class="festival-icon">${f.icon||'🎉'}</div>
-          <div style="flex:1;">
-            <div class="festival-name">${f.name}</div>
-            <div class="festival-dates">📅 ${f.dates}</div>
-            <div class="festival-desc">${f.description}</div>
-            ${f.special_tips ? `<div style="font-size:0.75rem;background:var(--accent-soft);color:var(--accent2);padding:4px 10px;border-radius:8px;margin-top:6px;display:inline-block;">💡 ${f.special_tips}</div>` : ''}
-          </div>
-          ${f.tourist_friendly ? `<div style="font-size:0.7rem;color:var(--accent2);font-weight:700;background:var(--accent-soft);padding:4px 10px;border-radius:100px;height:fit-content;flex-shrink:0;">Tourist Friendly</div>` : ''}
+    ${d.festivals?.length ? secT('Festivals & Events') + d.festivals.map(f=>`
+      <div class="fest-card">
+        <div class="fc-ico">${f.icon||'🎉'}</div>
+        <div>
+          <div class="fc-name">${f.name}</div>
+          <div class="fc-dates">${f.dates}</div>
+          <div class="fc-desc">${f.description}</div>
+          ${f.special_tips ? `<div class="fc-tip">${f.special_tips}</div>` : ''}
         </div>
-      `).join('')}
-    ` : ''}
-
-    ${(d.public_holidays||[]).length > 0 ? `
-      <div style="margin-top:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🏖️ Public Holidays</div>
-        ${d.public_holidays.map(h=>`
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:8px;">
-            <div>
-              <div style="font-size:0.88rem;font-weight:700;">${h.name}</div>
-              <div style="font-size:0.75rem;color:var(--muted);">${h.date} · ${h.impact}</div>
-            </div>
-            <div class="badge badge-${h.tourist_impact==='positive'?'green':h.tourist_impact==='negative'?'red':'blue'}">${h.tourist_impact}</div>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-
-    ${d.best_festival_tip ? `
-      <div style="margin-top:16px;padding:16px;background:var(--accent-soft);border:1px solid rgba(0,201,167,0.2);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:6px;">⭐ Pro Tip</div>
-        <div style="font-size:0.88rem;font-weight:500;">${d.best_festival_tip}</div>
-      </div>
-    ` : ''}
-  `;
-  showResult('festivals');
+        ${f.tourist_friendly ? `<div class="bdg bdg-teal" style="align-self:flex-start;flex-shrink:0;font-size:.55rem;">Friendly</div>` : ''}
+      </div>`).join('') : ''}
+    ${d.public_holidays?.length ? secT('Public Holidays') + d.public_holidays.map(h=>`
+      <div class="info-row"><span class="ir-label">${h.name} · <span style="color:var(--muted2);font-size:.7rem;">${h.date}</span></span><span class="ir-value"><span class="bdg ${h.tourist_impact==='positive'?'bdg-green':h.tourist_impact==='negative'?'bdg-red':'bdg-sky'}" style="font-size:.55rem;">${h.tourist_impact||h.impact}</span></span></div>`).join('') : ''}
+    ${d.best_festival_tip ? `<div class="note-box nb-teal" style="margin-top:10px;">${d.best_festival_tip}</div>` : ''}`;
+  showRes('festivals');
 }
 
 // ── BUDGET ──
 async function planBudget() {
-  const dest = document.getElementById('budgetDest').value.trim();
-  const days = document.getElementById('budgetDays').value;
-  const people = document.getElementById('budgetPeople').value;
+  const dest     = document.getElementById('budgetDest').value.trim();
+  const days     = document.getElementById('budgetDays').value;
+  const people   = document.getElementById('budgetPeople').value;
   const currency = document.getElementById('budgetCurr').value;
-  const amount = document.getElementById('budgetAmount').value;
+  const amount   = document.getElementById('budgetAmount').value;
   if (!dest || !amount) { showToast('Please fill all fields'); return; }
-
-  showSpinner('budget');
-  document.getElementById('budget-result').classList.remove('show');
-
+  showSpin('budget'); hideRes('budget');
   try {
-    const res = await apiFetch('/budget-plan', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ destination: dest, days, people, budget: amount, currency })
-    });
-    const data = await res.json();
-    if (data.success) renderBudget(data.data, currency);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
-  hideSpinner('budget');
+    const d = await apiFetch('/api/budget-plan', { method:'POST', body: JSON.stringify({ destination:dest, days, people, budget:amount, currency }) });
+    if (d.success) renderBudget(d.data, currency);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
+  hideSpin('budget');
 }
 
 function renderBudget(d, currency) {
-  const el = document.getElementById('budget-result');
-  const colors = ['#00C9A7','#4A90D9','#FFB347','#FF6B9D','#8B5CF6','#F59E0B'];
+  const barCols = ['#1A8A72','#3A6BC8','#E8823A','#28B06A','#8B5CF6','#F0B429'];
   const breakdown = d.breakdown || {};
   const entries = Object.entries(breakdown);
-
+  const vals = entries.map(([,v]) => parseInt((v.amount+'').replace(/[^0-9]/g,'')) || 0);
+  const maxV = Math.max(...vals, 1);
+  const el = document.getElementById('budget-result');
   el.innerHTML = `
-    <div style="padding:16px;background:${d.budget_verdict?.includes('realistic')||d.budget_verdict?.includes('comfortable')?'rgba(0,201,167,0.06)':'rgba(255,179,71,0.06)'};border:1px solid ${d.budget_verdict?.includes('realistic')||d.budget_verdict?.includes('comfortable')?'rgba(0,201,167,0.2)':'rgba(255,179,71,0.2)'};border-radius:var(--r);margin-bottom:20px;">
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:6px;">💡 Budget Verdict</div>
-      <div style="font-size:0.92rem;font-weight:600;">${d.budget_verdict}</div>
+    <div class="note-box nb-teal">${d.budget_verdict}</div>
+    <div class="mini-grid-3">
+      <div class="mini-card"><div class="mc-label">Total</div><div class="mc-value">${d.total_budget||'—'}</div></div>
+      <div class="mini-card"><div class="mc-label">Per Person</div><div class="mc-value">${d.per_person||'—'}</div></div>
+      <div class="mini-card"><div class="mc-label">Per Day</div><div class="mc-value">${d.per_day||'—'}</div></div>
     </div>
-
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
-      <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Total</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.1rem;font-weight:700;">${d.total_budget}</div>
+    ${secT('Budget Breakdown')}
+    ${entries.map(([k,v],i) => `
+      <div class="budget-bar-row">
+        <div class="bbr-label">${k}</div>
+        <div class="bbr-bar"><div class="bbr-fill" style="width:${vals[i]/maxV*100}%;background:${barCols[i%barCols.length]};"></div></div>
+        <div class="bbr-amount">${v.amount}</div>
       </div>
-      <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Per Person</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.1rem;font-weight:700;">${d.per_person}</div>
-      </div>
-      <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Per Day</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.1rem;font-weight:700;">${d.per_day}</div>
-      </div>
-    </div>
-
-    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">💰 Budget Breakdown</div>
-    ${entries.map(([key, val], i) => `
-      <div style="margin-bottom:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <div style="font-size:0.85rem;font-weight:600;">${key.charAt(0).toUpperCase()+key.slice(1)}</div>
-          <div style="font-size:0.85rem;font-weight:700;">${val.amount}</div>
-        </div>
-        <div style="height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;">
-          <div style="height:100%;width:${val.percentage}%;background:${colors[i%colors.length]};border-radius:3px;transition:width 1s ease;"></div>
-        </div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">💡 ${val.tips}</div>
-      </div>
-    `).join('')}
-
+      ${v.tips ? `<div style="font-size:.65rem;color:var(--muted);margin:-4px 0 10px 100px;">${v.tips}</div>` : ''}`).join('')}
     ${d.daily_budget ? `
-      <div style="margin-top:20px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">📅 Daily Budget Options</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div style="padding:12px 16px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:var(--r);font-size:0.82rem;"><strong style="color:var(--green);">Budget Day:</strong> ${d.daily_budget.budget_day}</div>
-          <div style="padding:12px 16px;background:rgba(74,144,217,0.06);border:1px solid rgba(74,144,217,0.15);border-radius:var(--r);font-size:0.82rem;"><strong style="color:var(--blue);">Comfort Day:</strong> ${d.daily_budget.comfort_day}</div>
-          <div style="padding:12px 16px;background:rgba(255,179,71,0.06);border:1px solid rgba(255,179,71,0.15);border-radius:var(--r);font-size:0.82rem;"><strong style="color:var(--gold);">Splurge Day:</strong> ${d.daily_budget.splurge_day}</div>
-        </div>
-      </div>
-    ` : ''}
-
-    ${(d.money_saving_tips||[]).length > 0 ? `
-      <div style="margin-top:16px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">💡 Money Saving Tips</div>
-        ${d.money_saving_tips.map(tip=>`<div style="padding:8px 14px;background:var(--bg);border-radius:var(--r);font-size:0.82rem;margin-bottom:6px;display:flex;gap:8px;"><span>💰</span>${tip}</div>`).join('')}
-      </div>
-    ` : ''}
-
-    ${(d.hidden_costs||[]).length > 0 ? `
-      <div style="margin-top:12px;padding:16px;background:rgba(255,71,87,0.04);border:1px solid rgba(255,71,87,0.12);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:10px;">⚠️ Hidden Costs to Budget For</div>
-        ${d.hidden_costs.map(cost=>`<div style="font-size:0.82rem;padding:4px 0;border-bottom:1px solid rgba(255,71,87,0.1);display:flex;gap:8px;"><span>•</span>${cost}</div>`).join('')}
-      </div>
-    ` : ''}
-  `;
-  showResult('budget');
+      ${secT('Daily Budget Options')}
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+        <div class="note-box nb-teal" style="margin:0;"><strong>Budget day:</strong> ${d.daily_budget.budget_day}</div>
+        <div class="note-box nb-sky" style="margin:0;"><strong>Comfort day:</strong> ${d.daily_budget.comfort_day}</div>
+        <div class="note-box nb-gold" style="margin:0;"><strong>Splurge day:</strong> ${d.daily_budget.splurge_day}</div>
+      </div>` : ''}
+    ${d.money_saving_tips?.length ? secT('Money Saving Tips') + d.money_saving_tips.map(t=>`<div class="tip-row"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>${t}</div>`).join('') : ''}
+    ${d.hidden_costs?.length ? `<div class="note-box nb-amber" style="margin-top:8px;"><strong>Hidden costs to budget for:</strong> ${d.hidden_costs.join(' · ')}</div>` : ''}`;
+  showRes('budget');
 }
 
 // ── LUGGAGE ──
 async function checkLuggage() {
   const airline = document.getElementById('luggageAirline').value.trim();
-  const cabin = document.getElementById('luggageClass').value;
-  const dest = document.getElementById('luggageDest').value.trim();
+  const cabin   = document.getElementById('luggageClass').value;
+  const dest    = document.getElementById('luggageDest').value.trim();
   if (!airline || !dest) { showToast('Please fill all fields'); return; }
-
-  showSpinner('luggage');
-  document.getElementById('luggage-result').classList.remove('show');
-
+  showSpin('luggage'); hideRes('luggage');
   try {
-    const res = await apiFetch('/luggage-check', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ airline, cabin_class: cabin, destination: dest })
-    });
-    const data = await res.json();
-    if (data.success) renderLuggage(data.data);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
-  hideSpinner('luggage');
+    const d = await apiFetch('/api/luggage-check', { method:'POST', body: JSON.stringify({ airline, cabin_class:cabin, destination:dest }) });
+    if (d.success) renderLuggage(d.data);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
+  hideSpin('luggage');
 }
 
 function renderLuggage(d) {
   const el = document.getElementById('luggage-result');
   el.innerHTML = `
-    <div class="luggage-grid">
-      <div class="luggage-item">
-        <div class="li-icon">🎒</div>
-        <div class="li-label">Carry-On</div>
-        <div class="li-value">${d.carry_on?.weight}</div>
-        <div class="li-sub">${d.carry_on?.dimensions}</div>
+    <div class="luggage-visual">
+      <div class="lug-card">
+        <div class="lug-ico" style="background:var(--sky-s);color:var(--sky);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+        <div class="lug-label">Carry-On</div>
+        <div class="lug-value">${d.carry_on?.weight||'—'}</div>
+        <div class="lug-sub">${d.carry_on?.dimensions||''}</div>
       </div>
-      <div class="luggage-item">
-        <div class="li-icon">🧳</div>
-        <div class="li-label">Checked Bag</div>
-        <div class="li-value">${d.checked_baggage?.weight}</div>
-        <div class="li-sub">${d.checked_baggage?.dimensions}</div>
+      <div class="lug-card">
+        <div class="lug-ico" style="background:var(--teal-s);color:var(--teal);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
+        <div class="lug-label">Checked Bag</div>
+        <div class="lug-value">${d.checked_baggage?.weight||'—'}</div>
+        <div class="lug-sub">${d.checked_baggage?.dimensions||''}</div>
       </div>
     </div>
-
-    <div style="padding:14px;background:rgba(255,179,71,0.06);border:1px solid rgba(255,179,71,0.2);border-radius:var(--r);margin-bottom:16px;font-size:0.82rem;">
-      <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#E5930A;margin-bottom:4px;">💧 Liquids Rule</div>
-      ${d.liquid_rules}
-    </div>
-
+    ${d.liquid_rules ? `<div class="note-box nb-amber">${d.liquid_rules}</div>` : ''}
     ${d.duty_free_allowance ? `
-      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🛃 Duty Free Allowance</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-        <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">🍺 Alcohol</div>
-          <div style="font-size:0.85rem;font-weight:600;">${d.duty_free_allowance.alcohol}</div>
-        </div>
-        <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">🚬 Cigarettes</div>
-          <div style="font-size:0.85rem;font-weight:600;">${d.duty_free_allowance.cigarettes}</div>
-        </div>
-        <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">💵 Cash</div>
-          <div style="font-size:0.85rem;font-weight:600;">${d.duty_free_allowance.cash}</div>
-        </div>
-        <div style="padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
-          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px;">🎁 Gifts</div>
-          <div style="font-size:0.85rem;font-weight:600;">${d.duty_free_allowance.gifts}</div>
-        </div>
-      </div>
-    ` : ''}
-
-    ${(d.prohibited_items||[]).length > 0 ? `
-      <div style="padding:14px;background:rgba(255,71,87,0.04);border:1px solid rgba(255,71,87,0.15);border-radius:var(--r);margin-bottom:16px;">
-        <div style="font-size:0.65fn;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px;font-size:0.65rem;">🚫 Prohibited Items</div>
-        ${d.prohibited_items.map(item=>`<div style="font-size:0.82rem;padding:4px 0;border-bottom:1px solid rgba(255,71,87,0.08);display:flex;gap:8px;"><span>✗</span>${item}</div>`).join('')}
-      </div>
-    ` : ''}
-
-    ${d.pro_tip ? `
-      <div style="padding:14px;background:var(--accent-soft);border:1px solid rgba(0,201,167,0.2);border-radius:var(--r);">
-        <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:4px;">⭐ Pro Tip</div>
-        <div style="font-size:0.85rem;font-weight:500;">${d.pro_tip}</div>
-      </div>
-    ` : ''}
-  `;
-  showResult('luggage');
+      ${secT('Duty Free Allowance')}
+      <div class="mini-grid">
+        <div class="mini-card"><div class="mc-label">Alcohol</div><div class="mc-value">${d.duty_free_allowance.alcohol||'—'}</div></div>
+        <div class="mini-card"><div class="mc-label">Cigarettes</div><div class="mc-value">${d.duty_free_allowance.cigarettes||'—'}</div></div>
+        <div class="mini-card"><div class="mc-label">Cash</div><div class="mc-value">${d.duty_free_allowance.cash||'—'}</div></div>
+        <div class="mini-card"><div class="mc-label">Gifts</div><div class="mc-value">${d.duty_free_allowance.gifts||'—'}</div></div>
+      </div>` : ''}
+    ${d.prohibited_items?.length ? `
+      <div class="note-box nb-red" style="margin-top:8px;">
+        <strong>Prohibited items:</strong> ${d.prohibited_items.join(' · ')}
+      </div>` : ''}
+    ${d.pro_tip ? `<div class="note-box nb-teal" style="margin-top:8px;">${d.pro_tip}</div>` : ''}`;
+  showRes('luggage');
 }
 
 // ── EMERGENCY CARD ──
 async function generateEmergencyCard() {
-  const name = document.getElementById('ecName').value.trim();
-  const blood = document.getElementById('ecBlood').value;
+  const name      = document.getElementById('ecName').value.trim();
+  const blood     = document.getElementById('ecBlood').value;
   const allergies = document.getElementById('ecAllergies').value.trim();
-  const dest = document.getElementById('ecDest').value.trim();
+  const dest      = document.getElementById('ecDest').value.trim();
   if (!name || !dest) { showToast('Please enter your name and destination'); return; }
-
-  showSpinner('emergency');
-  document.getElementById('emergency-result').classList.remove('show');
-
+  showSpin('emergency'); hideRes('emergency');
   try {
-    const res = await apiFetch('/emergency-card', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ name, blood_group: blood, allergies, destination: dest })
-    });
-    const data = await res.json();
-    if (data.success) renderEmergencyCard(data.data, name, blood, allergies, dest);
-    else showToast('Error: ' + data.error);
-  } catch(e) { showToast('Connection error'); }
-  hideSpinner('emergency');
+    const d = await apiFetch('/api/emergency-card', { method:'POST', body: JSON.stringify({ name, blood_group:blood, allergies, destination:dest }) });
+    if (d.success) renderEmergencyCard(d.data, name, blood, allergies, dest);
+    else showToast(d.error || 'Something went wrong');
+  } catch(e) { showToast('Please check your connection'); }
+  hideSpin('emergency');
 }
 
 function renderEmergencyCard(d, name, blood, allergies, dest) {
   const el = document.getElementById('emergency-result');
   el.innerHTML = `
-    <div class="emergency-card-visual" id="printCard">
-      <div class="ec-stripe"></div>
-      <div class="ec-logo">yaply emergency card</div>
-      <div class="ec-name">${name}</div>
-      <div class="ec-details">
-        🩸 Blood Group: <strong>${blood}</strong>
-        ${allergies && allergies !== 'None' ? ` · ⚠️ Allergic to: <strong>${allergies}</strong>` : ''}
+    <div class="em-card-visual" id="printCard">
+      <div class="ec-logo-text">Yaply Emergency Card</div>
+      <div class="ec-name-text">${name}</div>
+      <div class="ec-details-text">
+        Blood Group: <strong>${blood}</strong>
+        ${allergies && allergies.toLowerCase()!=='none' ? ` · Allergic to: <strong>${allergies}</strong>` : ''}
       </div>
-      <div class="ec-grid">
-        <div class="ec-item">
-          <div class="ec-item-label">🚨 Police</div>
-          <div class="ec-item-value">${d.emergency_numbers?.police || '—'}</div>
-        </div>
-        <div class="ec-item">
-          <div class="ec-item-label">🚑 Ambulance</div>
-          <div class="ec-item-value">${d.emergency_numbers?.ambulance || '—'}</div>
-        </div>
-        <div class="ec-item">
-          <div class="ec-item-label">🏛️ Embassy</div>
-          <div class="ec-item-value">${d.indian_embassy?.emergency_phone || '—'}</div>
-        </div>
-        <div class="ec-item">
-          <div class="ec-item-label">🔥 Fire</div>
-          <div class="ec-item-value">${d.emergency_numbers?.fire || '—'}</div>
-        </div>
+      <div class="ec-em-grid">
+        <div class="ec-em-item"><div class="ec-em-label">Police</div><div class="ec-em-num">${d.emergency_numbers?.police||'—'}</div></div>
+        <div class="ec-em-item"><div class="ec-em-label">Ambulance</div><div class="ec-em-num">${d.emergency_numbers?.ambulance||'—'}</div></div>
+        <div class="ec-em-item"><div class="ec-em-label">Embassy</div><div class="ec-em-num">${d.indian_embassy?.emergency_phone||d.indian_embassy?.phone||'—'}</div></div>
+        <div class="ec-em-item"><div class="ec-em-label">Fire</div><div class="ec-em-num">${d.emergency_numbers?.fire||'—'}</div></div>
       </div>
     </div>
-
-    <button class="print-btn" onclick="printCard()">🖨️ Print Emergency Card</button>
-
-    ${(d.medical_phrases||[]).length > 0 ? `
-      <div style="margin-top:20px;">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🗣️ Medical Phrases in Local Language</div>
-        ${d.medical_phrases.map(p=>`
-          <div style="padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:8px;">
-            <div style="font-size:0.85rem;font-weight:700;margin-bottom:4px;">${p.english}</div>
-            <div style="font-size:0.92rem;color:var(--accent2);font-weight:600;margin-bottom:2px;">${p.local}</div>
-            <div style="font-size:0.75rem;color:var(--muted);font-style:italic;">${p.pronunciation}</div>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-
-    ${d.what_to_do_if_robbed ? `
-      <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-        <div style="padding:14px;background:rgba(255,71,87,0.04);border-radius:var(--r);border:1px solid rgba(255,71,87,0.12);">
-          <div style="font-size:0.7rem;font-weight:700;color:var(--red);margin-bottom:8px;">IF ROBBED</div>
-          ${(d.what_to_do_if_robbed||[]).map((s,i)=>`<div style="font-size:0.75rem;padding:3px 0;display:flex;gap:6px;"><span style="color:var(--red);font-weight:700;">${i+1}.</span>${s}</div>`).join('')}
+    <button class="print-btn" onclick="printCard()"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print Emergency Card</button>
+    ${d.medical_phrases?.length ? secT('Medical Phrases in Local Language') + d.medical_phrases.map(p=>`
+      <div style="padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;">
+        <div style="font-size:.75rem;font-weight:700;margin-bottom:3px;">${p.english}</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--teal);margin-bottom:2px;">${p.local}</div>
+        <div style="font-size:.65rem;color:var(--muted);font-style:italic;">${p.pronunciation}</div>
+      </div>`).join('') : ''}
+    ${d.what_to_do_if_robbed?.length ? `
+      ${secT('Emergency Procedures')}
+      <div class="mini-grid-3">
+        <div style="padding:10px;background:var(--red-s);border-radius:var(--r);">
+          <div style="font-size:.6rem;font-weight:700;color:var(--red);margin-bottom:6px;">IF ROBBED</div>
+          ${d.what_to_do_if_robbed.map((s,i)=>`<div style="font-size:.7rem;padding:2px 0;display:flex;gap:5px;"><strong style="color:var(--red);">${i+1}.</strong>${s}</div>`).join('')}
         </div>
-        <div style="padding:14px;background:rgba(74,144,217,0.04);border-radius:var(--r);border:1px solid rgba(74,144,217,0.12);">
-          <div style="font-size:0.7rem;font-weight:700;color:var(--blue);margin-bottom:8px;">IF SICK</div>
-          ${(d.what_to_do_if_sick||[]).map((s,i)=>`<div style="font-size:0.75rem;padding:3px 0;display:flex;gap:6px;"><span style="color:var(--blue);font-weight:700;">${i+1}.</span>${s}</div>`).join('')}
+        <div style="padding:10px;background:var(--sky-s);border-radius:var(--r);">
+          <div style="font-size:.6rem;font-weight:700;color:var(--sky);margin-bottom:6px;">IF SICK</div>
+          ${(d.what_to_do_if_sick||[]).map((s,i)=>`<div style="font-size:.7rem;padding:2px 0;display:flex;gap:5px;"><strong style="color:var(--sky);">${i+1}.</strong>${s}</div>`).join('')}
         </div>
-        <div style="padding:14px;background:rgba(255,179,71,0.04);border-radius:var(--r);border:1px solid rgba(255,179,71,0.12);">
-          <div style="font-size:0.7rem;font-weight:700;color:#E5930A;margin-bottom:8px;">IF LOST</div>
-          ${(d.what_to_do_if_lost||[]).map((s,i)=>`<div style="font-size:0.75rem;padding:3px 0;display:flex;gap:6px;"><span style="color:#E5930A;font-weight:700;">${i+1}.</span>${s}</div>`).join('')}
+        <div style="padding:10px;background:var(--amber-s);border-radius:var(--r);">
+          <div style="font-size:.6rem;font-weight:700;color:var(--amber);margin-bottom:6px;">IF LOST</div>
+          ${(d.what_to_do_if_lost||[]).map((s,i)=>`<div style="font-size:.7rem;padding:2px 0;display:flex;gap:5px;"><strong style="color:var(--amber);">${i+1}.</strong>${s}</div>`).join('')}
         </div>
-      </div>
-    ` : ''}
-
-    ${d.indian_embassy ? `
-      <div style="margin-top:16px;padding:16px;background:rgba(74,144,217,0.06);border:1px solid rgba(74,144,217,0.2);border-radius:var(--r);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:10px;">🏛️ Indian Embassy in ${dest}</div>
-        <div style="font-size:0.82rem;margin-bottom:4px;">📍 ${d.indian_embassy.address}</div>
-        <div style="font-size:0.85rem;font-weight:700;color:var(--blue);">📞 ${d.indian_embassy.phone}</div>
-        ${d.indian_embassy.emergency_phone ? `<div style="font-size:0.82rem;color:var(--red);font-weight:700;margin-top:4px;">🚨 Emergency: ${d.indian_embassy.emergency_phone}</div>` : ''}
-      </div>
-    ` : ''}
-  `;
-  showResult('emergency');
+      </div>` : ''}
+    ${d.indian_embassy ? `<div class="note-box nb-sky" style="margin-top:8px;"><strong>Indian Embassy in ${dest}:</strong> ${d.indian_embassy.address||''} · <strong>${d.indian_embassy.phone}</strong>${d.indian_embassy.emergency_phone?` · Emergency: <strong style="color:var(--red);">${d.indian_embassy.emergency_phone}</strong>`:''}</div>` : ''}`;
+  showRes('emergency');
 }
 
 function printCard() {
   const card = document.getElementById('printCard').outerHTML;
   const w = window.open('', '_blank');
-  w.document.write(`<html><head><title>Emergency Card</title><style>body{font-family:sans-serif;padding:20px;background:#fff;}.emergency-card-visual{background:linear-gradient(135deg,#0D0D0D,#1a1a3e);border-radius:20px;padding:28px;color:white;position:relative;}.ec-logo{font-size:0.8rem;opacity:0.4;margin-bottom:16px;}.ec-name{font-size:1.4rem;font-weight:700;margin-bottom:4px;}.ec-details{font-size:0.8rem;opacity:0.7;margin-bottom:16px;}.ec-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}.ec-item-label{font-size:0.6rem;text-transform:uppercase;opacity:0.5;margin-bottom:3px;}.ec-item-value{font-size:0.9rem;font-weight:700;}.ec-stripe{position:absolute;top:0;right:0;bottom:0;width:6px;background:linear-gradient(to bottom,#00C9A7,#00E5C9);border-radius:0 20px 20px 0;}</style></head><body>${card}</body></html>`);
-  w.document.close();
-  w.print();
+  w.document.write(`<html><head><title>Emergency Card — Yaply</title><style>body{font-family:sans-serif;padding:24px;background:#fff;}.em-card-visual{background:linear-gradient(135deg,#2C2B28,#1e2a3a);border-radius:20px;padding:24px;color:white;max-width:380px;position:relative;}.ec-logo-text{font-size:.55rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px;}.ec-name-text{font-size:1.1rem;font-weight:700;margin-bottom:4px;}.ec-details-text{font-size:.7rem;color:rgba(255,255,255,.5);margin-bottom:16px;}.ec-em-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}.ec-em-label{font-size:.55rem;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:2px;}.ec-em-num{font-size:.88rem;font-weight:700;}</style></head><body>${card}</body></html>`);
+  w.document.close(); w.print();
 }
 </script>
-<script src="/static/yaply-nav.js"></script>
-<script src="/static/yaply-auth.js"></script>
 </body>
 </html>
