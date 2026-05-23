@@ -421,11 +421,8 @@ async function init() {
   // Prefill from localStorage while API loads
   if (user) {
     document.getElementById('heroName').textContent = user.name || 'Traveller';
-    document.getElementById('heroInitial').textContent = (user.name || 'Y')[0].toUpperCase();
     document.getElementById('heroEmail').textContent = user.email || '';
-    if (user.avatar) {
-      document.getElementById('heroAvatar').innerHTML = `<img src="${user.avatar}" alt="${user.name}"/>`;
-    }
+    setHeroAvatar(user.avatar, user.name);
   }
 
   try {
@@ -453,7 +450,19 @@ async function init() {
       renderPlaces([]);
     }
   } catch(e) {
-    showToastMsg('Could not load profile data');
+    console.error('[Profile] init error:', e);
+    showToastMsg('Could not load profile data — check console');
+  }
+}
+
+// ── SAFE AVATAR HELPER (recreates heroInitial each time so it's never null) ──
+function setHeroAvatar(avatar, name) {
+  const el = document.getElementById('heroAvatar');
+  if (!el) return;
+  if (avatar) {
+    el.innerHTML = `<img src="${avatar}" alt="${name || ''}" style="width:100%;height:100%;object-fit:cover;"/>`;
+  } else {
+    el.innerHTML = `<span id="heroInitial">${(name || 'Y')[0].toUpperCase()}</span>`;
   }
 }
 
@@ -461,11 +470,7 @@ async function init() {
 function renderHero(u, stats) {
   document.getElementById('heroName').textContent = u.name || 'Traveller';
   document.getElementById('heroEmail').textContent = u.email || '';
-  if (u.avatar) {
-    document.getElementById('heroAvatar').innerHTML = `<img src="${u.avatar}" alt="${u.name}" style="width:100%;height:100%;object-fit:cover;"/>`;
-  } else {
-    document.getElementById('heroInitial').textContent = (u.name || 'Y')[0].toUpperCase();
-  }
+  setHeroAvatar(u.avatar, u.name);
 
   const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', {month:'long',year:'numeric'}) : '';
   const tags = [];
@@ -507,7 +512,7 @@ function renderTrips(trips) {
         <div class="trip-dest">${t.destination || 'Unknown Destination'}</div>
         <div class="trip-meta">
           <span class="trip-badge tb-days">📅 ${t.days||5} days</span>
-          ${t.budget ? `<span class="trip-badge tb-budget">💰 ${t.currency||'INR'} ${Number(t.budget).toLocaleString()}</span>` : ''}
+          ${t.budget ? `<span class="trip-badge tb-budget">💰 ${t.currency||'INR'} ${t.budget}</span>` : ''}
           ${vibesArr.map(v=>`<span class="trip-badge tb-vibes">${v}</span>`).join('')}
           <span class="trip-badge ${STATUS_CLASS[status]||'tb-status-planned'}">${status}</span>
         </div>

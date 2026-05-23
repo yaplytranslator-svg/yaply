@@ -1017,7 +1017,7 @@
 <body>
 
   <!-- NAV -->
-  <nav class="nav">
+  <nav class="nav" id="_yaply_nav">
     <div class="nav-left">
       <div class="nav-logo-mark">
         <svg viewBox="0 0 24 24">
@@ -1423,6 +1423,7 @@
         if (tripsRes.success) renderTrips(tripsRes.trips || []);
         else renderTrips([]);
       } catch (e) {
+        console.error('[Dashboard] init error:', e);
         renderTrips([]);
       }
     }
@@ -1440,7 +1441,7 @@
       grid.innerHTML = trips.slice(0, 5).map((t, i) => {
         const statusClass = t.status === 'active' ? 'ts-active' : t.status === 'completed' ? 'ts-completed' : 'ts-planning';
         const statusLabel = t.status === 'active' ? 'Active' : t.status === 'completed' ? 'Completed' : 'Planning';
-        return `<div class="trip-card" onclick="window.location.href='/plan'">
+        return `<div class="trip-card" onclick="window.location.href='/plan?trip_id=${t.id}'">
       <div class="trip-dest-icon">${flags[i % flags.length]}</div>
       <div class="trip-info">
         <div class="trip-dest">${t.destination}</div>
