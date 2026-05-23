@@ -167,6 +167,27 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 .trip-hero-tags{display:flex;gap:7px;flex-wrap:wrap;}
 .trip-hero-tag{padding:4px 12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(8px);border-radius:100px;font-size:0.68rem;font-weight:600;color:#fff;}
 
+/* SAVED TRIP BANNER */
+.sv-banner{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:var(--shadow);animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.sv-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--teal-s);}
+.sv-icon svg{width:18px;height:18px;stroke:var(--teal);fill:none;stroke-width:1.8;}
+.sv-info{flex:1;min-width:140px;}
+.sv-dest{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--charcoal);margin-bottom:3px;}
+.sv-meta{font-size:.68rem;color:var(--muted2);}
+.sv-status-row{display:flex;align-items:center;gap:7px;margin-top:6px;}
+.sv-status-label{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted2);}
+.sv-chip{font-size:.65rem;font-weight:700;padding:4px 12px;border-radius:100px;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .15s;}
+.sv-chip:hover{opacity:.85;transform:scale(1.04);}
+.sv-planning{background:var(--gold-s);color:var(--gold);}
+.sv-active{background:var(--green-s);color:var(--green);}
+.sv-completed{background:var(--teal-s);color:var(--teal);}
+.sv-btns{display:flex;gap:7px;flex-wrap:wrap;}
+.sv-btn{padding:7px 13px;border-radius:8px;border:1px solid var(--border-md);background:none;font-family:'Inter',sans-serif;font-size:.72rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+.sv-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;}
+.sv-btn:hover{border-color:var(--charcoal);color:var(--charcoal);background:var(--bg2);}
+.sv-btn.back-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-s);}
+
 /* SECTION CARDS */
 .sec-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow);}
 .sec-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to right,var(--bg),var(--white));}
@@ -635,6 +656,9 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 <div class="results" id="results">
 <div class="container">
 
+  <!-- SAVED TRIP BANNER (shown when viewing a saved trip) -->
+  <div class="sv-banner" id="savedTripBanner" style="display:none;"></div>
+
   <!-- TRIP HERO -->
   <div class="trip-hero" id="tripHero">
     <div class="trip-hero-overlay"></div>
@@ -963,7 +987,7 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 <!-- SAVE BAR -->
 <div class="save-bar" id="saveBar">
   <div class="save-bar-label" id="saveBarLabel">Your trip plan is ready</div>
-  <button class="save-bar-btn" onclick="saveTrip()">
+  <button class="save-bar-btn" id="saveTripBtn" onclick="saveTrip()">
     <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
     Save Trip to My Account
   </button>
@@ -975,6 +999,7 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 // ── STATE ──
 let selectedVibes = new Set(['adventure']);
 let currentPlan = null;
+let savedTripId  = null;   // set when viewing or saving a DB trip
 let jMode = 'any';
 let currTimer;
 
@@ -1422,13 +1447,49 @@ function togglePack(el) {
   document.getElementById('packBadge').textContent = done+'/'+total+' packed';
 }
 
-function saveTrip() {
+// ── SAVE TRIP (now persists to DB) ──
+async function saveTrip() {
   if (!currentPlan) { showToast('Generate a trip first'); return; }
-  const trips = JSON.parse(localStorage.getItem('yaply_trips')||'[]');
-  trips.unshift({...currentPlan, _savedAt:new Date().toISOString()});
-  if (trips.length>10) trips.splice(10);
-  localStorage.setItem('yaply_trips', JSON.stringify(trips));
-  showToast('Trip saved to your account');
+  if (savedTripId)  { showToast('Already saved — view it in My Trips'); return; }
+
+  const btn = document.getElementById('saveTripBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg> Saving…'; }
+
+  const meta = currentPlan._meta || {};
+  try {
+    const res = await apiFetch('/api/trips', { method:'POST', body: JSON.stringify({
+      destination: meta.destination || currentPlan.destination || '',
+      origin:      meta.origin      || '',
+      days:        parseInt(meta.days)   || currentPlan.days || 5,
+      people:      parseInt(meta.people) || 2,
+      budget:      String(meta.budget || '80000'),
+      currency:    meta.currency  || 'INR',
+      vibes:       meta.vibes     || 'adventure',
+      passport:    meta.passport  || 'India',
+      plan_data:   currentPlan
+    })});
+
+    if (res.success) {
+      savedTripId = res.trip_id;
+      document.getElementById('saveBar').classList.remove('show');
+      showSavedBanner({
+        destination: meta.destination || currentPlan.destination,
+        days:     meta.days     || currentPlan.days,
+        currency: meta.currency || 'INR',
+        budget:   meta.budget   || '',
+        people:   parseInt(meta.people) || 1,
+        status:   'planning'
+      });
+      showToast('✓ Trip saved! View it in My Trips.');
+    } else {
+      showToast(res.error || 'Could not save — please try again');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg> Save Trip to My Account'; }
+    }
+  } catch(e) {
+    console.error('[saveTrip]', e);
+    showToast('Network error — could not save');
+    if (btn) { btn.disabled = false; }
+  }
 }
 
 function shareTrip() {
@@ -1438,6 +1499,169 @@ function shareTrip() {
     navigator.clipboard?.writeText(window.location.href);
     showToast('Link copied');
   }
+}
+
+// ── SAVED TRIP BANNER ──
+function showSavedBanner(trip) {
+  const banner = document.getElementById('savedTripBanner');
+  if (!banner) return;
+
+  const STATUS_MAP = {
+    planning:  { cls:'sv-planning',  label:'📋 Planning'  },
+    active:    { cls:'sv-active',    label:'🟢 Active'    },
+    completed: { cls:'sv-completed', label:'✅ Completed' },
+  };
+  const st = STATUS_MAP[trip.status] || STATUS_MAP.planning;
+  const dateStr = trip.updated_at
+    ? ' · Saved ' + new Date(trip.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    : '';
+  const pax = parseInt(trip.people) || 1;
+
+  banner.innerHTML = `
+    <div class="sv-icon">
+      <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    </div>
+    <div class="sv-info">
+      <div class="sv-dest">${trip.destination || 'Saved Trip'}</div>
+      <div class="sv-meta">${trip.days || ''} days · ${trip.currency || 'INR'} ${trip.budget || ''} · ${pax} traveller${pax > 1 ? 's' : ''}${dateStr}</div>
+      <div class="sv-status-row">
+        <span class="sv-status-label">Status:</span>
+        <button class="sv-chip ${st.cls}" title="Click to change status" onclick="cycleStatus(this)">${st.label}</button>
+      </div>
+    </div>
+    <div class="sv-btns">
+      <button class="sv-btn back-btn" onclick="window.location.href='/profile'">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>My Trips
+      </button>
+      <button class="sv-btn" onclick="regeneratePlan()">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>Re-generate
+      </button>
+    </div>`;
+  banner.style.display = 'flex';
+}
+
+// ── CYCLE STATUS (planning → active → completed → planning) ──
+async function cycleStatus(btn) {
+  if (!savedTripId) return;
+  const CYCLE = ['planning','active','completed'];
+  const STATUS_MAP = {
+    planning:  { cls:'sv-planning',  label:'📋 Planning'  },
+    active:    { cls:'sv-active',    label:'🟢 Active'    },
+    completed: { cls:'sv-completed', label:'✅ Completed' },
+  };
+  // Detect current status from btn class
+  const cur = btn.classList.contains('sv-active') ? 'active'
+            : btn.classList.contains('sv-completed') ? 'completed' : 'planning';
+  const next = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
+  try {
+    const res = await apiFetch(`/api/trips/${savedTripId}`, { method:'PUT', body: JSON.stringify({ status: next }) });
+    if (res.success) {
+      const st = STATUS_MAP[next];
+      btn.className = `sv-chip ${st.cls}`;
+      btn.textContent = st.label;
+      showToast(`Status → ${next}`);
+    }
+  } catch(e) { showToast('Could not update status'); }
+}
+
+// ── RE-GENERATE (scroll to form and clear results) ──
+function regeneratePlan() {
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('saveBar').classList.remove('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('generateBtn').disabled = false;
+}
+
+// ── LOAD SAVED TRIP FROM DB ──
+async function loadSavedTrip(tripId) {
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('generateBtn').disabled = true;
+  document.getElementById('loading').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('loadingTitle').textContent = 'Loading your saved trip…';
+
+  try {
+    const res = await apiFetch(`/api/trips/${tripId}`);
+    if (!res.success || !res.trip) {
+      showToast('Trip not found');
+      document.getElementById('loading').classList.remove('show');
+      document.getElementById('generateBtn').disabled = false;
+      return;
+    }
+
+    const trip = res.trip;
+    savedTripId = trip.id;
+
+    // Always pre-fill the form fields
+    if (trip.destination) document.getElementById('destination').value = trip.destination;
+    if (trip.origin)      document.getElementById('origin').value      = trip.origin;
+    if (trip.days)        document.getElementById('days').value        = trip.days;
+    if (trip.people)      document.getElementById('people').value      = trip.people;
+    if (trip.budget)      document.getElementById('budget').value      = trip.budget;
+    if (trip.currency)    document.getElementById('homeCurrency').value = trip.currency;
+    if (trip.passport)    document.getElementById('passport').value    = trip.passport;
+    if (trip.destination) document.getElementById('weatherCity').value = trip.destination.split(',')[0];
+    if (trip.destination) document.getElementById('visaDest').value    = trip.destination.split(',')[0];
+    if (trip.passport)    document.getElementById('visaPassport').value = trip.passport;
+    if (trip.destination) document.getElementById('journeyDest').value  = trip.destination;
+    if (trip.origin)      document.getElementById('journeyOrigin').value = trip.origin;
+    // Activate saved vibes
+    if (trip.vibes) {
+      document.querySelectorAll('.vibe-pill').forEach(p => p.classList.remove('active'));
+      selectedVibes.clear();
+      trip.vibes.split('+').map(v => v.trim().toLowerCase()).filter(Boolean).forEach(v => {
+        selectedVibes.add(v);
+        document.querySelectorAll('.vibe-pill').forEach(p => {
+          if (p.textContent.trim().toLowerCase() === v) p.classList.add('active');
+        });
+      });
+    }
+
+    const planData = trip.plan_data;
+
+    // No itinerary stored — just pre-fill and let user regenerate
+    if (!planData) {
+      showToast('No itinerary saved yet — tap Generate to create one!');
+      document.getElementById('loading').classList.remove('show');
+      document.getElementById('generateBtn').disabled = false;
+      // Show a soft banner even without plan_data
+      showSavedBanner(trip);
+      document.getElementById('results').classList.add('show');
+      return;
+    }
+
+    // Make sure _meta is set for budget calculations
+    if (!planData._meta) {
+      planData._meta = {
+        destination: trip.destination,
+        origin:  trip.origin,
+        days:    trip.days,
+        budget:  trip.budget,
+        currency:trip.currency,
+        people:  trip.people,
+        vibes:   trip.vibes,
+        passport:trip.passport,
+      };
+    }
+    currentPlan = planData;
+
+    await renderPlan(planData, trip.currency || 'INR', null);
+
+    document.getElementById('results').classList.add('show');
+    document.getElementById('saveBar').classList.remove('show');  // already saved
+    showSavedBanner(trip);
+    document.getElementById('savedTripBanner').scrollIntoView({ behavior: 'smooth' });
+
+    getWeather();
+    checkVisa();
+
+  } catch(e) {
+    console.error('[loadSavedTrip]', e);
+    showToast('Could not load trip — check your connection');
+  }
+
+  document.getElementById('loading').classList.remove('show');
+  document.getElementById('generateBtn').disabled = false;
 }
 
 // ── JOURNEY INLINE ──
@@ -1599,13 +1823,23 @@ async function checkVisa() {
 // Init currency
 convertCurrency();
 
-// Auto-fill from URL params (e.g. redirected from Discover page)
-(function() {
-  const p = new URLSearchParams(window.location.search);
-  const dest = p.get('dest'), from = p.get('from'), days = p.get('days');
-  if (dest) { const el = document.getElementById('destination'); if (el) el.value = dest; }
-  if (from) { const el = document.getElementById('origin');      if (el) el.value = from; }
-  if (days) { const el = document.getElementById('days');        if (el) el.value = Math.min(Math.max(parseInt(days)||5,1),60); }
+// Auto-fill from URL params; if trip_id present, load the saved trip
+(async function() {
+  const p      = new URLSearchParams(window.location.search);
+  const tripId = p.get('trip_id');
+  const dest   = p.get('dest');
+  const from   = p.get('from');
+  const days   = p.get('days');
+
+  if (tripId) {
+    // Load full saved trip — overrides individual params
+    await loadSavedTrip(parseInt(tripId));
+  } else {
+    // Pre-fill from Discover/dashboard redirect
+    if (dest) { const el = document.getElementById('destination'); if (el) el.value = dest; }
+    if (from) { const el = document.getElementById('origin');      if (el) el.value = from; }
+    if (days) { const el = document.getElementById('days');        if (el) el.value = Math.min(Math.max(parseInt(days)||5,1),60); }
+  }
 })();
 </script>
 </body>
