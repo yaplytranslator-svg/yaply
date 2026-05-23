@@ -162,9 +162,16 @@ function showToast(message, type = 'info', duration = 3000) {
 
   if (isLoggedIn && user) {
     const avatar = document.createElement('div');
-    avatar.style.cssText = 'width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#38BDF8,#6366F1);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:#fff;cursor:pointer;';
-    avatar.textContent = (user.name || 'U')[0].toUpperCase();
-    avatar.title = user.name;
+    avatar.style.cssText = 'width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#38BDF8,#6366F1);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:#fff;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;overflow:hidden;';
+    if (user.avatar) {
+      avatar.innerHTML = `<img src="${user.avatar}" alt="${user.name}" style="width:100%;height:100%;object-fit:cover;"/>`;
+    } else {
+      avatar.textContent = (user.name || 'U')[0].toUpperCase();
+    }
+    avatar.title = 'View Profile';
+    avatar.onmouseover = () => { avatar.style.transform='scale(1.12)'; avatar.style.boxShadow='0 4px 12px rgba(56,189,248,0.4)'; };
+    avatar.onmouseout  = () => { avatar.style.transform='scale(1)';    avatar.style.boxShadow='none'; };
+    avatar.onclick = () => { window.location.href = '/profile'; };
 
     const logoutBtn = document.createElement('button');
     logoutBtn.textContent = 'Logout';

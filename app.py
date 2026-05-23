@@ -304,6 +304,9 @@ def tools_page(): return render_template('tools_extra.html')
 @app.route('/discover')
 def discover_page(): return render_template('discover.html')
 
+@app.route('/profile')
+def profile_page(): return render_template('profile.html')
+
 @app.route('/translate')
 def translate_page(): return render_template('stream.html')
 
@@ -662,7 +665,10 @@ def api_safety_check():
     try:
         destination = clean((request.get_json() or {}).get('destination',''))
         if not destination: return jsonify({'success':False,'error':'Destination required'})
-        result = groq_json(f"""Safety info for {destination}. Return JSON: safety_score(0-100),safety_level,crime_index,tourist_safety,water_safe,water_advice,food_safety,health_risks,scams_to_avoid,safe_areas,avoid_areas,travel_advisory,solo_female_safety,best_safety_tips""")
+        result = groq_json(f"""You are a travel safety expert. Provide comprehensive safety information for {destination}.
+Return ONLY valid JSON:
+{{"safety_score":75,"safety_level":"Safe/Moderate/Caution/High Risk","crime_index":"Low/Medium/High","tourist_safety":"Safe/Generally Safe/Exercise Caution/Avoid","water_safe":true,"water_advice":"tap water advice","food_safety":"Safe/Mostly Safe/Be Careful","health_risks":["risk1","risk2"],"scams_to_avoid":["common scam 1","common scam 2","common scam 3"],"safe_areas":["safe area 1","safe area 2"],"avoid_areas":["area to avoid"],"emergency_embassy":"Indian embassy address","embassy_phone":"phone number","travel_advisory":"current advisory level","solo_female_safety":"Safe/Generally Safe/Take Precautions/Not Recommended","best_safety_tips":["tip1","tip2","tip3","tip4","tip5"]}}""",
+        model="llama-3.3-70b-versatile", temp=0.1, max_tok=1200)
         return jsonify({'success':True,'data':result})
     except Exception as e: return jsonify({'success':False,'error':str(e)})
 
@@ -672,7 +678,11 @@ def api_safety_check():
 def api_local_laws():
     try:
         destination = clean((request.get_json() or {}).get('destination',''))
-        result = groq_json(f"""Local laws tourists must know in {destination}. Return JSON: strict_laws(array law/penalty/severity/icon),photography_rules,dress_code_rules,alcohol_rules,customs_limits,good_to_know,legal_tip""")
+        if not destination: return jsonify({'success':False,'error':'Destination required'})
+        result = groq_json(f"""You are a legal travel expert. List important laws and rules for tourists visiting {destination}.
+Return ONLY valid JSON:
+{{"strict_laws":[{{"law":"law description","penalty":"penalty if broken","severity":"High/Medium/Low","icon":"emoji"}},{{"law":"law description","penalty":"penalty","severity":"High","icon":"emoji"}},{{"law":"law description","penalty":"penalty","severity":"Medium","icon":"emoji"}}],"photography_rules":["what you cannot photograph"],"dress_code_rules":["specific dress requirements"],"alcohol_rules":"alcohol laws","drug_laws":"drug law details","customs_limits":{{"cash":"max cash limit","cigarettes":"cigarette limit","alcohol":"alcohol limit","prohibited_items":["item1","item2"]}},"good_to_know":["cultural rule 1","cultural rule 2","cultural rule 3"],"legal_tip":"most important single tip for tourists"}}""",
+        model="llama-3.3-70b-versatile", temp=0.1, max_tok=1500)
         return jsonify({'success':True,'data':result})
     except Exception as e: return jsonify({'success':False,'error':str(e)})
 
@@ -682,7 +692,14 @@ def api_local_laws():
 def api_jetlag():
     try:
         data = request.get_json() or {}
-        result = groq_json(f"""Jet lag plan from {clean(data.get('from_city',''))} to {clean(data.get('to_city',''))}. Return JSON: from_timezone,to_timezone,time_difference,jet_lag_severity,recovery_days,direction,symptoms,before_flight,during_flight,after_arrival,sleep_schedule,recovery_tip""")
+        from_city   = clean(data.get('from_city',''))
+        to_city     = clean(data.get('to_city',''))
+        travel_date = clean(data.get('travel_date','upcoming'))
+        if not from_city or not to_city: return jsonify({'success':False,'error':'Both cities required'})
+        result = groq_json(f"""Calculate jet lag and recovery plan for travelling from {from_city} to {to_city} on {travel_date}.
+Return ONLY valid JSON:
+{{"from_timezone":"timezone + UTC offset","to_timezone":"timezone + UTC offset","time_difference":"X hours ahead/behind","jet_lag_severity":"Mild/Moderate/Severe","recovery_days":2,"direction":"Eastward/Westward","symptoms":["fatigue","insomnia"],"before_flight":[{{"action":"specific action","timing":"when","why":"reason"}}],"during_flight":[{{"action":"specific action","timing":"when","why":"reason"}}],"after_arrival":[{{"action":"specific action","timing":"when","why":"reason"}}],"sleep_schedule":{{"night_before_flight":"recommended bedtime","on_arrival":"recommended bedtime local time","day_2":"recommended schedule"}},"avoid":["avoid caffeine after X","avoid alcohol"],"recovery_tip":"single best tip for fast recovery"}}""",
+        model="llama-3.3-70b-versatile", temp=0.1, max_tok=1200)
         return jsonify({'success':True,'data':result})
     except Exception as e: return jsonify({'success':False,'error':str(e)})
 
@@ -692,7 +709,13 @@ def api_jetlag():
 def api_festivals():
     try:
         data = request.get_json() or {}
-        result = groq_json(f"""Festivals in {clean(data.get('destination',''))} around {clean(data.get('travel_date','this month'))}. Return JSON: public_holidays,festivals(name/dates/description/tourist_friendly/tips/icon),peak_season,price_impact,crowd_level,booking_advice,weather_this_month""")
+        destination  = clean(data.get('destination',''))
+        travel_date  = clean(data.get('travel_date','this month'))
+        if not destination: return jsonify({'success':False,'error':'Destination required'})
+        result = groq_json(f"""List festivals, public holidays and special events in {destination} around {travel_date}.
+Return ONLY valid JSON:
+{{"public_holidays":[{{"name":"holiday name","date":"date","impact":"what closes/opens","tourist_impact":"positive/negative/neutral"}}],"festivals":[{{"name":"festival name","dates":"date range","description":"brief desc","tourist_friendly":true,"special_tips":"tip","icon":"emoji"}}],"peak_season":true,"season_type":"Peak/Shoulder/Off-peak","price_impact":"prices X% higher/lower","crowd_level":"Very Crowded/Crowded/Moderate/Quiet","booking_advice":"book X weeks in advance","weather_this_month":"weather description","best_festival_tip":"top tip for experiencing local festivals"}}""",
+        model="llama-3.3-70b-versatile", temp=0.2, max_tok=1200)
         return jsonify({'success':True,'data':result})
     except Exception as e: return jsonify({'success':False,'error':str(e)})
 
@@ -701,8 +724,17 @@ def api_festivals():
 @limiter.limit("20 per hour")
 def api_budget_plan():
     try:
-        data = request.get_json() or {}
-        result = groq_json(f"""Budget plan: {data.get('people',1)} people in {clean(data.get('destination',''))} for {data.get('days',5)} days. Budget: {clean(data.get('currency','INR'),3)} {clean(data.get('budget','50000'))}. Return JSON: total_budget,per_person,per_day,budget_tier,budget_verdict,breakdown,daily_budget,money_saving_tips,free_things,worth_splurging""")
+        data       = request.get_json() or {}
+        destination = clean(data.get('destination',''))
+        days        = int(data.get('days',5))
+        people      = int(data.get('people',1))
+        budget      = clean(data.get('budget','50000'))
+        currency    = clean(data.get('currency','INR'),3)
+        if not destination: return jsonify({'success':False,'error':'Destination required'})
+        result = groq_json(f"""Create a detailed budget plan for {people} people visiting {destination} for {days} days. Total budget: {currency} {budget}.
+Return ONLY valid JSON:
+{{"total_budget":"{currency} {budget}","per_person":"{currency} X","per_day":"{currency} X","budget_tier":"Budget/Mid-range/Luxury","breakdown":{{"flights":{{"amount":"{currency} X","percentage":35,"tips":"book ahead"}},"accommodation":{{"amount":"{currency} X","percentage":25,"tips":"area tip"}},"food":{{"amount":"{currency} X","percentage":15,"tips":"where to eat"}},"transport":{{"amount":"{currency} X","percentage":10,"tips":"best transport"}},"activities":{{"amount":"{currency} X","percentage":10,"tips":"free vs paid"}},"shopping":{{"amount":"{currency} X","percentage":5,"tips":"what to buy"}}}},"daily_budget":{{"budget_day":"{currency} X - street food, hostel","comfort_day":"{currency} X - restaurant, hotel","splurge_day":"{currency} X - fine dining, premium"}},"money_saving_tips":["tip1","tip2","tip3","tip4","tip5"],"hidden_costs":["visa fee","airport tax","travel insurance"],"free_things":["free thing 1","free thing 2"],"worth_splurging":["experience worth extra"],"budget_verdict":"Is this budget realistic? One sentence."}}""",
+        model="llama-3.3-70b-versatile", temp=0.1, max_tok=1500)
         return jsonify({'success':True,'data':result})
     except Exception as e: return jsonify({'success':False,'error':str(e)})
 
@@ -715,12 +747,15 @@ def api_passport_check():
         ok, err = validate(data, ['expiry_date','travel_date','destination'])
         if not ok: return jsonify({'success':False,'error':err})
         from datetime import datetime as dt
-        expiry = dt.strptime(data.get('expiry_date',''), '%Y-%m-%d')
-        travel = dt.strptime(data.get('travel_date',''), '%Y-%m-%d')
+        expiry = dt.strptime(data['expiry_date'], '%Y-%m-%d')
+        travel = dt.strptime(data['travel_date'], '%Y-%m-%d')
         days_remaining    = (expiry - dt.now()).days
         days_after_travel = (expiry - travel).days
-        result = groq_json(f"""Passport check: expiry={data.get('expiry_date')}, travel={data.get('travel_date')}, destination={clean(data.get('destination',''))}, days_remaining={days_remaining}, days_after_travel={days_after_travel}.
-Return JSON: is_valid,validity_status,days_remaining,verdict,action_needed,renewal_urgency,renewal_cost,tips""")
+        destination = clean(data.get('destination',''))
+        result = groq_json(f"""A traveller wants to visit {destination}. Passport expiry: {data['expiry_date']}. Travel date: {data['travel_date']}. Days passport is valid after travel date: {days_after_travel}. Most countries require passport valid for 6 months beyond travel date.
+Return ONLY valid JSON:
+{{"is_valid":true,"validity_status":"Safe/Warning/Critical/Invalid","days_remaining":{days_remaining},"days_after_travel":{days_after_travel},"destination_requirement":"X months required by {destination}","verdict":"one clear sentence verdict","action_needed":"what they must do if any","renewal_urgency":"Immediate/Soon/Not needed","renewal_time":"how long passport renewal takes in India","renewal_cost":"approximate cost in INR","tatkal_available":true,"tatkal_time":"days for tatkal","tatkal_cost":"INR amount","tips":["tip1","tip2"]}}""",
+        model="llama-3.3-70b-versatile", temp=0.1, max_tok=800)
         return jsonify({'success':True,'data':result})
     except Exception as e: return jsonify({'success':False,'error':str(e)})
 
@@ -729,8 +764,15 @@ Return JSON: is_valid,validity_status,days_remaining,verdict,action_needed,renew
 @limiter.limit("20 per hour")
 def api_luggage_check():
     try:
-        data = request.get_json() or {}
-        result = groq_json(f"""Luggage rules for {clean(data.get('airline',''))} {clean(data.get('cabin_class','Economy'))} to {clean(data.get('destination',''))}. Return JSON: carry_on(weight/dimensions),checked_baggage(weight/dimensions/extra_cost),prohibited_items,liquid_rules,duty_free_allowance,packing_tips,pro_tip""")
+        data        = request.get_json() or {}
+        airline     = clean(data.get('airline',''))
+        cabin_class = clean(data.get('cabin_class','Economy'))
+        destination = clean(data.get('destination',''))
+        if not airline or not destination: return jsonify({'success':False,'error':'Airline and destination required'})
+        result = groq_json(f"""Provide complete luggage and duty free allowance information for {airline} airline flying to {destination} in {cabin_class} class.
+Return ONLY valid JSON:
+{{"airline":"{airline}","cabin_class":"{cabin_class}","carry_on":{{"weight":"kg limit","dimensions":"cm","pieces":1}},"checked_baggage":{{"weight":"kg limit","dimensions":"cm","pieces":1,"extra_cost":"cost per extra kg"}},"prohibited_items":["item1","item2","item3"],"liquid_rules":"100ml rule details","duty_free_allowance":{{"alcohol":"limit","cigarettes":"limit","cash":"limit","gifts":"value limit"}},"packing_tips":["tip1","tip2","tip3"],"pro_tip":"best single tip for this airline/route"}}""",
+        model="llama-3.3-70b-versatile", temp=0.1, max_tok=1000)
         return jsonify({'success':True,'data':result})
     except Exception as e: return jsonify({'success':False,'error':str(e)})
 
@@ -739,8 +781,16 @@ def api_luggage_check():
 @limiter.limit("10 per hour")
 def api_emergency_card():
     try:
-        data = request.get_json() or {}
-        result = groq_json(f"""Emergency card for {clean(data.get('name',''))} (blood:{clean(data.get('blood_group',''))},allergies:{clean(data.get('allergies','none'))}) visiting {clean(data.get('destination',''))}. Return JSON: emergency_numbers,indian_embassy,nearest_hospitals,medical_phrases,what_to_do_if_robbed,what_to_do_if_sick,what_to_do_if_lost""")
+        data        = request.get_json() or {}
+        name        = clean(data.get('name',''))
+        blood_group = clean(data.get('blood_group',''))
+        allergies   = clean(data.get('allergies','none'))
+        destination = clean(data.get('destination',''))
+        if not name or not destination: return jsonify({'success':False,'error':'Name and destination required'})
+        result = groq_json(f"""Create a complete emergency contact card for {name} (blood group: {blood_group}, allergies: {allergies}) visiting {destination}.
+Return ONLY valid JSON:
+{{"emergency_numbers":{{"police":"local number","ambulance":"local number","fire":"local number","tourist_helpline":"local number"}},"indian_embassy":{{"address":"full embassy address","phone":"main phone number","emergency_phone":"24hr emergency number","email":"email"}},"nearest_hospitals":[{{"name":"hospital name","type":"Government/Private","phone":"number","specialty":"specialty"}}],"medical_phrases":[{{"english":"I need help","local":"translation","pronunciation":"how to say it"}},{{"english":"Call an ambulance","local":"translation","pronunciation":"pronunciation"}},{{"english":"I am allergic to {allergies}","local":"translation","pronunciation":"pronunciation"}},{{"english":"My blood group is {blood_group}","local":"translation","pronunciation":"pronunciation"}}],"what_to_do_if_robbed":["step1","step2","step3"],"what_to_do_if_sick":["step1","step2","step3"],"what_to_do_if_lost":["step1","step2","step3"]}}""",
+        model="llama-3.3-70b-versatile", temp=0.1, max_tok=1500)
         return jsonify({'success':True,'data':result})
     except Exception as e: return jsonify({'success':False,'error':str(e)})
 
@@ -950,9 +1000,10 @@ def api_identify_text():
     try:
         description = clean((request.get_json() or {}).get('description',''), 300)
         if not description: return jsonify({'success':False,'error':'Description required'})
-        result = groq_json(f"""Someone saw this place on social media: "{description}". Identify it.
-Return JSON: place_name,city,country,confidence(0-100),place_type,description,tags,best_time,climate,budget_level,avg_daily_cost,language,currency,nearest_airport,why_famous,nearby,similar_places,travel_tips,best_food""",
-        model="llama-3.3-70b-versatile", temp=0.3, max_tok=1500)
+        result = groq_json(f"""Someone saw this place on social media: "{description}". Identify the exact location.
+Return ONLY this JSON structure (fill in real values, no placeholders):
+{{"place_name":"exact name","city":"city","country":"country","continent":"continent","confidence":88,"place_type":"Natural Wonder/Historical Site/City/Beach/Temple/etc","description":"2-3 sentences about the place","tags":["tag1","tag2","tag3"],"best_time":"best months to visit","climate":"climate type","budget_level":"Budget/Mid-range/Luxury","avg_daily_cost":"USD X/day","language":"local language","currency":"currency name + code","nearest_airport":"nearest airport name","airport_code":"IATA code","why_famous":"why this place is famous","nearby":[{{"name":"actual nearby place","distance":"X km","type":"Attraction","icon":"🏛️","description":"brief description"}},{{"name":"actual nearby place 2","distance":"X km","type":"Restaurant","icon":"🍽️","description":"brief description"}},{{"name":"actual nearby place 3","distance":"X km","type":"Hidden Gem","icon":"💎","description":"brief description"}}],"similar_places":[{{"name":"similar place name","country":"country","why_similar":"reason why similar","emoji":"🇫🇷"}},{{"name":"similar place name 2","country":"country","why_similar":"reason why similar","emoji":"🇮🇹"}},{{"name":"similar place name 3","country":"country","why_similar":"reason why similar","emoji":"🇬🇷"}}],"travel_tips":["tip1","tip2","tip3"],"best_food":["dish1","dish2","dish3"]}}""",
+        model="llama-3.3-70b-versatile", temp=0.3, max_tok=2000)
         return jsonify({'success':True,'result':result})
     except Exception as e: return jsonify({'success':False,'error':str(e)})
 
@@ -1128,7 +1179,7 @@ def process_stream(ws, audio_bytes, target_lang, src_lang, sentence_id):
     try:
         safe_send(ws, {'type':'status','message':'🎯 Listening...'})
         wav = audio_to_wav(bytes(audio_bytes))
-        text, detected, conf = transcribe(wav, src_lang if src_lang != 'auto' else None)
+        text, detected, _ = transcribe(wav, src_lang if src_lang != 'auto' else None)
         if not is_valid(text): safe_send(ws, {'type':'ready'}); return
         safe_send(ws, {'type':'transcript','text':text,'lang':detected,'id':sentence_id})
         safe_send(ws, {'type':'status','message':'🌍 Translating...'})
@@ -1209,7 +1260,7 @@ def convo_ws(ws):
                         try:
                             safe_send(ws, {'type':'status','message':'🎯 Listening...'})
                             wav = audio_to_wav(bytes(audio_buffer))
-                            text, detected, conf = transcribe(wav, WHISPER_LANG.get(src))
+                            text, detected, _ = transcribe(wav, WHISPER_LANG.get(src))
                             if is_valid(text):
                                 safe_send(ws, {'type':'transcript','text':text,'speaker':active_speaker,'lang':detected,'id':msg_id})
                                 safe_send(ws, {'type':'status','message':'🌍 Translating...'})

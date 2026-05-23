@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Yaply — My Profile</title>
+<link rel="icon" href="/static/favicon.png" type="image/png"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --teal:#1A8A72;--teal-s:rgba(26,138,114,0.08);--teal-m:rgba(26,138,114,0.15);
+  --amber:#E8823A;--amber-s:rgba(232,130,58,0.08);
+  --sky:#3A6BC8;--sky-s:rgba(58,107,200,0.08);
+  --charcoal:#2C2B28;--green:#28B06A;--green-s:rgba(40,176,106,0.08);
+  --red:#D84C3E;--red-s:rgba(216,76,62,0.08);
+  --purple:#8B5CF6;--purple-s:rgba(139,92,246,0.08);
+  --gold:#F0B429;--gold-s:rgba(240,180,41,0.08);
+  --bg:#F7F6F2;--bg2:#EFEDE8;--white:#FFFFFF;
+  --border:rgba(200,196,178,0.35);--border-md:rgba(200,196,178,0.6);
+  --text:#2C2B28;--muted:#6B6860;--muted2:#9B9890;
+  --nav-h:64px;--r:10px;--r-lg:16px;--r-xl:22px;
+  --shadow:0 2px 12px rgba(44,43,40,0.06);--shadow-lg:0 16px 48px rgba(44,43,40,0.12);
+}
+html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:200;}
+.nav-left{display:flex;align-items:center;gap:10px;}
+.nav-back{display:flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:600;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .15s;}
+.nav-back:hover{background:var(--bg2);color:var(--charcoal);}
+.nav-back svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+.nav-logo-mark{width:28px;height:28px;border-radius:8px;background:var(--teal);display:flex;align-items:center;justify-content:center;}
+.nav-logo-mark svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2;}
+.nav-logo-name{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--charcoal);}
+.nav-chip{font-size:0.62rem;font-weight:700;padding:3px 9px;border-radius:100px;background:var(--teal-s);color:var(--teal);letter-spacing:.5px;}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.nav-btn{padding:7px 16px;border-radius:8px;font-size:0.72rem;font-weight:700;border:1px solid var(--border-md);background:none;color:var(--muted);cursor:pointer;transition:all .15s;}
+.nav-btn:hover{background:var(--red-s);color:var(--red);border-color:var(--red);}
+
+/* ── PAGE ── */
+.page{padding:calc(var(--nav-h) + 28px) 24px 80px;max-width:880px;margin:0 auto;}
+
+/* ── HERO CARD ── */
+.hero-card{
+  background:linear-gradient(135deg,#1A2744 0%,#2C1A38 50%,#1A2C28 100%);
+  border-radius:var(--r-xl);padding:36px 32px;margin-bottom:20px;
+  position:relative;overflow:hidden;box-shadow:var(--shadow-lg);
+}
+.hc-deco1{position:absolute;width:320px;height:320px;border-radius:50%;background:rgba(26,138,114,.15);top:-120px;right:-80px;pointer-events:none;}
+.hc-deco2{position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(232,130,58,.1);bottom:-80px;left:10%;pointer-events:none;}
+.hc-deco3{position:absolute;width:150px;height:150px;border-radius:50%;background:rgba(139,92,246,.08);top:20%;left:-40px;pointer-events:none;}
+.hc-inner{position:relative;z-index:1;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.hc-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--sky));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fff;flex-shrink:0;border:3px solid rgba(255,255,255,.2);box-shadow:0 8px 24px rgba(0,0,0,.3);overflow:hidden;}
+.hc-avatar img{width:100%;height:100%;object-fit:cover;}
+.hc-info{flex:1;min-width:200px;}
+.hc-name{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:4px;}
+.hc-email{font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:10px;}
+.hc-meta{display:flex;gap:10px;flex-wrap:wrap;}
+.hc-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:4px 11px;font-size:.65rem;font-weight:600;color:rgba(255,255,255,.7);}
+.hc-tag svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;}
+.hc-pro{background:linear-gradient(135deg,rgba(240,180,41,.2),rgba(232,130,58,.2));border-color:rgba(240,180,41,.4);color:var(--gold);}
+.hc-actions{display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
+.hc-edit-btn{padding:10px 20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.hc-edit-btn:hover{background:rgba(255,255,255,.18);}
+.hc-edit-btn svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2;}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:480px){.stats-row{grid-template-columns:repeat(3,1fr);gap:8px;}}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;text-align:center;transition:all .2s;box-shadow:var(--shadow);}
+.stat-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+.stat-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
+.stat-ico svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.si-teal{background:var(--teal-s);color:var(--teal);}
+.si-amber{background:var(--amber-s);color:var(--amber);}
+.si-purple{background:var(--purple-s);color:var(--purple);}
+.stat-num{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;color:var(--charcoal);line-height:1;}
+.stat-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-top:4px;}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:4px;margin-bottom:20px;box-shadow:var(--shadow);}
+.tab{flex:1;padding:9px 12px;border-radius:var(--r);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;border:none;background:none;color:var(--muted2);display:flex;align-items:center;justify-content:center;gap:6px;}
+.tab svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+.tab.active{background:var(--charcoal);color:#fff;}
+.tab-count{font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:100px;background:rgba(255,255,255,.15);}
+
+/* ── PANEL ── */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* ── TRIPS ── */
+.trips-list{display:flex;flex-direction:column;gap:12px;}
+.trip-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px 20px;display:flex;align-items:center;gap:16px;transition:all .2s;box-shadow:var(--shadow);}
+.trip-card:hover{border-color:var(--border-md);box-shadow:var(--shadow-lg);transform:translateY(-2px);}
+.trip-emoji{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--teal),var(--sky));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.trip-info{flex:1;min-width:0;}
+.trip-dest{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--charcoal);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.trip-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.trip-badge{font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:100px;}
+.tb-days{background:var(--teal-s);color:var(--teal);}
+.tb-budget{background:var(--amber-s);color:var(--amber);}
+.tb-vibes{background:var(--purple-s);color:var(--purple);}
+.tb-status-planned{background:var(--sky-s);color:var(--sky);}
+.tb-status-active{background:var(--green-s);color:var(--green);}
+.tb-status-completed{background:var(--gold-s);color:var(--gold);}
+.trip-date{font-size:.65rem;color:var(--muted2);margin-top:4px;}
+.trip-actions{display:flex;gap:6px;flex-shrink:0;}
+.trip-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.trip-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+.trip-btn.open{color:var(--teal);}
+.trip-btn.open:hover{background:var(--teal-s);border-color:var(--teal);}
+.trip-btn.del{color:var(--muted2);}
+.trip-btn.del:hover{background:var(--red-s);color:var(--red);border-color:var(--red);}
+
+/* ── PLACES GRID ── */
+.places-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:600px){.places-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:380px){.places-grid{grid-template-columns:1fr;}}
+.place-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;transition:all .25s;box-shadow:var(--shadow);position:relative;}
+.place-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.place-banner{height:70px;display:flex;align-items:center;justify-content:center;font-size:2rem;}
+.place-body{padding:12px;}
+.place-name{font-size:.8rem;font-weight:700;color:var(--charcoal);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.place-loc{font-size:.65rem;color:var(--muted2);margin-bottom:8px;}
+.place-del{width:100%;padding:6px;background:var(--bg2);border:none;border-radius:7px;font-family:'Inter',sans-serif;font-size:.62rem;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s;}
+.place-del:hover{background:var(--red-s);color:var(--red);}
+
+/* ── SETTINGS ── */
+.settings-sections{display:flex;flex-direction:column;gap:16px;}
+.settings-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow);}
+.settings-head{padding:16px 20px;border-bottom:1px solid var(--border);background:linear-gradient(to right,var(--bg),var(--white));display:flex;align-items:center;gap:10px;}
+.sh-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh-ico svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+.shi-teal{background:var(--teal-s);color:var(--teal);}
+.shi-amber{background:var(--amber-s);color:var(--amber);}
+.shi-red{background:var(--red-s);color:var(--red);}
+.settings-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;color:var(--charcoal);}
+.settings-body{padding:20px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:480px){.field-row{grid-template-columns:1fr;}}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);}
+.field input,.field select{padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.82rem;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus{border-color:var(--teal);background:#fff;}
+.field input::placeholder{color:var(--muted2);}
+.save-btn{padding:11px 24px;background:var(--teal);color:#fff;border:none;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.save-btn:hover{background:#158068;transform:translateY(-1px);}
+.save-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.save-btn svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2;}
+.save-msg{font-size:.72rem;font-weight:600;padding:6px 0;transition:opacity .3s;}
+.save-msg.success{color:var(--green);}
+.save-msg.error{color:var(--red);}
+.pw-row{display:flex;flex-direction:column;gap:10px;}
+.danger-zone{padding:4px 0;}
+.dz-text{font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:14px;}
+.danger-btn{padding:10px 20px;background:var(--red-s);border:1.5px solid rgba(216,76,62,.25);color:var(--red);border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.danger-btn:hover{background:var(--red);color:#fff;}
+
+/* ── EMPTY STATES ── */
+.empty-state{text-align:center;padding:48px 24px;}
+.empty-ico{font-size:3rem;margin-bottom:12px;}
+.empty-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--charcoal);margin-bottom:6px;}
+.empty-sub{font-size:.78rem;color:var(--muted2);line-height:1.7;margin-bottom:18px;}
+.empty-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--charcoal);color:#fff;border-radius:var(--r);font-size:.78rem;font-weight:700;text-decoration:none;transition:all .2s;}
+.empty-btn:hover{background:var(--teal);}
+
+/* ── SKELETON ── */
+.skel{background:linear-gradient(90deg,var(--bg2) 25%,var(--border) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.skel-trip{height:88px;border-radius:var(--r-xl);margin-bottom:12px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--charcoal);color:#fff;padding:10px 18px;border-radius:100px;font-size:.72rem;font-weight:600;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── ANIMATIONS ── */
+.fade-up{animation:fadeUp .4s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* Delete confirm modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:none;align-items:center;justify-content:center;}
+.modal-bg.show{display:flex;}
+.modal{background:#fff;border-radius:var(--r-xl);padding:28px;max-width:380px;width:90%;box-shadow:0 24px 80px rgba(0,0,0,.25);}
+.modal-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--charcoal);margin-bottom:8px;}
+.modal-text{font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:20px;}
+.modal-btns{display:flex;gap:8px;}
+.modal-cancel{flex:1;padding:10px;border:1px solid var(--border-md);background:none;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--muted);}
+.modal-confirm{flex:1;padding:10px;background:var(--red);border:none;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;color:#fff;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="_yaply_nav">
+  <div class="nav-left">
+    <a href="/app" class="nav-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Dashboard</a>
+    <div style="width:1px;height:16px;background:var(--border);margin:0 2px;"></div>
+    <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <span class="nav-logo-name">Yaply</span>
+    <div class="nav-chip">Profile</div>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="logout()">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HERO CARD -->
+  <div class="hero-card fade-up">
+    <div class="hc-deco1"></div>
+    <div class="hc-deco2"></div>
+    <div class="hc-deco3"></div>
+    <div class="hc-inner">
+      <div class="hc-avatar" id="heroAvatar">
+        <span id="heroInitial">?</span>
+      </div>
+      <div class="hc-info">
+        <div class="hc-name" id="heroName">Loading…</div>
+        <div class="hc-email" id="heroEmail"></div>
+        <div class="hc-meta" id="heroMeta"></div>
+      </div>
+      <div class="hc-actions">
+        <button class="hc-edit-btn" onclick="switchTab('settings')">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row fade-up">
+    <div class="stat-card">
+      <div class="stat-ico si-teal"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+      <div class="stat-num" id="statTrips">—</div>
+      <div class="stat-lbl">Trips</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico si-amber"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <div class="stat-num" id="statDays">—</div>
+      <div class="stat-lbl">Days Planned</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico si-purple"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="stat-num" id="statPlaces">—</div>
+      <div class="stat-lbl">Saved Places</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs fade-up">
+    <button class="tab active" id="tab-trips" onclick="switchTab('trips')">
+      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg>
+      My Trips <span class="tab-count" id="trips-count">0</span>
+    </button>
+    <button class="tab" id="tab-places" onclick="switchTab('places')">
+      <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      Saved Places <span class="tab-count" id="places-count">0</span>
+    </button>
+    <button class="tab" id="tab-settings" onclick="switchTab('settings')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </div>
+
+  <!-- TRIPS PANEL -->
+  <div class="panel active" id="panel-trips">
+    <div class="trips-list" id="tripsList">
+      <div class="skel skel-trip"></div>
+      <div class="skel skel-trip"></div>
+      <div class="skel skel-trip"></div>
+    </div>
+  </div>
+
+  <!-- PLACES PANEL -->
+  <div class="panel" id="panel-places">
+    <div class="places-grid" id="placesList"></div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="panel" id="panel-settings">
+    <div class="settings-sections">
+
+      <!-- Edit Profile -->
+      <div class="settings-card fade-up">
+        <div class="settings-head">
+          <div class="sh-ico shi-teal"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div class="settings-title">Personal Info</div>
+        </div>
+        <div class="settings-body">
+          <div class="field-row">
+            <div class="field">
+              <label>Full Name</label>
+              <input type="text" id="fName" placeholder="Your name"/>
+            </div>
+            <div class="field">
+              <label>Home City</label>
+              <input type="text" id="fHomeCity" placeholder="e.g. Mumbai"/>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Passport Country</label>
+              <input type="text" id="fPassport" placeholder="e.g. India"/>
+            </div>
+            <div class="field">
+              <label>Preferred Currency</label>
+              <select id="fCurrency">
+                <option value="INR">INR — Indian Rupee</option>
+                <option value="USD">USD — US Dollar</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="GBP">GBP — British Pound</option>
+                <option value="AED">AED — UAE Dirham</option>
+                <option value="SGD">SGD — Singapore Dollar</option>
+                <option value="JPY">JPY — Japanese Yen</option>
+                <option value="AUD">AUD — Australian Dollar</option>
+                <option value="CAD">CAD — Canadian Dollar</option>
+                <option value="THB">THB — Thai Baht</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
+            <button class="save-btn" id="saveProfileBtn" onclick="saveProfile()">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Save Changes
+            </button>
+            <span class="save-msg" id="profileMsg"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Change Password -->
+      <div class="settings-card fade-up">
+        <div class="settings-head">
+          <div class="sh-ico shi-amber"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div class="settings-title">Change Password</div>
+        </div>
+        <div class="settings-body">
+          <div class="pw-row">
+            <div class="field">
+              <label>Current Password</label>
+              <input type="password" id="pwCurrent" placeholder="Enter current password"/>
+            </div>
+            <div class="field-row" style="margin:0;">
+              <div class="field">
+                <label>New Password</label>
+                <input type="password" id="pwNew" placeholder="Min 8 characters"/>
+              </div>
+              <div class="field">
+                <label>Confirm New Password</label>
+                <input type="password" id="pwConfirm" placeholder="Repeat new password"/>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <button class="save-btn" id="savePwBtn" onclick="changePassword()">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Update Password
+              </button>
+              <span class="save-msg" id="pwMsg"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="settings-card fade-up">
+        <div class="settings-head">
+          <div class="sh-ico shi-red"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div>
+          <div class="settings-title" style="color:var(--red);">Danger Zone</div>
+        </div>
+        <div class="settings-body">
+          <div class="danger-zone">
+            <div class="dz-text">Permanently deletes your account, all trips, saved places, and travel history. This action <strong>cannot be undone</strong>.</div>
+            <button class="danger-btn" onclick="confirmDeleteAccount()">Delete My Account</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-bg" id="deleteModal">
+  <div class="modal">
+    <div class="modal-title">Delete Account?</div>
+    <div class="modal-text" id="deleteModalText">This will permanently delete your account and all your data. This cannot be undone.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="document.getElementById('deleteModal').classList.remove('show')">Cancel</button>
+      <button class="modal-confirm" id="deleteConfirmBtn" onclick="deleteAccount()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="/static/yaply-nav.js"></script>
+<script>
+const user    = getUser();
+let profileData = null;
+let tripsData   = [];
+let placesData  = [];
+
+const GRADS = [
+  'linear-gradient(135deg,#667eea,#764ba2)',
+  'linear-gradient(135deg,#f093fb,#f5576c)',
+  'linear-gradient(135deg,#4facfe,#00f2fe)',
+  'linear-gradient(135deg,#fa709a,#fee140)',
+  'linear-gradient(135deg,#43e97b,#38f9d7)',
+  'linear-gradient(135deg,#1A8A72,#3A6BC8)',
+  'linear-gradient(135deg,#f5576c,#f093fb)',
+  'linear-gradient(135deg,#E8823A,#F0B429)',
+];
+
+// ── INIT ──
+async function init() {
+  if (!getToken()) { window.location.href = '/login'; return; }
+
+  // Prefill from localStorage while API loads
+  if (user) {
+    document.getElementById('heroName').textContent = user.name || 'Traveller';
+    document.getElementById('heroInitial').textContent = (user.name || 'Y')[0].toUpperCase();
+    document.getElementById('heroEmail').textContent = user.email || '';
+    if (user.avatar) {
+      document.getElementById('heroAvatar').innerHTML = `<img src="${user.avatar}" alt="${user.name}"/>`;
+    }
+  }
+
+  try {
+    const [profileRes, tripsRes, placesRes] = await Promise.all([
+      apiFetch('/api/profile'),
+      apiFetch('/api/trips'),
+      apiFetch('/api/places'),
+    ]);
+
+    if (profileRes.success) {
+      profileData = profileRes.user;
+      renderHero(profileRes.user, profileRes.stats);
+      prefillSettings(profileRes.user);
+    }
+    if (tripsRes.success) {
+      tripsData = tripsRes.trips || [];
+      renderTrips(tripsData);
+    } else {
+      renderTrips([]);
+    }
+    if (placesRes.success) {
+      placesData = placesRes.places || [];
+      renderPlaces(placesData);
+    } else {
+      renderPlaces([]);
+    }
+  } catch(e) {
+    showToastMsg('Could not load profile data');
+  }
+}
+
+// ── RENDER HERO ──
+function renderHero(u, stats) {
+  document.getElementById('heroName').textContent = u.name || 'Traveller';
+  document.getElementById('heroEmail').textContent = u.email || '';
+  if (u.avatar) {
+    document.getElementById('heroAvatar').innerHTML = `<img src="${u.avatar}" alt="${u.name}" style="width:100%;height:100%;object-fit:cover;"/>`;
+  } else {
+    document.getElementById('heroInitial').textContent = (u.name || 'Y')[0].toUpperCase();
+  }
+
+  const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', {month:'long',year:'numeric'}) : '';
+  const tags = [];
+  if (u.home_city) tags.push(`<span class="hc-tag"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>${u.home_city}</span>`);
+  if (u.passport) tags.push(`<span class="hc-tag"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M7 21v-2a5 5 0 0 1 10 0v2"/></svg>${u.passport} Passport</span>`);
+  if (u.currency) tags.push(`<span class="hc-tag"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>${u.currency}</span>`);
+  if (joined) tags.push(`<span class="hc-tag"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Joined ${joined}</span>`);
+  if (u.is_pro) tags.push(`<span class="hc-tag hc-pro">✦ Pro Member</span>`);
+  document.getElementById('heroMeta').innerHTML = tags.join('');
+
+  // Stats
+  document.getElementById('statTrips').textContent  = stats?.trips  ?? 0;
+  document.getElementById('statDays').textContent   = stats?.days   ?? 0;
+  document.getElementById('statPlaces').textContent = stats?.places ?? 0;
+}
+
+// ── TRIPS ──
+function renderTrips(trips) {
+  document.getElementById('trips-count').textContent = trips.length;
+  const el = document.getElementById('tripsList');
+  if (!trips.length) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-ico">✈️</div>
+      <div class="empty-title">No trips yet</div>
+      <div class="empty-sub">Plan your first adventure and it will appear here.</div>
+      <a class="empty-btn" href="/plan">Start Planning</a>
+    </div>`;
+    return;
+  }
+  const STATUS_CLASS = { planned:'tb-status-planned', active:'tb-status-active', completed:'tb-status-completed' };
+  el.innerHTML = trips.map((t, i) => {
+    const emoji = getDestEmoji(t.destination || '');
+    const status = t.status || 'planned';
+    const vibesArr = (t.vibes || '').split('+').filter(Boolean).slice(0,2);
+    const date = t.updated_at ? new Date(t.updated_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '';
+    return `<div class="trip-card fade-up" style="animation-delay:${i*0.05}s">
+      <div class="trip-emoji" style="background:${GRADS[i%GRADS.length]}">${emoji}</div>
+      <div class="trip-info">
+        <div class="trip-dest">${t.destination || 'Unknown Destination'}</div>
+        <div class="trip-meta">
+          <span class="trip-badge tb-days">📅 ${t.days||5} days</span>
+          ${t.budget ? `<span class="trip-badge tb-budget">💰 ${t.currency||'INR'} ${Number(t.budget).toLocaleString()}</span>` : ''}
+          ${vibesArr.map(v=>`<span class="trip-badge tb-vibes">${v}</span>`).join('')}
+          <span class="trip-badge ${STATUS_CLASS[status]||'tb-status-planned'}">${status}</span>
+        </div>
+        ${date ? `<div class="trip-date">Last updated ${date}</div>` : ''}
+      </div>
+      <div class="trip-actions">
+        <button class="trip-btn open" title="Open trip" onclick="openTrip(${t.id},'${encodeURIComponent(t.destination||'')}')">
+          <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </button>
+        <button class="trip-btn del" title="Delete trip" onclick="confirmDeleteTrip(${t.id},'${escapeStr(t.destination)}')">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openTrip(id, dest) {
+  window.location.href = `/plan?trip_id=${id}&dest=${dest}`;
+}
+
+async function confirmDeleteTrip(id, dest) {
+  const modal = document.getElementById('deleteModal');
+  document.getElementById('deleteModalText').textContent = `Delete the trip to "${dest}"? All trip data will be permanently removed.`;
+  document.getElementById('deleteConfirmBtn').onclick = () => deleteTrip(id);
+  modal.classList.add('show');
+}
+
+async function deleteTrip(id) {
+  document.getElementById('deleteModal').classList.remove('show');
+  try {
+    const d = await apiFetch(`/api/trips/${id}`, { method:'DELETE' });
+    if (d.success !== false) {
+      tripsData = tripsData.filter(t => t.id !== id);
+      renderTrips(tripsData);
+      document.getElementById('statTrips').textContent = tripsData.length;
+      showToastMsg('Trip deleted');
+    }
+  } catch { showToastMsg('Could not delete trip'); }
+}
+
+// ── PLACES ──
+function renderPlaces(places) {
+  document.getElementById('places-count').textContent = places.length;
+  const el = document.getElementById('placesList');
+  if (!places.length) {
+    el.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-ico">🗺️</div>
+      <div class="empty-title">No saved places</div>
+      <div class="empty-sub">Discover places from social media reels and save them here.</div>
+      <a class="empty-btn" href="/discover">Discover Places</a>
+    </div>`;
+    return;
+  }
+  el.innerHTML = places.map((p, i) => `
+    <div class="place-card fade-up" style="animation-delay:${i*0.04}s">
+      <div class="place-banner" style="background:${GRADS[i%GRADS.length]}">${p.emoji||'📍'}</div>
+      <div class="place-body">
+        <div class="place-name">${p.name||'Unknown Place'}</div>
+        <div class="place-loc">${[p.city,p.country].filter(Boolean).join(', ')||'—'}</div>
+        <button class="place-del" onclick="deletePlace(${p.id})">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+async function deletePlace(id) {
+  try {
+    await apiFetch(`/api/places/${id}`, { method:'DELETE' });
+    placesData = placesData.filter(p => p.id !== id);
+    renderPlaces(placesData);
+    document.getElementById('statPlaces').textContent = placesData.length;
+    showToastMsg('Place removed');
+  } catch { showToastMsg('Could not remove place'); }
+}
+
+// ── SETTINGS ──
+function prefillSettings(u) {
+  if (!u) return;
+  document.getElementById('fName').value = u.name || '';
+  document.getElementById('fHomeCity').value = u.home_city || '';
+  document.getElementById('fPassport').value = u.passport || '';
+  const sel = document.getElementById('fCurrency');
+  for (let opt of sel.options) { if (opt.value === u.currency) { opt.selected = true; break; } }
+}
+
+async function saveProfile() {
+  const btn = document.getElementById('saveProfileBtn');
+  const msg = document.getElementById('profileMsg');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  msg.textContent = '';
+  try {
+    const d = await apiFetch('/api/auth/update-profile', { method:'POST', body: JSON.stringify({
+      name:      document.getElementById('fName').value.trim(),
+      home_city: document.getElementById('fHomeCity').value.trim(),
+      passport:  document.getElementById('fPassport').value.trim(),
+      currency:  document.getElementById('fCurrency').value,
+    })});
+    if (d.success) {
+      // Update stored user
+      const stored = getUser();
+      if (stored) setAuth(getToken(), { ...stored, ...d.user });
+      msg.textContent = '✓ Saved!'; msg.className = 'save-msg success';
+      renderHero(d.user, { trips: tripsData.length, days: tripsData.reduce((s,t)=>s+(t.days||0),0), places: placesData.length });
+      showToastMsg('Profile updated!');
+    } else {
+      msg.textContent = d.error || 'Error saving'; msg.className = 'save-msg error';
+    }
+  } catch { msg.textContent = 'Network error'; msg.className = 'save-msg error'; }
+  btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" stroke="#fff" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save Changes';
+  setTimeout(() => { msg.textContent = ''; }, 3500);
+}
+
+async function changePassword() {
+  const cur = document.getElementById('pwCurrent').value;
+  const nw  = document.getElementById('pwNew').value;
+  const cnf = document.getElementById('pwConfirm').value;
+  const msg = document.getElementById('pwMsg');
+  msg.textContent = '';
+  if (!cur || !nw) { msg.textContent = 'Fill all fields'; msg.className = 'save-msg error'; return; }
+  if (nw !== cnf) { msg.textContent = 'Passwords don\'t match'; msg.className = 'save-msg error'; return; }
+  if (nw.length < 8) { msg.textContent = 'Min 8 characters'; msg.className = 'save-msg error'; return; }
+  const btn = document.getElementById('savePwBtn');
+  btn.disabled = true; btn.textContent = 'Updating…';
+  try {
+    const d = await apiFetch('/api/auth/change-password', { method:'POST', body: JSON.stringify({ current_password:cur, new_password:nw }) });
+    if (d.success) {
+      msg.textContent = '✓ Password updated!'; msg.className = 'save-msg success';
+      document.getElementById('pwCurrent').value = '';
+      document.getElementById('pwNew').value = '';
+      document.getElementById('pwConfirm').value = '';
+    } else { msg.textContent = d.error || 'Error'; msg.className = 'save-msg error'; }
+  } catch { msg.textContent = 'Network error'; msg.className = 'save-msg error'; }
+  btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" stroke="#fff" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Update Password';
+  setTimeout(() => { msg.textContent = ''; }, 3500);
+}
+
+function confirmDeleteAccount() {
+  const modal = document.getElementById('deleteModal');
+  document.getElementById('deleteModalText').textContent = 'This will permanently delete your account, all trips, saved places, and travel history. This cannot be undone.';
+  document.getElementById('deleteConfirmBtn').onclick = deleteAccount;
+  modal.classList.add('show');
+}
+
+async function deleteAccount() {
+  document.getElementById('deleteModal').classList.remove('show');
+  try {
+    const d = await apiFetch('/api/auth/delete-account', { method:'POST' });
+    if (d.success) {
+      clearAuth();
+      window.location.href = '/login';
+    } else { showToastMsg(d.error || 'Could not delete account'); }
+  } catch { showToastMsg('Network error'); }
+}
+
+// ── TABS ──
+function switchTab(name) {
+  ['trips','places','settings'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t === name);
+    document.getElementById('panel-'+t).classList.toggle('active', t === name);
+  });
+}
+
+// ── HELPERS ──
+function getDestEmoji(dest) {
+  const d = dest.toLowerCase();
+  if (/beach|island|maldiv|bali|goa/.test(d)) return '🏝️';
+  if (/paris|france|europe|italy|rome/.test(d)) return '🗼';
+  if (/japan|tokyo|kyoto/.test(d)) return '⛩️';
+  if (/dubai|uae/.test(d)) return '🏙️';
+  if (/mountain|himalaya|nepal|switzerland/.test(d)) return '⛰️';
+  if (/safari|africa|kenya/.test(d)) return '🦁';
+  if (/new york|usa|america/.test(d)) return '🗽';
+  if (/india|mumbai|delhi|rajasthan/.test(d)) return '🕌';
+  if (/thailand|bangkok/.test(d)) return '🛕';
+  if (/singapore/.test(d)) return '🦁';
+  return '✈️';
+}
+
+function escapeStr(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+function showToastMsg(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Close modal on bg click
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('show');
+});
+
+init();
+</script>
+</body>
+</html>
