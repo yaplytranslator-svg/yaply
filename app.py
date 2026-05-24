@@ -6,7 +6,9 @@ app.py — Yaply COMPLETE Production App v3 (FIXED)
 - Real auth on all routes that need it
 - Rate limiting, security headers, input validation
 """
-
+from diary import diary_bp, init_diary_db
+from groups import groups_bp, init_groups_db, register_socketio_events
+from urllib import response
 import os, io, base64, json, wave, struct, threading, time
 import requests as req
 from dotenv import load_dotenv
@@ -19,6 +21,19 @@ from flask_sock import Sock
 
 app = Flask(__name__)
 CORS(app)
+ 
+app.register_blueprint(groups_bp)
+app.register_blueprint(diary_bp)
+
+from flask_socketio import SocketIO
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    async_mode='gevent',
+    ping_timeout=60,
+    ping_interval=25,   
+)
+register_socketio_events(socketio)
 sock = Sock(app)
 app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 25}
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET', 'yaply-secret-2025-change-me')
@@ -52,6 +67,10 @@ from auth import register_auth_routes, require_auth, optional_auth, safe_user
 
 init_db()
 register_auth_routes(app)
+
+init_groups_db()
+init_diary_db()
+
 
 # ── AI CLIENTS ──
 from groq import Groq
@@ -1275,23 +1294,827 @@ def convo_ws(ws):
                     safe_send(ws, {'type':'speaking','status':False,'speaker':active_speaker})
         except Exception as e: print(f"[Convo] {e}"); break
 
+
+# ══════════════════════════════════════════════════════════════
+# PASTE THIS ENTIRE BLOCK INTO app.py
+# Right before:  if __name__ == '__main__':
+# ══════════════════════════════════════════════════════════════
+
+import json as _json
+
+
+def clean_json(text):
+    """Clean and parse JSON from Groq response."""
+    text = text.strip()
+    if '```' in text:
+        parts = text.split('```')
+        for part in parts:
+            if '{' in part:
+                text = part
+                if text.startswith('json'):
+                    text = text[4:]
+                break
+    start = text.find('{')
+    end   = text.rfind('}') + 1
+    if start != -1 and end > start:
+        text = text[start:end]
+    return _json.loads(text)
+
+
+# ──────────────────────────────────────────────────────────────
+# MULTI-CITY TRIP PLANNER
+# ──────────────────────────────────────────────────────────────
+@app.route('/api/multi-city-plan', methods=['POST'])
+def multi_city_plan():
+    try:
+        data         = request.get_json()
+        origin       = data.get('origin', 'India')
+        cities       = data.get('cities', [])
+        total_budget = data.get('total_budget', 100000)
+        currency     = data.get('currency', 'INR')
+        vibe         = data.get('vibe', 'adventure')
+        people       = data.get('people', 1)
+        start_date   = data.get('start_date', '')
+        passport     = data.get('passport', 'India')
+
+        if not cities or len(cities) < 2:
+            return jsonify({'success': False, 'error': 'Please add at least 2 cities.'})
+
+        if len(cities) > 6:
+            return jsonify({'success': False, 'error': 'Maximum 6 cities supported.'})
+
+        total_days = sum(int(c.get('days', 3)) for c in cities)
+        city_list  = ', '.join(c['name'] for c in cities)
+        import json as _json
+
+        prompt = (
+            "You are the world's best multi-city trip planner.\n\n"
+            "Plan an epic multi-city trip:\n"
+            "- Origin: " + str(origin) + "\n"
+            "- Cities in order: " + str(city_list) + "\n"
+            "- Cities data: " + str(_json.dumps(cities)) + "\n"
+            "- Total days: " + str(total_days) + "\n"
+            "- Total budget: " + str(currency) + " " + str(total_budget) + " for " + str(people) + " people\n"
+            "- Travel style: " + str(vibe) + "\n"
+            "- Start date: " + str(start_date if start_date else 'flexible') + "\n"
+            "- Passport: " + str(passport) + "\n\n"
+            "RULES:\n"
+            "1. ALL prices in " + str(currency) + " only\n"
+            "2. Plan each city with full day-by-day itinerary\n"
+            "3. Include transit between every city with costs\n"
+            "4. Budget must sum to approximately " + str(total_budget) + "\n"
+            "5. Activities must match the " + str(vibe) + " travel style\n"
+            "6. Include hidden gems, must eat, must do for each city\n\n"
+            "Return ONLY valid JSON with this exact structure:\n"
+            '{\n'
+            '  "trip_title": "catchy name for this trip",\n'
+            '  "origin": "' + str(origin) + '",\n'
+            '  "total_days": ' + str(total_days) + ',\n'
+            '  "total_budget": ' + str(total_budget) + ',\n'
+            '  "currency": "' + str(currency) + '",\n'
+            '  "cities_count": ' + str(len(cities)) + ',\n'
+            '  "route_overview": "one paragraph describing the full journey",\n'
+            '  "smart_suggestions": ["tip1", "tip2", "tip3", "tip4"],\n'
+            '  "budget_split": {\n'
+            '    "flights_and_transit": 0,\n'
+            '    "accommodation": 0,\n'
+            '    "food": 0,\n'
+            '    "activities": 0,\n'
+            '    "local_transport": 0,\n'
+            '    "shopping": 0,\n'
+            '    "miscellaneous": 0\n'
+            '  },\n'
+            '  "cities": [\n'
+            '    {\n'
+            '      "city_number": 1,\n'
+            '      "city": "city name",\n'
+            '      "country": "country name",\n'
+            '      "days": 3,\n'
+            '      "city_budget": 0,\n'
+            '      "city_vibe": "what makes this city special",\n'
+            '      "best_area_to_stay": "neighbourhood recommendation",\n'
+            '      "weather_note": "weather during travel period",\n'
+            '      "language": "local language",\n'
+            '      "local_currency": "currency name and code",\n'
+            '      "currency_tip": "best way to get local currency",\n'
+            '      "itinerary": [\n'
+            '        {\n'
+            '          "day": 1,\n'
+            '          "day_label": "Day 1 - City Name",\n'
+            '          "theme": "theme for this day",\n'
+            '          "morning": {"activity": "", "location": "", "cost": "", "tip": ""},\n'
+            '          "afternoon": {"activity": "", "location": "", "cost": "", "tip": ""},\n'
+            '          "evening": {"activity": "", "location": "", "cost": "", "tip": ""},\n'
+            '          "lunch": {"restaurant": "", "cuisine": "", "cost": ""},\n'
+            '          "dinner": {"restaurant": "", "cuisine": "", "cost": ""},\n'
+            '          "accommodation": {"name": "", "area": "", "cost": ""}\n'
+            '        }\n'
+            '      ],\n'
+            '      "hidden_gems": [{"name": "", "why": "", "cost": "", "best_time": ""}],\n'
+            '      "must_eat": ["dish1", "dish2", "dish3"],\n'
+            '      "must_do": ["activity1", "activity2", "activity3"],\n'
+            '      "local_tips": ["tip1", "tip2", "tip3"]\n'
+            '    }\n'
+            '  ],\n'
+            '  "transit_plans": [\n'
+            '    {\n'
+            '      "from": "city1",\n'
+            '      "to": "city2",\n'
+            '      "transit_day": "day number",\n'
+            '      "options": [\n'
+            '        {\n'
+            '          "mode": "Flight/Train/Bus",\n'
+            '          "operator": "operator name",\n'
+            '          "duration": "travel time",\n'
+            '          "cost": "per person cost",\n'
+            '          "total_cost": "cost for all people",\n'
+            '          "comfort": "Comfortable/Basic/Luxury",\n'
+            '          "recommended": true,\n'
+            '          "reason": "why recommended",\n'
+            '          "booking_tip": "where to book"\n'
+            '        }\n'
+            '      ],\n'
+            '      "transit_tip": "specific tip for this transit"\n'
+            '    }\n'
+            '  ],\n'
+            '  "sim_strategy": {\n'
+            '    "recommendation": "best SIM strategy for this route",\n'
+            '    "options": [\n'
+            '      {\n'
+            '        "type": "Global eSIM/Local SIM/Roaming",\n'
+            '        "providers": ["provider1", "provider2"],\n'
+            '        "cost": "approximate total cost",\n'
+            '        "coverage": "which cities covered",\n'
+            '        "recommended": true,\n'
+            '        "why": "reason"\n'
+            '      }\n'
+            '    ]\n'
+            '  },\n'
+            '  "packing_for_route": {\n'
+            '    "weather_variation": "temperature range across all cities",\n'
+            '    "key_items": ["item1", "item2", "item3", "item4", "item5"],\n'
+            '    "luggage_tip": "advice on luggage for this specific trip"\n'
+            '  },\n'
+            '  "money_saving_tips": ["tip1", "tip2", "tip3"]\n'
+            '}\n'
+        )
+
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are the world's best multi-city travel planner. Return ONLY valid JSON. No markdown. No backticks. No extra text."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.3,
+            max_tokens=8000
+        )
+
+        result = response.choices[0].message.content.strip()
+        if '```' in result:
+            parts = result.split('```')
+            for part in parts:
+                if '{' in part:
+                    result = part
+                    if result.startswith('json'):
+                        result = result[4:]
+                    break
+        start = result.find('{')
+        end   = result.rfind('}') + 1
+        if start != -1 and end > start:
+            result = result[start:end]
+
+        plan = _json.loads(result)
+        return jsonify({'success': True, 'plan': plan})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ──────────────────────────────────────────────────────────────
+# LOCAL SIM GUIDE
+# ──────────────────────────────────────────────────────────────
+@app.route('/api/sim-guide', methods=['POST'])
+def sim_guide():
+    try:
+        data             = request.get_json()
+        destination      = data.get('destination', '')
+        origin           = data.get('origin', 'India')
+        days             = data.get('days', 7)
+        data_needs       = data.get('data_needs', 'moderate')
+        phone_type       = data.get('phone_type', 'unlocked')
+        budget_conscious = data.get('budget_conscious', True)
+        countries        = data.get('countries', [destination])
+
+        if not destination:
+            return jsonify({'success': False, 'error': 'Destination required'})
+
+        countries_str = ', '.join(countries) if isinstance(countries, list) else destination
+
+        prompt = """You are an expert in international mobile connectivity and SIM cards.
+
+A traveller from {origin} is visiting {countries_str} for {days} days.
+Phone type: {phone_type}
+Data usage: {data_needs} (light=social media only, moderate=maps and streaming, heavy=video calls and remote work)
+Budget conscious: {budget_conscious}
+
+Give a COMPLETE, ACCURATE, ACTIONABLE SIM card guide with real carrier names and real prices.
+
+Return ONLY valid JSON:
+{{
+  "destination": "{destination}",
+  "days": {days},
+  "data_recommendation": "how much data they need for {days} days with {data_needs} usage",
+  "top_recommendation": {{
+    "name": "specific SIM plan name",
+    "provider": "real carrier name",
+    "type": "Physical SIM/eSIM",
+    "cost": "exact price in local currency and INR",
+    "data": "exact GB",
+    "validity": "days",
+    "calls": "calls included or not",
+    "why_best": "why this is best for their situation",
+    "where_to_buy": "exact location - airport terminal, convenience store, carrier store",
+    "activation": "how to activate step by step",
+    "coverage": "4G/5G coverage quality",
+    "hotspot": "hotspot allowed or not",
+    "esim_compatible": true
+  }},
+  "all_options": [
+    {{
+      "rank": 1,
+      "name": "plan name",
+      "provider": "carrier",
+      "type": "Physical/eSIM",
+      "cost": "price",
+      "data": "GB",
+      "validity": "days",
+      "best_for": "who this is best for",
+      "buy_at": "where to buy",
+      "pros": ["pro1", "pro2"],
+      "cons": ["con1"],
+      "score": 9
+    }}
+  ],
+  "esim_options": [
+    {{
+      "provider": "Airalo/Holafly/Nomad",
+      "plan_name": "plan name",
+      "cost_usd": "USD price",
+      "cost_inr": "INR price",
+      "data": "GB",
+      "validity": "days",
+      "recommended": true,
+      "setup_time": "minutes to set up",
+      "note": "important note"
+    }}
+  ],
+  "airport_buying_guide": {{
+    "available_at_airport": true,
+    "airport_terminal": "which terminal or exit",
+    "price_difference": "how much more expensive at airport",
+    "recommendation": "buy at airport or wait for city",
+    "timing": "when to buy"
+  }},
+  "roaming_option": {{
+    "worth_it": false,
+    "jio_international": "Jio pack details and cost in INR",
+    "airtel_international": "Airtel pack details and cost in INR",
+    "vi_international": "Vi pack details and cost in INR",
+    "verdict": "roaming vs local SIM comparison"
+  }},
+  "connectivity_tips": [
+    "tip1", "tip2", "tip3", "tip4", "tip5"
+  ],
+  "data_saving_tips": [
+    "tip1", "tip2", "tip3"
+  ],
+  "offline_essentials": [
+    {{"app": "Google Maps", "action": "download {destination} map offline before you leave", "data_saved": "saves data"}},
+    {{"app": "app name", "action": "action", "data_saved": "saving"}}
+  ],
+  "emergency_connectivity": {{
+    "if_sim_fails": "what to do",
+    "free_wifi_spots": "where to find free wifi in {destination}",
+    "emergency_call": "can you call without SIM"
+  }},
+  "phone_unlock_check": "how to check if phone is unlocked",
+  "budget_summary": {{
+    "cheapest_option": "option name and price",
+    "best_value": "option name and price",
+    "premium_option": "option name and price",
+    "recommended_for_this_trip": "option name"
+  }}
+}}""".format(
+            origin=origin,
+            countries_str=countries_str,
+            days=days,
+            phone_type=phone_type,
+            data_needs=data_needs,
+            budget_conscious=budget_conscious,
+            destination=destination
+        )
+
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": "You are an expert in international SIM cards. Always give specific real carrier names and real prices. Return ONLY valid JSON. No markdown."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            max_tokens=3000
+        )
+
+        guide = clean_json(response.choices[0].message.content)
+        return jsonify({'success': True, 'guide': guide})
+
+    except Exception as e:
+        print(f"SIM guide error: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+
+# ──────────────────────────────────────────────────────────────
+# OFFLINE ITINERARY DOWNLOAD
+# ──────────────────────────────────────────────────────────────
+@app.route('/download-itinerary', methods=['POST'])
+def download_itinerary():
+    try:
+        from flask import make_response
+        data       = request.get_json()
+        plan       = data.get('plan', {})
+        multi_city = data.get('multi_city', False)
+
+        if multi_city:
+            html = _build_multi_city_html(plan)
+        else:
+            html = _build_single_city_html(plan)
+
+        dest     = plan.get('destination') or plan.get('trip_title', 'Trip')
+        filename = 'yaply_' + dest.replace(' ', '_').lower() + '_itinerary.html'
+
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+        return response
+
+    except Exception as e:
+        print(f"Download error: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+
+def _slot(emoji, label, slot):
+    if not slot or not slot.get('activity'):
+        return ''
+    tip_html = '<div style="font-size:11px;color:#1A8A72;margin-top:4px;font-style:italic;border-left:2px solid #1A8A72;padding-left:8px;">&#128161; ' + slot.get('tip', '') + '</div>' if slot.get('tip') else ''
+    return (
+        '<div style="background:#F7F6F2;border-radius:10px;padding:12px;margin-bottom:8px;">'
+        '<div style="font-size:10px;font-weight:700;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">' + emoji + ' ' + label + '</div>'
+        '<div style="font-weight:700;font-size:14px;">' + slot.get('activity', '') + '</div>'
+        '<div style="font-size:12px;color:#1A8A72;margin-top:2px;">&#128205; ' + slot.get('location', '') + '</div>'
+        '<div style="font-size:12px;font-weight:700;color:#28B06A;margin-top:4px;">&#128176; ' + slot.get('cost', '') + ' &middot; &#9200; ' + slot.get('duration', '') + '</div>'
+        + tip_html +
+        '</div>'
+    )
+
+
+def _meal(emoji, label, meal):
+    if not meal or not meal.get('restaurant'):
+        return ''
+    return (
+        '<div style="background:#FFF7ED;border-radius:10px;padding:10px 12px;margin-bottom:8px;">'
+        '<div style="font-size:10px;font-weight:700;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">' + emoji + ' ' + label + '</div>'
+        '<div style="font-weight:700;font-size:14px;">' + meal.get('restaurant', '') + '</div>'
+        '<div style="font-size:12px;color:#6B6860;">&#127869;&#65039; ' + meal.get('cuisine', '') + ' &middot; &#128176; ' + meal.get('cost', '') + '</div>'
+        '</div>'
+    )
+
+
+def _stay(stay):
+    if not stay or not stay.get('name'):
+        return ''
+    return (
+        '<div style="background:#EFF6FF;border-radius:10px;padding:10px 12px;margin-bottom:8px;">'
+        '<div style="font-size:10px;font-weight:700;color:#3A6BC8;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">&#127968; Stay</div>'
+        '<div style="font-weight:700;font-size:14px;">' + stay.get('name', '') + '</div>'
+        '<div style="font-size:12px;color:#6B6860;">&#128205; ' + stay.get('area', '') + ' &middot; &#128176; ' + stay.get('cost', '') + ' / night</div>'
+        '</div>'
+    )
+
+
+def _build_single_city_html(plan):
+    destination = plan.get('destination', 'Your Trip')
+    days        = plan.get('days', 0)
+    currency    = plan.get('currency', '')
+    itinerary   = plan.get('itinerary', [])
+    budget_tips = plan.get('budget_tips', [])
+    packing     = plan.get('packing_list', [])
+    phrases     = plan.get('local_phrases', [])
+    gems        = plan.get('hidden_gems', [])
+    emergency   = plan.get('emergency_numbers', {})
+    tips        = plan.get('tips', [])
+    visa        = plan.get('visa_info', {})
+    flight      = plan.get('flight_info', {})
+    sim         = plan.get('sim_internet', {})
+    cultural    = plan.get('cultural_guide', {})
+
+    # Day cards
+    day_cards_html = ''
+    for day in itinerary:
+        day_cards_html += (
+            '<div style="background:white;border-radius:16px;padding:20px;margin-bottom:12px;border-left:4px solid #1A8A72;box-shadow:0 2px 8px rgba(0,0,0,0.06);">'
+            '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">'
+            '<div style="width:36px;height:36px;border-radius:50%;background:#1A8A72;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0;">' + str(day.get('day', '')) + '</div>'
+            '<div style="font-weight:700;font-size:16px;">' + (day.get('title', '')) + '</div>'
+            '</div>'
+            + _slot('&#127749;', 'Morning', day.get('morning'))
+            + _meal('&#9728;&#65039;', 'Lunch', day.get('lunch'))
+            + _slot('&#9728;&#65039;', 'Afternoon', day.get('afternoon'))
+            + _slot('&#127750;', 'Evening', day.get('evening'))
+            + _meal('&#127769;', 'Dinner', day.get('dinner'))
+            + _stay(day.get('accommodation'))
+            + '</div>'
+        )
+
+    # Packing tags
+    packing_html = ''.join(
+        '<span style="display:inline-block;background:#EFF6FF;color:#1A8A72;border-radius:20px;padding:4px 12px;font-size:12px;margin:3px;font-weight:500;">' + item + '</span>'
+        for item in packing
+    )
+
+    # Phrases
+    phrase_html = ''
+    for p in phrases:
+        phrase_html += (
+            '<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #F0EBE0;flex-wrap:wrap;">'
+            '<span style="font-weight:600;min-width:120px;font-size:13px;">' + p.get('phrase', '') + '</span>'
+            '<span style="color:#1A8A72;font-size:14px;font-weight:600;">' + p.get('translation', '') + '</span>'
+            '<span style="color:#6B6860;font-size:12px;font-style:italic;">(' + p.get('pronunciation', '') + ')</span>'
+            '</div>'
+        )
+
+    # Gems
+    gems_html = ''
+    for g in gems:
+        gems_html += (
+            '<div style="background:#F7F6F2;border-radius:12px;padding:14px;margin-bottom:10px;">'
+            '<div style="font-weight:700;font-size:14px;margin-bottom:4px;">&#128142; ' + g.get('name', '') + '</div>'
+            '<div style="font-size:12px;color:#3D3730;">' + g.get('description', '') + '</div>'
+            '<div style="font-size:11px;color:#6B6860;margin-top:6px;">&#128205; ' + g.get('location', '') + ' &middot; &#8987; ' + g.get('best_time', '') + ' &middot; &#128176; ' + g.get('cost', '') + '</div>'
+            '</div>'
+        )
+
+    # Cultural
+    dos   = ''.join('<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">&#9989; ' + d + '</li>' for d in cultural.get('dos', []))
+    donts = ''.join('<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">&#10060; ' + d + '</li>' for d in cultural.get('donts', []))
+
+    # Budget tips
+    btips = ''.join('<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">&#128161; ' + t + '</li>' for t in budget_tips)
+
+    # Tips
+    tips_html = ''.join('<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">&#127919; ' + t + '</li>' for t in tips)
+
+    # Emergency
+    em_html = ''
+    for k, num in emergency.items():
+        em_html += (
+            '<div style="background:#FEF2F2;border-radius:10px;padding:12px;text-align:center;">'
+            '<div style="font-size:20px;font-weight:700;color:#D84C3E;">' + str(num) + '</div>'
+            '<div style="font-size:11px;color:#6B6860;margin-top:2px;">' + k.replace('_', ' ').title() + '</div>'
+            '</div>'
+        )
+
+    return '''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{dest} &#8212; Yaply Offline Itinerary</title>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#F7F6F2; color:#2C2B28; }}
+.header {{ background:linear-gradient(135deg,#1A8A72,#3A6BC8); color:white; padding:32px 24px; text-align:center; }}
+.header h1 {{ font-size:28px; font-weight:800; letter-spacing:-1px; }}
+.badge {{ display:inline-block; background:rgba(255,255,255,.2); border-radius:20px; padding:4px 12px; font-size:12px; margin:6px 4px 0; }}
+.container {{ max-width:800px; margin:0 auto; padding:20px 16px 60px; }}
+.section {{ background:white; border-radius:16px; padding:20px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,.06); }}
+.section-title {{ font-size:15px; font-weight:800; color:#1A8A72; margin-bottom:14px; }}
+.info-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }}
+.info-item {{ background:#F7F6F2; border-radius:10px; padding:12px; }}
+.info-label {{ font-size:10px; color:#6B6860; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }}
+.info-value {{ font-size:13px; font-weight:700; }}
+ul {{ padding:0; list-style:none; }}
+.offline-note {{ background:#EFF6FF; border:1px solid #BFDBFE; border-radius:12px; padding:12px 16px; margin-bottom:16px; font-size:12px; color:#1D4ED8; text-align:center; }}
+.footer {{ text-align:center; padding:24px; color:#6B6860; font-size:12px; }}
+@media print {{ .header {{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }} }}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="font-size:11px;opacity:.6;letter-spacing:2px;margin-bottom:4px;">YAPLY &middot; AI TRAVEL OS</div>
+  <h1>&#9992;&#65039; {dest}</h1>
+  <div style="opacity:.8;font-size:13px;margin-top:6px;">{days}-Day Complete Itinerary</div>
+  <div>
+    <span class="badge">&#128197; {days} Days</span>
+    <span class="badge">&#128176; {currency}</span>
+    <span class="badge">&#127760; Offline Ready</span>
+  </div>
+</div>
+<div class="container">
+  <div class="offline-note">&#128241; Works completely offline &mdash; save to your phone before you travel. Open in any browser, no internet needed.</div>
+
+  <div class="section">
+    <div class="section-title">&#8505;&#65039; Trip Essentials</div>
+    <div class="info-grid">
+      <div class="info-item"><div class="info-label">Best Time</div><div class="info-value">{best_time}</div></div>
+      <div class="info-item"><div class="info-label">Language</div><div class="info-value">{language}</div></div>
+      <div class="info-item"><div class="info-label">Timezone</div><div class="info-value">{timezone}</div></div>
+      <div class="info-item"><div class="info-label">Currency</div><div class="info-value">{local_currency}</div></div>
+    </div>
+  </div>
+
+  {flight_section}
+  {visa_section}
+  {sim_section}
+
+  <div style="font-size:14px;font-weight:800;color:#2C2B28;margin-bottom:12px;">&#128197; Day by Day Itinerary</div>
+  {day_cards}
+
+  {gems_section}
+
+  {phrases_section}
+
+  {cultural_section}
+
+  {emergency_section}
+
+  {packing_section}
+
+  {tips_section}
+
+  {btips_section}
+
+</div>
+<div class="footer">Generated by <strong>Yaply</strong> &mdash; Your Complete Travel OS &mdash; <a href="https://yaply.live" style="color:#1A8A72;">yaply.live</a></div>
+</body>
+</html>'''.format(
+        dest=destination,
+        days=days,
+        currency=currency,
+        best_time=plan.get('best_time_to_visit', ''),
+        language=plan.get('language', ''),
+        timezone=plan.get('timezone', ''),
+        local_currency=plan.get('currency', ''),
+        flight_section=(
+            '<div class="section"><div class="section-title">&#9992;&#65039; Flight Info</div><div class="info-grid">'
+            '<div class="info-item"><div class="info-label">Cost</div><div class="info-value">' + flight.get('estimated_cost','') + '</div></div>'
+            '<div class="info-item"><div class="info-label">Duration</div><div class="info-value">' + flight.get('flight_duration','') + '</div></div>'
+            '<div class="info-item"><div class="info-label">Airlines</div><div class="info-value">' + ', '.join(flight.get('best_airlines',[])) + '</div></div>'
+            '<div class="info-item"><div class="info-label">Book Ahead</div><div class="info-value">' + flight.get('best_time_to_book','') + '</div></div>'
+            '</div></div>'
+        ) if flight else '',
+        visa_section=(
+            '<div class="section"><div class="section-title">&#128706; Visa</div><div class="info-grid">'
+            '<div class="info-item"><div class="info-label">Required</div><div class="info-value">' + ('Yes' if visa.get('required') else 'No') + '</div></div>'
+            '<div class="info-item"><div class="info-label">Type</div><div class="info-value">' + visa.get('type','') + '</div></div>'
+            '<div class="info-item"><div class="info-label">Cost</div><div class="info-value">' + visa.get('cost','') + '</div></div>'
+            '<div class="info-item"><div class="info-label">Processing</div><div class="info-value">' + visa.get('processing_time','') + '</div></div>'
+            '</div></div>'
+        ) if visa else '',
+        sim_section=(
+            '<div class="section"><div class="section-title">&#128241; SIM Card</div><div class="info-grid">'
+            '<div class="info-item"><div class="info-label">Best Option</div><div class="info-value">' + sim.get('best_option','') + '</div></div>'
+            '<div class="info-item"><div class="info-label">Cost</div><div class="info-value">' + sim.get('cost','') + '</div></div>'
+            '<div class="info-item"><div class="info-label">Data</div><div class="info-value">' + sim.get('data','') + '</div></div>'
+            '<div class="info-item"><div class="info-label">Where to Buy</div><div class="info-value">' + sim.get('where_to_buy','') + '</div></div>'
+            '</div></div>'
+        ) if sim else '',
+        day_cards=day_cards_html,
+        gems_section=(
+            '<div class="section"><div class="section-title">&#128142; Hidden Gems</div>' + gems_html + '</div>'
+        ) if gems_html else '',
+        phrases_section=(
+            '<div class="section"><div class="section-title">&#128172; Essential Phrases</div>' + phrase_html + '</div>'
+        ) if phrase_html else '',
+        cultural_section=(
+            '<div class="section"><div class="section-title">&#127758; Cultural Guide</div>'
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;">'
+            '<div><div style="font-size:11px;font-weight:700;color:#28B06A;margin-bottom:8px;">DOS</div><ul>' + dos + '</ul></div>'
+            '<div><div style="font-size:11px;font-weight:700;color:#D84C3E;margin-bottom:8px;">DON\'TS</div><ul>' + donts + '</ul></div>'
+            '</div>'
+            '<div class="info-grid">'
+            '<div class="info-item"><div class="info-label">Dress Code</div><div class="info-value" style="font-size:12px;">' + cultural.get('dress_code','') + '</div></div>'
+            '<div class="info-item"><div class="info-label">Tipping</div><div class="info-value" style="font-size:12px;">' + cultural.get('tipping','') + '</div></div>'
+            '</div></div>'
+        ) if cultural else '',
+        emergency_section=(
+            '<div class="section"><div class="section-title">&#128680; Emergency Numbers</div>'
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">' + em_html + '</div></div>'
+        ) if em_html else '',
+        packing_section=(
+            '<div class="section"><div class="section-title">&#129523; Packing List</div>' + packing_html + '</div>'
+        ) if packing_html else '',
+        tips_section=(
+            '<div class="section"><div class="section-title">&#127919; Pro Tips</div><ul>' + tips_html + '</ul></div>'
+        ) if tips_html else '',
+        btips_section=(
+            '<div class="section"><div class="section-title">&#128176; Budget Tips</div><ul>' + btips + '</ul></div>'
+        ) if btips else '',
+    )
+
+
+def _build_multi_city_html(plan):
+    title    = plan.get('trip_title', 'Multi-City Trip')
+    cities   = plan.get('cities', [])
+    transits = plan.get('transit_plans', [])
+    currency = plan.get('currency', 'INR')
+    sim      = plan.get('sim_strategy', {})
+    packing  = plan.get('packing_for_route', {})
+    suggs    = plan.get('smart_suggestions', [])
+    budget   = plan.get('budget_split', {})
+    MC_COLS  = ['#1A8A72','#3A6BC8','#E8823A','#8B5CF6','#28B06A','#F0B429']
+
+    sugg_html = ''.join(
+        '<li style="padding:6px 0;font-size:13px;border-bottom:1px solid rgba(26,138,114,.1);">&#129504; ' + s + '</li>'
+        for s in suggs
+    )
+
+    budget_html = ''
+    for k, v in budget.items():
+        budget_html += (
+            '<div style="background:#F7F6F2;border-radius:10px;padding:12px;">'
+            '<div style="font-size:10px;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">' + k.replace('_', ' ').title() + '</div>'
+            '<div style="font-size:13px;font-weight:700;color:#1A8A72;">' + currency + ' ' + str(int(v or 0)) + '</div>'
+            '</div>'
+        )
+
+    cities_html = ''
+    for idx, city in enumerate(cities):
+        col       = MC_COLS[idx % len(MC_COLS)]
+        itinerary = city.get('itinerary', [])
+        gems      = city.get('hidden_gems', [])
+        tips      = city.get('local_tips', [])
+
+        day_html = ''
+        for day in itinerary:
+            day_html += (
+                '<div style="background:#F7F6F2;border-radius:12px;padding:12px;margin-bottom:8px;">'
+                '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+                '<div style="width:26px;height:26px;border-radius:50%;background:' + col + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0;">' + str(day.get('day', '')) + '</div>'
+                '<div style="font-size:14px;font-weight:700;">' + (day.get('day_label') or day.get('theme') or 'Day ' + str(day.get('day', ''))) + '</div>'
+                '</div>'
+                + _slot('&#127749;', 'Morning', day.get('morning'))
+                + _meal('&#9728;&#65039;', 'Lunch', day.get('lunch'))
+                + _slot('&#9728;&#65039;', 'Afternoon', day.get('afternoon'))
+                + _slot('&#127750;', 'Evening', day.get('evening'))
+                + _meal('&#127769;', 'Dinner', day.get('dinner'))
+                + '</div>'
+            )
+
+        gems_html = ''
+        for g in gems:
+            gems_html += (
+                '<div style="background:#F7F6F2;border-radius:10px;padding:11px;margin-bottom:7px;">'
+                '<div style="font-weight:700;font-size:13px;">&#128142; ' + g.get('name', '') + '</div>'
+                '<div style="font-size:12px;color:#3D3730;margin-top:3px;">' + (g.get('why') or g.get('description', '')) + '</div>'
+                '</div>'
+            )
+
+        tips_html = ''
+        for i, tip in enumerate(tips):
+            tips_html += (
+                '<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid #F0EBE0;">'
+                '<div style="width:20px;height:20px;border-radius:50%;background:#2C2B28;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + str(i+1) + '</div>'
+                '<div style="font-size:13px;">' + tip + '</div>'
+                '</div>'
+            )
+
+        cities_html += (
+            '<div style="background:white;border-radius:16px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);">'
+            '<div style="background:' + col + ';padding:18px 20px;">'
+            '<div style="font-size:11px;color:rgba(255,255,255,.6);letter-spacing:1px;margin-bottom:4px;">CITY ' + str(idx+1) + '</div>'
+            '<div style="font-size:20px;font-weight:800;color:white;">' + city.get('city', '') + ', ' + city.get('country', '') + '</div>'
+            '<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px;">' + str(city.get('days', '')) + ' days &middot; ' + currency + ' ' + str(int(city.get('city_budget', 0))) + ' &middot; ' + city.get('best_area_to_stay', '') + '</div>'
+            '</div>'
+            '<div style="padding:16px 18px;">'
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">'
+            '<div style="background:#F7F6F2;border-radius:10px;padding:10px;"><div style="font-size:10px;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Language</div><div style="font-size:13px;font-weight:700;">' + city.get('language', '-') + '</div></div>'
+            '<div style="background:#F7F6F2;border-radius:10px;padding:10px;"><div style="font-size:10px;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Currency</div><div style="font-size:13px;font-weight:700;">' + city.get('local_currency', '-') + '</div></div>'
+            '</div>'
+            + (('<div style="background:#EFF6FF;border-radius:10px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:#3A6BC8;">&#127780;&#65039; ' + city.get('weather_note', '') + '</div>') if city.get('weather_note') else '')
+            + (('<div style="font-size:11px;font-weight:700;color:#6B6860;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Daily Plan</div>' + day_html) if day_html else '')
+            + (('<div style="font-size:11px;font-weight:700;color:#6B6860;text-transform:uppercase;letter-spacing:.8px;margin:10px 0 8px;">Hidden Gems</div>' + gems_html) if gems_html else '')
+            + (('<div style="font-size:11px;font-weight:700;color:#6B6860;text-transform:uppercase;letter-spacing:.8px;margin:10px 0 8px;">Local Tips</div>' + tips_html) if tips_html else '')
+            + '</div></div>'
+        )
+
+        # Transit after this city
+        transit = next((t for t in transits if t.get('from') and (t['from'] == city.get('city') or city.get('city','').split(',')[0] in t['from'])), None)
+        if transit and idx < len(cities) - 1:
+            opts = transit.get('options', [])
+            opt_html = ''
+            for opt in opts[:3]:
+                opt_html += (
+                    '<div style="background:' + ('#EFF6FF' if opt.get('recommended') else '#F7F6F2') + ';border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">'
+                    '<div style="flex:1;">'
+                    '<div style="font-size:13px;font-weight:700;">' + opt.get('mode', '') + ' &middot; ' + opt.get('operator', '') + '</div>'
+                    '<div style="font-size:11px;color:#6B6860;">&#9201; ' + opt.get('duration', '') + ' &middot; ' + opt.get('comfort', '') + '</div>'
+                    '</div>'
+                    + ('<span style="background:#1A8A72;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">BEST</span>' if opt.get('recommended') else '')
+                    + '<div style="font-size:14px;font-weight:800;color:#1A8A72;">' + currency + ' ' + str(opt.get('total_cost', opt.get('cost', '?'))) + '</div>'
+                    '</div>'
+                )
+            cities_html += (
+                '<div style="background:white;border-radius:12px;border:1.5px solid #EFEDE8;padding:14px 16px;margin-bottom:12px;">'
+                '<div style="font-size:12px;font-weight:700;margin-bottom:8px;">&#9992;&#65039; ' + transit.get('from', '') + ' &#8594; ' + transit.get('to', '') + '</div>'
+                + opt_html
+                + (('<div style="background:#EFEDE8;border-radius:8px;padding:8px 10px;font-size:12px;color:#2C2B28;margin-top:6px;">&#128161; ' + transit.get('transit_tip', '') + '</div>') if transit.get('transit_tip') else '')
+                + '</div>'
+            )
+
+    return '''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title} &#8212; Yaply Offline</title>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#F7F6F2; color:#2C2B28; }}
+.header {{ background:linear-gradient(135deg,#1e2a3a,#0d1520); color:white; padding:28px 24px; text-align:center; }}
+.container {{ max-width:800px; margin:0 auto; padding:20px 16px 60px; }}
+.section {{ background:white; border-radius:16px; padding:20px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,.06); }}
+.section-title {{ font-size:15px; font-weight:800; color:#1A8A72; margin-bottom:14px; }}
+.offline-note {{ background:#EFF6FF; border:1px solid #BFDBFE; border-radius:12px; padding:12px 16px; margin-bottom:16px; font-size:12px; color:#1D4ED8; text-align:center; }}
+.footer {{ text-align:center; padding:24px; color:#6B6860; font-size:12px; }}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="font-size:11px;opacity:.5;letter-spacing:2px;margin-bottom:6px;">YAPLY &middot; AI TRAVEL OS</div>
+  <h1 style="font-size:24px;font-weight:800;letter-spacing:-1px;">&#128507; {title}</h1>
+  <div style="opacity:.6;font-size:13px;margin-top:6px;">{total_days} days &middot; {city_count} cities &middot; {currency} {total_budget}</div>
+</div>
+<div class="container">
+  <div class="offline-note">&#128241; Works completely offline &mdash; save to your phone before you travel.</div>
+
+  {sugg_section}
+  {budget_section}
+  {cities_html}
+  {sim_section}
+  {packing_section}
+
+</div>
+<div class="footer">Generated by <strong>Yaply</strong> &mdash; <a href="https://yaply.live" style="color:#1A8A72;">yaply.live</a></div>
+</body>
+</html>'''.format(
+        title=title,
+        total_days=plan.get('total_days', ''),
+        city_count=len(cities),
+        currency=currency,
+        total_budget=str(int(plan.get('total_budget', 0))),
+        sugg_section=(
+            '<div class="section"><div class="section-title">&#129504; Smart Suggestions</div><ul style="padding:0;list-style:none;">' + sugg_html + '</ul></div>'
+        ) if sugg_html else '',
+        budget_section=(
+            '<div class="section"><div class="section-title">&#128176; Budget Split</div>'
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' + budget_html + '</div></div>'
+        ) if budget_html else '',
+        cities_html=cities_html,
+        sim_section=(
+            '<div class="section"><div class="section-title">&#128241; SIM Strategy</div>'
+            '<div style="background:#EFF6FF;border-radius:10px;padding:10px 12px;font-size:13px;color:#1A8A72;">' + sim.get('recommendation', '') + '</div></div>'
+        ) if sim.get('recommendation') else '',
+        packing_section=(
+            '<div class="section"><div class="section-title">&#129523; Packing for This Route</div>'
+            '<div style="font-size:13px;color:#2C2B28;margin-bottom:10px;">&#127777;&#65039; ' + packing.get('weather_variation', '') + '</div>'
+            '<div>' + ''.join('<span style="display:inline-block;background:#EFF6FF;color:#1A8A72;border-radius:20px;padding:4px 12px;font-size:12px;margin:3px;font-weight:500;">' + item + '</span>' for item in packing.get('key_items', [])) + '</div>'
+            '<div style="font-size:12px;color:#6B6860;margin-top:10px;">&#129523; ' + packing.get('luggage_tip', '') + '</div></div>'
+        ) if packing.get('key_items') else '',
+    )
+
+@app.route('/diary')
+def diary_page():
+    return render_template('yaply_diary.html')
+
+@app.route('/groups')
+@app.route('/groups/<int:group_id>')
+def groups_page(group_id=None):
+    return render_template('yaply_groups.html')
+
 # ══════════════════════════════════════
 # STARTUP
 # ══════════════════════════════════════
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    print(f"""
-╔══════════════════════════════════════════╗
-║   🌍 YAPLY — Production Server v3        ║
-║   Port: {port}                              ║
-║   Auth:     ✅ All routes protected      ║
-║   Rate:     ✅ Limiting active           ║
-║   Security: ✅ Headers active            ║
-║   DB:       ✅ SQLite connected          ║
-║                                          ║
-║   DO NOT run trip_planner.py or          ║
-║   main_translate.py — use app.py ONLY   ║
-╚══════════════════════════════════════════╝
-    """)
-    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
+    port = int(os.environ.get('PORT', 5004))
+    socketio.run(
+        app,
+        debug=True,
+        host='0.0.0.0',
+        port=port,
+        allow_unsafe_werkzeug=True
+    )
