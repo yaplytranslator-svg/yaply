@@ -25,6 +25,8 @@ app.register_blueprint(groups_bp)
 app.register_blueprint(diary_bp)
 
 from flask_socketio import SocketIO
+from flask_sock import Sock
+sock = Sock(app)
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
