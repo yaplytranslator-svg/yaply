@@ -17,7 +17,6 @@ load_dotenv()
 # ── FLASK FIRST ──
 from flask import Flask, request, jsonify, render_template, g
 from flask_cors import CORS
-from flask_sock import Sock
 
 app = Flask(__name__)
 CORS(app)
@@ -29,12 +28,12 @@ from flask_socketio import SocketIO
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode='gevent',
+    async_mode='eventlet',
     ping_timeout=60,
     ping_interval=25,   
 )
 register_socketio_events(socketio)
-sock = Sock(app)
+
 app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 25}
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET', 'yaply-secret-2025-change-me')
 
