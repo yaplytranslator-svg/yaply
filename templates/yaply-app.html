@@ -1,1479 +1,1712 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yaply — Dashboard</title>
-  <link rel="icon" href="/static/favicon.png" type="image/png" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap"
-    rel="stylesheet" />
-  <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      --teal: #1A8A72;
-      --teal-s: rgba(26, 138, 114, 0.08);
-      --teal-m: rgba(26, 138, 114, 0.18);
-      --amber: #E8823A;
-      --amber-s: rgba(232, 130, 58, 0.08);
-      --sky: #3A6BC8;
-      --sky-s: rgba(58, 107, 200, 0.08);
-      --charcoal: #2C2B28;
-      --stone: #C8C4B2;
-      --green: #28B06A;
-      --green-s: rgba(40, 176, 106, 0.08);
-      --red: #D84C3E;
-      --red-s: rgba(216, 76, 62, 0.08);
-      --purple: #8B5CF6;
-      --purple-s: rgba(139, 92, 246, 0.08);
-      --gold: #F0B429;
-      --gold-s: rgba(240, 180, 41, 0.08);
-      --bg: #F7F6F2;
-      --bg2: #EFEDE8;
-      --white: #FFFFFF;
-      --border: rgba(200, 196, 178, 0.35);
-      --border-md: rgba(200, 196, 178, 0.6);
-      --text: #2C2B28;
-      --muted: #6B6860;
-      --muted2: #9B9890;
-      --nav-h: 64px;
-      --sidebar-w: 240px;
-    }
-
-    html,
-    body {
-      height: 100%;
-      font-family: 'Inter', sans-serif;
-      color: var(--text);
-      background: var(--bg);
-    }
-
-    /* ── NAV ── */
-    .nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: var(--nav-h);
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 28px;
-      z-index: 200;
-    }
-
-    .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .nav-logo-mark {
-      width: 32px;
-      height: 32px;
-      border-radius: 9px;
-      background: var(--teal);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .nav-logo-mark svg {
-      width: 16px;
-      height: 16px;
-      fill: none;
-      stroke: #fff;
-      stroke-width: 2;
-    }
-
-    .nav-logo-name {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: var(--charcoal);
-      letter-spacing: -0.3px;
-    }
-
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .nav-avatar {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--teal), var(--sky));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #fff;
-      cursor: pointer;
-      border: 2px solid var(--border-md);
-    }
-
-    .nav-user-name {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--charcoal);
-    }
-
-    .nav-btn {
-      padding: 7px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border-md);
-      background: none;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .nav-btn:hover {
-      background: var(--bg2);
-      color: var(--charcoal);
-    }
-
-    .nav-btn.primary {
-      background: var(--teal);
-      color: #fff;
-      border-color: var(--teal);
-    }
-
-    .nav-btn.primary:hover {
-      background: #158068;
-    }
-
-    @media(max-width:600px) {
-      .nav-user-name {
-        display: none;
-      }
-    }
-
-    /* ── LAYOUT ── */
-    .layout {
-      display: flex;
-      padding-top: var(--nav-h);
-      min-height: 100vh;
-    }
-
-    /* ── SIDEBAR ── */
-    .sidebar {
-      width: var(--sidebar-w);
-      flex-shrink: 0;
-      position: fixed;
-      top: var(--nav-h);
-      left: 0;
-      bottom: 0;
-      background: var(--white);
-      border-right: 1px solid var(--border);
-      overflow-y: auto;
-      padding: 20px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      z-index: 100;
-    }
-
-    @media(max-width:768px) {
-      .sidebar {
-        display: none;
-      }
-    }
-
-    .sidebar-label {
-      font-size: 0.62rem;
-      font-weight: 700;
-      color: var(--muted2);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      padding: 6px 12px;
-      margin-top: 12px;
-      margin-bottom: 4px;
-    }
-
-    .sidebar-label:first-child {
-      margin-top: 0;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      border-radius: 9px;
-      text-decoration: none;
-      color: var(--muted);
-      font-size: 0.82rem;
-      font-weight: 500;
-      transition: all 0.15s;
-      cursor: pointer;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-    }
-
-    .nav-item:hover {
-      background: var(--bg);
-      color: var(--charcoal);
-    }
-
-    .nav-item.active {
-      background: var(--teal-s);
-      color: var(--teal);
-      font-weight: 700;
-    }
-
-    .nav-item.active .ni-icon {
-      color: var(--teal);
-    }
-
-    .ni-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 7px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      background: var(--bg2);
-    }
-
-    .nav-item.active .ni-icon {
-      background: var(--teal-m);
-    }
-
-    .ni-icon svg {
-      width: 14px;
-      height: 14px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-    }
-
-    .ni-badge {
-      margin-left: auto;
-      background: var(--amber);
-      color: #fff;
-      font-size: 0.55rem;
-      font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 100px;
-    }
-
-    .sidebar-bottom {
-      margin-top: auto;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-    }
-
-    .logout-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      border-radius: 9px;
-      width: 100%;
-      border: none;
-      background: none;
-      color: var(--muted);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.82rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .logout-btn:hover {
-      background: var(--red-s);
-      color: var(--red);
-    }
-
-    /* ── MAIN ── */
-    .main {
-      margin-left: var(--sidebar-w);
-      flex: 1;
-      padding: 32px 36px;
-      max-width: 1100px;
-    }
-
-    @media(max-width:768px) {
-      .main {
-        margin-left: 0;
-        padding: 20px 16px;
-      }
-    }
-
-    /* ── HERO ── */
-    .hero {
-      border-radius: 20px;
-      overflow: hidden;
-      background: linear-gradient(135deg, #1A8A72 0%, #0D6B57 50%, #1e3a5f 100%);
-      padding: 36px 40px;
-      margin-bottom: 28px;
-      position: relative;
-    }
-
-    .hero::after {
-      content: '';
-      position: absolute;
-      right: -60px;
-      top: -60px;
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.04);
-      pointer-events: none;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      right: 60px;
-      bottom: -80px;
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background: rgba(232, 130, 58, 0.12);
-      pointer-events: none;
-    }
-
-    .hero-greeting {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.55);
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
-
-    .hero-title {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: -0.5px;
-      margin-bottom: 10px;
-    }
-
-    .hero-sub {
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.55);
-      line-height: 1.65;
-      max-width: 420px;
-    }
-
-    .hero-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 20px;
-      padding: 11px 22px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 9px;
-      color: #fff;
-      font-size: 0.82rem;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .hero-cta:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .hero-cta svg {
-      width: 14px;
-      height: 14px;
-      stroke: #fff;
-      fill: none;
-      stroke-width: 2;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(40, 176, 106, 0.2);
-      border: 1px solid rgba(40, 176, 106, 0.3);
-      border-radius: 100px;
-      padding: 4px 12px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: #4ADE80;
-      margin-bottom: 14px;
-    }
-
-    .hero-badge-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: #4ADE80;
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.3;
-      }
-    }
-
-    /* ── STATS ROW ── */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 28px;
-    }
-
-    @media(max-width:900px) {
-      .stats-row {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    .stat-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px 20px;
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      transition: all 0.2s;
-    }
-
-    .stat-card:hover {
-      border-color: var(--border-md);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(44, 43, 40, 0.07);
-    }
-
-    .stat-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .stat-icon svg {
-      width: 16px;
-      height: 16px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-    }
-
-    .si-teal {
-      background: var(--teal-s);
-      color: var(--teal);
-    }
-
-    .si-amber {
-      background: var(--amber-s);
-      color: var(--amber);
-    }
-
-    .si-sky {
-      background: var(--sky-s);
-      color: var(--sky);
-    }
-
-    .si-purple {
-      background: var(--purple-s);
-      color: var(--purple);
-    }
-
-    .stat-num {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--charcoal);
-      line-height: 1;
-    }
-
-    .stat-lbl {
-      font-size: 0.68rem;
-      color: var(--muted2);
-      font-weight: 500;
-      margin-top: 3px;
-    }
-
-    /* ── SECTION HEADER ── */
-    .sec-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-
-    .sec-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 1rem;
-      font-weight: 800;
-      color: var(--charcoal);
-      letter-spacing: -0.2px;
-    }
-
-    .sec-link {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--teal);
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    /* ── FEATURE GRID ── */
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-bottom: 28px;
-    }
-
-    @media(max-width:900px) {
-      .feature-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media(max-width:500px) {
-      .feature-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .feat-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      text-decoration: none;
-      color: inherit;
-      transition: all 0.2s;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .feat-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .feat-card:hover {
-      border-color: var(--border-md);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 32px rgba(44, 43, 40, 0.09);
-    }
-
-    .feat-card:hover::before {
-      opacity: 1;
-    }
-
-    .fc-teal::before {
-      background: linear-gradient(135deg, rgba(26, 138, 114, 0.03), transparent);
-    }
-
-    .fc-amber::before {
-      background: linear-gradient(135deg, rgba(232, 130, 58, 0.03), transparent);
-    }
-
-    .fc-sky::before {
-      background: linear-gradient(135deg, rgba(58, 107, 200, 0.03), transparent);
-    }
-
-    .fc-green::before {
-      background: linear-gradient(135deg, rgba(40, 176, 106, 0.03), transparent);
-    }
-
-    .fc-purple::before {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.03), transparent);
-    }
-
-    .fc-gold::before {
-      background: linear-gradient(135deg, rgba(240, 180, 41, 0.03), transparent);
-    }
-
-    .feat-card-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 14px;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
-    }
-
-    .feat-card-icon svg {
-      width: 18px;
-      height: 18px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .fi-teal {
-      background: var(--teal-s);
-      color: var(--teal);
-    }
-
-    .fi-amber {
-      background: var(--amber-s);
-      color: var(--amber);
-    }
-
-    .fi-sky {
-      background: var(--sky-s);
-      color: var(--sky);
-    }
-
-    .fi-green {
-      background: var(--green-s);
-      color: var(--green);
-    }
-
-    .fi-purple {
-      background: var(--purple-s);
-      color: var(--purple);
-    }
-
-    .fi-gold {
-      background: var(--gold-s);
-      color: var(--gold);
-    }
-
-    .feat-card-title {
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: var(--charcoal);
-      margin-bottom: 5px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .feat-card-desc {
-      font-size: 0.74rem;
-      color: var(--muted);
-      line-height: 1.55;
-      position: relative;
-      z-index: 1;
-    }
-
-    .feat-card-arrow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
-      background: var(--bg2);
-      margin-top: 14px;
-      margin-left: auto;
-      position: relative;
-      z-index: 1;
-      transition: all 0.2s;
-    }
-
-    .feat-card:hover .feat-card-arrow {
-      background: var(--teal);
-      color: #fff;
-    }
-
-    .feat-card-arrow svg {
-      width: 12px;
-      height: 12px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-    }
-
-    /* ── TRIPS ── */
-    .trips-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 28px;
-    }
-
-    .trip-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      transition: all 0.2s;
-      text-decoration: none;
-      color: inherit;
-      cursor: pointer;
-    }
-
-    .trip-card:hover {
-      border-color: var(--border-md);
-      transform: translateX(3px);
-      box-shadow: 0 4px 16px rgba(44, 43, 40, 0.07);
-    }
-
-    .trip-dest-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      flex-shrink: 0;
-      background: linear-gradient(135deg, var(--teal-s), var(--sky-s));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-    }
-
-    .trip-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .trip-dest {
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: var(--charcoal);
-      margin-bottom: 3px;
-    }
-
-    .trip-meta {
-      font-size: 0.72rem;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    .trip-status {
-      padding: 4px 10px;
-      border-radius: 100px;
-      font-size: 0.65rem;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .ts-planning {
-      background: var(--gold-s);
-      color: var(--gold);
-    }
-
-    .ts-active {
-      background: var(--green-s);
-      color: var(--green);
-    }
-
-    .ts-completed {
-      background: var(--teal-s);
-      color: var(--teal);
-    }
-
-    .trip-empty {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--muted2);
-      font-size: 0.82rem;
-      font-weight: 500;
-      line-height: 1.7;
-      background: var(--white);
-      border: 1px dashed var(--border-md);
-      border-radius: 14px;
-    }
-
-    .trip-empty strong {
-      display: block;
-      color: var(--muted);
-      font-size: 0.88rem;
-      margin-bottom: 6px;
-    }
-
-    /* ── QUICK ACTIONS ── */
-    .quick-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 28px;
-    }
-
-    @media(max-width:700px) {
-      .quick-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    .quick-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      color: inherit;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-align: center;
-    }
-
-    .quick-card:hover {
-      border-color: var(--teal);
-      background: var(--teal-s);
-      transform: translateY(-2px);
-    }
-
-    .quick-card:hover .qc-label {
-      color: var(--teal);
-    }
-
-    .qc-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
-      background: var(--bg2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .qc-icon svg {
-      width: 16px;
-      height: 16px;
-      fill: none;
-      stroke: var(--muted);
-      stroke-width: 1.8;
-      stroke-linecap: round;
-    }
-
-    .quick-card:hover .qc-icon {
-      background: var(--teal-m);
-    }
-
-    .quick-card:hover .qc-icon svg {
-      stroke: var(--teal);
-    }
-
-    .qc-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--muted);
-      transition: color 0.2s;
-    }
-
-    /* ── MOBILE NAV ── */
-    .mobile-nav {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255, 255, 255, 0.97);
-      backdrop-filter: blur(20px);
-      border-top: 1px solid var(--border);
-      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-      z-index: 200;
-    }
-
-    @media(max-width:768px) {
-      .mobile-nav {
-        display: flex;
-        justify-content: space-around;
-      }
-    }
-
-    .mn-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      padding: 6px 10px;
-      border-radius: 9px;
-      cursor: pointer;
-      text-decoration: none;
-      color: var(--muted2);
-      border: none;
-      background: none;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.15s;
-    }
-
-    .mn-item.active {
-      color: var(--teal);
-    }
-
-    .mn-item svg {
-      width: 18px;
-      height: 18px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-    }
-
-    .mn-label {
-      font-size: 0.58rem;
-      font-weight: 600;
-    }
-
-    @media(max-width:768px) {
-      .main {
-        padding-bottom: 80px;
-      }
-    }
-
-    /* ── LOADING ── */
-    .skeleton {
-      background: linear-gradient(90deg, var(--bg2) 25%, var(--border) 50%, var(--bg2) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s ease-in-out infinite;
-      border-radius: 8px;
-    }
-
-    @keyframes shimmer {
-      0% {
-        background-position: 200% 0;
-      }
-
-      100% {
-        background-position: -200% 0;
-      }
-    }
-
-    /* ── NOTIFICATION ── */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(8px);
-      background: var(--charcoal);
-      color: #fff;
-      padding: 11px 22px;
-      border-radius: 100px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-      z-index: 9999;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: all 0.3s ease;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    @media(max-width:768px) {
-      .toast {
-        bottom: 80px;
-      }
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Yaply — Dashboard</title>
+<link rel="icon" href="/static/favicon.png" type="image/png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════
+   YAPLY DESIGN SYSTEM
+═══════════════════════════════════════════ */
+:root {
+  --blue:      #2563FF;
+  --blue-d:    #1D4ED8;
+  --blue-g:    rgba(37,99,255,0.08);
+  --blue-gm:   rgba(37,99,255,0.15);
+  --blue-glow: rgba(37,99,255,0.2);
+  --midnight:  #0B1220;
+  --night:     #0E1829;
+  --bg:        #F7F9FC;
+  --bg2:       #EEF2F8;
+  --white:     #FFFFFF;
+  --text:      #111827;
+  --text2:     #374151;
+  --muted:     #6B7280;
+  --muted2:    #9CA3AF;
+  --border:    rgba(17,24,39,0.07);
+  --border2:   rgba(17,24,39,0.12);
+  --coral:     #FF7A59;
+  --coral-g:   rgba(255,122,89,0.1);
+  --green:     #18C29C;
+  --green-g:   rgba(24,194,156,0.1);
+  --amber:     #F5B942;
+  --amber-g:   rgba(245,185,66,0.1);
+  --red:       #EF4444;
+
+  --font-head: 'Instrument Serif', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  --r:    12px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --r-2xl:32px;
+
+  --nav-h: 64px;
+  --shadow:    0 1px 12px rgba(17,24,39,0.06);
+  --shadow-md: 0 4px 24px rgba(17,24,39,0.08);
+  --shadow-lg: 0 12px 48px rgba(17,24,39,0.1);
+  --shadow-blue: 0 8px 32px rgba(37,99,255,0.2);
+}
+
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════
+   TOP NAV
+═══════════════════════════════════════════ */
+.top-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: rgba(247,249,252,0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+}
+
+.nav-logo {
+  display: flex; align-items: center; gap: 9px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.nav-logo-mark {
+  width: 34px; height: 34px;
+  background: var(--blue);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px var(--blue-glow);
+  flex-shrink: 0;
+}
+.nav-logo-mark svg { width: 16px; height: 16px; }
+.nav-logo-name {
+  font-family: var(--font-head);
+  font-size: 20px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.nav-spacer { flex: 1; }
+
+/* Greeting */
+.nav-greeting {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 300;
+  white-space: nowrap;
+}
+.nav-greeting strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Nav actions */
+.nav-actions { display: flex; align-items: center; gap: 8px; }
+
+.nav-icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+  color: var(--muted);
+}
+.nav-icon-btn:hover { background: var(--bg2); color: var(--text); border-color: var(--border2); }
+.nav-icon-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+.notif-dot {
+  position: absolute;
+  top: 7px; right: 7px;
+  width: 7px; height: 7px;
+  background: var(--coral);
+  border-radius: 50%;
+  border: 2px solid var(--white);
+}
+
+.nav-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--blue-d));
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head);
+  font-style: italic;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+  border: 2px solid var(--white);
+  box-shadow: var(--shadow-blue);
+  transition: transform .2s;
+  flex-shrink: 0;
+}
+.nav-avatar:hover { transform: scale(1.06); }
+
+/* Date pill */
+.nav-date {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: var(--white);
+  border: 1px solid var(--border2);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.nav-date svg { width: 13px; height: 13px; stroke: var(--blue); fill: none; stroke-width: 1.8; }
+
+/* ═══════════════════════════════════════════
+   MAIN LAYOUT
+═══════════════════════════════════════════ */
+.main {
+  padding-top: var(--nav-h);
+  padding-bottom: 100px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ═══════════════════════════════════════════
+   SECTIONS
+═══════════════════════════════════════════ */
+.section { padding: 20px 20px 0; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+}
+.section-link {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--blue);
+  text-decoration: none;
+  transition: opacity .2s;
+}
+.section-link:hover { opacity: 0.7; }
+
+/* ═══════════════════════════════════════════
+   HERO GREETING
+═══════════════════════════════════════════ */
+.hero-greeting {
+  padding: 24px 20px 0;
+  animation: fadeUp .6s ease both;
+}
+.hero-greeting-sub {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 300;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(24,194,156,0.2);
+  animation: livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%,100% { box-shadow: 0 0 0 3px rgba(24,194,156,0.2); }
+  50%      { box-shadow: 0 0 0 6px rgba(24,194,156,0); }
+}
+.hero-greeting-name {
+  font-family: var(--font-head);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+}
+.hero-greeting-name em {
+  font-style: italic;
+  color: var(--blue);
+}
+
+/* ═══════════════════════════════════════════
+   ACTIVE TRIP CARD
+═══════════════════════════════════════════ */
+.active-trip-card {
+  margin: 20px 20px 0;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp .6s .1s ease both;
+  cursor: pointer;
+}
+
+.atc-bg {
+  background: linear-gradient(145deg, #0D1628 0%, #0B1220 60%, #060C17 100%);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Grid lines */
+.atc-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(37,99,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37,99,255,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* Blue glow orb */
+.atc-orb {
+  position: absolute;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(37,99,255,0.25) 0%, transparent 70%);
+  top: -80px; right: -60px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: orbShift 8s ease-in-out infinite;
+}
+@keyframes orbShift {
+  0%,100% { transform: translate(0,0); }
+  50%      { transform: translate(-10px,12px); }
+}
+
+.atc-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.atc-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  background: rgba(24,194,156,0.12);
+  border: 1px solid rgba(24,194,156,0.2);
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--green);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.atc-badge-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+.atc-day-badge {
+  padding: 5px 10px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+}
+
+.atc-dest {
+  position: relative; z-index: 1;
+  margin-bottom: 20px;
+}
+.atc-country {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.atc-city {
+  font-family: var(--font-head);
+  font-size: 36px;
+  font-weight: 400;
+  color: white;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.atc-dates {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  font-weight: 300;
+}
+
+/* Progress */
+.atc-progress {
+  position: relative; z-index: 1;
+  margin-bottom: 20px;
+}
+.atc-progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.atc-progress-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  font-weight: 400;
+}
+.atc-progress-pct {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--blue);
+}
+.atc-progress-track {
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.atc-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--green));
+  border-radius: 2px;
+  width: 0;
+  transition: width 1.4s cubic-bezier(.4,0,.2,1);
+}
+
+/* Trip actions */
+.atc-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  position: relative; z-index: 1;
+}
+.atc-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: all .2s;
+  text-decoration: none;
+}
+.atc-action:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.14);
+  transform: translateY(-2px);
+}
+.atc-action.sos {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.2);
+}
+.atc-action.sos:hover { background: rgba(239,68,68,0.15); }
+.atc-action-icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+}
+.atc-action-icon svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+.atc-action-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+/* Bottom strip */
+.atc-strip {
+  background: rgba(37,99,255,0.08);
+  border-top: 1px solid rgba(37,99,255,0.12);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.atc-strip-text {
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+}
+.atc-strip-text strong {
+  color: var(--blue);
+  font-weight: 500;
+}
+.atc-strip-chevron {
+  width: 14px; height: 14px;
+  stroke: rgba(255,255,255,0.2);
+  fill: none;
+  stroke-width: 2;
+}
+
+/* No trip state */
+.no-trip-card {
+  margin: 20px 20px 0;
+  border-radius: var(--r-xl);
+  border: 1.5px dashed rgba(37,99,255,0.2);
+  background: var(--blue-g);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all .2s;
+  animation: fadeUp .6s .1s ease both;
+}
+.no-trip-card:hover {
+  background: rgba(37,99,255,0.1);
+  border-color: rgba(37,99,255,0.35);
+  transform: translateY(-2px);
+}
+.no-trip-icon {
+  width: 52px; height: 52px;
+  border-radius: 16px;
+  background: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-blue);
+}
+.no-trip-icon svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 1.8; }
+.no-trip-title {
+  font-family: var(--font-head);
+  font-size: 20px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.no-trip-sub {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 300;
+  line-height: 1.6;
+  max-width: 240px;
+}
+.no-trip-btn {
+  padding: 11px 24px;
+  background: var(--blue);
+  color: white;
+  border-radius: var(--r);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex; align-items: center; gap: 7px;
+  transition: all .2s;
+  box-shadow: var(--shadow-blue);
+}
+.no-trip-btn:hover { background: var(--blue-d); transform: translateY(-1px); }
+.no-trip-btn svg { width: 14px; height: 14px; stroke: white; fill: none; stroke-width: 2; }
+
+/* ═══════════════════════════════════════════
+   THREE PHASE CARDS
+═══════════════════════════════════════════ */
+.phases-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 10px;
+  animation: fadeUp .6s .2s ease both;
+}
+
+.phase-card {
+  border-radius: var(--r-lg);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .25s cubic-bezier(.4,0,.2,1);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+.phase-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-lg);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.phase-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.phase-card:hover::before { opacity: 1; }
+.phase-card:active { transform: scale(0.97); }
+
+.phase-card.before {
+  background: linear-gradient(145deg, #EEF4FF, #E8F0FE);
+  border-color: rgba(37,99,255,0.1);
+}
+.phase-card.before::before {
+  background: linear-gradient(145deg, rgba(37,99,255,0.05), transparent);
+}
+.phase-card.before:hover { border-color: rgba(37,99,255,0.2); }
+
+.phase-card.during {
+  background: linear-gradient(145deg, #FFF4EE, #FEF0E8);
+  border-color: rgba(255,122,89,0.1);
+}
+.phase-card.during::before {
+  background: linear-gradient(145deg, rgba(255,122,89,0.05), transparent);
+}
+.phase-card.during:hover { border-color: rgba(255,122,89,0.25); }
+
+.phase-card.after {
+  background: linear-gradient(145deg, #EEFAF6, #E8F7F2);
+  border-color: rgba(24,194,156,0.1);
+}
+.phase-card.after::before {
+  background: linear-gradient(145deg, rgba(24,194,156,0.05), transparent);
+}
+.phase-card.after:hover { border-color: rgba(24,194,156,0.25); }
+
+.phase-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.phase-card.before .phase-icon  { background: rgba(37,99,255,0.1); }
+.phase-card.during .phase-icon  { background: rgba(255,122,89,0.12); }
+.phase-card.after  .phase-icon  { background: rgba(24,194,156,0.12); }
+.phase-icon svg { width: 17px; height: 17px; fill: none; stroke-width: 1.8; }
+.phase-card.before .phase-icon svg { stroke: var(--blue); }
+.phase-card.during .phase-icon svg { stroke: var(--coral); }
+.phase-card.after  .phase-icon svg { stroke: var(--green); }
+
+.phase-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.phase-card.before .phase-label { color: var(--blue); }
+.phase-card.during .phase-label { color: var(--coral); }
+.phase-card.after  .phase-label { color: var(--green); }
+
+.phase-name {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+}
+.phase-count {
+  font-size: 10px;
+  color: var(--muted2);
+  margin-top: auto;
+  font-weight: 400;
+}
+
+.phase-arrow {
+  width: 24px; height: 24px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  align-self: flex-end;
+  transition: transform .2s;
+}
+.phase-card.before .phase-arrow { background: rgba(37,99,255,0.1); }
+.phase-card.during .phase-arrow { background: rgba(255,122,89,0.1); }
+.phase-card.after  .phase-arrow { background: rgba(24,194,156,0.1); }
+.phase-arrow svg { width: 12px; height: 12px; fill: none; stroke-width: 2; }
+.phase-card.before .phase-arrow svg { stroke: var(--blue); }
+.phase-card.during .phase-arrow svg { stroke: var(--coral); }
+.phase-card.after  .phase-arrow svg { stroke: var(--green); }
+.phase-card:hover .phase-arrow { transform: translateX(3px); }
+
+/* ═══════════════════════════════════════════
+   QUICK TOOLS
+═══════════════════════════════════════════ */
+.quick-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 10px;
+  animation: fadeUp .6s .3s ease both;
+}
+
+.quick-tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 10px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .22s cubic-bezier(.4,0,.2,1);
+  box-shadow: var(--shadow);
+}
+.quick-tool:hover {
+  border-color: var(--blue);
+  background: var(--blue-g);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(37,99,255,0.1);
+}
+.quick-tool:active { transform: scale(0.96); }
+
+.qt-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .2s;
+}
+.quick-tool:hover .qt-icon { transform: scale(1.1); }
+.qt-icon svg { width: 18px; height: 18px; fill: none; stroke-width: 1.8; }
+
+.qt-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  text-align: center;
+  line-height: 1.3;
+  transition: color .2s;
+}
+.quick-tool:hover .qt-label { color: var(--blue); }
+
+/* Tool color variants */
+.qt-blue   { background: var(--blue-g); }
+.qt-blue svg   { stroke: var(--blue); }
+.qt-coral  { background: var(--coral-g); }
+.qt-coral svg  { stroke: var(--coral); }
+.qt-green  { background: var(--green-g); }
+.qt-green svg  { stroke: var(--green); }
+.qt-amber  { background: var(--amber-g); }
+.qt-amber svg  { stroke: var(--amber); }
+.qt-purple { background: rgba(139,92,246,0.08); }
+.qt-purple svg { stroke: #8B5CF6; }
+.qt-sky    { background: rgba(14,165,233,0.08); }
+.qt-sky svg    { stroke: #0EA5E9; }
+
+/* ═══════════════════════════════════════════
+   MY TRIPS
+═══════════════════════════════════════════ */
+.trips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeUp .6s .4s ease both;
+}
+
+.trip-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .22s;
+  box-shadow: var(--shadow);
+}
+.trip-item:hover {
+  border-color: var(--border2);
+  box-shadow: var(--shadow-md);
+  transform: translateX(3px);
+}
+
+.trip-flag {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
+.trip-info { flex: 1; min-width: 0; }
+.trip-name {
+  font-family: var(--font-head);
+  font-size: 16px;
+  color: var(--text);
+  letter-spacing: -0.2px;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trip-meta {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.trip-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.status-active {
+  background: rgba(24,194,156,0.1);
+  color: var(--green);
+  border: 1px solid rgba(24,194,156,0.2);
+}
+.status-done {
+  background: var(--bg2);
+  color: var(--muted);
+  border: 1px solid var(--border2);
+}
+.status-planning {
+  background: var(--blue-g);
+  color: var(--blue);
+  border: 1px solid rgba(37,99,255,0.15);
+}
+.status-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+}
+.status-active .status-dot { background: var(--green); }
+.status-done .status-dot   { background: var(--muted); }
+.status-planning .status-dot { background: var(--blue); animation: livePulse 2s ease-in-out infinite; }
+
+.trip-chevron {
+  width: 14px; height: 14px;
+  stroke: var(--muted2);
+  fill: none;
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+
+/* Trip actions row */
+.trip-actions-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.trip-action-btn {
+  flex: 1;
+  padding: 7px;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  text-decoration: none;
+}
+.trip-action-btn:hover { background: var(--blue-g); color: var(--blue); border-color: rgba(37,99,255,0.2); }
+.trip-action-btn svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* New trip button */
+.new-trip-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  background: var(--white);
+  border: 1.5px dashed rgba(37,99,255,0.2);
+  border-radius: var(--r-lg);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s;
+}
+.new-trip-btn:hover { background: var(--blue-g); border-color: rgba(37,99,255,0.35); transform: translateY(-2px); }
+.new-trip-btn svg { width: 16px; height: 16px; stroke: var(--blue); fill: none; stroke-width: 2; }
+
+/* ═══════════════════════════════════════════
+   SQUAD CARD
+═══════════════════════════════════════════ */
+.squad-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: fadeUp .6s .5s ease both;
+}
+
+.squad-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.squad-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--midnight), #1a2a4a);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.squad-icon svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 1.8; }
+.squad-name {
+  font-family: var(--font-head);
+  font-size: 16px;
+  color: var(--text);
+  letter-spacing: -0.2px;
+  margin-bottom: 2px;
+}
+.squad-meta {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.squad-online-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+.squad-open-btn {
+  margin-left: auto;
+  padding: 7px 14px;
+  background: var(--midnight);
+  color: white;
+  border-radius: 9px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.squad-open-btn:hover { background: #1a2a4a; transform: translateY(-1px); }
+
+/* Members row */
+.squad-members {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.squad-member {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.squad-member:last-child { border-bottom: none; }
+
+.squad-member-av {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  border: 2px solid;
+  flex-shrink: 0;
+  position: relative;
+}
+.sm-status {
+  position: absolute;
+  bottom: -1px; right: -1px;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  border: 2px solid var(--white);
+}
+.sm-online   { background: var(--green); }
+.sm-offline  { background: var(--muted2); }
+
+.squad-member-info { flex: 1; min-width: 0; }
+.squad-member-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 1px;
+}
+.squad-member-loc {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.squad-member-dist {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+/* Last activity */
+.squad-activity {
+  padding: 10px 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.squad-activity svg { width: 12px; height: 12px; stroke: var(--blue); fill: none; stroke-width: 2; flex-shrink: 0; }
+.squad-activity strong { color: var(--text); font-weight: 500; }
+
+/* Squad CTA row */
+.squad-cta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  animation: fadeUp .6s .55s ease both;
+}
+.squad-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  border-radius: var(--r-lg);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s;
+  border: none;
+}
+.scb-create {
+  background: var(--midnight);
+  color: white;
+  box-shadow: 0 4px 16px rgba(11,18,32,0.2);
+}
+.scb-create:hover { background: #1a2a4a; transform: translateY(-2px); }
+.scb-join {
+  background: var(--white);
+  color: var(--text);
+  border: 1px solid var(--border2) !important;
+  box-shadow: var(--shadow);
+}
+.scb-join:hover { border-color: var(--blue) !important; background: var(--blue-g); color: var(--blue); transform: translateY(-2px); }
+.squad-cta-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ═══════════════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════════════ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: rgba(247,249,252,0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 10px 8px 20px;
+  z-index: 100;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  padding: 4px 0;
+  transition: all .2s;
+}
+.nav-item-icon {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .25s cubic-bezier(.34,1.56,.64,1);
+}
+.nav-item-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; transition: all .2s; }
+.nav-item-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  transition: color .2s;
+}
+
+.nav-item:not(.active) .nav-item-icon { color: var(--muted2); }
+.nav-item:not(.active):hover .nav-item-icon { color: var(--text); background: var(--bg2); }
+.nav-item:not(.active):hover .nav-item-label { color: var(--muted); }
+
+.nav-item.active .nav-item-icon {
+  background: var(--blue);
+  color: white;
+  box-shadow: 0 4px 12px rgba(37,99,255,0.35);
+  transform: scale(1.08);
+}
+.nav-item.active .nav-item-label { color: var(--blue); }
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media(max-width:380px) {
+  .atc-city { font-size: 28px; }
+  .phase-name { font-size: 13px; }
+}
+</style>
 </head>
-
 <body>
 
-  <!-- NAV -->
-  <nav class="nav" id="_yaply_nav">
-    <div class="nav-left">
-      <div class="nav-logo-mark">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-        </svg>
-      </div>
-      <span class="nav-logo-name">Yaply</span>
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <a href="/app" class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
     </div>
-    <div class="nav-right">
-      <span class="nav-user-name" id="navUserName">Loading...</span>
-      <div class="nav-avatar" id="navAvatar" onclick="window.location.href='/profile'" title="View Profile" style="cursor:pointer;">Y</div>
-      <button class="nav-btn" onclick="logout()">Sign out</button>
-    </div>
-  </nav>
+    <span class="nav-logo-name">yaply.</span>
+  </a>
 
-  <div class="layout">
+  <div class="nav-spacer"></div>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="sidebar-label">Plan</div>
-      <a class="nav-item active" href="/plan">
-        <span class="ni-icon si-teal">
-          <svg viewBox="0 0 24 24">
-            <rect x="3" y="4" width="18" height="18" rx="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-        </span>
-        Trip Planner
-        <span class="ni-badge">New</span>
-      </a>
-      <a class="nav-item" href="/tools">
-        <span class="ni-icon">
-          <svg viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3" />
-            <path
-              d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
-          </svg>
-        </span>
-        Extra Tools
-      </a>
-
-      <div class="sidebar-label">During</div>
-      <a class="nav-item" href="/translate">
-        <span class="ni-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M3 5h12M9 3v2m-3.5 8.5L3 21l4.5-3.5M12 5l-4 11M5 8h7M21 12h-5m0 0l3 3m-3-3l3-3" />
-          </svg>
-        </span>
-        Live Translate
-      </a>
-      <a class="nav-item" href="/convo">
-        <span class="ni-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        </span>
-        Conversation
-      </a>
-      <a class="nav-item" href="/camera">
-        <span class="ni-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-            <circle cx="12" cy="13" r="4" />
-          </svg>
-        </span>
-        Camera Scan
-      </a>
-      <a class="nav-item" href="/during">
-        <span class="ni-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-        </span>
-        Safety Tools
-      </a>
-
-      <div class="sidebar-label">Explore</div>
-      <a class="nav-item" href="/discover">
-        <span class="ni-icon">
-          <svg viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </span>
-        Discover Places
-      </a>
-
-      <div class="sidebar-label">After</div>
-      <a class="nav-item" href="/after">
-        <span class="ni-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-          </svg>
-        </span>
-        Trip Journal
-      </a>
-
-      <div class="sidebar-bottom">
-        <button class="logout-btn" onclick="logout()">
-          <span class="ni-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-          </span>
-          Sign Out
-        </button>
-      </div>
-    </aside>
-
-    <!-- MAIN -->
-    <main class="main">
-
-      <!-- HERO -->
-      <div class="hero">
-        <div class="hero-badge">
-          <div class="hero-badge-dot"></div>AI Ready
-        </div>
-        <div class="hero-greeting" id="heroGreeting">Good morning</div>
-        <div class="hero-title" id="heroTitle">Where are you going next?</div>
-        <div class="hero-sub">Your AI travel companion is ready. Plan a trip, translate on the go, or discover your next
-          destination.</div>
-        <a class="hero-cta" href="/plan">
-          Plan a New Trip
-          <svg viewBox="0 0 24 24">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </a>
-      </div>
-
-      <!-- STATS -->
-      <div class="stats-row" id="statsRow">
-        <div class="stat-card">
-          <div class="stat-icon si-teal">
-            <svg viewBox="0 0 24 24">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-          </div>
-          <div>
-            <div class="stat-num" id="statTrips">0</div>
-            <div class="stat-lbl">Trips Planned</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon si-amber">
-            <svg viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            </svg>
-          </div>
-          <div>
-            <div class="stat-num" id="statDays">0</div>
-            <div class="stat-lbl">Days Travelled</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon si-sky">
-            <svg viewBox="0 0 24 24">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-          </div>
-          <div>
-            <div class="stat-num" id="statPlaces">0</div>
-            <div class="stat-lbl">Places Saved</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon si-purple">
-            <svg viewBox="0 0 24 24">
-              <polygon
-                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-          </div>
-          <div>
-            <div class="stat-num">25+</div>
-            <div class="stat-lbl">AI Features</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- QUICK ACTIONS -->
-      <div class="sec-header">
-        <div class="sec-title">Quick Access</div>
-      </div>
-      <div class="quick-grid" style="margin-bottom:28px;">
-        <a class="quick-card" href="/translate">
-          <div class="qc-icon"><svg viewBox="0 0 24 24">
-              <path d="M3 5h12M9 3v2m-3.5 8.5L3 21l4.5-3.5M12 5l-4 11" />
-            </svg></div>
-          <span class="qc-label">Live Translate</span>
-        </a>
-        <a class="quick-card" href="/camera">
-          <div class="qc-icon"><svg viewBox="0 0 24 24">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-              <circle cx="12" cy="13" r="4" />
-            </svg></div>
-          <span class="qc-label">Camera Scan</span>
-        </a>
-        <a class="quick-card" href="/discover">
-          <div class="qc-icon"><svg viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg></div>
-          <span class="qc-label">Discover</span>
-        </a>
-        <a class="quick-card" href="/during">
-          <div class="qc-icon"><svg viewBox="0 0 24 24">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg></div>
-          <span class="qc-label">Safety Tools</span>
-        </a>
-      </div>
-
-      <!-- FEATURES -->
-      <div class="sec-header">
-        <div class="sec-title">All Features</div>
-      </div>
-      <div class="feature-grid">
-        <a class="feat-card fc-teal" href="/plan">
-          <div class="feat-card-icon fi-teal">
-            <svg viewBox="0 0 24 24">
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-          </div>
-          <div class="feat-card-title">Trip Planner</div>
-          <div class="feat-card-desc">Full AI itinerary, visa, budget, packing and more in seconds.</div>
-          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg></div>
-        </a>
-        <a class="feat-card fc-sky" href="/translate">
-          <div class="feat-card-icon fi-sky">
-            <svg viewBox="0 0 24 24">
-              <path d="M3 5h12M9 3v2m-3.5 8.5L3 21l4.5-3.5M12 5l-4 11M5 8h7M21 12h-5m0 0l3 3m-3-3l3-3" />
-            </svg>
-          </div>
-          <div class="feat-card-title">Live Translation</div>
-          <div class="feat-card-desc">Speak, translate and hear back in 50+ languages instantly.</div>
-          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg></div>
-        </a>
-        <a class="feat-card fc-amber" href="/convo">
-          <div class="feat-card-icon fi-amber">
-            <svg viewBox="0 0 24 24">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-          </div>
-          <div class="feat-card-title">Conversation Mode</div>
-          <div class="feat-card-desc">Two people, two languages — real-time two-way translation.</div>
-          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg></div>
-        </a>
-        <a class="feat-card fc-green" href="/camera">
-          <div class="feat-card-icon fi-green">
-            <svg viewBox="0 0 24 24">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-          </div>
-          <div class="feat-card-title">Camera Translator</div>
-          <div class="feat-card-desc">Point at any sign, menu or document for instant translation.</div>
-          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg></div>
-        </a>
-        <a class="feat-card fc-purple" href="/discover">
-          <div class="feat-card-icon fi-purple">
-            <svg viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </div>
-          <div class="feat-card-title">Place Finder</div>
-          <div class="feat-card-desc">Upload any photo and AI identifies the exact location.</div>
-          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg></div>
-        </a>
-        <a class="feat-card fc-gold" href="/during">
-          <div class="feat-card-icon fi-gold">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </div>
-          <div class="feat-card-title">Safety & Tools</div>
-          <div class="feat-card-desc">Scam alerts, price checker, medical translate and more.</div>
-          <div class="feat-card-arrow"><svg viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg></div>
-        </a>
-      </div>
-
-      <!-- RECENT TRIPS -->
-      <div class="sec-header">
-        <div class="sec-title">Recent Trips</div>
-        <a class="sec-link" href="/plan">Plan new trip</a>
-      </div>
-      <div class="trips-grid" id="tripsGrid">
-        <div class="trip-empty skeleton" style="height:60px;border:none;"></div>
-      </div>
-
-    </main>
+  <div class="nav-date">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span id="navDate"></span>
   </div>
 
-  <!-- MOBILE BOTTOM NAV -->
-  <nav class="mobile-nav">
-    <a class="mn-item active" href="/app">
-      <svg viewBox="0 0 24 24">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      </svg>
-      <span class="mn-label">Home</span>
-    </a>
-    <a class="mn-item" href="/plan">
-      <svg viewBox="0 0 24 24">
-        <rect x="3" y="4" width="18" height="18" rx="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-      </svg>
-      <span class="mn-label">Plan</span>
-    </a>
-    <a class="mn-item" href="/translate">
-      <svg viewBox="0 0 24 24">
-        <path d="M3 5h12M9 3v2m-3.5 8.5L3 21l4.5-3.5M12 5l-4 11" />
-      </svg>
-      <span class="mn-label">Translate</span>
-    </a>
-    <a class="mn-item" href="/discover">
-      <svg viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </svg>
-      <span class="mn-label">Discover</span>
-    </a>
-    <a class="mn-item" href="/during">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      </svg>
-      <span class="mn-label">Safety</span>
-    </a>
-  </nav>
+  <div class="nav-actions">
+    <button class="nav-icon-btn" onclick="window.location.href='/notifications'" title="Notifications">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="notif-dot"></div>
+    </button>
+    <div class="nav-avatar" onclick="window.location.href='/profile'" id="navAvatar">P</div>
+  </div>
+</nav>
 
-  <div class="toast" id="toast"></div>
-  <script src="/static/yaply-nav.js"></script>
-  <script>
-    // ── AUTH CHECK ──
-    const token = getToken();
-    const user = getUser();
-    if (!token) { window.location.href = '/login'; }
+<!-- MAIN -->
+<main class="main">
 
-    // ── GREET ──
-    function greet() {
-      const h = new Date().getHours();
-      return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-    }
+  <!-- HERO GREETING -->
+  <div class="hero-greeting">
+    <div class="hero-greeting-sub">
+      <div class="live-dot"></div>
+      <span id="greetTime">Good morning</span>
+    </div>
+    <div class="hero-greeting-name" id="greetName">
+      Welcome back, <em>Piyush.</em>
+    </div>
+  </div>
 
-    // ── INIT ──
-    async function init() {
-      // Set greeting
-      document.getElementById('heroGreeting').textContent = greet();
+  <!-- ACTIVE TRIP -->
+  <div id="activeTripSection"></div>
 
-      if (user) {
-        const first = user.name?.split(' ')[0] || 'Traveller';
-        document.getElementById('heroTitle').textContent = `Where are you going next, ${first}?`;
-        document.getElementById('navUserName').textContent = user.name || '';
-        document.getElementById('navAvatar').textContent = (user.name || 'Y')[0].toUpperCase();
-      }
+  <!-- THREE PHASES -->
+  <div class="section" style="animation: fadeUp .6s .2s ease both;">
+    <div class="section-header">
+      <div class="section-title">Your Journey</div>
+    </div>
+    <div class="phases-grid">
 
-      // Load stats + trips
-      try {
-        const [profileRes, tripsRes] = await Promise.all([
-          apiFetch('/api/profile'),
-          apiFetch('/api/trips')
-        ]);
+      <a href="/plan" class="phase-card before">
+        <div class="phase-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div>
+          <div class="phase-label">Before</div>
+          <div class="phase-name">Plan it.</div>
+        </div>
+        <div class="phase-count">12 tools</div>
+        <div class="phase-arrow">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </a>
 
-        if (profileRes.success && profileRes.stats) {
-          document.getElementById('statTrips').textContent = profileRes.stats.trips || 0;
-          document.getElementById('statDays').textContent = profileRes.stats.days || 0;
-          document.getElementById('statPlaces').textContent = profileRes.stats.places || 0;
-        }
+      <a href="/during" class="phase-card during">
+        <div class="phase-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div>
+          <div class="phase-label">During</div>
+          <div class="phase-name">Live it.</div>
+        </div>
+        <div class="phase-count">9 tools</div>
+        <div class="phase-arrow">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </a>
 
-        if (tripsRes.success) renderTrips(tripsRes.trips || []);
-        else renderTrips([]);
-      } catch (e) {
-        console.error('[Dashboard] init error:', e);
-        renderTrips([]);
-      }
-    }
+      <a href="/after" class="phase-card after">
+        <div class="phase-icon">
+          <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div>
+          <div class="phase-label">After</div>
+          <div class="phase-name">Cherish.</div>
+        </div>
+        <div class="phase-count">7 tools</div>
+        <div class="phase-arrow">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </a>
 
-    function renderTrips(trips) {
-      const grid = document.getElementById('tripsGrid');
-      if (!trips.length) {
-        grid.innerHTML = `<div class="trip-empty">
-      <strong>No trips yet</strong>
-      Start by planning your first trip with AI — it takes under 30 seconds.
-    </div>`;
-        return;
-      }
-      const flags = ['🗺', '✈', '🌍', '🏖', '🏔', '🏯', '🗼', '🌴'];
-      grid.innerHTML = trips.slice(0, 5).map((t, i) => {
-        const statusClass = t.status === 'active' ? 'ts-active' : t.status === 'completed' ? 'ts-completed' : 'ts-planning';
-        const statusLabel = t.status === 'active' ? 'Active' : t.status === 'completed' ? 'Completed' : 'Planning';
-        return `<div class="trip-card" onclick="window.location.href='/plan?trip_id=${t.id}'">
-      <div class="trip-dest-icon">${flags[i % flags.length]}</div>
-      <div class="trip-info">
-        <div class="trip-dest">${t.destination}</div>
-        <div class="trip-meta">${t.days} days · ${t.people} traveller${t.people > 1 ? 's' : ''} · ${t.currency} ${t.budget}</div>
+    </div>
+  </div>
+
+  <!-- QUICK TOOLS -->
+  <div class="section" style="animation: fadeUp .6s .3s ease both;">
+    <div class="section-header">
+      <div class="section-title">Quick Access</div>
+    </div>
+    <div class="quick-tools-grid">
+
+      <a href="/translate" class="quick-tool">
+        <div class="qt-icon qt-coral">
+          <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </div>
+        <div class="qt-label">Translate</div>
+      </a>
+
+      <a href="/camera" class="quick-tool">
+        <div class="qt-icon qt-purple">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <div class="qt-label">Camera</div>
+      </a>
+
+      <a href="/discover" class="quick-tool">
+        <div class="qt-icon qt-blue">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div class="qt-label">Discover</div>
+      </a>
+
+      <a href="/currency" class="quick-tool">
+        <div class="qt-icon qt-green">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="qt-label">Currency</div>
+      </a>
+
+      <a href="/visa" class="quick-tool">
+        <div class="qt-icon qt-amber">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <div class="qt-label">Visa Check</div>
+      </a>
+
+      <a href="/weather" class="quick-tool">
+        <div class="qt-icon qt-sky">
+          <svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>
+        </div>
+        <div class="qt-label">Weather</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- MY TRIPS -->
+  <div class="section" style="animation: fadeUp .6s .4s ease both;">
+    <div class="section-header">
+      <div class="section-title">My Trips</div>
+      <a href="/profile" class="section-link">See all</a>
+    </div>
+    <div class="trips-list" id="tripsList"></div>
+  </div>
+
+  <!-- MY SQUAD -->
+  <div class="section" style="animation: fadeUp .6s .5s ease both;">
+    <div class="section-header">
+      <div class="section-title">My Squad</div>
+      <a href="/groups" class="section-link">Manage</a>
+    </div>
+
+    <!-- Group card -->
+    <div class="squad-card" id="squadCard">
+      <div class="squad-header">
+        <div class="squad-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div>
+          <div class="squad-name">Tokyo Squad</div>
+          <div class="squad-meta">
+            <div class="squad-online-dot"></div>
+            3 online · 4 members
+          </div>
+        </div>
+        <a href="/groups" class="squad-open-btn">Open</a>
       </div>
-      <span class="trip-status ${statusClass}">${statusLabel}</span>
-    </div>`;
-      }).join('');
+
+      <div class="squad-members">
+        <div class="squad-member">
+          <div class="squad-member-av" style="border-color:#2563FF;font-size:16px;">🧑
+            <div class="sm-status sm-online"></div>
+          </div>
+          <div class="squad-member-info">
+            <div class="squad-member-name">You</div>
+            <div class="squad-member-loc">Shibuya, Tokyo · Sharing location</div>
+          </div>
+          <div class="squad-member-dist" style="color:var(--blue);">You</div>
+        </div>
+        <div class="squad-member">
+          <div class="squad-member-av" style="border-color:#FF7A59;font-size:16px;">👩
+            <div class="sm-status sm-online"></div>
+          </div>
+          <div class="squad-member-info">
+            <div class="squad-member-name">Priya</div>
+            <div class="squad-member-loc">Senso-ji Temple</div>
+          </div>
+          <div class="squad-member-dist">1.2 km</div>
+        </div>
+        <div class="squad-member">
+          <div class="squad-member-av" style="border-color:#F5B942;font-size:16px;">👨‍🦱
+            <div class="sm-status sm-online"></div>
+          </div>
+          <div class="squad-member-info">
+            <div class="squad-member-name">Raj</div>
+            <div class="squad-member-loc">Tsukiji Market</div>
+          </div>
+          <div class="squad-member-dist">2.8 km</div>
+        </div>
+        <div class="squad-member">
+          <div class="squad-member-av" style="border-color:#9CA3AF;font-size:16px;">👩‍🦰
+            <div class="sm-status sm-offline"></div>
+          </div>
+          <div class="squad-member-info">
+            <div class="squad-member-name">Sara</div>
+            <div class="squad-member-loc">Last seen 2h ago</div>
+          </div>
+          <div class="squad-member-dist" style="color:var(--muted2);">offline</div>
+        </div>
+      </div>
+
+      <div class="squad-activity">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span><strong>Priya</strong> shared her location · 2 minutes ago</span>
+      </div>
+    </div>
+
+    <!-- Squad CTAs -->
+    <div class="squad-cta" style="margin-top:10px;">
+      <a href="/groups/create" class="squad-cta-btn scb-create">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Create Group
+      </a>
+      <button class="squad-cta-btn scb-join" onclick="openJoinModal()">
+        <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Join Squad
+      </button>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM SPACER -->
+  <div style="height: 20px;"></div>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="/app" class="nav-item active">
+    <div class="nav-item-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <div class="nav-item-label">Home</div>
+  </a>
+  <a href="/plan" class="nav-item">
+    <div class="nav-item-icon">
+      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    </div>
+    <div class="nav-item-label">Plan</div>
+  </a>
+  <a href="/during" class="nav-item">
+    <div class="nav-item-icon">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    </div>
+    <div class="nav-item-label">Live</div>
+  </a>
+  <a href="/diary" class="nav-item">
+    <div class="nav-item-icon">
+      <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    </div>
+    <div class="nav-item-label">Diary</div>
+  </a>
+  <a href="/profile" class="nav-item">
+    <div class="nav-item-icon">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+    <div class="nav-item-label">Me</div>
+  </a>
+</nav>
+
+<!-- JOIN MODAL -->
+<div id="joinModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(17,24,39,0.5);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;">
+  <div style="background:var(--white);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;animation:fadeUp .35s ease both;">
+    <div style="width:36px;height:4px;background:var(--bg2);border-radius:2px;margin:0 auto 24px;"></div>
+    <div style="font-family:var(--font-head);font-size:22px;color:var(--text);margin-bottom:6px;">Join a Squad</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:20px;font-weight:300;">Enter the group code shared by your friend</div>
+
+    <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);display:block;margin-bottom:8px;">Group Code</label>
+    <input
+      id="joinCodeInput"
+      type="text"
+      placeholder="YAP-XXXX"
+      maxlength="8"
+      oninput="formatJoinCode(this)"
+      style="width:100%;padding:14px 16px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);font-family:var(--font-mono);font-size:22px;color:var(--text);outline:none;text-align:center;letter-spacing:4px;text-transform:uppercase;transition:border-color .2s;"
+    />
+
+    <button onclick="joinSquad()" style="width:100%;margin-top:14px;padding:14px;background:var(--midnight);color:white;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;">
+      Join Squad
+    </button>
+    <button onclick="closeJoinModal()" style="width:100%;margin-top:8px;padding:12px;background:none;color:var(--muted);border:none;font-family:var(--font-body);font-size:14px;cursor:pointer;">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<script>
+// ── DATE & GREETING ────────────────────────────────────
+(function() {
+  var now   = new Date();
+  var hr    = now.getHours();
+  var greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greetTime').textContent = greet;
+
+  var days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('navDate').textContent =
+    days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+})();
+
+// ── LOAD USER DATA ─────────────────────────────────────
+(async function() {
+  try {
+    var token = localStorage.getItem('yaply_token');
+    if (!token) return;
+
+    var headers = { 'Authorization': 'Bearer ' + token };
+
+    // Load user
+    var userRes = await fetch('/api/me', { headers: headers });
+    if (userRes.ok) {
+      var userData = await userRes.json();
+      if (userData.user) {
+        var name    = userData.user.name || 'Traveller';
+        var initial = name.charAt(0).toUpperCase();
+        document.getElementById('greetName').innerHTML =
+          'Welcome back, <em>' + name.split(' ')[0] + '.</em>';
+        document.getElementById('navAvatar').textContent = initial;
+      }
     }
 
-    function logout() {
-      clearAuth();
-      window.location.href = '/login';
+    // Load trips
+    var tripsRes = await fetch('/api/trips', { headers: headers });
+    if (tripsRes.ok) {
+      var tripsData = await tripsRes.json();
+      if (tripsData.trips && tripsData.trips.length) {
+        renderTrips(tripsData.trips);
+      } else {
+        renderNoTrips();
+      }
+    } else {
+      renderDemoTrips();
     }
 
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2800);
-    }
+  } catch(e) {
+    // Fallback to demo data
+    renderDemoTrips();
+  }
+})();
 
-    // Highlight active sidebar item
-    const path = window.location.pathname;
-    document.querySelectorAll('.nav-item').forEach(a => {
-      a.classList.toggle('active', a.getAttribute('href') === path);
+// ── RENDER ACTIVE TRIP ─────────────────────────────────
+function renderActiveTripCard(trip) {
+  var section = document.getElementById('activeTripSection');
+
+  // Calculate day number
+  var start  = new Date(trip.start_date || trip.created_at);
+  var today  = new Date();
+  var dayNum = Math.max(1, Math.floor((today - start) / 86400000) + 1);
+  var totalD = trip.days || 6;
+  var pct    = Math.min(100, Math.round(dayNum / totalD * 100));
+
+  var flagMap = {
+    'Tokyo': '🇯🇵', 'Japan': '🇯🇵',
+    'Bangkok': '🇹🇭', 'Thailand': '🇹🇭',
+    'Paris': '🇫🇷', 'France': '🇫🇷',
+    'Bali': '🇮🇩', 'Indonesia': '🇮🇩',
+    'Dubai': '🇦🇪', 'UAE': '🇦🇪',
+    'London': '🇬🇧', 'UK': '🇬🇧',
+    'Singapore': '🇸🇬',
+    'New York': '🇺🇸', 'USA': '🇺🇸',
+  };
+
+  var dest    = trip.destination || 'Destination';
+  var city    = dest.split(',')[0];
+  var country = dest.split(',')[1] ? dest.split(',')[1].trim() : '';
+  var flag    = '';
+  Object.keys(flagMap).forEach(function(k) {
+    if (dest.includes(k)) flag = flagMap[k];
+  });
+
+  section.innerHTML =
+    '<div class="section" style="padding-top:20px;">' +
+    '<div class="active-trip-card" onclick="window.location.href=\'/plan?trip_id=' + trip.id + '\'">' +
+      '<div class="atc-bg">' +
+        '<div class="atc-grid"></div>' +
+        '<div class="atc-orb"></div>' +
+        '<div class="atc-top">' +
+          '<div class="atc-badge"><div class="atc-badge-dot"></div>Active Trip</div>' +
+          '<div class="atc-day-badge">Day ' + dayNum + ' of ' + totalD + '</div>' +
+        '</div>' +
+        '<div class="atc-dest">' +
+          '<div class="atc-country">' + (country || 'Destination') + ' ' + flag + '</div>' +
+          '<div class="atc-city">' + city + '</div>' +
+          '<div class="atc-dates">' + (trip.start_date || '') + (trip.end_date ? ' – ' + trip.end_date : '') + ' · ' + totalD + ' days · ' + (trip.currency || 'INR') + ' ' + (trip.budget || '') + '</div>' +
+        '</div>' +
+        '<div class="atc-progress">' +
+          '<div class="atc-progress-row">' +
+            '<span class="atc-progress-label">Trip progress</span>' +
+            '<span class="atc-progress-pct">' + pct + '%</span>' +
+          '</div>' +
+          '<div class="atc-progress-track"><div class="atc-progress-fill" id="activeFill"></div></div>' +
+        '</div>' +
+        '<div class="atc-actions">' +
+          '<a href="/plan?trip_id=' + trip.id + '" class="atc-action" onclick="event.stopPropagation()">' +
+            '<div class="atc-action-icon" style="background:rgba(37,99,255,0.15);">' +
+              '<svg viewBox="0 0 24 24" style="stroke:#60A5FA;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
+            '</div>' +
+            '<span class="atc-action-label">View Plan</span>' +
+          '</a>' +
+          '<a href="/translate" class="atc-action" onclick="event.stopPropagation()">' +
+            '<div class="atc-action-icon" style="background:rgba(255,122,89,0.15);">' +
+              '<svg viewBox="0 0 24 24" style="stroke:#FF7A59;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' +
+            '</div>' +
+            '<span class="atc-action-label">Translate</span>' +
+          '</a>' +
+          '<a href="/during" class="atc-action sos" onclick="event.stopPropagation()">' +
+            '<div class="atc-action-icon" style="background:rgba(239,68,68,0.15);">' +
+              '<svg viewBox="0 0 24 24" style="stroke:#EF4444;"><polygon points="10.29 3.86 1.82 18 22.18 18 13.71 3.86 10.29 3.86"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+            '</div>' +
+            '<span class="atc-action-label" style="color:rgba(239,68,68,0.7);">SOS</span>' +
+          '</a>' +
+        '</div>' +
+      '</div>' +
+      '<div class="atc-strip">' +
+        '<span class="atc-strip-text">Next · <strong>Day ' + Math.min(dayNum + 1, totalD) + '</strong> coming up</span>' +
+        '<svg class="atc-strip-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
+      '</div>' +
+    '</div>' +
+    '</div>';
+
+  // Animate progress fill
+  setTimeout(function() {
+    var fill = document.getElementById('activeFill');
+    if (fill) fill.style.width = pct + '%';
+  }, 300);
+}
+
+function renderNoActiveTripSection() {
+  var section = document.getElementById('activeTripSection');
+  section.innerHTML =
+    '<div class="section" style="padding-top:20px;">' +
+    '<a href="/plan" class="no-trip-card">' +
+      '<div class="no-trip-icon">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+      '</div>' +
+      '<div class="no-trip-title">Where to next?</div>' +
+      '<div class="no-trip-sub">Plan your next adventure with AI. Full itinerary in 15 seconds.</div>' +
+      '<div class="no-trip-btn">' +
+        '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+        'Plan a Trip' +
+      '</div>' +
+    '</a>' +
+    '</div>';
+}
+
+// ── RENDER TRIPS LIST ──────────────────────────────────
+function renderTrips(trips) {
+  // Find active trip
+  var activeTrip = trips.find(function(t) { return t.status === 'active'; });
+  if (activeTrip) {
+    renderActiveTripCard(activeTrip);
+  } else {
+    renderNoActiveTripSection();
+  }
+
+  // Render trips list
+  var list    = document.getElementById('tripsList');
+  var limited = trips.slice(0, 3);
+  var html    = '';
+
+  limited.forEach(function(trip) {
+    var statusClass = trip.status === 'active' ? 'status-active' :
+                      trip.status === 'completed' ? 'status-done' : 'status-planning';
+    var statusLabel = trip.status === 'active' ? 'Active' :
+                      trip.status === 'completed' ? 'Done' : 'Planning';
+    var dest  = trip.destination || 'Trip';
+    var city  = dest.split(',')[0];
+    var flag  = getFlag(dest);
+
+    html +=
+      '<div class="trip-item" onclick="window.location.href=\'/plan?trip_id=' + trip.id + '\'">' +
+        '<div class="trip-flag">' + flag + '</div>' +
+        '<div class="trip-info">' +
+          '<div class="trip-name">' + city + '</div>' +
+          '<div class="trip-meta">' + (trip.days || '?') + ' days · ' + (trip.currency || 'INR') + ' ' + (trip.budget || '') + '</div>' +
+        '</div>' +
+        '<div class="trip-status ' + statusClass + '">' +
+          '<div class="status-dot"></div>' + statusLabel +
+        '</div>' +
+        '<svg class="trip-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
+      '</div>';
+  });
+
+  html +=
+    '<a href="/plan" class="new-trip-btn">' +
+      '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+      'Plan a new trip' +
+    '</a>';
+
+  list.innerHTML = html;
+}
+
+function renderDemoTrips() {
+  var demoTrips = [
+    { id: 1, destination: 'Tokyo, Japan', days: 6, currency: 'INR', budget: '80,000', status: 'active', start_date: 'Jun 15', end_date: 'Jun 22' },
+    { id: 2, destination: 'Bangkok, Thailand', days: 7, currency: 'INR', budget: '65,000', status: 'completed' },
+  ];
+  renderTrips(demoTrips);
+}
+
+function renderNoTrips() {
+  renderNoActiveTripSection();
+  var list = document.getElementById('tripsList');
+  list.innerHTML =
+    '<a href="/plan" class="new-trip-btn" style="padding:18px;">' +
+      '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+      'Plan your first trip' +
+    '</a>';
+}
+
+// ── FLAG HELPER ────────────────────────────────────────
+function getFlag(dest) {
+  var map = {
+    'Japan':'🇯🇵','Tokyo':'🇯🇵',
+    'Thailand':'🇹🇭','Bangkok':'🇹🇭',
+    'France':'🇫🇷','Paris':'🇫🇷',
+    'Indonesia':'🇮🇩','Bali':'🇮🇩',
+    'UAE':'🇦🇪','Dubai':'🇦🇪',
+    'UK':'🇬🇧','London':'🇬🇧',
+    'Singapore':'🇸🇬',
+    'USA':'🇺🇸','New York':'🇺🇸',
+    'India':'🇮🇳','Delhi':'🇮🇳','Mumbai':'🇮🇳',
+    'Nepal':'🇳🇵','Kathmandu':'🇳🇵',
+  };
+  var flag = '🌍';
+  Object.keys(map).forEach(function(k) {
+    if (dest && dest.includes(k)) flag = map[k];
+  });
+  return flag;
+}
+
+// ── JOIN MODAL ─────────────────────────────────────────
+function openJoinModal() {
+  var modal = document.getElementById('joinModal');
+  modal.style.display = 'flex';
+  setTimeout(function() {
+    document.getElementById('joinCodeInput').focus();
+  }, 100);
+}
+
+function closeJoinModal() {
+  document.getElementById('joinModal').style.display = 'none';
+  document.getElementById('joinCodeInput').value = '';
+}
+
+function formatJoinCode(input) {
+  var val = input.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+  if (val.length > 3) {
+    val = 'YAP-' + val.replace('YAP','').substring(0,4);
+  }
+  input.value = val;
+}
+
+async function joinSquad() {
+  var code = document.getElementById('joinCodeInput').value.trim();
+  if (code.length < 7) {
+    document.getElementById('joinCodeInput').style.borderColor = 'var(--red)';
+    return;
+  }
+  try {
+    var token = localStorage.getItem('yaply_token');
+    var res = await fetch('/api/groups/join', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body: JSON.stringify({ code: code })
     });
-    document.querySelectorAll('.mn-item').forEach(a => {
-      a.classList.toggle('active', a.getAttribute('href') === path);
-    });
+    var data = await res.json();
+    if (data.success) {
+      closeJoinModal();
+      window.location.href = '/groups/' + data.group_id;
+    } else {
+      document.getElementById('joinCodeInput').style.borderColor = 'var(--red)';
+    }
+  } catch(e) {
+    document.getElementById('joinCodeInput').style.borderColor = 'var(--red)';
+  }
+}
 
-    init();
-  </script>
+// Close modal on backdrop click
+document.getElementById('joinModal').addEventListener('click', function(e) {
+  if (e.target === this) closeJoinModal();
+});
+
+// ── INPUT FOCUS RESET ──────────────────────────────────
+document.getElementById('joinCodeInput').addEventListener('focus', function() {
+  this.style.borderColor = 'var(--blue)';
+});
+</script>
 </body>
-
 </html>
