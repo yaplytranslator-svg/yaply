@@ -2076,31 +2076,6 @@ def server_error(e):
     return jsonify({'success': False, 'error': 'Server error. Our team has been notified.'}), 500
 
 
-@app.route('/auth/google/test')
-def google_test():
-    return jsonify({
-        'client_id':     GOOGLE_CLIENT_ID[:20] + '...' if GOOGLE_CLIENT_ID else 'MISSING',
-        'client_secret': 'SET' if GOOGLE_CLIENT_SECRET else 'MISSING',
-        'redirect_uri':  GOOGLE_REDIRECT_URI or 'MISSING',
-    })
-
-# ════════════════════════════════════════════════════════════════
-#  STARTUP — Handle Google OAuth token on app page
-# ════════════════════════════════════════════════════════════════
-
-# Add this snippet to your yaply-app.html <script> section:
-# (Handles the token passed from Google OAuth redirect)
-#
-# (function() {
-#   var params = new URLSearchParams(window.location.search);
-#   var token  = params.get('token');
-#   if (token) {
-#     localStorage.setItem('yaply_token', token);
-#     window.history.replaceState({}, '', '/app');
-#   }
-# })();
-
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5004))
     socketio.run(
