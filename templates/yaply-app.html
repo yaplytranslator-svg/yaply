@@ -64,6 +64,29 @@ body {
 }
 
 /* ═══════════════════════════════════════════
+   SKELETON / SHIMMER  (BUG 5)
+═══════════════════════════════════════════ */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skel {
+  background: linear-gradient(90deg, #EEF2F8 25%, #E0E7F0 50%, #EEF2F8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+.skel-dark {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.05) 25%,
+    rgba(255,255,255,0.12) 50%,
+    rgba(255,255,255,0.05) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+
+/* ═══════════════════════════════════════════
    TOP NAV
 ═══════════════════════════════════════════ */
 .top-nav {
@@ -142,6 +165,11 @@ body {
   border: 2px solid var(--white);
 }
 
+/* Avatar wrapper + dropdown  (BUG 3 & BUG 6) */
+.nav-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
 .nav-avatar {
   width: 36px; height: 36px;
   border-radius: 50%;
@@ -155,9 +183,54 @@ body {
   border: 2px solid var(--white);
   box-shadow: var(--shadow-blue);
   transition: transform .2s;
-  flex-shrink: 0;
+  overflow: hidden;
 }
 .nav-avatar:hover { transform: scale(1.06); }
+.nav-avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-md);
+  min-width: 170px;
+  z-index: 200;
+  overflow: hidden;
+}
+.avatar-dropdown.open { display: block; }
+.avatar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background .15s;
+}
+.avatar-menu-item:hover { background: var(--bg2); }
+.avatar-menu-item.logout { color: var(--red); }
+.avatar-menu-item svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+.avatar-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2px 0;
+}
 
 /* Date pill */
 .nav-date {
@@ -478,6 +551,7 @@ body {
   cursor: pointer;
   transition: all .2s;
   animation: fadeUp .6s .1s ease both;
+  text-decoration: none;
 }
 .no-trip-card:hover {
   background: rgba(37,99,255,0.1);
@@ -933,10 +1007,13 @@ body {
   width: 32px; height: 32px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
   border: 2px solid;
   flex-shrink: 0;
   position: relative;
+  font-family: var(--font-head);
 }
 .sm-status {
   position: absolute;
@@ -983,12 +1060,46 @@ body {
 .squad-activity svg { width: 12px; height: 12px; stroke: var(--blue); fill: none; stroke-width: 2; flex-shrink: 0; }
 .squad-activity strong { color: var(--text); font-weight: 500; }
 
+/* Squad empty state */
+.squad-empty {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  box-shadow: var(--shadow);
+}
+.squad-empty-icon {
+  width: 52px; height: 52px;
+  border-radius: 16px;
+  background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.squad-empty-title {
+  font-family: var(--font-head);
+  font-size: 18px;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+.squad-empty-sub {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 300;
+  line-height: 1.6;
+  max-width: 240px;
+}
+
 /* Squad CTA row */
 .squad-cta {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  animation: fadeUp .6s .55s ease both;
+  margin-top: 10px;
 }
 .squad-cta-btn {
   display: flex;
@@ -1121,7 +1232,21 @@ body {
       <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       <div class="notif-dot"></div>
     </button>
-    <div class="nav-avatar" onclick="window.location.href='/profile'" id="navAvatar">P</div>
+    <!-- BUG 1 + BUG 3 + BUG 6: real avatar, /profile link, logout dropdown -->
+    <div class="nav-avatar-wrapper" id="navAvatarWrapper">
+      <div class="nav-avatar" id="navAvatar" onclick="toggleAvatarMenu()"></div>
+      <div class="avatar-dropdown" id="avatarDropdown">
+        <a href="/profile" class="avatar-menu-item">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Profile
+        </a>
+        <div class="avatar-menu-divider"></div>
+        <button class="avatar-menu-item logout" onclick="doLogout()">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Log out
+        </button>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -1134,15 +1259,37 @@ body {
       <div class="live-dot"></div>
       <span id="greetTime">Good morning</span>
     </div>
+    <!-- BUG 1: greeting name rendered by JS, no hardcoded name -->
     <div class="hero-greeting-name" id="greetName">
-      Welcome back, <em>Piyush.</em>
+      Welcome back, <span class="skel" style="display:inline-block;width:110px;height:26px;vertical-align:middle;border-radius:8px;"></span>
     </div>
   </div>
 
-  <!-- ACTIVE TRIP -->
-  <div id="activeTripSection"></div>
+  <!-- ACTIVE TRIP — BUG 5: skeleton shown immediately, replaced by JS -->
+  <div id="activeTripSection">
+    <div style="margin:20px 20px 0;">
+      <div style="border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-lg);">
+        <div style="background:#0D1628;padding:24px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+            <div class="skel-dark" style="width:90px;height:22px;border-radius:100px;"></div>
+            <div class="skel-dark" style="width:70px;height:22px;border-radius:100px;"></div>
+          </div>
+          <div class="skel-dark" style="width:55%;height:13px;border-radius:6px;margin-bottom:10px;"></div>
+          <div class="skel-dark" style="width:70%;height:40px;border-radius:10px;margin-bottom:10px;"></div>
+          <div class="skel-dark" style="width:85%;height:12px;border-radius:6px;margin-bottom:22px;"></div>
+          <div class="skel-dark" style="width:100%;height:3px;border-radius:2px;margin-bottom:22px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div class="skel-dark" style="height:72px;border-radius:var(--r);"></div>
+            <div class="skel-dark" style="height:72px;border-radius:var(--r);"></div>
+            <div class="skel-dark" style="height:72px;border-radius:var(--r);"></div>
+          </div>
+        </div>
+        <div class="skel-dark" style="height:38px;border-radius:0;"></div>
+      </div>
+    </div>
+  </div>
 
-  <!-- THREE PHASES -->
+  <!-- THREE PHASES (keep exactly as is) -->
   <div class="section" style="animation: fadeUp .6s .2s ease both;">
     <div class="section-header">
       <div class="section-title">Your Journey</div>
@@ -1194,7 +1341,7 @@ body {
     </div>
   </div>
 
-  <!-- QUICK TOOLS -->
+  <!-- QUICK TOOLS (keep exactly as is) -->
   <div class="section" style="animation: fadeUp .6s .3s ease both;">
     <div class="section-header">
       <div class="section-title">Quick Access</div>
@@ -1246,99 +1393,70 @@ body {
     </div>
   </div>
 
-  <!-- MY TRIPS -->
+  <!-- MY TRIPS — BUG 5: skeleton shown immediately, BUG 7: no demo data ever -->
   <div class="section" style="animation: fadeUp .6s .4s ease both;">
     <div class="section-header">
       <div class="section-title">My Trips</div>
       <a href="/profile" class="section-link">See all</a>
     </div>
-    <div class="trips-list" id="tripsList"></div>
+    <div class="trips-list" id="tripsList">
+      <!-- skeleton trip items -->
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);">
+        <div class="skel" style="width:44px;height:44px;border-radius:14px;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div class="skel" style="width:65%;height:16px;border-radius:6px;margin-bottom:7px;"></div>
+          <div class="skel" style="width:45%;height:12px;border-radius:6px;"></div>
+        </div>
+        <div class="skel" style="width:58px;height:22px;border-radius:100px;"></div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);">
+        <div class="skel" style="width:44px;height:44px;border-radius:14px;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div class="skel" style="width:55%;height:16px;border-radius:6px;margin-bottom:7px;"></div>
+          <div class="skel" style="width:50%;height:12px;border-radius:6px;"></div>
+        </div>
+        <div class="skel" style="width:58px;height:22px;border-radius:100px;"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- MY SQUAD -->
+  <!-- MY SQUAD — BUG 2: ALL hardcoded HTML removed, rendered by JS -->
   <div class="section" style="animation: fadeUp .6s .5s ease both;">
     <div class="section-header">
       <div class="section-title">My Squad</div>
       <a href="/groups" class="section-link">Manage</a>
     </div>
-
-    <!-- Group card -->
-    <div class="squad-card" id="squadCard">
-      <div class="squad-header">
-        <div class="squad-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    <!-- BUG 5: squad skeleton shown immediately -->
+    <div id="squadSection">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow);">
+        <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+          <div class="skel" style="width:40px;height:40px;border-radius:12px;flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div class="skel" style="width:55%;height:16px;border-radius:6px;margin-bottom:7px;"></div>
+            <div class="skel" style="width:40%;height:11px;border-radius:6px;"></div>
+          </div>
+          <div class="skel" style="width:52px;height:30px;border-radius:9px;"></div>
         </div>
-        <div>
-          <div class="squad-name">Tokyo Squad</div>
-          <div class="squad-meta">
-            <div class="squad-online-dot"></div>
-            3 online · 4 members
+        <div style="padding:14px 18px;display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">
+            <div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div class="skel" style="width:50%;height:13px;border-radius:6px;margin-bottom:5px;"></div>
+              <div class="skel" style="width:70%;height:11px;border-radius:6px;"></div>
+            </div>
+            <div class="skel" style="width:40px;height:13px;border-radius:6px;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 0;">
+            <div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div class="skel" style="width:45%;height:13px;border-radius:6px;margin-bottom:5px;"></div>
+              <div class="skel" style="width:60%;height:11px;border-radius:6px;"></div>
+            </div>
+            <div class="skel" style="width:40px;height:13px;border-radius:6px;"></div>
           </div>
         </div>
-        <a href="/groups" class="squad-open-btn">Open</a>
-      </div>
-
-      <div class="squad-members">
-        <div class="squad-member">
-          <div class="squad-member-av" style="border-color:#2563FF;font-size:16px;">🧑
-            <div class="sm-status sm-online"></div>
-          </div>
-          <div class="squad-member-info">
-            <div class="squad-member-name">You</div>
-            <div class="squad-member-loc">Shibuya, Tokyo · Sharing location</div>
-          </div>
-          <div class="squad-member-dist" style="color:var(--blue);">You</div>
-        </div>
-        <div class="squad-member">
-          <div class="squad-member-av" style="border-color:#FF7A59;font-size:16px;">👩
-            <div class="sm-status sm-online"></div>
-          </div>
-          <div class="squad-member-info">
-            <div class="squad-member-name">Priya</div>
-            <div class="squad-member-loc">Senso-ji Temple</div>
-          </div>
-          <div class="squad-member-dist">1.2 km</div>
-        </div>
-        <div class="squad-member">
-          <div class="squad-member-av" style="border-color:#F5B942;font-size:16px;">👨‍🦱
-            <div class="sm-status sm-online"></div>
-          </div>
-          <div class="squad-member-info">
-            <div class="squad-member-name">Raj</div>
-            <div class="squad-member-loc">Tsukiji Market</div>
-          </div>
-          <div class="squad-member-dist">2.8 km</div>
-        </div>
-        <div class="squad-member">
-          <div class="squad-member-av" style="border-color:#9CA3AF;font-size:16px;">👩‍🦰
-            <div class="sm-status sm-offline"></div>
-          </div>
-          <div class="squad-member-info">
-            <div class="squad-member-name">Sara</div>
-            <div class="squad-member-loc">Last seen 2h ago</div>
-          </div>
-          <div class="squad-member-dist" style="color:var(--muted2);">offline</div>
-        </div>
-      </div>
-
-      <div class="squad-activity">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span><strong>Priya</strong> shared her location · 2 minutes ago</span>
       </div>
     </div>
-
-    <!-- Squad CTAs -->
-    <div class="squad-cta" style="margin-top:10px;">
-      <a href="/groups/create" class="squad-cta-btn scb-create">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Create Group
-      </a>
-      <button class="squad-cta-btn scb-join" onclick="openJoinModal()">
-        <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        Join Squad
-      </button>
-    </div>
-
   </div>
 
   <!-- BOTTOM SPACER -->
@@ -1346,7 +1464,7 @@ body {
 
 </main>
 
-<!-- BOTTOM NAV -->
+<!-- BOTTOM NAV (keep exactly as is) -->
 <nav class="bottom-nav">
   <a href="/app" class="nav-item active">
     <div class="nav-item-icon">
@@ -1380,7 +1498,7 @@ body {
   </a>
 </nav>
 
-<!-- JOIN MODAL -->
+<!-- JOIN MODAL — BUG 8: error message element added -->
 <div id="joinModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(17,24,39,0.5);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;">
   <div style="background:var(--white);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;animation:fadeUp .35s ease both;">
     <div style="width:36px;height:4px;background:var(--bg2);border-radius:2px;margin:0 auto 24px;"></div>
@@ -1396,8 +1514,10 @@ body {
       oninput="formatJoinCode(this)"
       style="width:100%;padding:14px 16px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);font-family:var(--font-mono);font-size:22px;color:var(--text);outline:none;text-align:center;letter-spacing:4px;text-transform:uppercase;transition:border-color .2s;"
     />
+    <!-- Error message for invalid/not found code -->
+    <div id="joinError" style="display:none;color:var(--red);font-size:13px;text-align:center;margin-top:8px;font-weight:500;"></div>
 
-    <button onclick="joinSquad()" style="width:100%;margin-top:14px;padding:14px;background:var(--midnight);color:white;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;">
+    <button id="joinSubmitBtn" onclick="joinSquad()" style="width:100%;margin-top:14px;padding:14px;background:var(--midnight);color:white;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;">
       Join Squad
     </button>
     <button onclick="closeJoinModal()" style="width:100%;margin-top:8px;padding:12px;background:none;color:var(--muted);border:none;font-family:var(--font-body);font-size:14px;cursor:pointer;">
@@ -1407,8 +1527,32 @@ body {
 </div>
 
 <script>
-// ── DATE & GREETING ────────────────────────────────────
-(function() {
+/* ═══════════════════════════════════════════════════════════════
+   STEP 1 — CAPTURE GOOGLE OAUTH TOKEN FROM URL
+═══════════════════════════════════════════════════════════════ */
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var oauthToken = params.get('token');
+  if (oauthToken) {
+    localStorage.setItem('yaply_token', oauthToken);
+    window.history.replaceState({}, '', '/app');
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   STEP 2 — AUTH CHECK: redirect to /login if no token
+═══════════════════════════════════════════════════════════════ */
+(function () {
+  var token = localStorage.getItem('yaply_token');
+  if (!token) {
+    window.location.href = '/login';
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   DATE & TIME GREETING (runs immediately, no API needed)
+═══════════════════════════════════════════════════════════════ */
+(function () {
   var now   = new Date();
   var hr    = now.getHours();
   var greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
@@ -1420,75 +1564,188 @@ body {
     days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
 })();
 
-// ── LOAD USER DATA ─────────────────────────────────────
-(async function() {
+/* ═══════════════════════════════════════════════════════════════
+   STEP 3–9 — PARALLEL FETCH + RENDER (skeletons already shown)
+═══════════════════════════════════════════════════════════════ */
+(async function loadDashboard() {
+  var token = localStorage.getItem('yaply_token');
+  if (!token) return; // already redirected above
+
+  var headers = { 'Authorization': 'Bearer ' + token };
+
   try {
-    var token = localStorage.getItem('yaply_token');
-    if (!token) return;
+    /* STEP 4 — parallel fetch all three endpoints */
+    var results = await Promise.all([
+      fetch('/api/me',     { headers: headers }),
+      fetch('/api/trips',  { headers: headers }),
+      fetch('/api/groups', { headers: headers }),
+    ]);
 
-    var headers = { 'Authorization': 'Bearer ' + token };
+    var meRes     = results[0];
+    var tripsRes  = results[1];
+    var groupsRes = results[2];
 
-    // Load user
-    var userRes = await fetch('/api/me', { headers: headers });
-    if (userRes.ok) {
-      var userData = await userRes.json();
-      if (userData.user) {
-        var name    = userData.user.name || 'Traveller';
-        var initial = name.charAt(0).toUpperCase();
-        document.getElementById('greetName').innerHTML =
-          'Welcome back, <em>' + name.split(' ')[0] + '.</em>';
-        document.getElementById('navAvatar').textContent = initial;
-      }
+    /* Handle 401 on any response */
+    if (meRes.status === 401 || tripsRes.status === 401 || groupsRes.status === 401) {
+      localStorage.removeItem('yaply_token');
+      localStorage.removeItem('yaply_user');
+      window.location.href = '/login';
+      return;
     }
 
-    // Load trips
-    var tripsRes = await fetch('/api/trips', { headers: headers });
-    if (tripsRes.ok) {
-      var tripsData = await tripsRes.json();
-      if (tripsData.trips && tripsData.trips.length) {
-        renderTrips(tripsData.trips);
-      } else {
-        renderNoTrips();
-      }
-    } else {
-      renderDemoTrips();
+    var dataResults = await Promise.all([
+      meRes.ok     ? meRes.json()     : Promise.resolve({}),
+      tripsRes.ok  ? tripsRes.json()  : Promise.resolve({}),
+      groupsRes.ok ? groupsRes.json() : Promise.resolve({}),
+    ]);
+
+    var meData     = dataResults[0];
+    var tripsData  = dataResults[1];
+    var groupsData = dataResults[2];
+
+    /* STEP 5 — render user */
+    if (meData.user) {
+      renderUser(meData.user);
     }
 
-  } catch(e) {
-    // Fallback to demo data
-    renderDemoTrips();
+    /* STEPS 6 & 7 — render trips */
+    var trips = (tripsData.success && Array.isArray(tripsData.trips)) ? tripsData.trips : [];
+    renderTrips(trips);
+
+    /* STEP 8 — render squad */
+    var groups = (groupsData.success && Array.isArray(groupsData.groups)) ? groupsData.groups : [];
+    renderSquad(groups);
+
+  } catch (err) {
+    console.error('[yaply] Dashboard load error:', err);
+    /* Show clean empty states — never demo data */
+    renderNoActiveTripSection();
+    renderNoTrips();
+    renderSquad([]);
   }
 })();
 
-// ── RENDER ACTIVE TRIP ─────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════
+   BUG 1 — RENDER USER (real name + avatar, store in localStorage)
+═══════════════════════════════════════════════════════════════ */
+function renderUser(user) {
+  localStorage.setItem('yaply_user', JSON.stringify(user));
+
+  var name    = (user.name || 'Traveller').trim();
+  var first   = name.split(' ')[0];
+  var initial = first.charAt(0).toUpperCase();
+
+  /* Greeting */
+  document.getElementById('greetName').innerHTML =
+    'Welcome back, <em>' + escapeHtml(first) + '.</em>';
+
+  /* Avatar: image if available, else initial letter */
+  var avatarEl = document.getElementById('navAvatar');
+  if (user.avatar) {
+    avatarEl.innerHTML =
+      '<img src="' + escapeHtml(user.avatar) + '" alt="' + escapeHtml(name) + '" ' +
+      'onerror="this.parentNode.textContent=\'' + initial + '\'">';
+  } else {
+    avatarEl.textContent = initial;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUG 6 — LOGOUT
+═══════════════════════════════════════════════════════════════ */
+async function doLogout() {
+  var token = localStorage.getItem('yaply_token');
+  try {
+    if (token) {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    }
+  } catch (e) { /* ignore — we clear anyway */ }
+  localStorage.removeItem('yaply_token');
+  localStorage.removeItem('yaply_user');
+  window.location.href = '/login';
+}
+
+/* BUG 3 — Avatar dropdown toggle (navigates to /profile or shows menu) */
+function toggleAvatarMenu() {
+  var dd = document.getElementById('avatarDropdown');
+  dd.classList.toggle('open');
+}
+
+/* Close dropdown when clicking outside */
+document.addEventListener('click', function (e) {
+  if (!e.target.closest('#navAvatarWrapper')) {
+    var dd = document.getElementById('avatarDropdown');
+    if (dd) dd.classList.remove('open');
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   BUG 4 — COMPLETE FLAG MAP
+═══════════════════════════════════════════════════════════════ */
+function getFlag(dest) {
+  if (!dest) return '🌍';
+  var map = {
+    'Japan': '🇯🇵',       'Tokyo': '🇯🇵',
+    'Thailand': '🇹🇭',    'Bangkok': '🇹🇭',
+    'France': '🇫🇷',      'Paris': '🇫🇷',
+    'Indonesia': '🇮🇩',   'Bali': '🇮🇩',
+    'UAE': '🇦🇪',          'Dubai': '🇦🇪',
+    'UK': '🇬🇧',           'London': '🇬🇧',
+    'Singapore': '🇸🇬',
+    'USA': '🇺🇸',          'New York': '🇺🇸',
+    'India': '🇮🇳',        'Delhi': '🇮🇳',    'Mumbai': '🇮🇳',    'Goa': '🇮🇳',
+    'Nepal': '🇳🇵',
+    'Sri Lanka': '🇱🇰',
+    'Malaysia': '🇲🇾',    'KL': '🇲🇾',        'Kuala Lumpur': '🇲🇾',
+    'Vietnam': '🇻🇳',
+    'Italy': '🇮🇹',        'Rome': '🇮🇹',
+    'Spain': '🇪🇸',        'Barcelona': '🇪🇸',
+    'Germany': '🇩🇪',     'Berlin': '🇩🇪',
+    'Greece': '🇬🇷',       'Santorini': '🇬🇷',
+    'Turkey': '🇹🇷',       'Istanbul': '🇹🇷',
+    'Australia': '🇦🇺',   'Sydney': '🇦🇺',
+    'Canada': '🇨🇦',       'Toronto': '🇨🇦',
+    'South Korea': '🇰🇷', 'Seoul': '🇰🇷',
+    'Maldives': '🇲🇻',
+    'Morocco': '🇲🇦',      'Marrakech': '🇲🇦',
+  };
+  var flag = '🌍';
+  Object.keys(map).forEach(function (k) {
+    if (dest.indexOf(k) !== -1) flag = map[k];
+  });
+  return flag;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RENDER ACTIVE TRIP CARD
+═══════════════════════════════════════════════════════════════ */
 function renderActiveTripCard(trip) {
   var section = document.getElementById('activeTripSection');
 
-  // Calculate day number
   var start  = new Date(trip.start_date || trip.created_at);
   var today  = new Date();
   var dayNum = Math.max(1, Math.floor((today - start) / 86400000) + 1);
-  var totalD = trip.days || 6;
+  var totalD = trip.days || 7;
   var pct    = Math.min(100, Math.round(dayNum / totalD * 100));
 
-  var flagMap = {
-    'Tokyo': '🇯🇵', 'Japan': '🇯🇵',
-    'Bangkok': '🇹🇭', 'Thailand': '🇹🇭',
-    'Paris': '🇫🇷', 'France': '🇫🇷',
-    'Bali': '🇮🇩', 'Indonesia': '🇮🇩',
-    'Dubai': '🇦🇪', 'UAE': '🇦🇪',
-    'London': '🇬🇧', 'UK': '🇬🇧',
-    'Singapore': '🇸🇬',
-    'New York': '🇺🇸', 'USA': '🇺🇸',
-  };
-
   var dest    = trip.destination || 'Destination';
-  var city    = dest.split(',')[0];
-  var country = dest.split(',')[1] ? dest.split(',')[1].trim() : '';
-  var flag    = '';
-  Object.keys(flagMap).forEach(function(k) {
-    if (dest.includes(k)) flag = flagMap[k];
-  });
+  var parts   = dest.split(',');
+  var city    = parts[0].trim();
+  var country = parts[1] ? parts[1].trim() : '';
+  var flag    = getFlag(dest);
+
+  var dateStr = '';
+  if (trip.start_date) {
+    dateStr = trip.start_date;
+    if (trip.end_date) dateStr += ' – ' + trip.end_date;
+  }
+  dateStr += (dateStr ? ' · ' : '') + totalD + ' days';
+  if (trip.currency && trip.budget) {
+    dateStr += ' · ' + trip.currency + ' ' + trip.budget;
+  }
 
   section.innerHTML =
     '<div class="section" style="padding-top:20px;">' +
@@ -1501,33 +1758,35 @@ function renderActiveTripCard(trip) {
           '<div class="atc-day-badge">Day ' + dayNum + ' of ' + totalD + '</div>' +
         '</div>' +
         '<div class="atc-dest">' +
-          '<div class="atc-country">' + (country || 'Destination') + ' ' + flag + '</div>' +
-          '<div class="atc-city">' + city + '</div>' +
-          '<div class="atc-dates">' + (trip.start_date || '') + (trip.end_date ? ' – ' + trip.end_date : '') + ' · ' + totalD + ' days · ' + (trip.currency || 'INR') + ' ' + (trip.budget || '') + '</div>' +
+          '<div class="atc-country">' + escapeHtml(country || 'Destination') + ' ' + flag + '</div>' +
+          '<div class="atc-city">' + escapeHtml(city) + '</div>' +
+          '<div class="atc-dates">' + escapeHtml(dateStr) + '</div>' +
         '</div>' +
         '<div class="atc-progress">' +
           '<div class="atc-progress-row">' +
             '<span class="atc-progress-label">Trip progress</span>' +
             '<span class="atc-progress-pct">' + pct + '%</span>' +
           '</div>' +
-          '<div class="atc-progress-track"><div class="atc-progress-fill" id="activeFill"></div></div>' +
+          '<div class="atc-progress-track">' +
+            '<div class="atc-progress-fill" id="activeFill"></div>' +
+          '</div>' +
         '</div>' +
         '<div class="atc-actions">' +
           '<a href="/plan?trip_id=' + trip.id + '" class="atc-action" onclick="event.stopPropagation()">' +
             '<div class="atc-action-icon" style="background:rgba(37,99,255,0.15);">' +
-              '<svg viewBox="0 0 24 24" style="stroke:#60A5FA;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
+              '<svg viewBox="0 0 24 24" style="stroke:#60A5FA;width:15px;height:15px;fill:none;stroke-width:1.8;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
             '</div>' +
             '<span class="atc-action-label">View Plan</span>' +
           '</a>' +
           '<a href="/translate" class="atc-action" onclick="event.stopPropagation()">' +
             '<div class="atc-action-icon" style="background:rgba(255,122,89,0.15);">' +
-              '<svg viewBox="0 0 24 24" style="stroke:#FF7A59;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' +
+              '<svg viewBox="0 0 24 24" style="stroke:#FF7A59;width:15px;height:15px;fill:none;stroke-width:1.8;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' +
             '</div>' +
             '<span class="atc-action-label">Translate</span>' +
           '</a>' +
           '<a href="/during" class="atc-action sos" onclick="event.stopPropagation()">' +
             '<div class="atc-action-icon" style="background:rgba(239,68,68,0.15);">' +
-              '<svg viewBox="0 0 24 24" style="stroke:#EF4444;"><polygon points="10.29 3.86 1.82 18 22.18 18 13.71 3.86 10.29 3.86"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+              '<svg viewBox="0 0 24 24" style="stroke:#EF4444;width:15px;height:15px;fill:none;stroke-width:1.8;"><polygon points="10.29 3.86 1.82 18 22.18 18 13.71 3.86 10.29 3.86"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
             '</div>' +
             '<span class="atc-action-label" style="color:rgba(239,68,68,0.7);">SOS</span>' +
           '</a>' +
@@ -1540,8 +1799,8 @@ function renderActiveTripCard(trip) {
     '</div>' +
     '</div>';
 
-  // Animate progress fill
-  setTimeout(function() {
+  /* Animate progress bar after render */
+  setTimeout(function () {
     var fill = document.getElementById('activeFill');
     if (fill) fill.style.width = pct + '%';
   }, 300);
@@ -1553,10 +1812,12 @@ function renderNoActiveTripSection() {
     '<div class="section" style="padding-top:20px;">' +
     '<a href="/plan" class="no-trip-card">' +
       '<div class="no-trip-icon">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.5a16 16 0 0 0 6 6l.94-1.9a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.5 15h.5a2 2 0 0 1 0 1.92z"/>' +
+        '</svg>' +
       '</div>' +
       '<div class="no-trip-title">Where to next?</div>' +
-      '<div class="no-trip-sub">Plan your next adventure with AI. Full itinerary in 15 seconds.</div>' +
+      '<div class="no-trip-sub">Plan your first trip with AI. Full itinerary in 15 seconds.</div>' +
       '<div class="no-trip-btn">' +
         '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
         'Plan a Trip' +
@@ -1565,39 +1826,49 @@ function renderNoActiveTripSection() {
     '</div>';
 }
 
-// ── RENDER TRIPS LIST ──────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════
+   BUG 7 — RENDER TRIPS (never shows demo data)
+═══════════════════════════════════════════════════════════════ */
 function renderTrips(trips) {
-  // Find active trip
-  var activeTrip = trips.find(function(t) { return t.status === 'active'; });
+  if (!trips || trips.length === 0) {
+    renderNoActiveTripSection();
+    renderNoTrips();
+    return;
+  }
+
+  /* Active trip card */
+  var activeTrip = trips.find(function (t) { return t.status === 'active'; });
   if (activeTrip) {
     renderActiveTripCard(activeTrip);
   } else {
     renderNoActiveTripSection();
   }
 
-  // Render trips list
+  /* Trips list */
   var list    = document.getElementById('tripsList');
   var limited = trips.slice(0, 3);
   var html    = '';
 
-  limited.forEach(function(trip) {
-    var statusClass = trip.status === 'active' ? 'status-active' :
-                      trip.status === 'completed' ? 'status-done' : 'status-planning';
-    var statusLabel = trip.status === 'active' ? 'Active' :
-                      trip.status === 'completed' ? 'Done' : 'Planning';
+  limited.forEach(function (trip) {
+    var sc    = trip.status === 'active'    ? 'status-active'   :
+                trip.status === 'completed' ? 'status-done'     : 'status-planning';
+    var label = trip.status === 'active'    ? 'Active'          :
+                trip.status === 'completed' ? 'Done'            : 'Planning';
     var dest  = trip.destination || 'Trip';
-    var city  = dest.split(',')[0];
+    var city  = dest.split(',')[0].trim();
     var flag  = getFlag(dest);
 
     html +=
       '<div class="trip-item" onclick="window.location.href=\'/plan?trip_id=' + trip.id + '\'">' +
         '<div class="trip-flag">' + flag + '</div>' +
         '<div class="trip-info">' +
-          '<div class="trip-name">' + city + '</div>' +
-          '<div class="trip-meta">' + (trip.days || '?') + ' days · ' + (trip.currency || 'INR') + ' ' + (trip.budget || '') + '</div>' +
+          '<div class="trip-name">' + escapeHtml(city) + '</div>' +
+          '<div class="trip-meta">' + (trip.days || '?') + ' days' +
+            (trip.currency && trip.budget ? ' · ' + trip.currency + ' ' + trip.budget : '') +
+          '</div>' +
         '</div>' +
-        '<div class="trip-status ' + statusClass + '">' +
-          '<div class="status-dot"></div>' + statusLabel +
+        '<div class="trip-status ' + sc + '">' +
+          '<div class="status-dot"></div>' + label +
         '</div>' +
         '<svg class="trip-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
       '</div>';
@@ -1612,50 +1883,139 @@ function renderTrips(trips) {
   list.innerHTML = html;
 }
 
-function renderDemoTrips() {
-  var demoTrips = [
-    { id: 1, destination: 'Tokyo, Japan', days: 6, currency: 'INR', budget: '80,000', status: 'active', start_date: 'Jun 15', end_date: 'Jun 22' },
-    { id: 2, destination: 'Bangkok, Thailand', days: 7, currency: 'INR', budget: '65,000', status: 'completed' },
-  ];
-  renderTrips(demoTrips);
-}
-
 function renderNoTrips() {
-  renderNoActiveTripSection();
   var list = document.getElementById('tripsList');
   list.innerHTML =
-    '<a href="/plan" class="new-trip-btn" style="padding:18px;">' +
+    '<a href="/plan" class="new-trip-btn" style="padding:20px;">' +
       '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
       'Plan your first trip' +
     '</a>';
 }
 
-// ── FLAG HELPER ────────────────────────────────────────
-function getFlag(dest) {
-  var map = {
-    'Japan':'🇯🇵','Tokyo':'🇯🇵',
-    'Thailand':'🇹🇭','Bangkok':'🇹🇭',
-    'France':'🇫🇷','Paris':'🇫🇷',
-    'Indonesia':'🇮🇩','Bali':'🇮🇩',
-    'UAE':'🇦🇪','Dubai':'🇦🇪',
-    'UK':'🇬🇧','London':'🇬🇧',
-    'Singapore':'🇸🇬',
-    'USA':'🇺🇸','New York':'🇺🇸',
-    'India':'🇮🇳','Delhi':'🇮🇳','Mumbai':'🇮🇳',
-    'Nepal':'🇳🇵','Kathmandu':'🇳🇵',
-  };
-  var flag = '🌍';
-  Object.keys(map).forEach(function(k) {
-    if (dest && dest.includes(k)) flag = map[k];
-  });
-  return flag;
+/* ═══════════════════════════════════════════════════════════════
+   BUG 2 — RENDER SQUAD (replaces all hardcoded HTML)
+═══════════════════════════════════════════════════════════════ */
+var MEMBER_COLORS = ['#2563FF','#FF7A59','#18C29C','#F5B942','#8B5CF6','#0EA5E9','#EF4444'];
+
+function renderSquad(groups) {
+  var section = document.getElementById('squadSection');
+  var html    = '';
+
+  if (!groups || groups.length === 0) {
+    /* Empty state */
+    html =
+      '<div class="squad-empty">' +
+        '<div class="squad-empty-icon">👥</div>' +
+        '<div class="squad-empty-title">No squad yet</div>' +
+        '<div class="squad-empty-sub">Create a group or join with a YAP code to travel together.</div>' +
+      '</div>';
+  } else {
+    var group       = groups[0];
+    var members     = group.members || [];
+    var onlineCnt   = members.filter(function (m) { return m.is_online; }).length;
+    var totalCnt    = members.length;
+    var displayMems = members.slice(0, 5);
+
+    html +=
+      '<div class="squad-card">' +
+        '<div class="squad-header">' +
+          '<div class="squad-icon">' +
+            '<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' +
+          '</div>' +
+          '<div>' +
+            '<div class="squad-name">' + escapeHtml(group.name || 'My Squad') + '</div>' +
+            '<div class="squad-meta">' +
+              (onlineCnt > 0 ? '<div class="squad-online-dot"></div>' + onlineCnt + ' online · ' : '') +
+              totalCnt + ' member' + (totalCnt !== 1 ? 's' : '') +
+            '</div>' +
+          '</div>' +
+          '<a href="/groups/' + group.id + '" class="squad-open-btn">Open</a>' +
+        '</div>' +
+        '<div class="squad-members">';
+
+    displayMems.forEach(function (member, i) {
+      var color    = MEMBER_COLORS[i % MEMBER_COLORS.length];
+      var initial  = (member.name || '?').charAt(0).toUpperCase();
+      var isOnline = member.is_online;
+      var locText  = member.last_location || (isOnline ? 'Sharing location' : 'Last seen recently');
+      var distText = member.distance_km != null
+        ? member.distance_km.toFixed(1) + ' km'
+        : (isOnline ? 'Nearby' : 'offline');
+      var distColor = isOnline ? 'var(--green)' : 'var(--muted2)';
+
+      html +=
+        '<div class="squad-member">' +
+          '<div class="squad-member-av" style="background:' + color + ';border-color:' + color + ';">' +
+            escapeHtml(initial) +
+            '<div class="sm-status ' + (isOnline ? 'sm-online' : 'sm-offline') + '"></div>' +
+          '</div>' +
+          '<div class="squad-member-info">' +
+            '<div class="squad-member-name">' + escapeHtml(member.name || 'Member') + '</div>' +
+            '<div class="squad-member-loc">' + escapeHtml(locText) + '</div>' +
+          '</div>' +
+          '<div class="squad-member-dist" style="color:' + distColor + ';">' + escapeHtml(distText) + '</div>' +
+        '</div>';
+    });
+
+    html += '</div>'; /* end squad-members */
+
+    /* Last activity row (if group code available show it) */
+    if (group.code) {
+      html +=
+        '<div class="squad-activity">' +
+          '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+          '<span>Group code: <strong>' + escapeHtml(group.code) + '</strong></span>' +
+        '</div>';
+    }
+
+    html += '</div>'; /* end squad-card */
+  }
+
+  /* CTA buttons — always shown */
+  html +=
+    '<div class="squad-cta">' +
+      '<a href="/groups/create" class="squad-cta-btn scb-create">' +
+        '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+        'Create Group' +
+      '</a>' +
+      '<button class="squad-cta-btn scb-join" id="joinSquadBtn">' +
+        '<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>' +
+        'Join Squad' +
+      '</button>' +
+    '</div>';
+
+  section.innerHTML = html;
+
+  /* Bind join button (re-bind after innerHTML replace) */
+  var joinBtn = document.getElementById('joinSquadBtn');
+  if (joinBtn) joinBtn.addEventListener('click', openJoinModal);
 }
 
-// ── JOIN MODAL ─────────────────────────────────────────
+/* Reload just the groups section (used after successful join) */
+async function loadGroups() {
+  var token = localStorage.getItem('yaply_token');
+  if (!token) return;
+  try {
+    var res = await fetch('/api/groups', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      var data = await res.json();
+      renderSquad(data.groups || []);
+    }
+  } catch (e) {
+    console.error('[yaply] loadGroups error:', e);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUG 8 — JOIN MODAL (connected, error text, reloads squad)
+═══════════════════════════════════════════════════════════════ */
 function openJoinModal() {
   var modal = document.getElementById('joinModal');
   modal.style.display = 'flex';
-  setTimeout(function() {
+  clearJoinError();
+  setTimeout(function () {
     document.getElementById('joinCodeInput').focus();
   }, 100);
 }
@@ -1663,50 +2023,93 @@ function openJoinModal() {
 function closeJoinModal() {
   document.getElementById('joinModal').style.display = 'none';
   document.getElementById('joinCodeInput').value = '';
+  clearJoinError();
+}
+
+function clearJoinError() {
+  var err = document.getElementById('joinError');
+  err.style.display = 'none';
+  err.textContent = '';
+  document.getElementById('joinCodeInput').style.borderColor = 'var(--border2)';
+}
+
+function showJoinError(msg) {
+  var err = document.getElementById('joinError');
+  err.textContent = msg;
+  err.style.display = 'block';
+  document.getElementById('joinCodeInput').style.borderColor = 'var(--red)';
 }
 
 function formatJoinCode(input) {
-  var val = input.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
-  if (val.length > 3) {
-    val = 'YAP-' + val.replace('YAP','').substring(0,4);
-  }
-  input.value = val;
+  /* Strip non-alphanumeric, uppercase */
+  var raw  = input.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  /* Remove any leading YAP the user may have typed */
+  var code = raw.replace(/^YAP/i, '').substring(0, 4);
+  input.value = code.length > 0 ? 'YAP-' + code : '';
 }
 
 async function joinSquad() {
-  var code = document.getElementById('joinCodeInput').value.trim();
-  if (code.length < 7) {
-    document.getElementById('joinCodeInput').style.borderColor = 'var(--red)';
+  var code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+
+  if (!/^YAP-[A-Z0-9]{4}$/.test(code)) {
+    showJoinError('Enter a valid code in the format YAP-XXXX');
     return;
   }
+
+  var btn = document.getElementById('joinSubmitBtn');
+  btn.disabled    = true;
+  btn.textContent = 'Joining…';
+
   try {
     var token = localStorage.getItem('yaply_token');
-    var res = await fetch('/api/groups/join', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+    var res   = await fetch('/api/groups/join', {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': 'Bearer ' + token
+      },
       body: JSON.stringify({ code: code })
     });
     var data = await res.json();
+
     if (data.success) {
       closeJoinModal();
-      window.location.href = '/groups/' + data.group_id;
+      await loadGroups(); /* reload squad section in-place */
     } else {
-      document.getElementById('joinCodeInput').style.borderColor = 'var(--red)';
+      showJoinError(data.message || 'Code not found. Check and try again.');
     }
-  } catch(e) {
-    document.getElementById('joinCodeInput').style.borderColor = 'var(--red)';
+  } catch (e) {
+    showJoinError('Something went wrong. Please try again.');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Join Squad';
   }
 }
 
-// Close modal on backdrop click
-document.getElementById('joinModal').addEventListener('click', function(e) {
+/* Close modal on backdrop click */
+document.getElementById('joinModal').addEventListener('click', function (e) {
   if (e.target === this) closeJoinModal();
 });
 
-// ── INPUT FOCUS RESET ──────────────────────────────────
-document.getElementById('joinCodeInput').addEventListener('focus', function() {
+/* Reset border on input focus */
+document.getElementById('joinCodeInput').addEventListener('focus', function () {
   this.style.borderColor = 'var(--blue)';
+  var err = document.getElementById('joinError');
+  err.style.display = 'none';
 });
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITY — XSS-safe HTML escape
+═══════════════════════════════════════════════════════════════ */
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g,  '&amp;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+    .replace(/"/g,  '&quot;')
+    .replace(/'/g,  '&#39;');
+}
 </script>
 </body>
 </html>
