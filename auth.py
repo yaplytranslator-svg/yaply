@@ -293,7 +293,7 @@ def find_or_create_google_user(profile):
     # 1. Find by Google ID
     user = get_user_by_google(google_id)
     if user:
-        update_user(user['id'], avatar=avatar, last_login=datetime.now().isoformat(), locale=locale)
+        update_user(user['id'], avatar=avatar, last_login=datetime.now().isoformat())
         print(f"[Google User] Found by google_id, user_id={user['id']}")
         return get_user_by_id(user['id']), False
 
@@ -306,7 +306,7 @@ def find_or_create_google_user(profile):
         return get_user_by_id(user['id']), False
 
     # 3. Create new
-    user_id = create_user(email=email, name=name, google_id=google_id, avatar=avatar, locale=locale)
+    user_id = create_user(email=email, name=name, google_id=google_id, avatar=avatar)
     if not user_id:
         print(f"[Google User] Failed to create user")
         return None, False
