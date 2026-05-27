@@ -2076,6 +2076,14 @@ def server_error(e):
     return jsonify({'success': False, 'error': 'Server error. Our team has been notified.'}), 500
 
 
+@app.route('/auth/google/test')
+def google_test():
+    return jsonify({
+        'client_id':     GOOGLE_CLIENT_ID[:20] + '...' if GOOGLE_CLIENT_ID else 'MISSING',
+        'client_secret': 'SET' if GOOGLE_CLIENT_SECRET else 'MISSING',
+        'redirect_uri':  GOOGLE_REDIRECT_URI or 'MISSING',
+    })
+
 # ════════════════════════════════════════════════════════════════
 #  STARTUP — Handle Google OAuth token on app page
 # ════════════════════════════════════════════════════════════════
