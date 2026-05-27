@@ -1707,6 +1707,17 @@ document.getElementById('joinModal').addEventListener('click', function(e) {
 document.getElementById('joinCodeInput').addEventListener('focus', function() {
   this.style.borderColor = 'var(--blue)';
 });
+
+// Handles Google OAuth token on redirect
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var token  = params.get('token');
+  if (token) {
+    localStorage.setItem('yaply_token', token);
+    window.history.replaceState({}, '', '/app');
+  }
+})();
+
 </script>
 </body>
 </html>
