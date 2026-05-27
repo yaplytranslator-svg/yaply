@@ -1,4 +1,3 @@
-
 """
 auth.py — Yaply Authentication v4 PRODUCTION FIXED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
