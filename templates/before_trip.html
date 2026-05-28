@@ -4220,17 +4220,17 @@
               </svg></div>
           </a>
 
-          <a href="#" onclick="openTool('safety-check');return false;" class="tool-card tool-red"></a>
-          <div class="tc-icon"><svg viewBox="0 0 24 24">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg></div>
-          <div>
-            <div class="tc-label">Safety Index</div>
-            <div class="tc-desc">Safety score for any city</div>
-          </div>
-          <div class="tc-arrow"><svg viewBox="0 0 24 24">
-              <polyline points="9 18 15 12 9 6" />
-            </svg></div>
+          <a href="#" onclick="openTool('safety-check');return false;" class="tool-card tool-red">
+            <div class="tc-icon"><svg viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg></div>
+            <div>
+              <div class="tc-label">Safety Index</div>
+              <div class="tc-desc">Safety score for any city</div>
+            </div>
+            <div class="tc-arrow"><svg viewBox="0 0 24 24">
+                <polyline points="9 18 15 12 9 6" />
+              </svg></div>
           </a>
 
           <a href="#" onclick="openTool('festivals');return false;" class="tool-card tool-coral">
@@ -6141,22 +6141,39 @@
 
     async function identifyPlace() {
       var preview = document.getElementById('photoPreview');
-      if (!preview.src || preview.style.display === 'none') { showToast('Upload a photo first'); return; }
+      if (!preview.src || preview.style.display === 'none') {
+        showToast('Upload a photo first');
+        return;
+      }
+
       var drop = document.getElementById('photoDrop');
       drop.classList.add('scanning');
       document.getElementById('placeResult').style.display = 'none';
+
       try {
         var token = localStorage.getItem('yaply_token') || '';
-        var base64 = preview.src.split(',')[1] || '';
+        var base64 = preview.src;
+        if (base64.includes(',')) base64 = base64.split(',')[1];
+
         var res = await fetch('/api/identify', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ image: preview.src })
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ image: base64 })
         });
         var data = await res.json();
-        if (data.success) { renderPlaceResult(data); }
-        else { showToast(data.error || 'Could not identify place'); }
-      } catch (e) { showToast('Connection error'); }
+
+        if (data.success) {
+          renderPlaceResult(data);
+        } else {
+          showToast(data.error || 'Could not identify place');
+        }
+      } catch (e) {
+        showToast('Connection error');
+      }
+
       drop.classList.remove('scanning');
     }
 
@@ -6178,29 +6195,43 @@
     }
 
     function renderPlaceResult(data) {
-      var p = data.place || data;
+      var p = data.result || data.place || data;
       var wrap = document.getElementById('placeResult');
+
+      var name = p.place_name || p.name || 'Identified Place';
+      var loc = (p.city ? p.city + ', ' : '') + (p.country || '');
+      var conf = p.confidence || 95;
+      var best = p.best_time || 'Year-round';
+      var fee = p.avg_daily_cost || p.budget_level || 'See details';
+      var cat = p.place_type || p.category || '';
+      var desc = p.description || '';
+
       wrap.innerHTML =
         '<div class="place-result">' +
         '<div class="pr-photo">' +
-        '<span style="position:relative;z-index:1;font-size:40px;">' + (p.emoji || '📍') + '</span>' +
+        '<span style="position:relative;z-index:1;font-size:40px;">📍</span>' +
         '<div class="pr-photo-overlay"></div>' +
-        '<div class="pr-conf">' + (p.confidence || '95') + '% match</div>' +
+        '<div class="pr-conf">' + conf + '% match</div>' +
         '</div>' +
         '<div class="pr-body">' +
-        '<div class="pr-name">' + (p.name || p.place_name || 'Identified Place') + '</div>' +
-        '<div class="pr-loc"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + (p.location || p.country || '') + '</div>' +
-        '<div class="pr-tags">' +
-        '<span class="pr-tag">' + (p.best_time || 'Year-round') + '</span>' +
-        '<span class="pr-tag">' + (p.entry_fee || 'Free') + '</span>' +
-        (p.category ? '<span class="pr-tag">' + p.category + '</span>' : '') +
+        '<div class="pr-name">' + name + '</div>' +
+        '<div class="pr-loc">' +
+        '<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+        loc +
         '</div>' +
-        '<button class="pr-add-btn" onclick="addPlaceToTrip(\'' + (p.name || '').replace(/'/g, "\\'") + '\')">' +
+        (desc ? '<div style="font-size:12px;color:var(--muted);margin:8px 0;line-height:1.5;">' + desc + '</div>' : '') +
+        '<div class="pr-tags">' +
+        '<span class="pr-tag">' + best + '</span>' +
+        '<span class="pr-tag">' + fee + '</span>' +
+        (cat ? '<span class="pr-tag">' + cat + '</span>' : '') +
+        '</div>' +
+        '<button class="pr-add-btn" onclick="addPlaceToTrip(\'' + name.replace(/'/g, "\\'") + '\')">' +
         '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
         'Add to my trip plan' +
         '</button>' +
         '</div>' +
         '</div>';
+
       wrap.style.display = 'block';
     }
 
