@@ -6194,45 +6194,180 @@
       } catch (e) { showToast('Connection error'); }
     }
 
+    // ══════════════════════════════════════════════════════
+    // REPLACE your renderPlaceResult() function with this
+    // ══════════════════════════════════════════════════════
+
     function renderPlaceResult(data) {
       var p = data.result || data.place || data;
       var wrap = document.getElementById('placeResult');
 
+      // ── Extract all fields ──
       var name = p.place_name || p.name || 'Identified Place';
-      var loc = (p.city ? p.city + ', ' : '') + (p.country || '');
+      var city = p.city || '';
+      var country = p.country || '';
+      var loc = [city, country].filter(Boolean).join(', ');
       var conf = p.confidence || 95;
-      var best = p.best_time || 'Year-round';
-      var fee = p.avg_daily_cost || p.budget_level || 'See details';
-      var cat = p.place_type || p.category || '';
+      var type = p.place_type || p.category || '';
       var desc = p.description || '';
+      var whyFamous = p.why_famous || '';
+      var bestTime = p.best_time || 'Year-round';
+      var climate = p.climate || '';
+      var budget = p.budget_level || '';
+      var cost = p.avg_daily_cost || '';
+      var lang = p.language || '';
+      var currency = p.currency || '';
+      var airport = p.nearest_airport || '';
+      var tags = p.tags || [];
+      var tips = p.travel_tips || [];
+      var food = p.best_food || [];
+      var nearby = p.nearby || [];
+      var similar = p.similar_places || [];
 
-      wrap.innerHTML =
-        '<div class="place-result">' +
-        '<div class="pr-photo">' +
-        '<span style="position:relative;z-index:1;font-size:40px;">📍</span>' +
-        '<div class="pr-photo-overlay"></div>' +
-        '<div class="pr-conf">' + conf + '% match</div>' +
-        '</div>' +
-        '<div class="pr-body">' +
-        '<div class="pr-name">' + name + '</div>' +
-        '<div class="pr-loc">' +
-        '<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
-        loc +
-        '</div>' +
-        (desc ? '<div style="font-size:12px;color:var(--muted);margin:8px 0;line-height:1.5;">' + desc + '</div>' : '') +
-        '<div class="pr-tags">' +
-        '<span class="pr-tag">' + best + '</span>' +
-        '<span class="pr-tag">' + fee + '</span>' +
-        (cat ? '<span class="pr-tag">' + cat + '</span>' : '') +
-        '</div>' +
-        '<button class="pr-add-btn" onclick="addPlaceToTrip(\'' + name.replace(/'/g, "\\'") + '\')">' +
-        '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-        'Add to my trip plan' +
-        '</button>' +
-        '</div>' +
-        '</div>';
+      // ── Confidence color ──
+      var confCol = conf >= 90 ? 'var(--green)' : conf >= 70 ? 'var(--amber)' : 'var(--coral)';
+      var confBg = conf >= 90 ? 'rgba(24,194,156,0.12)' : conf >= 70 ? 'rgba(245,185,66,0.12)' : 'rgba(255,122,89,0.12)';
 
+      var html = '<div style="margin-top:14px;">';
+
+      // ── Hero card ──
+      html += '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:22px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;">';
+      // Grid overlay
+      html += '<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(37,99,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,255,0.05) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;"></div>';
+      // Confidence badge
+      html += '<div style="position:absolute;top:16px;right:16px;background:' + confBg + ';border:1px solid ' + confCol + '44;border-radius:100px;padding:4px 12px;font-family:var(--font-mono);font-size:12px;font-weight:700;color:' + confCol + ';">' + conf + '% match</div>';
+      // Place info
+      html += '<div style="position:relative;z-index:1;">';
+      if (type) html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:6px;">' + type + '</div>';
+      html += '<div style="font-family:var(--font-head);font-size:24px;color:white;letter-spacing:-0.3px;margin-bottom:4px;">' + name + '</div>';
+      if (loc) html += '<div style="display:flex;align-items:center;gap:5px;font-size:13px;color:rgba(255,255,255,0.4);">';
+      if (loc) html += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + loc + '</div>';
+      // Tags
+      if (tags.length) {
+        html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">';
+        tags.slice(0, 5).forEach(function (tag) {
+          html += '<span style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:3px 10px;font-size:10px;color:rgba(255,255,255,0.5);">' + tag + '</span>';
+        });
+        html += '</div>';
+      }
+      html += '</div></div>';
+
+      // ── Quick stats grid ──
+      var stats = [];
+      if (bestTime) stats.push({ icon: '📅', label: 'Best Time', value: bestTime });
+      if (cost) stats.push({ icon: '💰', label: 'Daily Cost', value: cost });
+      if (climate) stats.push({ icon: '🌤️', label: 'Climate', value: climate });
+      if (budget) stats.push({ icon: '🎯', label: 'Budget', value: budget });
+      if (lang) stats.push({ icon: '🗣️', label: 'Language', value: lang });
+      if (currency) stats.push({ icon: '💱', label: 'Currency', value: currency });
+      if (airport) stats.push({ icon: '✈️', label: 'Airport', value: airport });
+
+      if (stats.length) {
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">';
+        stats.slice(0, 6).forEach(function (s) {
+          html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:12px;box-shadow:var(--shadow);">';
+          html += '<div style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">' + s.icon + ' ' + s.label + '</div>';
+          html += '<div style="font-size:13px;font-weight:600;color:var(--text);line-height:1.3;">' + s.value + '</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+
+      // ── About / Why Famous ──
+      if (desc || whyFamous) {
+        html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);">';
+        html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">About this place</div>';
+        if (desc) html += '<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:' + (whyFamous ? '10px' : '0') + ';">' + desc + '</div>';
+        if (whyFamous) {
+          html += '<div style="display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border);">';
+          html += '<span style="font-size:16px;flex-shrink:0;">🌟</span>';
+          html += '<div style="font-size:13px;color:var(--text2);line-height:1.6;"><b style="color:var(--text);">Why it\'s famous:</b> ' + whyFamous + '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+
+      // ── Nearby places ──
+      if (nearby.length) {
+        html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);">';
+        html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">📍 Nearby Places</div>';
+        nearby.slice(0, 4).forEach(function (n) {
+          var nName = n.name || '';
+          var nDist = n.distance || '';
+          var nType = n.type || '';
+          var nIcon = n.icon || '📌';
+          var nDesc = n.description || '';
+          html += '<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">';
+          html += '<div style="width:36px;height:36px;border-radius:10px;background:var(--blue-g);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">' + nIcon + '</div>';
+          html += '<div style="flex:1;">';
+          html += '<div style="font-size:13px;font-weight:600;color:var(--text);">' + nName + '</div>';
+          html += '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + [nType, nDist].filter(Boolean).join(' · ') + '</div>';
+          if (nDesc) html += '<div style="font-size:11px;color:var(--muted2);margin-top:3px;">' + nDesc + '</div>';
+          html += '</div></div>';
+        });
+        html += '</div>';
+      }
+
+      // ── Travel tips ──
+      if (tips.length) {
+        html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);">';
+        html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:10px;">💡 Travel Tips</div>';
+        tips.slice(0, 5).forEach(function (tip) {
+          html += '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">';
+          html += '<span style="color:var(--green);font-size:14px;flex-shrink:0;">✓</span>';
+          html += '<div style="font-size:13px;color:var(--text2);line-height:1.5;">' + tip + '</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+
+      // ── Best food ──
+      if (food.length) {
+        html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);">';
+        html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--coral);margin-bottom:10px;">🍜 Must Try Food</div>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+        food.forEach(function (dish) {
+          html += '<span style="background:var(--coral-g);border:1px solid rgba(255,122,89,0.15);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:500;color:var(--coral);">' + dish + '</span>';
+        });
+        html += '</div></div>';
+      }
+
+      // ── Similar places ──
+      if (similar.length) {
+        html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);">';
+        html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;">🌍 Similar Places</div>';
+        similar.slice(0, 3).forEach(function (s) {
+          var sName = s.name || '';
+          var sCountry = s.country || '';
+          var sWhy = s.why_similar || '';
+          var sEmoji = s.emoji || '🌍';
+          html += '<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">';
+          html += '<div style="font-size:24px;flex-shrink:0;">' + sEmoji + '</div>';
+          html += '<div style="flex:1;">';
+          html += '<div style="font-size:13px;font-weight:600;color:var(--text);">' + sName + '</div>';
+          html += '<div style="font-size:11px;color:var(--muted);margin-top:1px;">' + sCountry + '</div>';
+          if (sWhy) html += '<div style="font-size:11px;color:var(--muted2);margin-top:3px;">' + sWhy + '</div>';
+          html += '</div></div>';
+        });
+        html += '</div>';
+      }
+
+      // ── Add to trip button ──
+      html += '<button onclick="addPlaceToTrip(\'' + name.replace(/'/g, "\\'") + '\')" ';
+      html += 'style="width:100%;padding:15px;background:var(--blue);color:white;border:none;border-radius:14px;';
+      html += 'font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer;';
+      html += 'display:flex;align-items:center;justify-content:center;gap:8px;';
+      html += 'box-shadow:0 8px 24px rgba(37,99,255,0.3);transition:all .2s;margin-bottom:20px;">';
+      html += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      html += 'Add to my trip plan</button>';
+
+      html += '</div>';
+
+      wrap.innerHTML = html;
       wrap.style.display = 'block';
+      setTimeout(function () {
+        wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
 
     function addPlaceToTrip(name) {
