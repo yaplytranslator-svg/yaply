@@ -6200,6 +6200,7 @@
 
     function renderPlaceResult(data) {
       var p = data.result || data.place || data;
+      window._lastIdentifiedPlace = p; // For debugging
       var wrap = document.getElementById('placeResult');
 
       // ── Extract all fields ──
@@ -6352,6 +6353,15 @@
         html += '</div>';
       }
 
+      // Saved Places //
+      '<button id="savePlaceBtn" onclick="saveCurrentPlace()" ' +
+        'style="width:100%;padding:13px;background:var(--white);color:var(--blue);' +
+        'border:1.5px solid var(--blue);border-radius:14px;font-family:var(--font-body);' +
+        'font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;' +
+        'justify-content:center;gap:8px;margin-bottom:10px;transition:all .2s;">' +
+        '🔖 Save this Place' +
+        '</button>';
+
       // ── Add to trip button ──
       html += '<button onclick="addPlaceToTrip(\'' + name.replace(/'/g, "\\'") + '\')" ';
       html += 'style="width:100%;padding:15px;background:var(--blue);color:white;border:none;border-radius:14px;';
@@ -6373,6 +6383,161 @@
     function addPlaceToTrip(name) {
       showToast(name + ' added to your trip!');
     }
+
+    // ══════════════════════════════════════════════
+    // SAVED PLACES — load real data on page load
+    // ══════════════════════════════════════════════
+
+    async function loadSavedPlaces() {
+      var token = localStorage.getItem('yaply_token') || '';
+      try {
+        var res = await fetch('/api/places', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        var data = await res.json();
+        var grid = document.getElementById('savedPlacesGrid');
+        if (!grid) return;
+
+        if (!data.success || !data.places || !data.places.length) {
+          grid.innerHTML =
+            '<div style="grid-column:1/-1;text-align:center;padding:24px 0;">' +
+            '<div style="font-size:32px;margin-bottom:8px;">📍</div>' +
+            '<div style="font-size:13px;color:var(--muted);">No saved places yet</div>' +
+            '<div style="font-size:12px;color:var(--muted2);margin-top:4px;">Identify a place and save it</div>' +
+            '</div>';
+          return;
+        }
+
+        grid.innerHTML = data.places.map(function (p) {
+          return '<div class="saved-place-card" onclick="openSavedPlace(\'' + (p.name || '').replace(/'/g, "\\'") + '\',\'' + (p.city || '').replace(/'/g, "\\'") + '\')" style="cursor:pointer;">' +
+            '<div class="spc-photo" style="font-size:28px;">' + (p.emoji || '📍') + '</div>' +
+            '<div class="spc-body">' +
+            '<div class="spc-name">' + (p.name || '') + '</div>' +
+            '<div class="spc-loc">' + [p.city, p.country].filter(Boolean).join(', ') + '</div>' +
+            '</div>' +
+            '<button onclick="event.stopPropagation();deletePlace(' + p.id + ',this)" ' +
+            'style="background:none;border:none;color:var(--muted2);cursor:pointer;padding:4px;flex-shrink:0;" ' +
+            'title="Remove">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+            '</button>' +
+            '</div>';
+        }).join('');
+
+      } catch (e) {
+        console.error('[loadSavedPlaces]', e);
+      }
+    }
+
+    function openSavedPlace(name, city) {
+      // Switch to Plan tab and pre-fill destination
+      var planTab = document.getElementById('tab-plan') ||
+        document.querySelector('[onclick*="plan"]');
+      if (planTab) planTab.click();
+      setTimeout(function () {
+        var destEl = document.getElementById('destination');
+        if (destEl) {
+          destEl.value = city ? name + ', ' + city : name;
+          destEl.focus();
+        }
+      }, 300);
+    }
+
+    async function deletePlace(placeId, btn) {
+      var token = localStorage.getItem('yaply_token') || '';
+      try {
+        btn.innerHTML = '...';
+        await fetch('/api/places/' + placeId, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        loadSavedPlaces();
+      } catch (e) {
+        console.error('[deletePlace]', e);
+      }
+    }
+
+    // ══════════════════════════════════════════════
+    // SAVE PLACE — called from result card
+    // ══════════════════════════════════════════════
+
+    async function saveCurrentPlace() {
+      var token = localStorage.getItem('yaply_token') || '';
+
+      // Get last identified place data
+      var p = window._lastIdentifiedPlace;
+      if (!p) { showToast('No place to save'); return; }
+
+      var saveBtn = document.getElementById('savePlaceBtn');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
+
+      try {
+        var res = await fetch('/api/places', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            name: p.place_name || p.name || '',
+            city: p.city || '',
+            country: p.country || '',
+            continent: p.continent || '',
+            description: p.description || '',
+            emoji: p.emoji || '📍',
+            tags: p.tags || [],
+          })
+        });
+        var data = await res.json();
+
+        if (data.success) {
+          showToast('Place saved! ✅');
+          if (saveBtn) {
+            saveBtn.textContent = '✅ Saved';
+            saveBtn.style.background = 'var(--green)';
+          }
+          loadSavedPlaces();
+        } else {
+          showToast(data.error || 'Could not save');
+          if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '🔖 Save this Place'; }
+        }
+      } catch (e) {
+        showToast('Connection error');
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '🔖 Save this Place'; }
+      }
+    }
+
+    // ══════════════════════════════════════════════
+    // ADD TO TRIP — switches to Plan tab + pre-fills
+    // ══════════════════════════════════════════════
+
+    function addPlaceToTrip(name) {
+      // Switch to plan tab
+      var planTab = document.getElementById('tab-plan') ||
+        document.querySelector('.tab-btn[onclick*="plan"]') ||
+        document.querySelector('[data-tab="plan"]');
+      if (planTab) planTab.click();
+
+      setTimeout(function () {
+        var destEl = document.getElementById('destination');
+        if (destEl) {
+          destEl.value = name;
+          destEl.focus();
+          // Highlight it briefly
+          destEl.style.borderColor = 'var(--blue)';
+          destEl.style.background = 'var(--blue-g)';
+          setTimeout(function () {
+            destEl.style.borderColor = '';
+            destEl.style.background = '';
+          }, 2000);
+        }
+        showToast('Destination set to ' + name + ' ✅');
+      }, 300);
+    }
+
+    // Load saved places on page load
+    document.addEventListener('DOMContentLoaded', function () {
+      loadSavedPlaces();
+    });
 
     // ── SAVE / DOWNLOAD ────────────────────────────
     async function saveTrip() {
