@@ -3843,41 +3843,35 @@
 
     // ── GENERATE PLAN ──────────────────────────────
 
-    var selectedTransportMode = 'smart'; // default
+
+    var selectedTransportMode = 'smart';
+
+    function setLoading(on) {
+      document.getElementById('loading').classList.toggle('show', on);
+      var btn = document.getElementById('genBtn');
+      var spin = document.getElementById('genSpin');
+      var icon = document.getElementById('genIcon');
+      if (btn) btn.disabled = on;
+      if (spin) spin.style.display = on ? 'block' : 'none';
+      if (icon) icon.style.display = on ? 'none' : 'block';
+    }
 
     async function generatePlan() {
       var dest = document.getElementById('destination').value.trim();
       var origin = document.getElementById('origin').value.trim();
-
       if (!dest) { showToast('Enter a destination'); return; }
       if (!origin) { showToast('Enter where you are travelling from'); return; }
 
-      var payload = {
-        destination: dest,
-        origin: origin,
-        days: parseInt(document.getElementById('days').value) || 5,
-        people: parseInt(document.getElementById('people').value) || 2,
-        budget: document.getElementById('budget').value || '80000',
-        currency: document.getElementById('currency').value || 'INR',
-        passport: document.getElementById('passport').value || 'India',
-        vibe: Array.from(selectedVibes || []).join(' + ') || 'adventure',
-        travel_mode: selectedTransportMode,
-      };
+      var days = parseInt(document.getElementById('days').value) || 5;
+      var people = parseInt(document.getElementById('people').value) || 2;
+      var budget = document.getElementById('budget').value || '80000';
+      var currency = document.getElementById('currency').value || 'INR';
+      var passport = document.getElementById('passport').value || 'India';
+      var vibe = Array.from(selectedVibes || []).join(' + ') || 'adventure';
 
-      // ── Show loading ──
-      var loadingEl = document.getElementById('loading');
-      var resultsEl = document.getElementById('results');
-      var genBtn = document.getElementById('genBtn');
-      var genSpin = document.getElementById('genSpin');
-      var genIcon = document.getElementById('genIcon');
+      setLoading(true);
+      document.getElementById('results').classList.remove('show');
 
-      if (loadingEl) loadingEl.style.display = 'block';
-      if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.classList.remove('show'); }
-      if (genBtn) genBtn.disabled = true;
-      if (genSpin) genSpin.style.display = 'block';
-      if (genIcon) genIcon.style.display = 'none';
-
-      // ── Animate loading steps ──
       var steps = [
         'Creating day-by-day itinerary...',
         'Planning ' + _getModeLabel(selectedTransportMode) + ' journey...',
@@ -3892,11 +3886,10 @@
           el.classList.toggle('active', i === si);
         });
         var titleEl = document.getElementById('loadingTitle');
-        if (titleEl) titleEl.textContent = steps[Math.min(si, steps.length - 1)];
-        si++;
+        if (titleEl) titleEl.textContent = steps[si] || 'Almost done...';
+        si = (si + 1) % steps.length;
       }, 2500);
 
-      // ── API call ──
       try {
         var token = localStorage.getItem('yaply_token') || '';
         var res = await fetch('/api/plan', {
@@ -3905,54 +3898,140 @@
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            destination: dest,
+            origin: origin,
+            days: days,
+            budget: budget,
+            people: people,
+            vibe: vibe,
+            currency: currency,
+            passport: passport,
+            travel_mode: selectedTransportMode,  // ← new
+          })
         });
         var data = await res.json();
 
-        clearInterval(stepInt);
-        _hideLoading(loadingEl, genBtn, genSpin, genIcon);
-
         if (data.success) {
           currentPlan = data.plan;
-          currentPlan._meta = payload;
-          renderPlan(data.plan, payload.currency, selectedTransportMode);
-          if (resultsEl) {
-            resultsEl.style.display = 'block';
-            resultsEl.classList.add('show');
-            setTimeout(function () {
-              resultsEl.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-          }
+          currentPlan._meta = {
+            destination: dest,
+            origin: origin,
+            days: days,
+            budget: budget,
+            currency: currency,
+            people: people,
+            vibes: vibe,
+            passport: passport,
+            travel_mode: selectedTransportMode,
+          };
+
+          // ── Your existing renderPlan — unchanged ──
+          renderPlan(data.plan, currency);
+
+          // ── Show transport info banner if not flight ──
+          _showTransportBanner(data.plan, selectedTransportMode, currency);
+
+          document.getElementById('results').classList.add('show');
+          document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+          var gp = document.getElementById('groupPrompt');
+          if (gp) gp.style.display = 'flex';
+
         } else {
-          showToast(data.error || 'Could not generate plan. Try again.');
+          showToast(data.error || 'Could not generate plan');
         }
 
       } catch (e) {
-        clearInterval(stepInt);
-        _hideLoading(loadingEl, genBtn, genSpin, genIcon);
         console.error('[generatePlan]', e);
-        showToast('Connection error. Please try again.');
+        showToast('Connection error — please try again');
       }
+
+      clearInterval(stepInt);
+      setLoading(false);
     }
 
-    // ── Helper: hide loading state ──
-    function _hideLoading(loadingEl, genBtn, genSpin, genIcon) {
-      if (loadingEl) loadingEl.style.display = 'none';
-      if (genBtn) genBtn.disabled = false;
-      if (genSpin) genSpin.style.display = 'none';
-      if (genIcon) genIcon.style.display = 'block';
-    }
+    // ── Show transport mode banner above budget section ──
+    function _showTransportBanner(plan, mode, currency) {
+      // Remove existing banner if any
+      var existing = document.getElementById('transportBanner');
+      if (existing) existing.remove();
 
-    // ── Helper: mode label ──
-    function _getModeLabel(mode) {
-      var labels = {
-        smart: 'optimal',
-        flight: 'flight',
-        train: 'train',
-        bus: 'bus',
-        road: 'road'
-      };
-      return labels[mode] || 'transport';
+      var info = null;
+      var color = 'var(--blue)';
+      var bgColor = 'var(--blue-g)';
+      var icon = '';
+
+      if (mode === 'train' && plan.train_info) {
+        info = plan.train_info;
+        color = 'var(--blue)';
+        bgColor = 'rgba(37,99,255,0.07)';
+        icon = '🚂';
+      } else if (mode === 'bus' && plan.bus_info) {
+        info = plan.bus_info;
+        color = 'var(--amber)';
+        bgColor = 'rgba(245,185,66,0.08)';
+        icon = '🚌';
+      } else if (mode === 'road' && plan.road_info) {
+        info = plan.road_info;
+        color = 'var(--coral)';
+        bgColor = 'rgba(255,122,89,0.08)';
+        icon = '🚗';
+      } else if (plan.transport_recommendation) {
+        // Smart mode — show AI recommendation
+        var rec = plan.transport_recommendation;
+        var modeIcons = { flight: '✈️', train: '🚂', bus: '🚌', road: '🚗' };
+        icon = modeIcons[rec.mode] || '🌍';
+        color = 'var(--blue)';
+        bgColor = 'var(--blue-g)';
+
+        var banner = document.createElement('div');
+        banner.id = 'transportBanner';
+        banner.style.cssText = 'margin:16px 18px 0;padding:14px 16px;background:' + bgColor + ';border:1px solid rgba(37,99,255,0.15);border-radius:16px;';
+        banner.innerHTML =
+          '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:6px;">AI Recommends</div>' +
+          '<div style="display:flex;align-items:center;gap:10px;">' +
+          '<div style="font-size:22px;">' + icon + '</div>' +
+          '<div>' +
+          '<div style="font-size:14px;font-weight:600;color:var(--text);">' + (rec.mode || 'Transport').charAt(0).toUpperCase() + (rec.mode || '').slice(1) + ' · ' + (rec.estimated_cost || '') + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + (rec.reason || '') + ' · ' + (rec.duration || '') + '</div>' +
+          '</div>' +
+          '</div>';
+
+        var resultsEl = document.getElementById('results');
+        if (resultsEl) resultsEl.prepend(banner);
+        return;
+      }
+
+      if (!info) return;
+
+      var banner = document.createElement('div');
+      banner.id = 'transportBanner';
+      banner.style.cssText = 'margin:16px 18px 0;padding:14px 16px;background:' + bgColor + ';border:1px solid ' + color + '22;border-radius:16px;';
+
+      var detailLines = [];
+      if (info.operator || info.operators) detailLines.push('🏢 ' + (info.operator || (info.operators || []).join(', ')));
+      if (info.estimated_cost) detailLines.push('💰 ' + info.estimated_cost);
+      if (info.duration) detailLines.push('⏱ ' + info.duration);
+      if (info.booking_tip) detailLines.push('💡 ' + info.booking_tip);
+      if (info.distance_km) detailLines.push('📍 ' + info.distance_km + ' km');
+      if (info.class_options) detailLines.push('🎫 ' + (info.class_options || []).join(' · '));
+
+      banner.innerHTML =
+        '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:8px;">' + icon + ' Transport Details</div>' +
+        detailLines.map(function (l) {
+          return '<div style="font-size:12px;color:var(--text2);padding:3px 0;">' + l + '</div>';
+        }).join('') +
+        ((info.journey_tips || info.road_tips || []).length
+          ? '<div style="margin-top:8px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;">' +
+          (info.journey_tips || info.road_tips || []).map(function (t) {
+            return '• ' + t;
+          }).join('<br>') +
+          '</div>'
+          : '');
+
+      var resultsEl = document.getElementById('results');
+      if (resultsEl) resultsEl.prepend(banner);
     }
 
     // ── Transport mode selector ──
@@ -3969,272 +4048,167 @@
       }
     }
 
+    function _getModeLabel(mode) {
+      var labels = {
+        smart: 'optimal',
+        flight: 'flight',
+        train: 'train',
+        bus: 'bus',
+        road: 'road'
+      };
+      return labels[mode] || 'transport';
+    }
     // ── RENDER PLAN ────────────────────────────────
+    function renderPlan(plan, currency) {
+      var dest = plan.destination || '';
 
-    function renderBudgetBreakdown(plan, currency, travelMode) {
-      var bd = plan.budget_breakdown || {};
-
-      // Decide which transport line to show
-      var transportMode = travelMode || selectedTransportMode || 'smart';
-      var showFlight = transportMode === 'flight' || transportMode === 'smart';
-      var showTrain = transportMode === 'train';
-      var showBus = transportMode === 'bus';
-      var showRoad = transportMode === 'road';
-
-      var items = [];
-
-      // Transport line — smart based on mode
-      if (showFlight && bd.flights && bd.flights !== '0' && bd.flights !== currency + ' 0') {
-        items.push({ label: '✈️ Flights', value: bd.flights, color: 'var(--blue)' });
-      }
-      if (showTrain) {
-        var trainCost = bd.train || bd.transport || bd.flights || 'Check IRCTC';
-        items.push({ label: '🚂 Train', value: trainCost, color: 'var(--blue)' });
-      }
-      if (showBus) {
-        var busCost = bd.bus || bd.transport || 'Check RedBus';
-        items.push({ label: '🚌 Bus', value: busCost, color: 'var(--amber)' });
-      }
-      if (showRoad) {
-        var roadCost = bd.road || bd.transport || 'Fuel + tolls';
-        items.push({ label: '🚗 Road Transport', value: roadCost, color: 'var(--coral)' });
-      }
-
-      // Common items
-      if (bd.accommodation) items.push({ label: '🏨 Accommodation', value: bd.accommodation, color: 'var(--purple, #8B5CF6)' });
-      if (bd.food) items.push({ label: '🍜 Food', value: bd.food, color: 'var(--coral)' });
-      if (bd.transport && !showTrain && !showBus && !showRoad)
-        items.push({ label: '🚇 Local Transport', value: bd.transport, color: 'var(--green)' });
-      if (bd.activities) items.push({ label: '🎭 Activities', value: bd.activities, color: 'var(--amber)' });
-      if (bd.miscellaneous) items.push({ label: '🛍️ Misc', value: bd.miscellaneous, color: 'var(--muted)' });
-
-      return items.map(function (item) {
-        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">' +
-          '<span style="font-size:13px;color:var(--text2);">' + item.label + '</span>' +
-          '<span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:' + item.color + ';">' + item.value + '</span>' +
-          '</div>';
-      }).join('');
-    }
-
-    // ── JOURNEY PLANNER ─────────────────────────────//
-
-    async function planJourney() {
-      var origin = document.getElementById('jOrigin').value.trim();
-      var dest = document.getElementById('jDest').value.trim();
-      if (!origin) { showToast('Enter your location'); return; }
-      if (!dest) { showToast('Enter your destination'); return; }
-
-      document.getElementById('journeyLoading').style.display = 'block';
-      document.getElementById('journeyResults').style.display = 'none';
-
-      var loadingTexts = [
-        'Finding best routes...',
-        'Checking transport hubs...',
-        'Calculating travel times...',
-        'Getting pricing info...'
-      ];
-      var li = 0;
-      var lt = setInterval(function () {
-        var el = document.getElementById('journeyLoadingText');
-        if (el) el.textContent = loadingTexts[li % loadingTexts.length];
-        li++;
-      }, 1800);
-
-      try {
-        var token = localStorage.getItem('yaply_token') || '';
-        var res = await fetch('/api/journey', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({
-            origin: origin,
-            destination: dest,
-            travel_mode: jMode,
-            currency: 'INR',
-          })
-        });
-        var data = await res.json();
-        clearInterval(lt);
-
-        document.getElementById('journeyLoading').style.display = 'none';
-
-        if (data.success) {
-          renderJourney(data.journey, origin, dest, jMode);
-        } else {
-          showToast(data.error || 'Could not plan journey');
-        }
-      } catch (e) {
-        clearInterval(lt);
-        document.getElementById('journeyLoading').style.display = 'none';
-        showToast('Connection error. Try again.');
-      }
-    }
-
-    function renderJourney(j, origin, dest, mode) {
-      var resultsEl = document.getElementById('journeyResults');
-      resultsEl.style.display = 'block';
-      resultsEl.scrollIntoView({ behavior: 'smooth' });
-
-      // ── Summary card ──
-      var rec = j.recommended_route || {};
-      document.getElementById('journeySummaryCard').innerHTML =
-        '<div class="journey-summary">' +
-        '<div class="js-route">' +
-        '<div class="js-city">' + (origin.split(',')[0]) + '</div>' +
-        '<div class="js-arrow">' +
-        '<div class="js-arrow-line"></div>' +
-        '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
-        '<div class="js-arrow-line"></div>' +
+      // Hero
+      document.getElementById('tripHeroWrap').innerHTML =
+        '<div class="trip-result-hero">' +
+        '<div class="trh-grid"></div><div class="trh-orb"></div>' +
+        '<div class="trh-content">' +
+        '<div class="trh-eyebrow">AI Generated Plan</div>' +
+        '<div class="trh-dest">' + dest + '</div>' +
+        '<div class="trh-meta">' + plan.days + ' days · ' + (plan.best_time_to_visit || 'Year-round') + ' · ' + (plan.language || 'Local') + '</div>' +
+        '<div class="trh-tags">' +
+        '<span class="trh-tag">' + (plan.visa_info && plan.visa_info.required ? 'Visa Required' : 'Visa Free') + '</span>' +
+        '<span class="trh-tag">' + (plan.currency || 'Local Currency') + '</span>' +
+        '<span class="trh-tag">' + (plan.timezone || 'Local Time') + '</span>' +
         '</div>' +
-        '<div class="js-city">' + (dest.split(',')[0]) + '</div>' +
-        '</div>' +
-        '<div class="js-stats">' +
-        '<div class="js-stat"><div class="js-stat-val">' + (rec.total_duration || '—') + '</div><div class="js-stat-lbl">Total Time</div></div>' +
-        '<div class="js-stat"><div class="js-stat-val">' + (rec.total_cost || '—') + '</div><div class="js-stat-lbl">Est. Cost</div></div>' +
-        '<div class="js-stat"><div class="js-stat-val">' + (getModeBadge(mode)) + '</div><div class="js-stat-lbl">Mode</div></div>' +
         '</div>' +
         '</div>';
 
-      // ── Hubs (airports or train stations) ──
-      var hubsLabel = document.getElementById('hubsLabel');
-      var airportsList = document.getElementById('airportsList');
-
-      var isFlightMode = mode === 'flight' || mode === 'any';
-      var isTrainMode = mode === 'train';
-      var isBusMode = mode === 'bus';
-
-      if (isFlightMode) {
-        hubsLabel.textContent = 'Nearest Airports';
-        document.getElementById('optionsLabel').textContent = 'Flight Options';
-      } else if (isTrainMode) {
-        hubsLabel.textContent = 'Nearest Train Stations';
-        document.getElementById('optionsLabel').textContent = 'Train Options';
-      } else if (isBusMode) {
-        hubsLabel.textContent = 'Nearest Bus Terminals';
-        document.getElementById('optionsLabel').textContent = 'Bus Options';
-      } else {
-        hubsLabel.textContent = 'Transport Hubs';
-        document.getElementById('optionsLabel').textContent = 'Transport Options';
-      }
-
-      // Render nearest airports/stations from AI data
-      var airports = j.nearest_airports || j.origin_has_airport ? [j.nearest_airports] : [];
-      if (j.nearest_airports && Array.isArray(j.nearest_airports)) {
-        airports = j.nearest_airports;
-      }
-
-      airportsList.innerHTML = airports.slice(0, 3).map(function (a) {
-        if (!a || typeof a !== 'object') return '';
-        var icon = isTrainMode
-          ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="4" y="3" width="16" height="16" rx="2"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="12" y1="3" x2="12" y2="19"/><path d="M8 19l-2 3"/><path d="M18 22l-2-3"/></svg>'
-          : '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>';
-        var bg = isTrainMode ? 'var(--blue-g)' : 'rgba(14,165,233,0.1)';
-        var clr = isTrainMode ? 'var(--blue)' : '#0EA5E9';
-        return '<div class="hub-card">' +
-          '<div class="hub-icon" style="background:' + bg + ';stroke:' + clr + ';">' + icon + '</div>' +
-          '<div class="hub-info">' +
-          '<div class="hub-name">' + (a.name || a.city || 'Hub') + (a.code ? ' (' + a.code + ')' : '') + '</div>' +
-          '<div class="hub-meta">' + (a.city || '') + (a.distance_from_origin ? ' · ' + a.distance_from_origin + ' from you' : '') + '</div>' +
-          '</div>' +
-          (a.distance_from_origin ? '<div class="hub-dist">' + a.distance_from_origin + '</div>' : '') +
-          '</div>';
+      // Overview
+      var ov = [
+        { label: 'Language', value: plan.language || '-' },
+        { label: 'Currency', value: plan.currency || '-' },
+        { label: 'Timezone', value: plan.timezone || '-' },
+        { label: 'Best Time', value: plan.best_time_to_visit || '-' },
+        { label: 'Visa', value: plan.visa_info && plan.visa_info.required ? 'Required' : 'Visa Free' },
+        { label: 'Duration', value: plan.days + ' Days' },
+      ];
+      document.getElementById('overviewGrid').innerHTML = ov.map(function (o) {
+        return '<div class="ov-card"><div class="ov-label">' + o.label + '</div><div class="ov-value">' + o.value + '</div></div>';
       }).join('');
 
-      // ── Journey steps ──
-      var stepsEl = document.getElementById('journeySteps');
-      var route = rec;
-      var steps = [route.step1, route.step2, route.step3, route.step4].filter(Boolean);
-      if (!steps.length && j.recommended_route) {
-        var r = j.recommended_route;
-        steps = [r.step1, r.step2, r.step3, r.step4].filter(Boolean);
-      }
+      // Days
+      var DAY_COLORS = ['#2563FF', '#FF7A59', '#18C29C', '#F5B942', '#8B5CF6', '#0EA5E9'];
+      var navHtml = '';
+      var panelsHtml = '';
+      var itinerary = plan.itinerary || [];
 
-      stepsEl.innerHTML = steps.map(function (step, i) {
-        return '<div class="j-step">' +
-          '<div class="j-step-num">' + (i + 1) + '</div>' +
-          '<div class="j-step-body">' +
-          '<div class="j-step-title">' + step + '</div>' +
-          '</div>' +
-          '</div>';
-      }).join('');
+      itinerary.forEach(function (day, i) {
+        var col = DAY_COLORS[i % DAY_COLORS.length];
+        navHtml += '<button class="day-nav-btn' + (i === 0 ? ' active' : '') + '" onclick="switchDay(' + i + ',\'' + col + '\')" style="' + (i === 0 ? 'background:' + col + ';border-color:' + col + ';color:#fff;' : '') + '">' +
+          'Day ' + day.day + '<span>' + (day.title || '').split(' ').slice(0, 2).join(' ') + '</span>' +
+          '</button>';
 
-      // ── Transport options (flights/trains/buses) ──
-      var flightsEl = document.getElementById('flightsList');
-      var options = j.flight_options || j.alternative_routes || [];
-
-      if (!options.length) {
-        flightsEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">No options available for this route</div>';
-      } else {
-        flightsEl.innerHTML = options.slice(0, 4).map(function (opt, i) {
-          var isRec = opt.recommended || i === 0;
-          var bgIcon = getOptionIcon(opt.mode || opt.type || (isFlightMode ? 'flight' : mode));
-          var cost = opt.price || opt.cost || opt.total_cost || '—';
-          var dur = opt.duration || opt.travel_time || '—';
-          return '<div class="transport-option' + (isRec ? ' recommended' : '') + '">' +
-            (isRec ? '<div class="to-badge">Best Option</div>' : '') +
-            '<div class="to-icon" style="' + bgIcon.style + '">' + bgIcon.svg + '</div>' +
-            '<div class="to-info">' +
-            '<div class="to-name">' + (opt.airline || opt.operator || opt.mode || opt.type || 'Option ' + (i + 1)) + '</div>' +
-            '<div class="to-detail">' +
-            (opt.stops !== undefined ? (opt.stops === 0 ? 'Direct' : opt.stops + ' stop' + (opt.stops > 1 ? 's' : '')) : '') +
-            (opt.class ? ' · ' + opt.class : '') +
-            (opt.comfort ? ' · ' + opt.comfort : '') +
+        var acts = '';
+        var slots = [
+          { key: 'morning', label: 'Morning' },
+          { key: 'afternoon', label: 'Afternoon' },
+          { key: 'evening', label: 'Evening' },
+        ];
+        slots.forEach(function (sl) {
+          var d = day[sl.key];
+          if (!d || !d.activity) return;
+          acts +=
+            '<div class="act-card">' +
+            '<div class="act-stripe" style="background:' + col + ';"></div>' +
+            '<div class="act-body">' +
+            '<div class="act-period" style="color:' + col + ';">' + sl.label + '</div>' +
+            '<div class="act-name">' + (d.activity || '') + '</div>' +
+            '<div class="act-loc"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + (d.location || '') + ' · ' + (d.duration || '') + '</div>' +
+            (d.cost ? '<div class="act-meta"><span class="act-pill" style="background:rgba(24,194,156,0.1);color:var(--green);font-size:11px;font-weight:600;">' + d.cost + '</span></div>' : '') +
             '</div>' +
-            '</div>' +
-            '<div class="to-right">' +
-            '<div class="to-cost">' + cost + '</div>' +
-            '<div class="to-duration">' + dur + '</div>' +
-            '</div>' +
+            (d.tip ? '<div class="act-tip"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>' + d.tip + '</div>' : '') +
             '</div>';
-        }).join('');
-      }
+        });
 
-      // ── Notes / important info ──
-      var notesEl = document.getElementById('journeyNotes');
-      var notes = j.important_notes || j.documents_needed || [];
-      if (notes && notes.length) {
-        notesEl.innerHTML =
-          '<div style="background:var(--blue-g);border:1px solid rgba(37,99,255,0.12);border-radius:var(--r-lg);padding:14px 16px;">' +
-          '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:10px;">Important Notes</div>' +
-          notes.map(function (n) {
-            return '<div style="display:flex;gap:8px;padding:5px 0;font-size:12px;color:var(--text2);">' +
-              '<span style="color:var(--blue);flex-shrink:0;">•</span>' + n +
-              '</div>';
-          }).join('') +
+        if (day.lunch && day.lunch.restaurant) {
+          acts += '<div class="meal-card"><div class="meal-icon" style="background:var(--amber-g);">🍽️</div><div><div class="meal-type">Lunch</div><div class="meal-name">' + day.lunch.restaurant + '</div><div class="meal-detail">' + (day.lunch.cuisine || '') + ' · ' + (day.lunch.cost || '') + '</div></div></div>';
+        }
+        if (day.dinner && day.dinner.restaurant) {
+          acts += '<div class="meal-card"><div class="meal-icon" style="background:var(--coral-g);">🌙</div><div><div class="meal-type">Dinner</div><div class="meal-name">' + day.dinner.restaurant + '</div><div class="meal-detail">' + (day.dinner.cuisine || '') + ' · ' + (day.dinner.cost || '') + '</div></div></div>';
+        }
+        if (day.accommodation && day.accommodation.name) {
+          acts += '<div class="hotel-card"><div class="hotel-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><div><div class="hotel-label">Tonight\'s Stay</div><div class="hotel-name">' + day.accommodation.name + '</div><div class="hotel-detail">' + (day.accommodation.area || '') + ' · ' + (day.accommodation.cost || '') + '/night</div></div></div>';
+        }
+
+        panelsHtml +=
+          '<div class="day-panel' + (i === 0 ? ' active' : '') + '" id="dp-' + i + '">' +
+          '<div style="padding:10px 18px 0;">' +
+          '<div style="background:' + col + ';border-radius:var(--r-lg);padding:13px 16px;display:flex;align-items:center;gap:10px;margin-bottom:4px;">' +
+          '<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:14px;font-weight:400;color:white;">' + day.day + '</div>' +
+          '<div style="font-family:var(--font-head);font-size:15px;color:white;letter-spacing:-0.2px;">' + (day.title || 'Day ' + day.day) + '</div>' +
+          '</div>' +
+          '</div>' +
+          acts +
           '</div>';
-      } else {
-        notesEl.innerHTML = '';
-      }
-    }
+      });
 
-    function getModeBadge(mode) {
-      var map = { flight: '✈️ Air', train: '🚂 Rail', bus: '🚌 Bus', road: '🚗 Road', any: '🤖 Best' };
-      return map[mode] || '🌍 Mixed';
-    }
+      document.getElementById('dayNav').innerHTML = navHtml;
+      document.getElementById('dayPanels').innerHTML = panelsHtml;
 
-    function getOptionIcon(type) {
-      var t = (type || '').toLowerCase();
-      if (t.includes('flight') || t.includes('air')) {
-        return {
-          style: 'background:rgba(14,165,233,0.1);',
-          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" stroke-width="1.8"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>'
-        };
-      }
-      if (t.includes('train') || t.includes('rail')) {
-        return {
-          style: 'background:var(--blue-g);',
-          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><rect x="4" y="3" width="16" height="16" rx="2"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="12" y1="3" x2="12" y2="19"/><path d="M8 19l-2 3"/><path d="M18 22l-2-3"/></svg>'
-        };
-      }
-      if (t.includes('bus')) {
-        return {
-          style: 'background:var(--amber-g);',
-          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><circle cx="7" cy="18" r="2"/><circle cx="16" cy="18" r="2"/></svg>'
-        };
-      }
-      return {
-        style: 'background:var(--coral-g);',
-        svg: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="1.8"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><circle cx="16" cy="17" r="3"/><circle cx="7" cy="17" r="3"/></svg>'
+      // Budget
+      var bb = plan.budget_breakdown || {};
+      var bKeys = Object.keys(bb);
+      var rawVals = bKeys.map(function (k) { return parseInt((bb[k] + '').replace(/[^0-9]/g, '')) || 0; });
+      var total = rawVals.reduce(function (a, b) { return a + b; }, 0) || 1;
+      var CAT_META = {
+        flights: { icon: '✈', color: '#2563FF', bg: 'rgba(37,99,255,0.1)' },
+        accommodation: { icon: '🏨', color: '#18C29C', bg: 'rgba(24,194,156,0.1)' },
+        food: { icon: '🍜', color: '#FF7A59', bg: 'rgba(255,122,89,0.1)' },
+        local_transport: { icon: '🚌', color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)' },
+        activities: { icon: '🎯', color: '#F5B942', bg: 'rgba(245,185,66,0.1)' },
+        shopping: { icon: '🛍', color: '#0EA5E9', bg: 'rgba(14,165,233,0.1)' },
+        miscellaneous: { icon: '💼', color: '#9CA3AF', bg: 'rgba(156,163,175,0.1)' },
       };
+      var fallColors = ['#2563FF', '#18C29C', '#FF7A59', '#8B5CF6', '#F5B942', '#0EA5E9', '#9CA3AF'];
+
+      var stackSegs = bKeys.map(function (k, i) {
+        var pct = Math.round(rawVals[i] / total * 100);
+        var col = (CAT_META[k] || { color: fallColors[i % 7] }).color;
+        return '<div class="bh-seg" style="flex:' + pct + ' 1 0;background:' + col + ';border-radius:3px;"></div>';
+      }).join('');
+
+      var legendHtml = bKeys.map(function (k, i) {
+        var col = (CAT_META[k] || { color: fallColors[i % 7] }).color;
+        return '<div class="bh-leg"><div class="bh-leg-dot" style="background:' + col + ';"></div>' + k.replace(/_/g, ' ') + '</div>';
+      }).join('');
+
+      var rowsHtml = bKeys.map(function (k, i) {
+        var meta = CAT_META[k] || { icon: '•', color: fallColors[i % 7], bg: 'rgba(156,163,175,0.1)' };
+        var pct = Math.round(rawVals[i] / total * 100);
+        return '<div class="bud-row">' +
+          '<div class="bud-icon" style="background:' + meta.bg + ';">' + meta.icon + '</div>' +
+          '<div class="bud-name">' + k.replace(/_/g, ' ') + '</div>' +
+          '<span class="bud-pct" style="background:' + meta.bg + ';color:' + meta.color + ';">' + pct + '%</span>' +
+          '<div class="bud-amt" style="color:' + meta.color + ';">' + currency + ' ' + (rawVals[i] || 0).toLocaleString() + '</div>' +
+          '</div>';
+      }).join('');
+
+      document.getElementById('budgetSection').innerHTML =
+        '<div class="budget-hero">' +
+        '<div class="bh-orb"></div>' +
+        '<div class="bh-label">Total Budget</div>' +
+        '<div class="bh-total">' + currency + ' ' + total.toLocaleString() + '</div>' +
+        '<div class="bh-ppd">Approx. ' + currency + ' ' + Math.round(total / plan.days).toLocaleString() + ' per day</div>' +
+        '<div class="bh-stack">' + stackSegs + '</div>' +
+        '<div class="bh-legend">' + legendHtml + '</div>' +
+        '</div>' +
+        '<div class="budget-rows">' + rowsHtml + '</div>';
+    }
+
+    function switchDay(i, col) {
+      document.querySelectorAll('.day-nav-btn').forEach(function (b, j) {
+        var isActive = j === i;
+        b.classList.toggle('active', isActive);
+        b.style.cssText = isActive
+          ? 'background:' + col + ';border-color:' + col + ';color:#fff;flex-shrink:0;padding:8px 14px;border-radius:10px;border-width:1.5px;border-style:solid;'
+          : 'flex-shrink:0;padding:8px 14px;border-radius:10px;border:1.5px solid var(--border2);background:none;color:var(--muted);';
+      });
+      document.querySelectorAll('.day-panel').forEach(function (p, j) { p.classList.toggle('active', j === i); });
     }
 
     // ── MULTI-CITY ─────────────────────────────────
