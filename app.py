@@ -1203,13 +1203,42 @@ immediate_actions, medicines_to_ask, emergency_number, medical_phrases"""
 def api_safety_check():
     try:
         destination = clean((request.get_json() or {}).get('destination', ''))
-        if not destination: return jsonify({'success': False, 'error': 'Destination required'})
+        if not destination:
+            return jsonify({'success': False, 'error': 'Destination required'})
+
         result = groq_json(
-            f"""Travel safety expert. Comprehensive safety info for {destination}.
-Return JSON: safety_score, safety_level, crime_index, tourist_safety, water_safe, water_advice,
-food_safety, health_risks, scams_to_avoid, safe_areas, avoid_areas, emergency_embassy,
-embassy_phone, travel_advisory, solo_female_safety, best_safety_tips""",
-            model="llama-3.3-70b-versatile", temp=0.1, max_tok=1200
+            f"""You are a travel safety expert with deep knowledge of every city worldwide.
+Provide SPECIFIC and ACCURATE safety information for: {destination}
+
+CRITICAL RULES:
+- safety_score MUST be specific to {destination} — not a generic number
+- Tokyo should score ~85, Bangkok ~65, Cairo ~55, London ~75, Mexico City ~50
+- Base score on: actual crime rates, tourist incidents, political stability
+- Every field must be specific to {destination} — no generic answers
+
+Return ONLY this JSON:
+{{
+  "destination": "{destination}",
+  "safety_score": <number 1-100 specific to {destination}>,
+  "safety_level": "<Safe/Moderate/Caution/High Risk> for {destination}",
+  "crime_index": "<Low/Medium/High> based on actual {destination} crime data",
+  "tourist_safety": "<specific assessment for tourists in {destination}>",
+  "water_safe": <true/false for {destination} tap water>,
+  "water_advice": "<specific water advice for {destination}>",
+  "food_safety": "<Safe/Mostly Safe/Be Careful — specific to {destination}>",
+  "health_risks": ["<actual health risk in {destination}>", "<risk 2>"],
+  "scams_to_avoid": ["<real scam tourists face in {destination}>", "<scam 2>", "<scam 3>"],
+  "safe_areas": ["<actually safe neighbourhood in {destination}>", "<area 2>"],
+  "avoid_areas": ["<area to actually avoid in {destination}>"],
+  "emergency_embassy": "<Indian embassy address in {destination}>",
+  "embassy_phone": "<actual embassy phone number>",
+  "travel_advisory": "<current advisory level for {destination}>",
+  "solo_female_safety": "<specific assessment for solo female travellers in {destination}>",
+  "best_safety_tips": ["<tip specific to {destination}>", "<tip 2>", "<tip 3>", "<tip 4>", "<tip 5>"]
+}}""",
+            model="llama-3.3-70b-versatile",
+            temp=0.4,
+            max_tok=1200
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:

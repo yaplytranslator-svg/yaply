@@ -4221,16 +4221,16 @@
           </a>
 
           <a href="#" onclick="openTool('safety-check');return false;" class="tool-card tool-red"></a>
-            <div class="tc-icon"><svg viewBox="0 0 24 24">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg></div>
-            <div>
-              <div class="tc-label">Safety Index</div>
-              <div class="tc-desc">Safety score for any city</div>
-            </div>
-            <div class="tc-arrow"><svg viewBox="0 0 24 24">
-                <polyline points="9 18 15 12 9 6" />
-              </svg></div>
+          <div class="tc-icon"><svg viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg></div>
+          <div>
+            <div class="tc-label">Safety Index</div>
+            <div class="tc-desc">Safety score for any city</div>
+          </div>
+          <div class="tc-arrow"><svg viewBox="0 0 24 24">
+              <polyline points="9 18 15 12 9 6" />
+            </svg></div>
           </a>
 
           <a href="#" onclick="openTool('festivals');return false;" class="tool-card tool-coral">
@@ -6878,6 +6878,9 @@
 
     // ── FESTIVALS ──
     function _renderFestivals(d) {
+
+      console.log('FESTIVALS DATA:', JSON.stringify(d));
+
       if (!d) return '<p style="color:var(--muted);padding:16px;">No data available</p>';
       var html = '<div style="margin-top:16px;">';
 
