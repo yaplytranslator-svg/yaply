@@ -3862,7 +3862,8 @@
     travel_mode:    selectedTransportMode,
   };
 
-  setLoading(true);
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
   document.getElementById('results') && document.getElementById('results').classList.remove('show');
 
   var steps = [
@@ -3894,7 +3895,7 @@
     var data = await res.json();
 
     clearInterval(stepInt);
-    setLoading(false);
+    document.getElementById('loading').style.display = 'none';
 
     if (data.success) {
       currentPlan       = data.plan;
