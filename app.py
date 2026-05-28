@@ -598,54 +598,200 @@ def api_plan():
         ok, err = validate(data, ['destination'])
         if not ok: return jsonify({'success': False, 'error': err})
 
-        destination = clean(data.get('destination', ''))
-        origin      = clean(data.get('origin', 'India'))
-        days        = min(max(int(data.get('days', 5)), 1), 60)
-        budget      = clean(data.get('budget', '50000'))
-        vibe        = clean(data.get('vibe', 'adventure'))
-        people      = min(max(int(data.get('people', 1)), 1), 20)
-        currency    = clean(data.get('currency', 'INR'), 3)
-        passport    = clean(data.get('passport', 'India'))
+        destination  = clean(data.get('destination', ''))
+        origin       = clean(data.get('origin', 'India'))
+        days         = min(max(int(data.get('days', 5)), 1), 60)
+        budget       = clean(data.get('budget', '50000'))
+        vibe         = clean(data.get('vibe', 'adventure'))
+        people       = min(max(int(data.get('people', 1)), 1), 20)
+        currency     = clean(data.get('currency', 'INR'), 3)
+        passport     = clean(data.get('passport', 'India'))
+        travel_mode  = clean(data.get('travel_mode', 'smart'), 20).lower()
 
-        prompt = f"""World-class travel planner. Create UNIQUE {days}-day itinerary.
-FROM: {origin} → TO: {destination}
-Budget: {currency} {budget} for {people} people | Style: {vibe} | Passport: {passport}
-ALL prices MUST be in {currency}.
+        # ── Detect if same country trip (no flights needed) ──
+        origin_country      = origin.split(',')[-1].strip().lower() if ',' in origin else origin.lower()
+        dest_country        = destination.split(',')[-1].strip().lower() if ',' in destination else destination.lower()
+        is_domestic         = origin_country in dest_country or dest_country in origin_country
+        is_international    = not is_domestic
 
-Return ONLY valid JSON:
-{{"destination":"{destination}","days":{days},"language":"local lang","currency":"local currency","timezone":"tz","best_time_to_visit":"months",
-"budget_breakdown":{{"flights":"{currency} X","accommodation":"{currency} X","food":"{currency} X","transport":"{currency} X","activities":"{currency} X","miscellaneous":"{currency} X"}},
-"flight_info":{{"estimated_cost":"{currency} X","best_airlines":["a1","a2"],"flight_duration":"Xh","best_time_to_book":"X weeks ahead"}},
-"itinerary":[{{"day":1,"title":"Day title",
-  "morning":{{"activity":"name","location":"place","duration":"2h","cost":"{currency} X","tip":"insider tip"}},
-  "afternoon":{{"activity":"name","location":"place","duration":"2h","cost":"{currency} X","tip":"tip"}},
-  "evening":{{"activity":"name","location":"place","duration":"2h","cost":"{currency} X","tip":"tip"}},
-  "lunch":{{"restaurant":"name","cuisine":"type","cost":"{currency} X"}},
-  "dinner":{{"restaurant":"name","cuisine":"type","cost":"{currency} X"}},
-  "accommodation":{{"name":"hotel","area":"area","cost":"{currency} X/night"}}}}],
-"hidden_gems":[{{"name":"place","description":"why special","location":"area","best_time":"when","cost":"{currency} X"}}],
-"local_transport":{{"airport_to_city":{{"options":["opt1"],"cost":"{currency} X","duration":"30min"}},"within_city":[{{"type":"Metro","cost":"{currency} X/ride","tip":"tip"}}],"useful_apps":["app1"]}},
-"sim_internet":{{"best_option":"option","cost":"{currency} X","data":"XGB","where_to_buy":"location"}},
-"cultural_guide":{{"dos":["do1","do2","do3"],"donts":["dont1","dont2","dont3"],"dress_code":"advice","tipping":"culture","greetings":"how"}},
-"vaccinations":{{"required":["v1"],"recommended":["v2"],"note":"advice"}},
-"packing_list":["item1","item2","item3"],
-"emergency_numbers":{{"police":"number","ambulance":"number","fire":"number","tourist_helpline":"number"}},
-"visa_info":{{"required":true,"type":"tourist","validity":"30 days","cost":"{currency} X"}},
-"payment_info":{{"preferred":"card/cash","atm_availability":"common","notify_bank":true,"forex_tips":"advice"}},
-"must_have_apps":[{{"name":"app","purpose":"what","platform":"iOS/Android"}}],
-"power_plug":{{"type":"type","voltage":"220V","adapter_needed":true}},
-"insurance":{{"recommended":true,"type":"comprehensive","estimated_cost":"{currency} X","must_cover":["medical","cancellation"]}},
-"what_to_buy":["item1","item2"],
-"what_to_avoid":["item1"],
-"local_phrases":[{{"phrase":"Hello","translation":"local","pronunciation":"how"}}],
-"tips":["tip1","tip2","tip3"]}}"""
+        # ── Build transport instructions based on mode ──
+        if travel_mode == 'flight' or (travel_mode == 'smart' and is_international):
+            transport_instruction = f"""
+TRANSPORT MODE: Flight
+- Include flight information and costs
+- Show budget_breakdown.flights with estimated cost in {currency}
+- Include best_airlines recommendations
+- Include flight_duration
+- Include best_time_to_book"""
 
-        result = groq_json(prompt, model="llama-3.3-70b-versatile", temp=0.3, max_tok=4000)
+        elif travel_mode == 'train':
+            transport_instruction = f"""
+TRANSPORT MODE: Train / Rail
+- This user is travelling BY TRAIN, not by flight
+- DO NOT include any flight prices or airline info
+- budget_breakdown.flights should be "Not applicable"
+- Instead include: budget_breakdown.train with cost in {currency}
+- Include train_info: {{
+    "operator": "train operator name (e.g. Indian Railways)",
+    "train_name": "specific train if known",
+    "class_options": ["Sleeper", "3AC", "2AC", "1AC"],
+    "estimated_cost": "{currency} X",
+    "duration": "X hours",
+    "booking_tip": "how to book",
+    "journey_tips": ["tip1", "tip2"]
+  }}
+- Include how to reach railway station from origin city"""
+
+        elif travel_mode == 'bus':
+            transport_instruction = f"""
+TRANSPORT MODE: Bus
+- This user is travelling BY BUS, not by flight
+- DO NOT include any flight prices or airline info
+- budget_breakdown.flights should be "Not applicable"
+- Instead include: budget_breakdown.bus with cost in {currency}
+- Include bus_info: {{
+    "operators": ["operator1", "operator2"],
+    "type": "AC Sleeper / Volvo / Express",
+    "estimated_cost": "{currency} X",
+    "duration": "X hours",
+    "booking_tip": "how to book (RedBus, AbhiBus etc)",
+    "journey_tips": ["tip1", "tip2"]
+  }}"""
+
+        elif travel_mode == 'road':
+            transport_instruction = f"""
+TRANSPORT MODE: Road Trip / Self Drive / Cab
+- This user is travelling BY ROAD (car, cab, self-drive)
+- DO NOT include any flight prices
+- budget_breakdown.flights should be "Not applicable"
+- Include budget_breakdown.road with fuel + toll cost in {currency}
+- Include road_info: {{
+    "distance_km": "approximate km",
+    "drive_duration": "X hours",
+    "fuel_cost": "{currency} X",
+    "toll_cost": "{currency} X",
+    "cab_option": "{currency} X via Uber/Ola",
+    "road_tips": ["tip1", "tip2"],
+    "stops_enroute": ["interesting stop 1", "stop 2"]
+  }}"""
+
+        else:  # smart mode
+            if is_domestic:
+                transport_instruction = f"""
+TRANSPORT MODE: Smart (Domestic trip detected — {origin} to {destination})
+- Recommend the BEST transport option for this DOMESTIC route
+- If distance < 500km: recommend train or bus (NOT flight)
+- If distance 500-1000km: recommend train or flight based on cost
+- If distance > 1000km: recommend flight
+- Show the recommended transport in budget_breakdown
+- If recommending train/bus: set budget_breakdown.flights = "Not applicable for this route"
+- Include transport_recommendation: {{
+    "mode": "train/bus/flight/road",
+    "reason": "why this is best for this route",
+    "estimated_cost": "{currency} X",
+    "duration": "X hours"
+  }}"""
+            else:
+                transport_instruction = f"""
+TRANSPORT MODE: Smart (International trip — {origin} to {destination})
+- This is an international trip — include flight information
+- Show budget_breakdown.flights with estimated cost in {currency}"""
+
+        # ── Build the full prompt ──
+        prompt = f"""You are a world-class travel planner. Create a detailed {days}-day trip plan.
+
+TRIP DETAILS:
+- FROM: {origin}
+- TO: {destination}  
+- Duration: {days} days
+- People: {people}
+- Total Budget: {currency} {budget}
+- Travel Style: {vibe}
+- Passport: {passport}
+
+{transport_instruction}
+
+CRITICAL RULES:
+1. ALL prices MUST be in {currency} only
+2. Budget must be realistic for {currency} {budget} total for {people} people
+3. Activities and restaurants must match the {vibe} travel style
+4. Hidden gems must be genuinely lesser-known places
+5. Budget breakdown must add up to approximately {currency} {budget}
+
+Return ONLY valid JSON with this structure:
+{{
+  "destination": "{destination}",
+  "origin": "{origin}",
+  "days": {days},
+  "travel_mode": "{travel_mode}",
+  "language": "local language",
+  "currency": "local currency",
+  "timezone": "timezone",
+  "best_time_to_visit": "best months",
+  "budget_breakdown": {{
+    "flights": "{currency} X or Not applicable",
+    "train": "{currency} X (if train mode)",
+    "bus": "{currency} X (if bus mode)",
+    "road": "{currency} X (if road mode)",
+    "accommodation": "{currency} X",
+    "food": "{currency} X",
+    "transport": "{currency} X (local transport only)",
+    "activities": "{currency} X",
+    "miscellaneous": "{currency} X"
+  }},
+  "flight_info": null or {{"estimated_cost":"{currency} X","best_airlines":["a1"],"flight_duration":"Xh","best_time_to_book":"X weeks"}},
+  "train_info": null or {{"operator":"name","class_options":["3AC"],"estimated_cost":"{currency} X","duration":"Xh","booking_tip":"tip"}},
+  "bus_info": null or {{"operators":["name"],"type":"AC Sleeper","estimated_cost":"{currency} X","duration":"Xh","booking_tip":"tip"}},
+  "road_info": null or {{"distance_km":"X","drive_duration":"Xh","fuel_cost":"{currency} X","toll_cost":"{currency} X"}},
+  "transport_recommendation": null or {{"mode":"train","reason":"why","estimated_cost":"{currency} X","duration":"Xh"}},
+  "itinerary": [
+    {{
+      "day": 1,
+      "title": "Day title",
+      "morning": {{"activity": "name", "location": "place", "duration": "2h", "cost": "{currency} X", "tip": "insider tip"}},
+      "afternoon": {{"activity": "name", "location": "place", "duration": "2h", "cost": "{currency} X", "tip": "tip"}},
+      "evening": {{"activity": "name", "location": "place", "duration": "2h", "cost": "{currency} X", "tip": "tip"}},
+      "lunch": {{"restaurant": "name", "cuisine": "type", "cost": "{currency} X"}},
+      "dinner": {{"restaurant": "name", "cuisine": "type", "cost": "{currency} X"}},
+      "accommodation": {{"name": "hotel", "area": "area", "cost": "{currency} X/night"}}
+    }}
+  ],
+  "hidden_gems": [{{"name":"place","description":"why special","location":"area","best_time":"when","cost":"{currency} X"}}],
+  "local_transport": {{
+    "airport_to_city": {{"options":["opt1"],"cost":"{currency} X","duration":"30min"}},
+    "within_city": [{{"type":"Metro","cost":"{currency} X/ride","tip":"tip"}}],
+    "useful_apps": ["app1"]
+  }},
+  "sim_internet": {{"best_option":"option","cost":"{currency} X","data":"XGB","where_to_buy":"location"}},
+  "cultural_guide": {{"dos":["do1","do2","do3"],"donts":["dont1","dont2","dont3"],"dress_code":"advice","tipping":"culture","greetings":"how"}},
+  "vaccinations": {{"required":["v1"],"recommended":["v2"],"note":"advice"}},
+  "packing_list": ["item1","item2","item3"],
+  "emergency_numbers": {{"police":"number","ambulance":"number","fire":"number","tourist_helpline":"number"}},
+  "visa_info": {{"required":true,"type":"tourist","validity":"30 days","cost":"{currency} X"}},
+  "payment_info": {{"preferred":"card/cash","atm_availability":"common","notify_bank":true,"forex_tips":"advice"}},
+  "must_have_apps": [{{"name":"app","purpose":"what","platform":"iOS/Android"}}],
+  "power_plug": {{"type":"type","voltage":"220V","adapter_needed":true}},
+  "what_to_buy": ["item1","item2"],
+  "what_to_avoid": ["item1"],
+  "local_phrases": [{{"phrase":"Hello","translation":"local","pronunciation":"how"}}],
+  "tips": ["tip1","tip2","tip3"]
+}}"""
+
+        result = groq_json(
+            prompt,
+            model="llama-3.3-70b-versatile",
+            temp=0.3,
+            max_tok=4000
+        )
+
+        # Save to trip if trip_id provided
         trip_id = data.get('trip_id')
         if trip_id:
             update_trip(trip_id, g.user_id, plan_data=result, status='active')
+
         log_action(g.user_id, 'plan_trip', request.remote_addr)
         return jsonify({'success': True, 'plan': result})
+
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)})
@@ -2056,6 +2202,95 @@ def convo_ws(ws):
         except Exception as e:
             print(f"[Convo] {e}"); break
 
+
+@app.route('/api/places-autocomplete')
+@limiter.limit("60 per hour")
+def places_autocomplete():
+    try:
+        q   = request.args.get('q', '')
+        key = os.getenv('GOOGLE_PLACES_API_KEY', '')
+        if not q or not key:
+            return jsonify({'success': False, 'predictions': []})
+        r = req.get(
+            'https://maps.googleapis.com/maps/api/place/autocomplete/json',
+            params={
+                'input':    q,
+                'types':    '(cities)',
+                'key':      key,
+                'language': 'en',
+            },
+            timeout=8
+        )
+        data = r.json()
+        if data.get('status') == 'OK':
+            return jsonify({'success': True, 'predictions': data.get('predictions', [])})
+        return jsonify({'success': False, 'predictions': []})
+    except Exception as e:
+        return jsonify({'success': False, 'predictions': [], 'error': str(e)})
+
+
+# ── Nearby stations/airports via Google Places ──
+@app.route('/api/nearby-stations')
+@require_auth
+@limiter.limit("30 per hour")
+def nearby_stations():
+    try:
+        location   = request.args.get('location', '')
+        place_type = request.args.get('type', 'train_station')
+        key        = os.getenv('GOOGLE_PLACES_API_KEY', '')
+
+        if not location or not key:
+            return jsonify({'success': False, 'stations': []})
+
+        # First geocode the location to get lat/lng
+        geo = req.get(
+            'https://maps.googleapis.com/maps/api/geocode/json',
+            params={'address': location, 'key': key},
+            timeout=8
+        ).json()
+
+        if not geo.get('results'):
+            return jsonify({'success': False, 'stations': []})
+
+        loc = geo['results'][0]['geometry']['location']
+        lat, lng = loc['lat'], loc['lng']
+
+        # Now find nearby stations
+        places = req.get(
+            'https://maps.googleapis.com/maps/api/place/nearbysearch/json',
+            params={
+                'location': f"{lat},{lng}",
+                'radius':   50000,  # 50km radius
+                'type':     place_type,
+                'key':      key,
+                'language': 'en',
+            },
+            timeout=8
+        ).json()
+
+        stations = []
+        for p in places.get('results', [])[:6]:
+            # Calculate approximate distance
+            import math
+            plat = p['geometry']['location']['lat']
+            plng = p['geometry']['location']['lng']
+            dist_km = round(math.sqrt((plat-lat)**2 + (plng-lng)**2) * 111, 1)
+
+            stations.append({
+                'name':     p.get('name', ''),
+                'address':  p.get('vicinity', ''),
+                'distance': f"{dist_km} km",
+                'rating':   p.get('rating', 0),
+                'place_id': p.get('place_id', ''),
+            })
+
+        # Sort by distance
+        stations.sort(key=lambda x: float(x['distance'].replace(' km', '')))
+
+        return jsonify({'success': True, 'stations': stations})
+
+    except Exception as e:
+        return jsonify({'success': False, 'stations': [], 'error': str(e)})
 
 # ════════════════════════════════════════════════════════════════
 #  ERROR HANDLERS
