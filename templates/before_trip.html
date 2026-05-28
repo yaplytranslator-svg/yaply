@@ -6877,46 +6877,96 @@
     }
 
     // ── FESTIVALS ──
+
     function _renderFestivals(d) {
-
-      console.log('FESTIVALS DATA:', JSON.stringify(d));
-
       if (!d) return '<p style="color:var(--muted);padding:16px;">No data available</p>';
       var html = '<div style="margin-top:16px;">';
 
       // Season card
       var isPeak = d.peak_season;
-      html += '<div style="background:' + (isPeak ? 'var(--amber-g)' : 'var(--green-g)') + ';border:1px solid ' + (isPeak ? 'rgba(245,185,66,0.2)' : 'rgba(24,194,156,0.2)') + ';border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">';
+      html += '<div style="background:' + (isPeak ? 'var(--amber-g)' : 'var(--green-g)') + ';border:1px solid ' + (isPeak ? 'rgba(245,185,66,0.2)' : 'rgba(24,194,156,0.2)') + ';border-radius:16px;padding:14px 16px;margin-bottom:12px;">';
+      html += '<div style="display:flex;align-items:center;gap:12px;">';
       html += '<div style="font-size:28px;">' + (isPeak ? '🔥' : '😌') + '</div>';
-      html += '<div><div style="font-size:14px;font-weight:700;color:var(--text);">' + (d.season_type || 'Travel Season') + '</div>';
-      html += '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + (d.crowd_level || '') + ' · ' + (d.price_impact || '') + '</div></div>';
+      html += '<div>';
+      html += '<div style="font-size:14px;font-weight:700;color:var(--text);">' + (d.season_type || 'Travel Season') + '</div>';
+      html += '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + (d.crowd_level || '') + (d.price_impact ? ' · ' + d.price_impact : '') + '</div>';
+      html += '</div></div>';
+      if (d.weather_this_month) {
+        html += '<div style="font-size:12px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">🌤️ ' + d.weather_this_month + '</div>';
+      }
       html += '</div>';
 
-      if (d.festivals && d.festivals.length) {
+      // Festivals — handle BOTH string array and object array
+      var festivals = d.festivals || [];
+      if (festivals.length) {
         html += '<div class="tr-card">';
         html += '<div class="tr-card-title">🎉 Festivals</div>';
-        d.festivals.forEach(function (f) {
-          html += '<div style="padding:12px 0;border-bottom:1px solid var(--border);">';
-          html += '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px;">';
-          html += '<div style="font-size:13px;font-weight:600;color:var(--text);">' + (f.icon || '🎊') + ' ' + f.name + '</div>';
-          html += '<div style="font-size:11px;color:var(--muted);">' + (f.dates || '') + '</div>';
-          html += '</div>';
-          html += '<div style="font-size:12px;color:var(--muted2);">' + (f.description || '') + '</div>';
-          if (f.special_tips) html += '<div style="font-size:11px;color:var(--blue);margin-top:4px;">💡 ' + f.special_tips + '</div>';
+
+        festivals.forEach(function (f) {
+          html += '<div style="padding:10px 0;border-bottom:1px solid var(--border);">';
+
+          // ── Handle string format ──
+          if (typeof f === 'string') {
+            html += '<div style="font-size:13px;font-weight:600;color:var(--text);">🎊 ' + f + '</div>';
+          }
+          // ── Handle object format ──
+          else {
+            var name = f.name || f.festival_name || f.title || 'Festival';
+            var dates = f.dates || f.date || f.when || '';
+            var desc = f.description || f.desc || '';
+            var tip = f.special_tips || f.tip || '';
+            var icon = f.icon || '🎊';
+
+            html += '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px;">';
+            html += '<div style="font-size:13px;font-weight:600;color:var(--text);">' + icon + ' ' + name + '</div>';
+            if (dates) html += '<div style="font-size:11px;color:var(--muted);flex-shrink:0;margin-left:8px;">' + dates + '</div>';
+            html += '</div>';
+            if (desc) html += '<div style="font-size:12px;color:var(--muted2);">' + desc + '</div>';
+            if (tip) html += '<div style="font-size:11px;color:var(--blue);margin-top:4px;">💡 ' + tip + '</div>';
+          }
           html += '</div>';
         });
         html += '</div>';
       }
 
-      if (d.public_holidays && d.public_holidays.length) {
+      // Public holidays — handle BOTH string array and object array
+      var holidays = d.public_holidays || [];
+      if (holidays.length) {
         html += '<div class="tr-card">';
         html += '<div class="tr-card-title">📅 Public Holidays</div>';
-        d.public_holidays.forEach(function (h) {
+
+        holidays.forEach(function (h) {
           html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">';
-          html += '<span style="font-size:13px;color:var(--text2);">' + h.name + '</span>';
-          html += '<span style="font-size:12px;color:var(--muted);">' + (h.date || '') + '</span>';
+
+          // ── Handle string format ──
+          if (typeof h === 'string') {
+            html += '<span style="font-size:13px;color:var(--text2);">' + h + '</span>';
+            html += '<span style="font-size:11px;color:var(--muted);">Public Holiday</span>';
+          }
+          // ── Handle object format ──
+          else {
+            var name = h.name || h.holiday_name || h.title || 'Holiday';
+            var date = h.date || h.when || '';
+            var impact = h.tourist_impact || h.impact || '';
+            html += '<span style="font-size:13px;color:var(--text2);">' + name + '</span>';
+            html += '<span style="font-size:12px;color:var(--muted);">' + (date || impact || '') + '</span>';
+          }
           html += '</div>';
         });
+        html += '</div>';
+      }
+
+      // Booking advice
+      if (d.booking_advice) {
+        html += '<div style="background:var(--blue-g);border:1px solid rgba(37,99,255,0.15);border-radius:14px;padding:14px;font-size:13px;color:var(--text2);margin-top:2px;">';
+        html += '📌 <b style="color:var(--blue);">Booking tip:</b> ' + d.booking_advice;
+        html += '</div>';
+      }
+
+      // Best festival tip
+      if (d.best_festival_tip) {
+        html += '<div style="background:var(--coral-g);border:1px solid rgba(255,122,89,0.15);border-radius:14px;padding:14px;font-size:13px;color:var(--text2);margin-top:8px;">';
+        html += '🌟 <b style="color:var(--coral);">Pro tip:</b> ' + d.best_festival_tip;
         html += '</div>';
       }
 
