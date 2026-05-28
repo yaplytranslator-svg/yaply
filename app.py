@@ -868,21 +868,90 @@ def multi_city_plan():
 @limiter.limit("10 per hour")
 def api_journey():
     try:
-        data = request.get_json() or {}
+        data        = request.get_json() or {}
         origin      = clean(data.get('origin', ''))
         destination = clean(data.get('destination', ''))
+        travel_mode = clean(data.get('travel_mode', 'any'))
+        currency    = clean(data.get('currency', 'INR'), 3)
+
         if not origin or not destination:
             return jsonify({'success': False, 'error': 'Origin and destination required'})
-        currency    = clean(data.get('currency', 'INR'), 3)
-        travel_mode = clean(data.get('travel_mode', 'any'))
+
+        # Build mode-specific instruction
+        if travel_mode == 'train':
+            mode_instruction = """
+TRAVEL MODE: Train only.
+- nearest_airports should be nearest TRAIN STATIONS not airports
+- Use field name nearest_airports but fill with train stations
+- Include train operators, classes, IRCTC booking info
+- NO flight options"""
+        elif travel_mode == 'bus':
+            mode_instruction = """
+TRAVEL MODE: Bus only.
+- nearest_airports should be nearest BUS STANDS/TERMINALS not airports
+- Use field name nearest_airports but fill with bus terminals
+- Include bus operators like RSRTC, GSRTC, RedBus options
+- NO flight options
+- distance_from_origin should be in KM — label it clearly as km not price"""
+        elif travel_mode == 'road':
+            mode_instruction = """
+TRAVEL MODE: Road/Drive only.
+- Include road distance, drive time, fuel cost, toll cost
+- nearest_airports field = major highway toll plazas or fuel stops
+- NO flight options"""
+        else:
+            mode_instruction = """
+TRAVEL MODE: Best option (could be flight, train or bus).
+- nearest_airports = actual airports near origin
+- Include flight options if international or long distance
+- Include train as alternative if domestic"""
 
         result = groq_json(
-            f"""Complete door-to-door journey from "{origin}" to "{destination}". Prices in {currency}. Mode: {travel_mode}.
-Return JSON with: origin, destination, origin_has_airport, nearest_airports (name/city/code/distance_from_origin/ways_to_reach),
-destination_airports, recommended_route (step1/step2/step3/step4/total_duration/total_cost),
-flight_options (airline/duration/stops/price/class), alternative_routes (mode/description/cost),
-important_notes, documents_needed""",
-            model="llama-3.3-70b-versatile", temp=0.2, max_tok=3000
+            f"""Complete door-to-door journey planner.
+FROM: {origin}
+TO: {destination}
+CURRENCY: {currency}
+
+{mode_instruction}
+
+Return ONLY valid JSON:
+{{
+  "origin": "{origin}",
+  "destination": "{destination}",
+  "nearest_airports": [
+    {{
+      "name": "hub name",
+      "city": "city",
+      "code": "code if airport, blank if bus/train",
+      "distance_from_origin": "X km from {origin}"
+    }}
+  ],
+  "recommended_route": {{
+    "step1": "Step 1 description with transport and cost",
+    "step2": "Step 2 description",
+    "step3": "Step 3 description",
+    "step4": "Step 4 description if needed",
+    "total_duration": "X hours",
+    "total_cost": "{currency} X"
+  }},
+  "flight_options": [
+    {{
+      "airline": "operator name",
+      "mode": "{travel_mode}",
+      "duration": "X hours",
+      "price": "{currency} X",
+      "stops": 0,
+      "class": "class type",
+      "recommended": true
+    }}
+  ],
+  "alternative_routes": [],
+  "important_notes": ["note1", "note2"],
+  "documents_needed": ["doc1", "doc2"]
+}}""",
+            model="llama-3.3-70b-versatile",
+            temp=0.2,
+            max_tok=2000
         )
         return jsonify({'success': True, 'journey': result})
     except Exception as e:

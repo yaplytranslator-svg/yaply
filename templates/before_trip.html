@@ -4538,7 +4538,11 @@
               '<div style="font-size:13px;font-weight:600;color:var(--text);">' + (a.name || a.city || 'Hub') + (a.code ? ' (' + a.code + ')' : '') + '</div>' +
               '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + (a.city || '') + (a.distance_from_origin ? ' · ' + a.distance_from_origin : '') + '</div>' +
               '</div>' +
-              (a.distance_from_origin ? '<div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:' + distColor + ';">' + a.distance_from_origin + '</div>' : '') +
+              (a.distance_from_origin ? (function () {
+                var dist = String(a.distance_from_origin);
+                if (!isNaN(dist.trim())) dist = dist + ' km';
+                return '<div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:' + distColor + ';">' + dist + '</div>';
+              })() : '') +
               '</div>';
           }).join('');
         }
