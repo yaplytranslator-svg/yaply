@@ -4434,6 +4434,222 @@
       document.getElementById('nearbyStationsSection').style.display = 'none';
     }
 
+    async function planJourney() {
+      var origin = document.getElementById('jOrigin').value.trim();
+      var dest = document.getElementById('jDest').value.trim();
+
+      if (!origin) { showToast('Enter your location'); return; }
+      if (!dest) { showToast('Enter your destination'); return; }
+
+      // Show loading
+      document.getElementById('journeyLoading').style.display = 'block';
+      document.getElementById('journeyResults').style.display = 'none';
+
+      // Animate loading text
+      var loadingTexts = [
+        'Finding best routes...',
+        'Checking transport hubs...',
+        'Calculating travel times...',
+        'Getting pricing info...'
+      ];
+      var li = 0;
+      var lt = setInterval(function () {
+        var el = document.getElementById('journeyLoadingText');
+        if (el) el.textContent = loadingTexts[li % loadingTexts.length];
+        li++;
+      }, 1800);
+
+      try {
+        var token = localStorage.getItem('yaply_token') || '';
+        var currency = document.getElementById('currency')
+          ? document.getElementById('currency').value
+          : 'INR';
+
+        var res = await fetch('/api/journey', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            origin: origin,
+            destination: dest,
+            travel_mode: jMode,
+            currency: currency,
+          })
+        });
+        var data = await res.json();
+
+        clearInterval(lt);
+        document.getElementById('journeyLoading').style.display = 'none';
+
+        if (data.success) {
+          renderJourney(data.journey, origin, dest);
+        } else {
+          showToast(data.error || 'Could not plan journey. Try again.');
+        }
+
+      } catch (e) {
+        clearInterval(lt);
+        document.getElementById('journeyLoading').style.display = 'none';
+        console.error('[planJourney]', e);
+        showToast('Connection error. Please try again.');
+      }
+    }
+
+    function renderJourney(j, origin, dest) {
+      var resultsEl = document.getElementById('journeyResults');
+      resultsEl.style.display = 'block';
+      setTimeout(function () {
+        resultsEl.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+
+      // ── Nearest airports / stations ──
+      var airports = j.nearest_airports || [];
+      var airListEl = document.getElementById('airportsList');
+      var isTrainMode = jMode === 'train';
+      var isBusMode = jMode === 'bus';
+
+      // Update section label
+      var hubsLabelEl = document.getElementById('hubsLabel');
+      if (hubsLabelEl) {
+        hubsLabelEl.textContent = isTrainMode ? 'Nearest Train Stations'
+          : isBusMode ? 'Nearest Bus Terminals'
+            : 'Nearest Airports';
+      }
+
+      if (airListEl) {
+        if (!Array.isArray(airports) || !airports.length) {
+          airListEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:6px 0;">No hubs found for this route</div>';
+        } else {
+          airListEl.innerHTML = airports.slice(0, 3).map(function (a) {
+            if (!a || typeof a !== 'object') return '';
+            var iconSvg = isTrainMode
+              ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><rect x="4" y="3" width="16" height="16" rx="2"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="12" y1="3" x2="12" y2="19"/><path d="M8 19l-2 3"/><path d="M18 22l-2-3"/></svg>'
+              : isBusMode
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><circle cx="7" cy="18" r="2"/><circle cx="16" cy="18" r="2"/></svg>'
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" stroke-width="1.8"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>';
+            var iconBg = isTrainMode ? 'var(--blue-g)' : isBusMode ? 'var(--amber-g)' : 'rgba(14,165,233,0.1)';
+            var distColor = isTrainMode ? 'var(--blue)' : isBusMode ? 'var(--amber)' : '#0EA5E9';
+
+            return '<div style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);">' +
+              '<div style="width:36px;height:36px;border-radius:10px;background:' + iconBg + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + iconSvg + '</div>' +
+              '<div style="flex:1;">' +
+              '<div style="font-size:13px;font-weight:600;color:var(--text);">' + (a.name || a.city || 'Hub') + (a.code ? ' (' + a.code + ')' : '') + '</div>' +
+              '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + (a.city || '') + (a.distance_from_origin ? ' · ' + a.distance_from_origin : '') + '</div>' +
+              '</div>' +
+              (a.distance_from_origin ? '<div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:' + distColor + ';">' + a.distance_from_origin + '</div>' : '') +
+              '</div>';
+          }).join('');
+        }
+      }
+
+      // ── Recommended route steps ──
+      var stepsEl = document.getElementById('journeySteps');
+      if (stepsEl) {
+        var rec = j.recommended_route || {};
+        var steps = [rec.step1, rec.step2, rec.step3, rec.step4].filter(Boolean);
+
+        if (!steps.length) {
+          stepsEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:6px 0;">No route steps available</div>';
+        } else {
+          var DAY_COLORS = ['#2563FF', '#18C29C', '#FF7A59', '#F5B942', '#8B5CF6'];
+          stepsEl.innerHTML = steps.map(function (step, i) {
+            var col = DAY_COLORS[i % DAY_COLORS.length];
+            return '<div style="display:flex;gap:12px;padding:10px 0;position:relative;">' +
+              (i < steps.length - 1
+                ? '<div style="position:absolute;left:16px;top:42px;width:2px;height:calc(100% - 30px);background:linear-gradient(to bottom,' + col + ',transparent);"></div>'
+                : '') +
+              '<div style="width:34px;height:34px;border-radius:50%;background:' + col + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0;z-index:1;">' + (i + 1) + '</div>' +
+              '<div style="flex:1;background:var(--white);border:1px solid var(--border);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);">' +
+              '<div style="font-size:13px;font-weight:600;color:var(--text);">' + step + '</div>' +
+              '</div>' +
+              '</div>';
+          }).join('');
+        }
+
+        // Add total duration + cost if available
+        if (rec.total_duration || rec.total_cost) {
+          stepsEl.innerHTML +=
+            '<div style="background:var(--midnight);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:6px;">' +
+            '<div>' +
+            '<div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Total Journey</div>' +
+            '<div style="font-size:14px;font-weight:600;color:white;">' + (rec.total_duration || '—') + '</div>' +
+            '</div>' +
+            '<div style="text-align:right;">' +
+            '<div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Est. Cost</div>' +
+            '<div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--green);">' + (rec.total_cost || '—') + '</div>' +
+            '</div>' +
+            '</div>';
+        }
+      }
+
+      // ── Flight / Transport options ──
+      var flightsEl = document.getElementById('flightsList');
+      var optLabelEl = document.getElementById('optionsLabel');
+      if (optLabelEl) {
+        optLabelEl.textContent = isTrainMode ? 'Train Options'
+          : isBusMode ? 'Bus Options'
+            : 'Flight Options';
+      }
+
+      if (flightsEl) {
+        var options = j.flight_options || j.alternative_routes || [];
+        if (!options.length) {
+          flightsEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:6px 0;">No options found for this route</div>';
+        } else {
+          flightsEl.innerHTML = options.slice(0, 4).map(function (opt, i) {
+            var isRec = opt.recommended || i === 0;
+            var cost = opt.price || opt.cost || opt.total_cost || '—';
+            var dur = opt.duration || opt.travel_time || '—';
+            var name = opt.airline || opt.operator || opt.mode || opt.type || ('Option ' + (i + 1));
+            var detail = [
+              opt.stops !== undefined ? (opt.stops === 0 ? 'Direct' : opt.stops + ' stop') : '',
+              opt.class || opt.comfort || ''
+            ].filter(Boolean).join(' · ');
+
+            return '<div style="background:var(--white);border:1.5px solid ' + (isRec ? 'rgba(37,99,255,0.25)' : 'var(--border)') + ';border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);position:relative;overflow:hidden;">' +
+              (isRec ? '<div style="position:absolute;top:0;right:0;background:var(--blue);color:white;font-size:8px;font-weight:800;padding:3px 10px;border-radius:0 0 0 10px;letter-spacing:.5px;">BEST</div>' : '') +
+              '<div style="width:40px;height:40px;border-radius:12px;background:' + (isTrainMode ? 'var(--blue-g)' : isBusMode ? 'var(--amber-g)' : 'rgba(14,165,233,0.1)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+              (isTrainMode
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><rect x="4" y="3" width="16" height="16" rx="2"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="12" y1="3" x2="12" y2="19"/></svg>'
+                : isBusMode
+                  ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><circle cx="7" cy="18" r="2"/><circle cx="16" cy="18" r="2"/></svg>'
+                  : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" stroke-width="1.8"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>') +
+              '</div>' +
+              '<div style="flex:1;">' +
+              '<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;">' + name + '</div>' +
+              (detail ? '<div style="font-size:11px;color:var(--muted);">' + detail + '</div>' : '') +
+              '</div>' +
+              '<div style="text-align:right;flex-shrink:0;">' +
+              '<div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text);">' + cost + '</div>' +
+              '<div style="font-size:11px;color:var(--muted);margin-top:1px;">' + dur + '</div>' +
+              '</div>' +
+              '</div>';
+          }).join('');
+        }
+      }
+
+      // ── Important notes ──
+      var notesEl = document.getElementById('journeyNotes');
+      if (notesEl) {
+        var notes = j.important_notes || j.documents_needed || [];
+        if (notes && notes.length) {
+          notesEl.innerHTML =
+            '<div style="background:var(--blue-g);border:1px solid rgba(37,99,255,0.12);border-radius:14px;padding:14px 16px;margin-top:6px;">' +
+            '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:8px;">Important Notes</div>' +
+            notes.map(function (n) {
+              return '<div style="display:flex;gap:8px;padding:4px 0;font-size:12px;color:var(--text2);">' +
+                '<span style="color:var(--blue);flex-shrink:0;">•</span>' + n +
+                '</div>';
+            }).join('') +
+            '</div>';
+        } else {
+          notesEl.innerHTML = '';
+        }
+      }
+    }
+
     // ── DISCOVER ───────────────────────────────────
     function setDiscoverMode(mode) {
       discoverMode = mode;
