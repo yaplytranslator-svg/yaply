@@ -3842,352 +3842,400 @@
     }
 
     // ── GENERATE PLAN ──────────────────────────────
-    
+
+    var selectedTransportMode = 'smart'; // default
+
     async function generatePlan() {
-  var dest   = document.getElementById('destination').value.trim();
-  var origin = document.getElementById('origin').value.trim();
+      var dest = document.getElementById('destination').value.trim();
+      var origin = document.getElementById('origin').value.trim();
 
-  if (!dest)   { showToast('Enter a destination'); return; }
-  if (!origin) { showToast('Enter where you are travelling from'); return; }
+      if (!dest) { showToast('Enter a destination'); return; }
+      if (!origin) { showToast('Enter where you are travelling from'); return; }
 
-  var payload = {
-    destination:    dest,
-    origin:         origin,
-    days:           parseInt(document.getElementById('days').value) || 5,
-    people:         parseInt(document.getElementById('people').value) || 2,
-    budget:         document.getElementById('budget').value || '80000',
-    currency:       document.getElementById('currency').value || 'INR',
-    passport:       document.getElementById('passport').value || 'India',
-    vibe:           Array.from(selectedVibes || []).join(' + ') || 'adventure',
-    travel_mode:    selectedTransportMode,
-  };
+      var payload = {
+        destination: dest,
+        origin: origin,
+        days: parseInt(document.getElementById('days').value) || 5,
+        people: parseInt(document.getElementById('people').value) || 2,
+        budget: document.getElementById('budget').value || '80000',
+        currency: document.getElementById('currency').value || 'INR',
+        passport: document.getElementById('passport').value || 'India',
+        vibe: Array.from(selectedVibes || []).join(' + ') || 'adventure',
+        travel_mode: selectedTransportMode,
+      };
 
-  document.getElementById('loading').style.display = 'block';
-  document.getElementById('results').style.display = 'none';
-  document.getElementById('results') && document.getElementById('results').classList.remove('show');
-
-  var steps = [
-    'Creating day-by-day itinerary...',
-    'Planning ' + getModeLabel(selectedTransportMode) + ' journey...',
-    'Checking visa requirements...',
-    'Calculating smart budget...',
-    'Finding hidden gems...'
-  ];
-  var si = 0;
-  var stepInt = setInterval(function() {
-    document.querySelectorAll('.ls-item').forEach(function(el, i) {
-      el.classList.toggle('done',   i < si);
-      el.classList.toggle('active', i === si);
-    });
-    var titleEl = document.getElementById('loadingTitle');
-    if (titleEl) titleEl.textContent = steps[Math.min(si, steps.length-1)];
-    si++;
-    if (si > steps.length) si = steps.length;
-  }, 2500);
-
-  try {
-    var token = localStorage.getItem('yaply_token') || '';
-    var res   = await fetch('/api/plan', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body:    JSON.stringify(payload)
-    });
-    var data = await res.json();
-
-    clearInterval(stepInt);
-    document.getElementById('loading').style.display = 'none';
-
-    if (data.success) {
-      currentPlan       = data.plan;
-      currentPlan._meta = payload;
-      renderPlan(data.plan, payload.currency, selectedTransportMode);
+      // ── Show loading ──
+      var loadingEl = document.getElementById('loading');
       var resultsEl = document.getElementById('results');
-      if (resultsEl) {
-        resultsEl.classList.add('show');
-        resultsEl.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      showToast(data.error || 'Could not generate plan. Try again.');
-    }
-  } catch(e) {
-    clearInterval(stepInt);
-    setLoading(false);
-    showToast('Connection error. Please try again.');
-  }
-}
+      var genBtn = document.getElementById('genBtn');
+      var genSpin = document.getElementById('genSpin');
+      var genIcon = document.getElementById('genIcon');
 
-function getModeLabel(mode) {
-  var labels = { smart:'optimal', flight:'flight', train:'train', bus:'bus', road:'road' };
-  return labels[mode] || 'transport';
-}
+      if (loadingEl) loadingEl.style.display = 'block';
+      if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.classList.remove('show'); }
+      if (genBtn) genBtn.disabled = true;
+      if (genSpin) genSpin.style.display = 'block';
+      if (genIcon) genIcon.style.display = 'none';
+
+      // ── Animate loading steps ──
+      var steps = [
+        'Creating day-by-day itinerary...',
+        'Planning ' + _getModeLabel(selectedTransportMode) + ' journey...',
+        'Checking visa requirements...',
+        'Calculating smart budget...',
+        'Finding hidden gems...'
+      ];
+      var si = 0;
+      var stepInt = setInterval(function () {
+        document.querySelectorAll('.ls-item').forEach(function (el, i) {
+          el.classList.toggle('done', i < si);
+          el.classList.toggle('active', i === si);
+        });
+        var titleEl = document.getElementById('loadingTitle');
+        if (titleEl) titleEl.textContent = steps[Math.min(si, steps.length - 1)];
+        si++;
+      }, 2500);
+
+      // ── API call ──
+      try {
+        var token = localStorage.getItem('yaply_token') || '';
+        var res = await fetch('/api/plan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(payload)
+        });
+        var data = await res.json();
+
+        clearInterval(stepInt);
+        _hideLoading(loadingEl, genBtn, genSpin, genIcon);
+
+        if (data.success) {
+          currentPlan = data.plan;
+          currentPlan._meta = payload;
+          renderPlan(data.plan, payload.currency, selectedTransportMode);
+          if (resultsEl) {
+            resultsEl.style.display = 'block';
+            resultsEl.classList.add('show');
+            setTimeout(function () {
+              resultsEl.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }
+        } else {
+          showToast(data.error || 'Could not generate plan. Try again.');
+        }
+
+      } catch (e) {
+        clearInterval(stepInt);
+        _hideLoading(loadingEl, genBtn, genSpin, genIcon);
+        console.error('[generatePlan]', e);
+        showToast('Connection error. Please try again.');
+      }
+    }
+
+    // ── Helper: hide loading state ──
+    function _hideLoading(loadingEl, genBtn, genSpin, genIcon) {
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (genBtn) genBtn.disabled = false;
+      if (genSpin) genSpin.style.display = 'none';
+      if (genIcon) genIcon.style.display = 'block';
+    }
+
+    // ── Helper: mode label ──
+    function _getModeLabel(mode) {
+      var labels = {
+        smart: 'optimal',
+        flight: 'flight',
+        train: 'train',
+        bus: 'bus',
+        road: 'road'
+      };
+      return labels[mode] || 'transport';
+    }
+
+    // ── Transport mode selector ──
+    function setTransportMode(btn, mode) {
+      document.querySelectorAll('.tm-btn').forEach(function (b) {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+      selectedTransportMode = mode;
+
+      var banner = document.getElementById('smartModeBanner');
+      if (banner) {
+        banner.style.display = mode === 'smart' ? 'flex' : 'none';
+      }
+    }
 
     // ── RENDER PLAN ────────────────────────────────
-    
+
     function renderBudgetBreakdown(plan, currency, travelMode) {
-  var bd = plan.budget_breakdown || {};
+      var bd = plan.budget_breakdown || {};
 
-  // Decide which transport line to show
-  var transportMode = travelMode || selectedTransportMode || 'smart';
-  var showFlight    = transportMode === 'flight' || transportMode === 'smart';
-  var showTrain     = transportMode === 'train';
-  var showBus       = transportMode === 'bus';
-  var showRoad      = transportMode === 'road';
+      // Decide which transport line to show
+      var transportMode = travelMode || selectedTransportMode || 'smart';
+      var showFlight = transportMode === 'flight' || transportMode === 'smart';
+      var showTrain = transportMode === 'train';
+      var showBus = transportMode === 'bus';
+      var showRoad = transportMode === 'road';
 
-  var items = [];
+      var items = [];
 
-  // Transport line — smart based on mode
-  if (showFlight && bd.flights && bd.flights !== '0' && bd.flights !== currency + ' 0') {
-    items.push({ label: '✈️ Flights', value: bd.flights, color: 'var(--blue)' });
-  }
-  if (showTrain) {
-    var trainCost = bd.train || bd.transport || bd.flights || 'Check IRCTC';
-    items.push({ label: '🚂 Train', value: trainCost, color: 'var(--blue)' });
-  }
-  if (showBus) {
-    var busCost = bd.bus || bd.transport || 'Check RedBus';
-    items.push({ label: '🚌 Bus', value: busCost, color: 'var(--amber)' });
-  }
-  if (showRoad) {
-    var roadCost = bd.road || bd.transport || 'Fuel + tolls';
-    items.push({ label: '🚗 Road Transport', value: roadCost, color: 'var(--coral)' });
-  }
+      // Transport line — smart based on mode
+      if (showFlight && bd.flights && bd.flights !== '0' && bd.flights !== currency + ' 0') {
+        items.push({ label: '✈️ Flights', value: bd.flights, color: 'var(--blue)' });
+      }
+      if (showTrain) {
+        var trainCost = bd.train || bd.transport || bd.flights || 'Check IRCTC';
+        items.push({ label: '🚂 Train', value: trainCost, color: 'var(--blue)' });
+      }
+      if (showBus) {
+        var busCost = bd.bus || bd.transport || 'Check RedBus';
+        items.push({ label: '🚌 Bus', value: busCost, color: 'var(--amber)' });
+      }
+      if (showRoad) {
+        var roadCost = bd.road || bd.transport || 'Fuel + tolls';
+        items.push({ label: '🚗 Road Transport', value: roadCost, color: 'var(--coral)' });
+      }
 
-  // Common items
-  if (bd.accommodation) items.push({ label: '🏨 Accommodation', value: bd.accommodation, color: 'var(--purple, #8B5CF6)' });
-  if (bd.food)          items.push({ label: '🍜 Food', value: bd.food, color: 'var(--coral)' });
-  if (bd.transport && !showTrain && !showBus && !showRoad)
-    items.push({ label: '🚇 Local Transport', value: bd.transport, color: 'var(--green)' });
-  if (bd.activities)    items.push({ label: '🎭 Activities', value: bd.activities, color: 'var(--amber)' });
-  if (bd.miscellaneous) items.push({ label: '🛍️ Misc', value: bd.miscellaneous, color: 'var(--muted)' });
+      // Common items
+      if (bd.accommodation) items.push({ label: '🏨 Accommodation', value: bd.accommodation, color: 'var(--purple, #8B5CF6)' });
+      if (bd.food) items.push({ label: '🍜 Food', value: bd.food, color: 'var(--coral)' });
+      if (bd.transport && !showTrain && !showBus && !showRoad)
+        items.push({ label: '🚇 Local Transport', value: bd.transport, color: 'var(--green)' });
+      if (bd.activities) items.push({ label: '🎭 Activities', value: bd.activities, color: 'var(--amber)' });
+      if (bd.miscellaneous) items.push({ label: '🛍️ Misc', value: bd.miscellaneous, color: 'var(--muted)' });
 
-  return items.map(function(item) {
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">' +
-      '<span style="font-size:13px;color:var(--text2);">' + item.label + '</span>' +
-      '<span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:' + item.color + ';">' + item.value + '</span>' +
-    '</div>';
-  }).join('');
-}
-
-// ── JOURNEY PLANNER ─────────────────────────────//
-
-async function planJourney() {
-  var origin = document.getElementById('jOrigin').value.trim();
-  var dest   = document.getElementById('jDest').value.trim();
-  if (!origin) { showToast('Enter your location'); return; }
-  if (!dest)   { showToast('Enter your destination'); return; }
-
-  document.getElementById('journeyLoading').style.display = 'block';
-  document.getElementById('journeyResults').style.display = 'none';
-
-  var loadingTexts = [
-    'Finding best routes...',
-    'Checking transport hubs...',
-    'Calculating travel times...',
-    'Getting pricing info...'
-  ];
-  var li = 0;
-  var lt = setInterval(function() {
-    var el = document.getElementById('journeyLoadingText');
-    if (el) el.textContent = loadingTexts[li % loadingTexts.length];
-    li++;
-  }, 1800);
-
-  try {
-    var token = localStorage.getItem('yaply_token') || '';
-    var res   = await fetch('/api/journey', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body:    JSON.stringify({
-        origin:       origin,
-        destination:  dest,
-        travel_mode:  jMode,
-        currency:     'INR',
-      })
-    });
-    var data = await res.json();
-    clearInterval(lt);
-
-    document.getElementById('journeyLoading').style.display = 'none';
-
-    if (data.success) {
-      renderJourney(data.journey, origin, dest, jMode);
-    } else {
-      showToast(data.error || 'Could not plan journey');
+      return items.map(function (item) {
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">' +
+          '<span style="font-size:13px;color:var(--text2);">' + item.label + '</span>' +
+          '<span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:' + item.color + ';">' + item.value + '</span>' +
+          '</div>';
+      }).join('');
     }
-  } catch(e) {
-    clearInterval(lt);
-    document.getElementById('journeyLoading').style.display = 'none';
-    showToast('Connection error. Try again.');
-  }
-}
 
-function renderJourney(j, origin, dest, mode) {
-  var resultsEl = document.getElementById('journeyResults');
-  resultsEl.style.display = 'block';
-  resultsEl.scrollIntoView({ behavior: 'smooth' });
+    // ── JOURNEY PLANNER ─────────────────────────────//
 
-  // ── Summary card ──
-  var rec = j.recommended_route || {};
-  document.getElementById('journeySummaryCard').innerHTML =
-    '<div class="journey-summary">' +
-      '<div class="js-route">' +
+    async function planJourney() {
+      var origin = document.getElementById('jOrigin').value.trim();
+      var dest = document.getElementById('jDest').value.trim();
+      if (!origin) { showToast('Enter your location'); return; }
+      if (!dest) { showToast('Enter your destination'); return; }
+
+      document.getElementById('journeyLoading').style.display = 'block';
+      document.getElementById('journeyResults').style.display = 'none';
+
+      var loadingTexts = [
+        'Finding best routes...',
+        'Checking transport hubs...',
+        'Calculating travel times...',
+        'Getting pricing info...'
+      ];
+      var li = 0;
+      var lt = setInterval(function () {
+        var el = document.getElementById('journeyLoadingText');
+        if (el) el.textContent = loadingTexts[li % loadingTexts.length];
+        li++;
+      }, 1800);
+
+      try {
+        var token = localStorage.getItem('yaply_token') || '';
+        var res = await fetch('/api/journey', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            origin: origin,
+            destination: dest,
+            travel_mode: jMode,
+            currency: 'INR',
+          })
+        });
+        var data = await res.json();
+        clearInterval(lt);
+
+        document.getElementById('journeyLoading').style.display = 'none';
+
+        if (data.success) {
+          renderJourney(data.journey, origin, dest, jMode);
+        } else {
+          showToast(data.error || 'Could not plan journey');
+        }
+      } catch (e) {
+        clearInterval(lt);
+        document.getElementById('journeyLoading').style.display = 'none';
+        showToast('Connection error. Try again.');
+      }
+    }
+
+    function renderJourney(j, origin, dest, mode) {
+      var resultsEl = document.getElementById('journeyResults');
+      resultsEl.style.display = 'block';
+      resultsEl.scrollIntoView({ behavior: 'smooth' });
+
+      // ── Summary card ──
+      var rec = j.recommended_route || {};
+      document.getElementById('journeySummaryCard').innerHTML =
+        '<div class="journey-summary">' +
+        '<div class="js-route">' +
         '<div class="js-city">' + (origin.split(',')[0]) + '</div>' +
         '<div class="js-arrow">' +
-          '<div class="js-arrow-line"></div>' +
-          '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
-          '<div class="js-arrow-line"></div>' +
+        '<div class="js-arrow-line"></div>' +
+        '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
+        '<div class="js-arrow-line"></div>' +
         '</div>' +
         '<div class="js-city">' + (dest.split(',')[0]) + '</div>' +
-      '</div>' +
-      '<div class="js-stats">' +
+        '</div>' +
+        '<div class="js-stats">' +
         '<div class="js-stat"><div class="js-stat-val">' + (rec.total_duration || '—') + '</div><div class="js-stat-lbl">Total Time</div></div>' +
         '<div class="js-stat"><div class="js-stat-val">' + (rec.total_cost || '—') + '</div><div class="js-stat-lbl">Est. Cost</div></div>' +
         '<div class="js-stat"><div class="js-stat-val">' + (getModeBadge(mode)) + '</div><div class="js-stat-lbl">Mode</div></div>' +
-      '</div>' +
-    '</div>';
+        '</div>' +
+        '</div>';
 
-  // ── Hubs (airports or train stations) ──
-  var hubsLabel = document.getElementById('hubsLabel');
-  var airportsList = document.getElementById('airportsList');
+      // ── Hubs (airports or train stations) ──
+      var hubsLabel = document.getElementById('hubsLabel');
+      var airportsList = document.getElementById('airportsList');
 
-  var isFlightMode = mode === 'flight' || mode === 'any';
-  var isTrainMode  = mode === 'train';
-  var isBusMode    = mode === 'bus';
+      var isFlightMode = mode === 'flight' || mode === 'any';
+      var isTrainMode = mode === 'train';
+      var isBusMode = mode === 'bus';
 
-  if (isFlightMode) {
-    hubsLabel.textContent = 'Nearest Airports';
-    document.getElementById('optionsLabel').textContent = 'Flight Options';
-  } else if (isTrainMode) {
-    hubsLabel.textContent = 'Nearest Train Stations';
-    document.getElementById('optionsLabel').textContent = 'Train Options';
-  } else if (isBusMode) {
-    hubsLabel.textContent = 'Nearest Bus Terminals';
-    document.getElementById('optionsLabel').textContent = 'Bus Options';
-  } else {
-    hubsLabel.textContent = 'Transport Hubs';
-    document.getElementById('optionsLabel').textContent = 'Transport Options';
-  }
+      if (isFlightMode) {
+        hubsLabel.textContent = 'Nearest Airports';
+        document.getElementById('optionsLabel').textContent = 'Flight Options';
+      } else if (isTrainMode) {
+        hubsLabel.textContent = 'Nearest Train Stations';
+        document.getElementById('optionsLabel').textContent = 'Train Options';
+      } else if (isBusMode) {
+        hubsLabel.textContent = 'Nearest Bus Terminals';
+        document.getElementById('optionsLabel').textContent = 'Bus Options';
+      } else {
+        hubsLabel.textContent = 'Transport Hubs';
+        document.getElementById('optionsLabel').textContent = 'Transport Options';
+      }
 
-  // Render nearest airports/stations from AI data
-  var airports = j.nearest_airports || j.origin_has_airport ? [j.nearest_airports] : [];
-  if (j.nearest_airports && Array.isArray(j.nearest_airports)) {
-    airports = j.nearest_airports;
-  }
+      // Render nearest airports/stations from AI data
+      var airports = j.nearest_airports || j.origin_has_airport ? [j.nearest_airports] : [];
+      if (j.nearest_airports && Array.isArray(j.nearest_airports)) {
+        airports = j.nearest_airports;
+      }
 
-  airportsList.innerHTML = airports.slice(0, 3).map(function(a) {
-    if (!a || typeof a !== 'object') return '';
-    var icon = isTrainMode
-      ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="4" y="3" width="16" height="16" rx="2"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="12" y1="3" x2="12" y2="19"/><path d="M8 19l-2 3"/><path d="M18 22l-2-3"/></svg>'
-      : '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>';
-    var bg  = isTrainMode ? 'var(--blue-g)' : 'rgba(14,165,233,0.1)';
-    var clr = isTrainMode ? 'var(--blue)' : '#0EA5E9';
-    return '<div class="hub-card">' +
-      '<div class="hub-icon" style="background:' + bg + ';stroke:' + clr + ';">' + icon + '</div>' +
-      '<div class="hub-info">' +
-        '<div class="hub-name">' + (a.name || a.city || 'Hub') + (a.code ? ' (' + a.code + ')' : '') + '</div>' +
-        '<div class="hub-meta">' + (a.city || '') + (a.distance_from_origin ? ' · ' + a.distance_from_origin + ' from you' : '') + '</div>' +
-      '</div>' +
-      (a.distance_from_origin ? '<div class="hub-dist">' + a.distance_from_origin + '</div>' : '') +
-    '</div>';
-  }).join('');
+      airportsList.innerHTML = airports.slice(0, 3).map(function (a) {
+        if (!a || typeof a !== 'object') return '';
+        var icon = isTrainMode
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="4" y="3" width="16" height="16" rx="2"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="12" y1="3" x2="12" y2="19"/><path d="M8 19l-2 3"/><path d="M18 22l-2-3"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>';
+        var bg = isTrainMode ? 'var(--blue-g)' : 'rgba(14,165,233,0.1)';
+        var clr = isTrainMode ? 'var(--blue)' : '#0EA5E9';
+        return '<div class="hub-card">' +
+          '<div class="hub-icon" style="background:' + bg + ';stroke:' + clr + ';">' + icon + '</div>' +
+          '<div class="hub-info">' +
+          '<div class="hub-name">' + (a.name || a.city || 'Hub') + (a.code ? ' (' + a.code + ')' : '') + '</div>' +
+          '<div class="hub-meta">' + (a.city || '') + (a.distance_from_origin ? ' · ' + a.distance_from_origin + ' from you' : '') + '</div>' +
+          '</div>' +
+          (a.distance_from_origin ? '<div class="hub-dist">' + a.distance_from_origin + '</div>' : '') +
+          '</div>';
+      }).join('');
 
-  // ── Journey steps ──
-  var stepsEl = document.getElementById('journeySteps');
-  var route   = rec;
-  var steps   = [route.step1, route.step2, route.step3, route.step4].filter(Boolean);
-  if (!steps.length && j.recommended_route) {
-    var r = j.recommended_route;
-    steps = [r.step1, r.step2, r.step3, r.step4].filter(Boolean);
-  }
+      // ── Journey steps ──
+      var stepsEl = document.getElementById('journeySteps');
+      var route = rec;
+      var steps = [route.step1, route.step2, route.step3, route.step4].filter(Boolean);
+      if (!steps.length && j.recommended_route) {
+        var r = j.recommended_route;
+        steps = [r.step1, r.step2, r.step3, r.step4].filter(Boolean);
+      }
 
-  stepsEl.innerHTML = steps.map(function(step, i) {
-    return '<div class="j-step">' +
-      '<div class="j-step-num">' + (i + 1) + '</div>' +
-      '<div class="j-step-body">' +
-        '<div class="j-step-title">' + step + '</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+      stepsEl.innerHTML = steps.map(function (step, i) {
+        return '<div class="j-step">' +
+          '<div class="j-step-num">' + (i + 1) + '</div>' +
+          '<div class="j-step-body">' +
+          '<div class="j-step-title">' + step + '</div>' +
+          '</div>' +
+          '</div>';
+      }).join('');
 
-  // ── Transport options (flights/trains/buses) ──
-  var flightsEl = document.getElementById('flightsList');
-  var options   = j.flight_options || j.alternative_routes || [];
+      // ── Transport options (flights/trains/buses) ──
+      var flightsEl = document.getElementById('flightsList');
+      var options = j.flight_options || j.alternative_routes || [];
 
-  if (!options.length) {
-    flightsEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">No options available for this route</div>';
-  } else {
-    flightsEl.innerHTML = options.slice(0, 4).map(function(opt, i) {
-      var isRec  = opt.recommended || i === 0;
-      var bgIcon = getOptionIcon(opt.mode || opt.type || (isFlightMode ? 'flight' : mode));
-      var cost   = opt.price || opt.cost || opt.total_cost || '—';
-      var dur    = opt.duration || opt.travel_time || '—';
-      return '<div class="transport-option' + (isRec ? ' recommended' : '') + '">' +
-        (isRec ? '<div class="to-badge">Best Option</div>' : '') +
-        '<div class="to-icon" style="' + bgIcon.style + '">' + bgIcon.svg + '</div>' +
-        '<div class="to-info">' +
-          '<div class="to-name">' + (opt.airline || opt.operator || opt.mode || opt.type || 'Option ' + (i+1)) + '</div>' +
-          '<div class="to-detail">' +
+      if (!options.length) {
+        flightsEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">No options available for this route</div>';
+      } else {
+        flightsEl.innerHTML = options.slice(0, 4).map(function (opt, i) {
+          var isRec = opt.recommended || i === 0;
+          var bgIcon = getOptionIcon(opt.mode || opt.type || (isFlightMode ? 'flight' : mode));
+          var cost = opt.price || opt.cost || opt.total_cost || '—';
+          var dur = opt.duration || opt.travel_time || '—';
+          return '<div class="transport-option' + (isRec ? ' recommended' : '') + '">' +
+            (isRec ? '<div class="to-badge">Best Option</div>' : '') +
+            '<div class="to-icon" style="' + bgIcon.style + '">' + bgIcon.svg + '</div>' +
+            '<div class="to-info">' +
+            '<div class="to-name">' + (opt.airline || opt.operator || opt.mode || opt.type || 'Option ' + (i + 1)) + '</div>' +
+            '<div class="to-detail">' +
             (opt.stops !== undefined ? (opt.stops === 0 ? 'Direct' : opt.stops + ' stop' + (opt.stops > 1 ? 's' : '')) : '') +
             (opt.class ? ' · ' + opt.class : '') +
             (opt.comfort ? ' · ' + opt.comfort : '') +
-          '</div>' +
-        '</div>' +
-        '<div class="to-right">' +
-          '<div class="to-cost">' + cost + '</div>' +
-          '<div class="to-duration">' + dur + '</div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-  }
+            '</div>' +
+            '</div>' +
+            '<div class="to-right">' +
+            '<div class="to-cost">' + cost + '</div>' +
+            '<div class="to-duration">' + dur + '</div>' +
+            '</div>' +
+            '</div>';
+        }).join('');
+      }
 
-  // ── Notes / important info ──
-  var notesEl = document.getElementById('journeyNotes');
-  var notes   = j.important_notes || j.documents_needed || [];
-  if (notes && notes.length) {
-    notesEl.innerHTML =
-      '<div style="background:var(--blue-g);border:1px solid rgba(37,99,255,0.12);border-radius:var(--r-lg);padding:14px 16px;">' +
-        '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:10px;">Important Notes</div>' +
-        notes.map(function(n) {
-          return '<div style="display:flex;gap:8px;padding:5px 0;font-size:12px;color:var(--text2);">' +
-            '<span style="color:var(--blue);flex-shrink:0;">•</span>' + n +
+      // ── Notes / important info ──
+      var notesEl = document.getElementById('journeyNotes');
+      var notes = j.important_notes || j.documents_needed || [];
+      if (notes && notes.length) {
+        notesEl.innerHTML =
+          '<div style="background:var(--blue-g);border:1px solid rgba(37,99,255,0.12);border-radius:var(--r-lg);padding:14px 16px;">' +
+          '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:10px;">Important Notes</div>' +
+          notes.map(function (n) {
+            return '<div style="display:flex;gap:8px;padding:5px 0;font-size:12px;color:var(--text2);">' +
+              '<span style="color:var(--blue);flex-shrink:0;">•</span>' + n +
+              '</div>';
+          }).join('') +
           '</div>';
-        }).join('') +
-      '</div>';
-  } else {
-    notesEl.innerHTML = '';
-  }
-}
+      } else {
+        notesEl.innerHTML = '';
+      }
+    }
 
-function getModeBadge(mode) {
-  var map = { flight:'✈️ Air', train:'🚂 Rail', bus:'🚌 Bus', road:'🚗 Road', any:'🤖 Best' };
-  return map[mode] || '🌍 Mixed';
-}
+    function getModeBadge(mode) {
+      var map = { flight: '✈️ Air', train: '🚂 Rail', bus: '🚌 Bus', road: '🚗 Road', any: '🤖 Best' };
+      return map[mode] || '🌍 Mixed';
+    }
 
-function getOptionIcon(type) {
-  var t = (type || '').toLowerCase();
-  if (t.includes('flight') || t.includes('air')) {
-    return {
-      style: 'background:rgba(14,165,233,0.1);',
-      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" stroke-width="1.8"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>'
-    };
-  }
-  if (t.includes('train') || t.includes('rail')) {
-    return {
-      style: 'background:var(--blue-g);',
-      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><rect x="4" y="3" width="16" height="16" rx="2"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="12" y1="3" x2="12" y2="19"/><path d="M8 19l-2 3"/><path d="M18 22l-2-3"/></svg>'
-    };
-  }
-  if (t.includes('bus')) {
-    return {
-      style: 'background:var(--amber-g);',
-      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><circle cx="7" cy="18" r="2"/><circle cx="16" cy="18" r="2"/></svg>'
-    };
-  }
-  return {
-    style: 'background:var(--coral-g);',
-    svg: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="1.8"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><circle cx="16" cy="17" r="3"/><circle cx="7" cy="17" r="3"/></svg>'
-  };
-}
+    function getOptionIcon(type) {
+      var t = (type || '').toLowerCase();
+      if (t.includes('flight') || t.includes('air')) {
+        return {
+          style: 'background:rgba(14,165,233,0.1);',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" stroke-width="1.8"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>'
+        };
+      }
+      if (t.includes('train') || t.includes('rail')) {
+        return {
+          style: 'background:var(--blue-g);',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><rect x="4" y="3" width="16" height="16" rx="2"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="12" y1="3" x2="12" y2="19"/><path d="M8 19l-2 3"/><path d="M18 22l-2-3"/></svg>'
+        };
+      }
+      if (t.includes('bus')) {
+        return {
+          style: 'background:var(--amber-g);',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><circle cx="7" cy="18" r="2"/><circle cx="16" cy="18" r="2"/></svg>'
+        };
+      }
+      return {
+        style: 'background:var(--coral-g);',
+        svg: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="1.8"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><circle cx="16" cy="17" r="3"/><circle cx="7" cy="17" r="3"/></svg>'
+      };
+    }
 
     // ── MULTI-CITY ─────────────────────────────────
     var stopCount = 2;
