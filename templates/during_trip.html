@@ -1334,6 +1334,277 @@
       transform: translateX(-50%) translateY(0);
     }
 
+    /* ── Tool Modal System ── */
+    .tool-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(11, 18, 32, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .tool-overlay.open {
+      display: flex;
+    }
+
+    .tool-sheet {
+      background: var(--white);
+      border-radius: 28px 28px 0 0;
+      width: 100%;
+      max-width: 480px;
+      max-height: 92vh;
+      overflow-y: auto;
+      animation: sheetUp .38s cubic-bezier(.34, 1.2, .64, 1) both;
+      padding-bottom: 40px;
+    }
+
+    @keyframes sheetUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .tool-sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--bg2);
+      border-radius: 2px;
+      margin: 14px auto 0;
+    }
+
+    .tool-sheet-header {
+      padding: 16px 20px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .tool-sheet-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .tool-sheet-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .tool-sheet-titles {
+      flex: 1;
+    }
+
+    .tool-sheet-title {
+      font-family: var(--font-head);
+      font-size: 20px;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      margin-bottom: 3px;
+    }
+
+    .tool-sheet-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .tool-sheet-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--bg2);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+
+    .tool-sheet-close svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--muted);
+      fill: none;
+      stroke-width: 2.5;
+    }
+
+    .tool-sheet-body {
+      padding: 16px 20px 0;
+    }
+
+    .tool-field-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .tool-input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+      box-sizing: border-box;
+    }
+
+    .tool-input:focus {
+      border-color: var(--blue);
+      background: var(--white);
+    }
+
+    .tool-select {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      box-sizing: border-box;
+    }
+
+    .tool-input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .tool-run-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      transition: all .22s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tool-run-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .tool-run-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .tool-run-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .tool-loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px;
+      gap: 12px;
+    }
+
+    .tool-loading.show {
+      display: flex;
+    }
+
+    .tool-spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid var(--bg2);
+      border-top-color: var(--blue);
+      animation: toolSpin .7s linear infinite;
+    }
+
+    @keyframes toolSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .tool-loading-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: center;
+    }
+
+    .tool-loading-sub {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .tool-results {
+      display: none;
+    }
+
+    .tool-results.show {
+      display: block;
+    }
+
+    .tool-error {
+      display: none;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .tool-error.show {
+      display: block;
+    }
+
+    .tool-error-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .tool-error-msg {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
     /* ══════════════════════════════════
    SECTION UTILS
 ══════════════════════════════════ */
