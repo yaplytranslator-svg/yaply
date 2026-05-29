@@ -2206,6 +2206,7 @@
         var data = await res.json();
         setToolState(btn, loading, false);
 
+        console.log('JOURNAL RESPONSE:', JSON.stringify(data));
         if (data.success) {
           var story = data.journal || data.story || data.data || '';
           result.innerHTML =
