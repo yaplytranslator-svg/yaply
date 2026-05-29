@@ -1752,7 +1752,7 @@
         <div class="sec-label">Safety Tools</div>
         <div class="safety-grid">
 
-          <a href="/scam-alerts" class="safety-tool st-red">
+          <a href="#" onclick="openSafeTool('scam-alerts');return false;" class="safety-tool st-red">
             <div class="st-icon"><svg viewBox="0 0 24 24">
                 <polygon points="10.29 3.86 1.82 18 22.18 18 13.71 3.86 10.29 3.86" />
                 <line x1="12" y1="9" x2="12" y2="13" />
@@ -1767,7 +1767,7 @@
               </svg></div>
           </a>
 
-          <a href="/price-check" class="safety-tool st-amber">
+          <a href="#" onclick="openSafeTool('price-check');return false;" class="safety-tool st-amber">
             <div class="st-icon"><svg viewBox="0 0 24 24">
                 <line x1="12" y1="1" x2="12" y2="23" />
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
@@ -1781,7 +1781,7 @@
               </svg></div>
           </a>
 
-          <a href="/safe-route" class="safety-tool st-blue">
+          <a href="#" onclick="openSafeTool('safe-route');return false;" class="safety-tool st-blue">
             <div class="st-icon"><svg viewBox="0 0 24 24">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                 <circle cx="12" cy="10" r="3" />
@@ -1795,7 +1795,7 @@
               </svg></div>
           </a>
 
-          <a href="/medical-sos" class="safety-tool st-red">
+          <a href="#" onclick="openSafeTool('medical-sos');return false;" class="safety-tool st-red">
             <div class="st-icon"><svg viewBox="0 0 24 24">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
               </svg></div>
@@ -1808,7 +1808,7 @@
               </svg></div>
           </a>
 
-          <a href="/local-laws" class="safety-tool st-purple">
+          <a href="#" onclick="openSafeTool('local-laws');return false;" class="safety-tool st-purple">
             <div class="st-icon"><svg viewBox="0 0 24 24">
                 <polyline points="16 3 21 3 21 8" />
                 <line x1="4" y1="20" x2="21" y2="3" />
@@ -1824,7 +1824,7 @@
               </svg></div>
           </a>
 
-          <a href="/flight-rights" class="safety-tool st-sky">
+          <a href="#" onclick="openSafeTool('flight-rights');return false;" class="safety-tool st-sky">
             <div class="st-icon"><svg viewBox="0 0 24 24">
                 <path
                   d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
@@ -1838,7 +1838,7 @@
               </svg></div>
           </a>
 
-          <a href="/allergy-card" class="safety-tool st-coral">
+          <a href="#" onclick="openSafeTool('allergy-card');return false;" class="safety-tool st-coral">
             <div class="st-icon"><svg viewBox="0 0 24 24">
                 <path
                   d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -1852,7 +1852,7 @@
               </svg></div>
           </a>
 
-          <a href="/immigration-help" class="safety-tool st-teal">
+          <a href="#" onclick="openSafeTool('immigration');return false;" class="safety-tool st-teal">
             <div class="st-icon"><svg viewBox="0 0 24 24">
                 <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                 <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
@@ -2114,6 +2114,466 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <div class="tool-overlay" id="safeToolOverlay" onclick="if(event.target===this)closeSafeTool()">
+
+    <!-- ── SCAM ALERTS ── -->
+    <div class="tool-sheet" id="ssheet-scam-alerts" style="display:none;">
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-header">
+        <div class="tool-sheet-icon" style="background:rgba(239,68,68,0.09);">
+          <svg viewBox="0 0 24 24" stroke="var(--red)">
+            <polygon points="10.29 3.86 1.82 18 22.18 18 13.71 3.86 10.29 3.86" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
+        <div class="tool-sheet-titles">
+          <div class="tool-sheet-title">Scam Alerts</div>
+          <div class="tool-sheet-sub">Real-time warnings for your city</div>
+        </div>
+        <button class="tool-sheet-close" onclick="closeSafeTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool-sheet-body">
+        <div class="tool-input-wrap">
+          <div>
+            <label class="tool-field-label">City / Destination</label>
+            <input class="tool-input" id="scam-city" type="text" placeholder="e.g. Bangkok, Cairo, Rome" />
+          </div>
+        </div>
+        <button class="tool-run-btn" style="background:var(--red);" onclick="runSafeTool('scam-alerts')">
+          <svg viewBox="0 0 24 24">
+            <polygon points="10.29 3.86 1.82 18 22.18 18 13.71 3.86 10.29 3.86" />
+          </svg>
+          Check Scam Alerts
+        </button>
+        <div class="tool-loading" id="sloading-scam-alerts">
+          <div class="tool-spinner" style="border-top-color:var(--red);"></div>
+          <div class="tool-loading-text">Checking latest scam reports...</div>
+          <div class="tool-loading-sub">Getting real-time warnings</div>
+        </div>
+        <div class="tool-error" id="serror-scam-alerts">
+          <div class="tool-error-icon">⚠️</div>
+          <div class="tool-error-msg" id="serror-scam-alerts-msg">Could not fetch. Try again.</div>
+        </div>
+        <div class="tool-results" id="sresults-scam-alerts"></div>
+      </div>
+    </div>
+
+    <!-- ── PRICE CHECK ── -->
+    <div class="tool-sheet" id="ssheet-price-check" style="display:none;">
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-header">
+        <div class="tool-sheet-icon" style="background:var(--amber-g);">
+          <svg viewBox="0 0 24 24" stroke="var(--amber)">
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+        </div>
+        <div class="tool-sheet-titles">
+          <div class="tool-sheet-title">Price Check</div>
+          <div class="tool-sheet-sub">Is this overpriced? Find out instantly</div>
+        </div>
+        <button class="tool-sheet-close" onclick="closeSafeTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool-sheet-body">
+        <div class="tool-input-wrap">
+          <div>
+            <label class="tool-field-label">What are you buying?</label>
+            <input class="tool-input" id="price-item" type="text"
+              placeholder="e.g. Taxi from airport, Street food, Hotel room" />
+          </div>
+          <div>
+            <label class="tool-field-label">City</label>
+            <input class="tool-input" id="price-city" type="text" placeholder="e.g. Bangkok, Bali" />
+          </div>
+          <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;">
+            <select class="tool-select" id="price-currency">
+              <option value="INR">INR</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="THB">THB</option>
+              <option value="JPY">JPY</option>
+              <option value="AED">AED</option>
+            </select>
+            <input class="tool-input" id="price-amount" type="number" placeholder="Price you were quoted" />
+          </div>
+        </div>
+        <button class="tool-run-btn" style="background:var(--amber);" onclick="runSafeTool('price-check')">
+          <svg viewBox="0 0 24 24">
+            <line x1="12" y1="1" x2="12" y2="23" />
+          </svg>
+          Check This Price
+        </button>
+        <div class="tool-loading" id="sloading-price-check">
+          <div class="tool-spinner" style="border-top-color:var(--amber);"></div>
+          <div class="tool-loading-text">Checking fair price...</div>
+          <div class="tool-loading-sub">Comparing with local rates</div>
+        </div>
+        <div class="tool-error" id="serror-price-check">
+          <div class="tool-error-icon">💰</div>
+          <div class="tool-error-msg" id="serror-price-check-msg">Could not check. Try again.</div>
+        </div>
+        <div class="tool-results" id="sresults-price-check"></div>
+      </div>
+    </div>
+
+    <!-- ── SAFE ROUTE ── -->
+    <div class="tool-sheet" id="ssheet-safe-route" style="display:none;">
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-header">
+        <div class="tool-sheet-icon" style="background:var(--blue-g);">
+          <svg viewBox="0 0 24 24" stroke="var(--blue)">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+        </div>
+        <div class="tool-sheet-titles">
+          <div class="tool-sheet-title">Safe Route</div>
+          <div class="tool-sheet-sub">Safest path to your destination</div>
+        </div>
+        <button class="tool-sheet-close" onclick="closeSafeTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool-sheet-body">
+        <div class="tool-input-wrap">
+          <div>
+            <label class="tool-field-label">Your current location</label>
+            <input class="tool-input" id="route-from" type="text" placeholder="e.g. Sukhumvit, Bangkok" />
+          </div>
+          <div>
+            <label class="tool-field-label">Where you want to go</label>
+            <input class="tool-input" id="route-to" type="text" placeholder="e.g. Grand Palace, Bangkok" />
+          </div>
+          <div>
+            <label class="tool-field-label">Time of travel</label>
+            <select class="tool-select" id="route-time">
+              <option value="now">Right now</option>
+              <option value="daytime">Daytime</option>
+              <option value="night">Night time</option>
+              <option value="early morning">Early morning</option>
+            </select>
+          </div>
+        </div>
+        <button class="tool-run-btn" style="background:var(--blue);" onclick="runSafeTool('safe-route')">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          </svg>
+          Find Safe Route
+        </button>
+        <div class="tool-loading" id="sloading-safe-route">
+          <div class="tool-spinner" style="border-top-color:var(--blue);"></div>
+          <div class="tool-loading-text">Analysing route safety...</div>
+          <div class="tool-loading-sub">Checking neighbourhood data</div>
+        </div>
+        <div class="tool-error" id="serror-safe-route">
+          <div class="tool-error-icon">📍</div>
+          <div class="tool-error-msg" id="serror-safe-route-msg">Could not find route. Try again.</div>
+        </div>
+        <div class="tool-results" id="sresults-safe-route"></div>
+      </div>
+    </div>
+
+    <!-- ── MEDICAL SOS ── -->
+    <div class="tool-sheet" id="ssheet-medical-sos" style="display:none;">
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-header">
+        <div class="tool-sheet-icon" style="background:rgba(239,68,68,0.09);">
+          <svg viewBox="0 0 24 24" stroke="var(--red)">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
+        </div>
+        <div class="tool-sheet-titles">
+          <div class="tool-sheet-title">Medical SOS</div>
+          <div class="tool-sheet-sub">Emergency phrases in local language</div>
+        </div>
+        <button class="tool-sheet-close" onclick="closeSafeTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool-sheet-body">
+        <div class="tool-input-wrap">
+          <div>
+            <label class="tool-field-label">Current Country</label>
+            <input class="tool-input" id="medsos-country" type="text" placeholder="e.g. Japan, Thailand" />
+          </div>
+          <div>
+            <label class="tool-field-label">Medical condition (optional)</label>
+            <input class="tool-input" id="medsos-condition" type="text"
+              placeholder="e.g. chest pain, broken leg, allergic reaction" />
+          </div>
+        </div>
+        <button class="tool-run-btn" style="background:var(--red);" onclick="runSafeTool('medical-sos')">
+          <svg viewBox="0 0 24 24">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
+          Get Emergency Phrases
+        </button>
+        <div class="tool-loading" id="sloading-medical-sos">
+          <div class="tool-spinner" style="border-top-color:var(--red);"></div>
+          <div class="tool-loading-text">Preparing emergency phrases...</div>
+          <div class="tool-loading-sub">Translating into local language</div>
+        </div>
+        <div class="tool-error" id="serror-medical-sos">
+          <div class="tool-error-icon">🏥</div>
+          <div class="tool-error-msg" id="serror-medical-sos-msg">Could not generate. Try again.</div>
+        </div>
+        <div class="tool-results" id="sresults-medical-sos"></div>
+      </div>
+    </div>
+
+    <!-- ── LOCAL LAWS ── -->
+    <div class="tool-sheet" id="ssheet-local-laws" style="display:none;">
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-header">
+        <div class="tool-sheet-icon" style="background:rgba(139,92,246,0.09);">
+          <svg viewBox="0 0 24 24" stroke="#8B5CF6">
+            <polyline points="16 3 21 3 21 8" />
+            <line x1="4" y1="20" x2="21" y2="3" />
+            <polyline points="21 16 21 21 16 21" />
+          </svg>
+        </div>
+        <div class="tool-sheet-titles">
+          <div class="tool-sheet-title">Local Laws</div>
+          <div class="tool-sheet-sub">What's legal — what's not</div>
+        </div>
+        <button class="tool-sheet-close" onclick="closeSafeTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool-sheet-body">
+        <div class="tool-input-wrap">
+          <div>
+            <label class="tool-field-label">Country / City</label>
+            <input class="tool-input" id="laws-country" type="text" placeholder="e.g. Dubai, Singapore, Thailand" />
+          </div>
+        </div>
+        <button class="tool-run-btn" style="background:#8B5CF6;" onclick="runSafeTool('local-laws')">
+          <svg viewBox="0 0 24 24">
+            <polyline points="16 3 21 3 21 8" />
+          </svg>
+          Get Local Laws
+        </button>
+        <div class="tool-loading" id="sloading-local-laws">
+          <div class="tool-spinner" style="border-top-color:#8B5CF6;"></div>
+          <div class="tool-loading-text">Checking local laws...</div>
+          <div class="tool-loading-sub">Getting tourist-relevant rules</div>
+        </div>
+        <div class="tool-error" id="serror-local-laws">
+          <div class="tool-error-icon">⚖️</div>
+          <div class="tool-error-msg" id="serror-local-laws-msg">Could not fetch laws. Try again.</div>
+        </div>
+        <div class="tool-results" id="sresults-local-laws"></div>
+      </div>
+    </div>
+
+    <!-- ── FLIGHT RIGHTS ── -->
+    <div class="tool-sheet" id="ssheet-flight-rights" style="display:none;">
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-header">
+        <div class="tool-sheet-icon" style="background:rgba(14,165,233,0.09);">
+          <svg viewBox="0 0 24 24" stroke="#0EA5E9">
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          </svg>
+        </div>
+        <div class="tool-sheet-titles">
+          <div class="tool-sheet-title">Flight Rights</div>
+          <div class="tool-sheet-sub">Delays, cancellations, refunds</div>
+        </div>
+        <button class="tool-sheet-close" onclick="closeSafeTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool-sheet-body">
+        <div class="tool-input-wrap">
+          <div>
+            <label class="tool-field-label">Airline</label>
+            <input class="tool-input" id="frights-airline" type="text" placeholder="e.g. IndiGo, Air India, Emirates" />
+          </div>
+          <div>
+            <label class="tool-field-label">Route</label>
+            <input class="tool-input" id="frights-route" type="text" placeholder="e.g. Mumbai to Dubai" />
+          </div>
+          <div>
+            <label class="tool-field-label">Issue</label>
+            <select class="tool-select" id="frights-issue">
+              <option value="delay">Flight Delayed</option>
+              <option value="cancellation">Flight Cancelled</option>
+              <option value="denied boarding">Denied Boarding</option>
+              <option value="lost luggage">Lost Luggage</option>
+              <option value="refund">Refund Issue</option>
+            </select>
+          </div>
+          <div>
+            <label class="tool-field-label">Delay hours (if delayed)</label>
+            <input class="tool-input" id="frights-delay" type="number" placeholder="0" value="0" />
+          </div>
+        </div>
+        <button class="tool-run-btn" style="background:#0EA5E9;" onclick="runSafeTool('flight-rights')">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          Know My Rights
+        </button>
+        <div class="tool-loading" id="sloading-flight-rights">
+          <div class="tool-spinner" style="border-top-color:#0EA5E9;"></div>
+          <div class="tool-loading-text">Checking your rights...</div>
+          <div class="tool-loading-sub">Looking up airline regulations</div>
+        </div>
+        <div class="tool-error" id="serror-flight-rights">
+          <div class="tool-error-icon">✈️</div>
+          <div class="tool-error-msg" id="serror-flight-rights-msg">Could not get info. Try again.</div>
+        </div>
+        <div class="tool-results" id="sresults-flight-rights"></div>
+      </div>
+    </div>
+
+    <!-- ── ALLERGY CARD ── -->
+    <div class="tool-sheet" id="ssheet-allergy-card" style="display:none;">
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-header">
+        <div class="tool-sheet-icon" style="background:var(--coral-g);">
+          <svg viewBox="0 0 24 24" stroke="var(--coral)">
+            <path
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </div>
+        <div class="tool-sheet-titles">
+          <div class="tool-sheet-title">Allergy Card</div>
+          <div class="tool-sheet-sub">Your allergies in local language</div>
+        </div>
+        <button class="tool-sheet-close" onclick="closeSafeTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool-sheet-body">
+        <div class="tool-input-wrap">
+          <div>
+            <label class="tool-field-label">Your Allergies</label>
+            <input class="tool-input" id="allergy-list" type="text"
+              placeholder="e.g. peanuts, shellfish, gluten, dairy" />
+          </div>
+          <div>
+            <label class="tool-field-label">Current Country</label>
+            <input class="tool-input" id="allergy-country" type="text" placeholder="e.g. Japan, Thailand" />
+          </div>
+        </div>
+        <button class="tool-run-btn" style="background:var(--coral);" onclick="runSafeTool('allergy-card')">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          Generate Allergy Card
+        </button>
+        <div class="tool-loading" id="sloading-allergy-card">
+          <div class="tool-spinner" style="border-top-color:var(--coral);"></div>
+          <div class="tool-loading-text">Translating your allergies...</div>
+          <div class="tool-loading-sub">Preparing card in local language</div>
+        </div>
+        <div class="tool-error" id="serror-allergy-card">
+          <div class="tool-error-icon">🫀</div>
+          <div class="tool-error-msg" id="serror-allergy-card-msg">Could not generate. Try again.</div>
+        </div>
+        <div class="tool-results" id="sresults-allergy-card"></div>
+      </div>
+    </div>
+
+    <!-- ── IMMIGRATION ── -->
+    <div class="tool-sheet" id="ssheet-immigration" style="display:none;">
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-header">
+        <div class="tool-sheet-icon" style="background:rgba(20,184,166,0.09);">
+          <svg viewBox="0 0 24 24" stroke="#14B8A6">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+          </svg>
+        </div>
+        <div class="tool-sheet-titles">
+          <div class="tool-sheet-title">Immigration Help</div>
+          <div class="tool-sheet-sub">Entry, customs, border help</div>
+        </div>
+        <button class="tool-sheet-close" onclick="closeSafeTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool-sheet-body">
+        <div class="tool-input-wrap">
+          <div>
+            <label class="tool-field-label">Destination Country</label>
+            <input class="tool-input" id="immig-country" type="text" placeholder="e.g. Japan, USA, UK" />
+          </div>
+          <div>
+            <label class="tool-field-label">Your Passport</label>
+            <select class="tool-select" id="immig-passport">
+              <option value="India">🇮🇳 India</option>
+              <option value="USA">🇺🇸 USA</option>
+              <option value="UK">🇬🇧 UK</option>
+              <option value="UAE">🇦🇪 UAE</option>
+              <option value="Canada">🇨🇦 Canada</option>
+              <option value="Australia">🇦🇺 Australia</option>
+            </select>
+          </div>
+          <div>
+            <label class="tool-field-label">Purpose of visit</label>
+            <select class="tool-select" id="immig-purpose">
+              <option value="tourism">Tourism</option>
+              <option value="business">Business</option>
+              <option value="transit">Transit</option>
+              <option value="study">Study</option>
+            </select>
+          </div>
+        </div>
+        <button class="tool-run-btn" style="background:#14B8A6;" onclick="runSafeTool('immigration')">
+          <svg viewBox="0 0 24 24">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+          </svg>
+          Get Immigration Guide
+        </button>
+        <div class="tool-loading" id="sloading-immigration">
+          <div class="tool-spinner" style="border-top-color:#14B8A6;"></div>
+          <div class="tool-loading-text">Getting immigration info...</div>
+          <div class="tool-loading-sub">Checking entry requirements</div>
+        </div>
+        <div class="tool-error" id="serror-immigration">
+          <div class="tool-error-icon">🛂</div>
+          <div class="tool-error-msg" id="serror-immigration-msg">Could not get info. Try again.</div>
+        </div>
+        <div class="tool-results" id="sresults-immigration"></div>
+      </div>
+    </div>
+
+  </div>
 
   <script>
     // ── TAB SWITCHING ──────────────────────────────
@@ -2519,6 +2979,420 @@
           .catch(function () { });
       } catch (e) { }
     })();
+
+
+    function openSafeTool(toolId) {
+      // Hide all sheets
+      document.querySelectorAll('#safeToolOverlay .tool-sheet').forEach(function (s) {
+        s.style.display = 'none';
+      });
+
+      // Reset states
+      var loadEl = document.getElementById('sloading-' + toolId);
+      var resEl = document.getElementById('sresults-' + toolId);
+      var errEl = document.getElementById('serror-' + toolId);
+      if (loadEl) { loadEl.classList.remove('show'); loadEl.style.display = 'none'; }
+      if (resEl) { resEl.classList.remove('show'); resEl.style.display = 'none'; }
+      if (errEl) { errEl.classList.remove('show'); errEl.style.display = 'none'; }
+
+      // Show overlay + sheet
+      var overlay = document.getElementById('safeToolOverlay');
+      overlay.classList.add('open');
+      var sheet = document.getElementById('ssheet-' + toolId);
+      if (sheet) sheet.style.display = 'block';
+
+      // Smart pre-fill from current country
+      var country = _currentCountry || '';
+      var fieldMap = {
+        'scam-alerts': 'scam-city',
+        'price-check': 'price-city',
+        'safe-route': null,
+        'medical-sos': 'medsos-country',
+        'local-laws': 'laws-country',
+        'allergy-card': 'allergy-country',
+        'immigration': 'immig-country',
+      };
+      var fieldId = fieldMap[toolId];
+      if (fieldId && country) {
+        var el = document.getElementById(fieldId);
+        if (el && !el.value) el.value = country;
+      }
+
+      // Pre-fill passport from user data
+      try {
+        var user = JSON.parse(localStorage.getItem('yaply_user') || '{}');
+        if (user.passport) {
+          var pp = document.getElementById('immig-passport');
+          if (pp) pp.value = user.passport;
+        }
+      } catch (e) { }
+
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSafeTool() {
+      document.getElementById('safeToolOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // Close on ESC
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeSafeTool();
+    });
+
+    // ── Run tool ──
+    async function runSafeTool(toolId) {
+      var token = localStorage.getItem('yaply_token') || '';
+      var headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+      var loadEl = document.getElementById('sloading-' + toolId);
+      var resEl = document.getElementById('sresults-' + toolId);
+      var errEl = document.getElementById('serror-' + toolId);
+      var btn = document.querySelector('#ssheet-' + toolId + ' .tool-run-btn');
+
+      if (loadEl) { loadEl.style.display = 'flex'; loadEl.classList.add('show'); }
+      if (resEl) { resEl.style.display = 'none'; resEl.classList.remove('show'); }
+      if (errEl) { errEl.style.display = 'none'; errEl.classList.remove('show'); }
+      if (btn) btn.disabled = true;
+
+      try {
+        var result = null;
+
+        if (toolId === 'scam-alerts') {
+          var city = document.getElementById('scam-city').value.trim();
+          if (!city) { showToast('Enter a city'); throw new Error('skip'); }
+          var r = await fetch('/api/scam-alerts', { method: 'POST', headers: headers, body: JSON.stringify({ destination: city }) });
+          result = await r.json();
+        }
+        else if (toolId === 'price-check') {
+          var item = document.getElementById('price-item').value.trim();
+          var city = document.getElementById('price-city').value.trim();
+          if (!item || !city) { showToast('Fill in all fields'); throw new Error('skip'); }
+          var r = await fetch('/api/price-check', {
+            method: 'POST', headers: headers, body: JSON.stringify({
+              item: item, city: city,
+              currency: document.getElementById('price-currency').value,
+              quoted_price: document.getElementById('price-amount').value,
+            })
+          });
+          result = await r.json();
+        }
+        else if (toolId === 'safe-route') {
+          var from = document.getElementById('route-from').value.trim();
+          var to = document.getElementById('route-to').value.trim();
+          if (!from || !to) { showToast('Enter both locations'); throw new Error('skip'); }
+          var r = await fetch('/api/safe-route', {
+            method: 'POST', headers: headers, body: JSON.stringify({
+              from: from, to: to, time: document.getElementById('route-time').value,
+            })
+          });
+          result = await r.json();
+        }
+        else if (toolId === 'medical-sos') {
+          var country = document.getElementById('medsos-country').value.trim();
+          if (!country) { showToast('Enter your country'); throw new Error('skip'); }
+          var r = await fetch('/api/medical-translate', {
+            method: 'POST', headers: headers, body: JSON.stringify({
+              destination: country,
+              condition: document.getElementById('medsos-condition').value.trim() || 'general emergency',
+            })
+          });
+          result = await r.json();
+        }
+        else if (toolId === 'local-laws') {
+          var country = document.getElementById('laws-country').value.trim();
+          if (!country) { showToast('Enter a country'); throw new Error('skip'); }
+          var r = await fetch('/api/local-laws', { method: 'POST', headers: headers, body: JSON.stringify({ destination: country }) });
+          result = await r.json();
+        }
+        else if (toolId === 'flight-rights') {
+          var airline = document.getElementById('frights-airline').value.trim();
+          if (!airline) { showToast('Enter airline name'); throw new Error('skip'); }
+          var r = await fetch('/api/flight-rights', {
+            method: 'POST', headers: headers, body: JSON.stringify({
+              airline: airline,
+              route: document.getElementById('frights-route').value.trim(),
+              issue: document.getElementById('frights-issue').value,
+              delay_hours: parseInt(document.getElementById('frights-delay').value) || 0,
+            })
+          });
+          result = await r.json();
+        }
+        else if (toolId === 'allergy-card') {
+          var allergies = document.getElementById('allergy-list').value.trim();
+          var country = document.getElementById('allergy-country').value.trim();
+          if (!allergies || !country) { showToast('Fill in all fields'); throw new Error('skip'); }
+          var r = await fetch('/api/allergy-card', {
+            method: 'POST', headers: headers, body: JSON.stringify({
+              allergies: allergies, destination: country,
+            })
+          });
+          result = await r.json();
+        }
+        else if (toolId === 'immigration') {
+          var country = document.getElementById('immig-country').value.trim();
+          if (!country) { showToast('Enter destination country'); throw new Error('skip'); }
+          var r = await fetch('/api/immigration-help', {
+            method: 'POST', headers: headers, body: JSON.stringify({
+              destination: country,
+              passport: document.getElementById('immig-passport').value,
+              purpose: document.getElementById('immig-purpose').value,
+            })
+          });
+          result = await r.json();
+        }
+
+        if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.remove('show'); }
+        if (btn) btn.disabled = false;
+
+        if (result && result.success) {
+          var html = _renderSafeToolResult(toolId, result);
+          if (resEl) {
+            resEl.innerHTML = html;
+            resEl.style.display = 'block';
+            resEl.classList.add('show');
+          }
+        } else {
+          var errMsg = document.getElementById('serror-' + toolId + '-msg');
+          if (errMsg) errMsg.textContent = (result && result.error) || 'Something went wrong.';
+          if (errEl) { errEl.style.display = 'block'; errEl.classList.add('show'); }
+        }
+
+      } catch (e) {
+        if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.remove('show'); }
+        if (btn) btn.disabled = false;
+        if (e.message !== 'skip') {
+          var errMsg = document.getElementById('serror-' + toolId + '-msg');
+          if (errMsg) errMsg.textContent = 'Connection error. Try again.';
+          if (errEl) { errEl.style.display = 'block'; errEl.classList.add('show'); }
+        }
+      }
+    }
+
+    // ── Render results ──
+    function _renderSafeToolResult(toolId, result) {
+      var d = result.data || result.guide || result.result || result;
+
+      // Shared helpers
+      function row(label, value) {
+        return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);gap:12px;">' +
+          '<span style="font-size:13px;color:var(--muted);flex-shrink:0;">' + label + '</span>' +
+          '<span style="font-size:13px;font-weight:600;color:var(--text);text-align:right;">' + value + '</span>' +
+          '</div>';
+      }
+      function card(title, content) {
+        return '<div style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow);">' +
+          '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">' + title + '</div>' +
+          content +
+          '</div>';
+      }
+      function list(items, icon, color) {
+        if (!items || !items.length) return '';
+        return items.map(function (item) {
+          return '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);">' +
+            '<span style="color:' + color + ';flex-shrink:0;">' + icon + '</span>' + item +
+            '</div>';
+        }).join('');
+      }
+
+      var html = '<div style="margin-top:14px;">';
+
+      // ── SCAM ALERTS ──
+      if (toolId === 'scam-alerts') {
+        var level = d.risk_level || 'Moderate';
+        var levCol = level === 'Low' ? 'var(--green)' : level === 'High' ? 'var(--red)' : 'var(--amber)';
+        var levBg = level === 'Low' ? 'var(--green-g)' : level === 'High' ? 'rgba(239,68,68,0.08)' : 'var(--amber-g)';
+        html += '<div style="background:' + levBg + ';border:1px solid ' + levCol + '33;border-radius:16px;padding:16px;text-align:center;margin-bottom:14px;">';
+        html += '<div style="font-size:11px;color:' + levCol + ';text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px;">Scam Risk Level</div>';
+        html += '<div style="font-family:var(--font-head);font-size:22px;color:var(--text);">' + level + '</div>';
+        html += '</div>';
+        if (d.common_scams && d.common_scams.length) {
+          html += card('⚠️ Common Scams', list(d.common_scams.map(function (s) {
+            return typeof s === 'string' ? s : (s.name + (s.description ? ' — ' + s.description : ''));
+          }), '⚠️', 'var(--red)'));
+        }
+        if (d.how_to_avoid && d.how_to_avoid.length) {
+          html += card('✅ How to Stay Safe', list(d.how_to_avoid, '✓', 'var(--green)'));
+        }
+        if (d.safe_areas && d.safe_areas.length) {
+          html += card('📍 Safer Areas', list(d.safe_areas, '📍', 'var(--blue)'));
+        }
+      }
+
+      // ── PRICE CHECK ──
+      else if (toolId === 'price-check') {
+        var verdict = d.verdict || 'Fair Price';
+        var isOver = verdict.toLowerCase().includes('overpriced') || verdict.toLowerCase().includes('expensive');
+        var isFair = verdict.toLowerCase().includes('fair') || verdict.toLowerCase().includes('reasonable');
+        var verdCol = isOver ? 'var(--red)' : isFair ? 'var(--green)' : 'var(--amber)';
+        var verdBg = isOver ? 'rgba(239,68,68,0.08)' : isFair ? 'var(--green-g)' : 'var(--amber-g)';
+        var verdIcon = isOver ? '🚨' : isFair ? '✅' : '⚠️';
+
+        html += '<div style="background:' + verdBg + ';border:1px solid ' + verdCol + '33;border-radius:16px;padding:18px;text-align:center;margin-bottom:14px;">';
+        html += '<div style="font-size:32px;margin-bottom:8px;">' + verdIcon + '</div>';
+        html += '<div style="font-family:var(--font-head);font-size:20px;color:var(--text);margin-bottom:4px;">' + verdict + '</div>';
+        if (d.fair_price) html += '<div style="font-size:13px;color:var(--muted);">Fair price: <b style="color:var(--text);">' + d.fair_price + '</b></div>';
+        html += '</div>';
+
+        html += card('Price Details',
+          (d.your_price ? row('You were quoted', d.your_price) : '') +
+          (d.fair_price ? row('Fair price', d.fair_price) : '') +
+          (d.local_price ? row('Local pays', d.local_price) : '') +
+          (d.tourist_rate ? row('Tourist rate', d.tourist_rate) : '')
+        );
+        if (d.negotiation_tips && d.negotiation_tips.length) {
+          html += card('💬 Negotiation Tips', list(d.negotiation_tips, '💡', 'var(--blue)'));
+        }
+      }
+
+      // ── SAFE ROUTE ──
+      else if (toolId === 'safe-route') {
+        var safety = d.overall_safety || 'Moderate';
+        var safCol = safety === 'Safe' ? 'var(--green)' : safety === 'Dangerous' ? 'var(--red)' : 'var(--amber)';
+        html += '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:16px;padding:16px;margin-bottom:14px;">';
+        html += '<div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Route Safety</div>';
+        html += '<div style="font-family:var(--font-head);font-size:18px;color:white;margin-bottom:4px;">' + (d.recommended_route || 'Route Analysis') + '</div>';
+        html += '<div style="display:inline-block;padding:3px 12px;background:' + safCol + '22;border:1px solid ' + safCol + '44;border-radius:100px;font-size:11px;font-weight:700;color:' + safCol + ';margin-top:6px;">' + safety + '</div>';
+        html += '</div>';
+
+        if (d.transport_options && d.transport_options.length) {
+          html += card('🚌 Best Transport', list(d.transport_options.map(function (t) {
+            return typeof t === 'string' ? t : (t.mode + (t.cost ? ' · ' + t.cost : '') + (t.duration ? ' · ' + t.duration : ''));
+          }), '✓', 'var(--blue)'));
+        }
+        if (d.areas_to_avoid && d.areas_to_avoid.length) {
+          html += card('⚠️ Areas to Avoid', list(d.areas_to_avoid, '⚠️', 'var(--red)'));
+        }
+        if (d.safety_tips && d.safety_tips.length) {
+          html += card('🛡️ Safety Tips', list(d.safety_tips, '•', 'var(--green)'));
+        }
+      }
+
+      // ── MEDICAL SOS ──
+      else if (toolId === 'medical-sos') {
+        var phrases = d.emergency_phrases || d.phrases || [];
+        if (phrases.length) {
+          html += '<div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:16px;padding:14px;margin-bottom:14px;">';
+          html += '<div style="font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px;">🚨 Show this to anyone</div>';
+          phrases.forEach(function (p) {
+            var eng = typeof p === 'string' ? p : (p.english || p.phrase || '');
+            var local = typeof p === 'string' ? '' : (p.local || p.translation || '');
+            var pron = typeof p === 'object' ? (p.pronunciation || '') : '';
+            html += '<div style="padding:10px 0;border-bottom:1px solid rgba(239,68,68,0.1);">';
+            html += '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">' + eng + '</div>';
+            if (local) html += '<div style="font-size:16px;font-weight:700;color:var(--text);">' + local + '</div>';
+            if (pron) html += '<div style="font-size:11px;color:var(--muted2);font-style:italic;margin-top:2px;">' + pron + '</div>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+        var nums = d.emergency_numbers || {};
+        if (Object.keys(nums).length) {
+          html += card('📞 Emergency Numbers',
+            Object.keys(nums).map(function (k) { return row(k, nums[k]); }).join('')
+          );
+        }
+      }
+
+      // ── LOCAL LAWS ──
+      else if (toolId === 'local-laws') {
+        if (d.strict_laws && d.strict_laws.length) {
+          html += card('⚖️ Important Laws',
+            d.strict_laws.map(function (law) {
+              var text = typeof law === 'string' ? law : (law.law || law.rule || '');
+              var penalty = typeof law === 'object' ? (law.penalty || '') : '';
+              var sev = typeof law === 'object' ? (law.severity || '') : '';
+              var col = sev === 'High' ? 'var(--red)' : 'var(--amber)';
+              return '<div style="padding:8px 0;border-bottom:1px solid var(--border);">' +
+                '<div style="display:flex;justify-content:space-between;gap:8px;">' +
+                '<div style="font-size:13px;color:var(--text2);flex:1;">' + (law.icon || '⚠️') + ' ' + text + '</div>' +
+                (sev ? '<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:100px;background:' + col + '22;color:' + col + ';white-space:nowrap;">' + sev + '</span>' : '') +
+                '</div>' +
+                (penalty ? '<div style="font-size:11px;color:var(--muted);margin-top:3px;">Penalty: ' + penalty + '</div>' : '') +
+                '</div>';
+            }).join('')
+          );
+        }
+        if (d.good_to_know && d.good_to_know.length) {
+          html += card('💡 Good to Know', list(d.good_to_know, '•', 'var(--blue)'));
+        }
+        if (d.legal_tip) {
+          html += '<div style="background:var(--blue-g);border:1px solid rgba(37,99,255,0.15);border-radius:14px;padding:14px;font-size:13px;color:var(--text2);">';
+          html += '⚡ <b style="color:var(--blue);">Most important:</b> ' + d.legal_tip;
+          html += '</div>';
+        }
+      }
+
+      // ── FLIGHT RIGHTS ──
+      else if (toolId === 'flight-rights') {
+        var entitled = d.entitled_to_compensation;
+        html += '<div style="background:' + (entitled ? 'var(--green-g)' : 'var(--bg2)') + ';border:1px solid ' + (entitled ? 'rgba(24,194,156,0.2)' : 'var(--border2)') + ';border-radius:16px;padding:18px;text-align:center;margin-bottom:14px;">';
+        html += '<div style="font-size:32px;margin-bottom:8px;">' + (entitled ? '💰' : '📋') + '</div>';
+        html += '<div style="font-family:var(--font-head);font-size:18px;color:var(--text);">' + (entitled ? 'You Are Entitled to Compensation' : 'Know Your Rights') + '</div>';
+        if (d.compensation_amount) html += '<div style="font-family:var(--font-mono);font-size:22px;font-weight:800;color:var(--green);margin-top:8px;">' + d.compensation_amount + '</div>';
+        html += '</div>';
+        if (d.your_rights && d.your_rights.length) { html += card('⚖️ Your Rights', list(d.your_rights, '✓', 'var(--blue)')); }
+        if (d.immediate_actions && d.immediate_actions.length) {
+          html += card('⚡ Do This Now',
+            d.immediate_actions.map(function (a, i) {
+              return '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">' +
+                '<div style="width:22px;height:22px;border-radius:50%;background:var(--blue-g);color:var(--blue);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + (i + 1) + '</div>' +
+                '<div style="font-size:13px;color:var(--text2);">' + a + '</div>' +
+                '</div>';
+            }).join('')
+          );
+        }
+      }
+
+      // ── ALLERGY CARD ──
+      else if (toolId === 'allergy-card') {
+        var translations = d.translations || d.allergy_translations || [];
+        if (translations.length) {
+          html += '<div style="background:rgba(255,122,89,0.06);border:1px solid rgba(255,122,89,0.15);border-radius:16px;padding:16px;margin-bottom:14px;">';
+          html += '<div style="font-size:10px;color:var(--coral);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px;">🫀 Show this at restaurants</div>';
+          translations.forEach(function (t) {
+            var eng = typeof t === 'string' ? t : (t.english || t.allergen || '');
+            var local = typeof t === 'string' ? '' : (t.local || t.translation || '');
+            var pron = typeof t === 'object' ? (t.pronunciation || '') : '';
+            html += '<div style="padding:10px 0;border-bottom:1px solid rgba(255,122,89,0.1);">';
+            html += '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">⚠️ ' + eng + '</div>';
+            if (local) html += '<div style="font-size:16px;font-weight:700;color:var(--text);">' + local + '</div>';
+            if (pron) html += '<div style="font-size:11px;color:var(--muted2);font-style:italic;margin-top:2px;">' + pron + '</div>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+        if (d.foods_to_avoid && d.foods_to_avoid.length) {
+          html += card('🚫 Foods to Avoid in ' + (d.country || 'this country'), list(d.foods_to_avoid, '❌', 'var(--red)'));
+        }
+        if (d.safe_foods && d.safe_foods.length) {
+          html += card('✅ Generally Safe Foods', list(d.safe_foods, '✓', 'var(--green)'));
+        }
+      }
+
+      // ── IMMIGRATION ──
+      else if (toolId === 'immigration') {
+        if (d.entry_requirements) {
+          html += card('📋 Entry Requirements',
+            Object.keys(d.entry_requirements).map(function (k) {
+              return row(k, d.entry_requirements[k]);
+            }).join('')
+          );
+        }
+        if (d.customs_rules && d.customs_rules.length) {
+          html += card('🧳 Customs Rules', list(d.customs_rules, '•', 'var(--blue)'));
+        }
+        if (d.prohibited_items && d.prohibited_items.length) {
+          html += card('🚫 Prohibited Items', list(d.prohibited_items, '❌', 'var(--red)'));
+        }
+        if (d.arrival_tips && d.arrival_tips.length) {
+          html += card('✈️ Arrival Tips', list(d.arrival_tips, '💡', 'var(--green)'));
+        }
+      }
+
+      html += '</div>';
+      return html;
+    }
 
     // ── TOAST ──────────────────────────────────────
     function showToast(msg) {
