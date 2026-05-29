@@ -2024,6 +2024,29 @@
     var _headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token };
 
     // ════════════════════════════════════════════════════════
+    //  HELPERS
+    // ════════════════════════════════════════════════════════
+    function escapeAttr(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function copyFromAttr(el) { copyText(el.getAttribute('data-copy')); }
+    function shareWhatsAppFromAttr(el) {
+      window.open('https://wa.me/?text=' + encodeURIComponent(el.getAttribute('data-copy') + '\n\nPlanned with yaply.live ✈️'));
+    }
+    function setToolState(btn, loading, isLoading) {
+      if (btn) btn.disabled = isLoading;
+      if (loading) loading.style.display = isLoading ? 'block' : 'none';
+    }
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(function () { showToast('Copied ✅'); }).catch(function () { showToast('Copy failed'); });
+    }
+    function showToast(msg) {
+      var el = document.getElementById('toast');
+      el.textContent = msg; el.classList.add('show');
+      setTimeout(function () { el.classList.remove('show'); }, 2800);
+    }
+
+    // ════════════════════════════════════════════════════════
     //  INIT
     // ════════════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', function () {
@@ -2199,21 +2222,39 @@
             destination: _currentTrip.destination,
             days: _currentTrip.days,
             travel_with: document.getElementById('journal-with').value,
-            vibe: _currentTrip.vibes || 'adventure',
-            highlights: documnet.getElementById('journal-memories').value || 'amazing trip',
+            vibe: document.getElementById('journal-style').value,
+            highlights: document.getElementById('journal-memories').value || 'amazing trip',
           })
         });
         var data = await res.json();
         setToolState(btn, loading, false);
 
-        console.log('JOURNAL RESPONSE:', JSON.stringify(data));
         if (data.success) {
-          var story = data.journal || data.story || data.data || '';
-          result.innerHTML =
-            '<div class="result-block" style="font-style:italic;line-height:1.9;white-space:pre-line;">' + story + '</div>' +
-            '<button onclick="copyText(\'' + story.replace(/'/g, "\\'").replace(/\n/g, '\\n') + '\')" ' +
-            'style="margin-top:10px;width:100%;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">' +
-            '📋 Copy Story</button>';
+          var d = data.data || {};
+          var html = '<div style="margin-top:14px;">';
+          if (d.title) html += '<div style="font-family:var(--font-head);font-size:20px;color:var(--text);margin-bottom:4px;">' + d.title + '</div>';
+          if (d.tagline) html += '<div style="font-size:13px;color:var(--muted);margin-bottom:12px;font-style:italic;">' + d.tagline + '</div>';
+          if (d.opening) html += '<div class="result-block" style="font-style:italic;line-height:1.9;">' + d.opening + '</div>';
+          if (Array.isArray(d.chapters) && d.chapters.length) {
+            d.chapters.forEach(function (ch) {
+              html += '<div style="margin-top:10px;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px;">';
+              if (ch.title) html += '<div style="font-weight:700;font-size:13px;color:var(--text);margin-bottom:6px;">📖 ' + ch.title + '</div>';
+              if (ch.content) html += '<div style="font-size:13px;color:var(--text2);line-height:1.8;">' + ch.content + '</div>';
+              html += '</div>';
+            });
+          }
+          if (d.closing) html += '<div class="result-block" style="margin-top:10px;font-style:italic;line-height:1.9;">' + d.closing + '</div>';
+          if (d.quote) {
+            html += '<div style="margin-top:12px;padding:14px;background:var(--midnight);border-radius:12px;text-align:center;">' +
+              '<div style="font-family:var(--font-head);font-size:16px;color:white;font-style:italic;">&ldquo;' + d.quote + '&rdquo;</div></div>';
+          }
+          var fullText = [d.title, d.tagline, d.opening]
+            .concat(Array.isArray(d.chapters) ? d.chapters.map(function (c) { return (c.title ? c.title + ':\n' : '') + (c.content || ''); }) : [])
+            .concat([d.closing]).filter(Boolean).join('\n\n');
+          html += '<button data-copy="' + escapeAttr(fullText) + '" onclick="copyFromAttr(this)" ' +
+            'style="margin-top:12px;width:100%;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy Story</button>';
+          html += '</div>';
+          result.innerHTML = html;
           result.style.display = 'block';
         } else { showToast(data.error || 'Could not write journal'); }
       } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
@@ -2243,50 +2284,55 @@
         setToolState(btn, loading, false);
 
         if (data.success) {
-          var d = data.stats || data.data || {};
-          var funFacts = d.fun_facts || d.highlights || [];
-          var statsItems = d.stats || [];
+          var d = data.data || {};
+          var html = '<div style="margin-top:14px;">';
 
-          result.innerHTML = '<div style="margin-top:14px;">';
-
-          // Traveller type
           if (d.traveller_type) {
-            result.innerHTML +=
-              '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:16px;padding:16px;margin-bottom:12px;text-align:center;">' +
+            html += '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:16px;padding:16px;margin-bottom:12px;text-align:center;">' +
               '<div style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Your Traveller Type</div>' +
               '<div style="font-family:var(--font-head);font-size:20px;color:white;">' + d.traveller_type + '</div>' +
-              (d.traveller_desc ? '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:6px;">' + d.traveller_desc + '</div>' : '') +
+              (d.traveller_description ? '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:6px;line-height:1.6;">' + d.traveller_description + '</div>' : '') +
+              (d.travel_score ? '<div style="margin-top:10px;font-family:var(--font-mono);font-size:24px;font-weight:800;color:var(--amber);">' + d.travel_score + '<span style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.3);">/100</span></div>' : '') +
               '</div>';
           }
 
-          // Stats grid
-          if (statsItems.length) {
-            result.innerHTML += '<div class="stats-grid">';
-            statsItems.slice(0, 6).forEach(function (s) {
-              var val = typeof s === 'object' ? (s.value || s.val || '—') : s;
-              var label = typeof s === 'object' ? (s.label || s.name || '') : '';
-              var sub = typeof s === 'object' ? (s.sub || s.description || '') : '';
-              result.innerHTML +=
-                '<div class="stat-card">' +
-                '<div class="stat-card-val">' + val + '</div>' +
-                (label ? '<div class="stat-card-lbl">' + label + '</div>' : '') +
-                (sub ? '<div class="stat-card-sub">' + sub + '</div>' : '') +
+          if (Array.isArray(d.fun_stats) && d.fun_stats.length) {
+            html += '<div class="stats-grid">';
+            d.fun_stats.forEach(function (s) {
+              html += '<div class="stat-card">' +
+                (s.icon ? '<div style="font-size:20px;margin-bottom:4px;">' + s.icon + '</div>' : '') +
+                '<div class="stat-card-val">' + (s.value || '—') + '</div>' +
+                '<div class="stat-card-lbl">' + (s.label || '') + '</div>' +
                 '</div>';
             });
-            result.innerHTML += '</div>';
+            html += '</div>';
           }
 
-          // Fun facts
-          if (funFacts.length) {
-            result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:10px;">';
-            result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Fun Facts</div>';
-            funFacts.forEach(function (f) {
-              result.innerHTML += '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);"><span>🎯</span>' + f + '</div>';
+          if (Array.isArray(d.achievements) && d.achievements.length) {
+            html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:10px;">';
+            html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Achievements Unlocked</div>';
+            d.achievements.forEach(function (a) {
+              var rc = a.rarity === 'legendary' ? 'var(--amber)' : a.rarity === 'rare' ? 'var(--blue)' : 'var(--green)';
+              html += '<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);">' +
+                '<div style="font-size:20px;flex-shrink:0;">' + (a.icon || '🏆') + '</div>' +
+                '<div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--text);">' + (a.title || '') + '</div>' +
+                (a.description ? '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + a.description + '</div>' : '') + '</div>' +
+                (a.rarity ? '<span style="font-size:9px;font-weight:700;text-transform:uppercase;padding:2px 8px;background:rgba(0,0,0,0.05);border-radius:100px;color:' + rc + ';flex-shrink:0;">' + a.rarity + '</span>' : '') +
+                '</div>';
             });
-            result.innerHTML += '</div>';
+            html += '</div>';
           }
 
-          result.innerHTML += '</div>';
+          if (d.instagram_caption) {
+            html += '<div style="margin-top:12px;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;">' +
+              '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:8px;">Instagram Caption</div>' +
+              '<div style="font-size:13px;color:var(--text2);line-height:1.7;">' + d.instagram_caption + '</div>' +
+              '<button data-copy="' + escapeAttr(d.instagram_caption) + '" onclick="copyFromAttr(this)" style="margin-top:10px;width:100%;padding:10px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">📋 Copy Caption</button>' +
+              '</div>';
+          }
+
+          html += '</div>';
+          result.innerHTML = html;
           result.style.display = 'block';
         } else { showToast(data.error || 'Could not get stats'); }
       } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
@@ -2295,7 +2341,6 @@
     // ════════════════════════════════════════════════════════
     //  REVIEW
     // ════════════════════════════════════════════════════════
-    var _starRating = 5;
     function setRating(n) {
       _starRating = n;
       var stars = document.querySelectorAll('#starRow .star');
@@ -2324,18 +2369,38 @@
         setToolState(btn, loading, false);
 
         if (data.success) {
-          var review = data.review || data.data || '';
-          result.innerHTML =
-            '<div class="result-block">' +
-            '<div style="font-size:16px;margin-bottom:8px;">' + ('⭐'.repeat(_starRating)) + '</div>' +
-            '<div style="line-height:1.8;">' + review + '</div>' +
-            '</div>' +
-            '<div style="display:flex;gap:8px;margin-top:10px;">' +
-            '<button onclick="copyText(\'' + review.replace(/'/g, "\\'") + '\')" ' +
-            'style="flex:1;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy</button>' +
-            '<button onclick="shareReviewWhatsApp(\'' + review.replace(/'/g, "\\'").replace(/\n/g, ' ') + '\')" ' +
-            'style="flex:1;padding:11px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">💚 Share</button>' +
+          var d = data.data || {};
+          var html = '<div style="margin-top:14px;">';
+          html += '<div style="font-size:18px;margin-bottom:8px;">' + '⭐'.repeat(_starRating) + '</div>';
+          if (d.review_title) html += '<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:10px;">' + d.review_title + '</div>';
+          if (d.review_body) html += '<div class="result-block" style="line-height:1.8;">' + d.review_body + '</div>';
+          if ((Array.isArray(d.pros) && d.pros.length) || (Array.isArray(d.cons) && d.cons.length)) {
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">';
+            if (Array.isArray(d.pros) && d.pros.length) {
+              html += '<div style="background:var(--green-g);border:1px solid rgba(24,194,156,0.2);border-radius:12px;padding:12px;">';
+              html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:8px;">Pros</div>';
+              d.pros.forEach(function (p) { html += '<div style="font-size:12px;color:var(--text2);margin-bottom:4px;">✓ ' + p + '</div>'; });
+              html += '</div>';
+            }
+            if (Array.isArray(d.cons) && d.cons.length) {
+              html += '<div style="background:var(--red-g);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:12px;">';
+              html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px;">Cons</div>';
+              d.cons.forEach(function (c) { html += '<div style="font-size:12px;color:var(--text2);margin-bottom:4px;">✗ ' + c + '</div>'; });
+              html += '</div>';
+            }
+            html += '</div>';
+          }
+          if (d.tip) {
+            html += '<div style="margin-top:10px;background:var(--amber-g);border:1px solid rgba(245,185,66,0.2);border-radius:12px;padding:12px;">';
+            html += '<div style="font-size:12px;font-weight:600;color:var(--amber);">💡 Tip: ' + d.tip + '</div></div>';
+          }
+          var fullReview = [d.review_title, d.review_body].filter(Boolean).join('\n\n');
+          html += '<div style="display:flex;gap:8px;margin-top:12px;">' +
+            '<button data-copy="' + escapeAttr(fullReview) + '" onclick="copyFromAttr(this)" style="flex:1;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy</button>' +
+            '<button data-copy="' + escapeAttr(fullReview) + '" onclick="shareWhatsAppFromAttr(this)" style="flex:1;padding:11px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">💚 Share</button>' +
             '</div>';
+          html += '</div>';
+          result.innerHTML = html;
           result.style.display = 'block';
         } else { showToast(data.error || 'Could not generate review'); }
       } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
@@ -2366,26 +2431,27 @@
         setToolState(btn, loading, false);
 
         if (data.success) {
-          var suggestions = data.suggestions || data.destinations || data.data || [];
-          if (!Array.isArray(suggestions)) suggestions = [suggestions];
+          var d = data.data || {};
+          var recs = Array.isArray(d.recommendations) ? d.recommendations : (Array.isArray(d) ? d : []);
+          if (!recs.length) { showToast('No suggestions returned'); return; }
 
-          result.innerHTML = suggestions.slice(0, 3).map(function (s) {
-            var flag = getFlag(s.destination || s.name || '');
-            var name = s.destination || s.name || 'Destination';
-            var why = s.why || s.reason || '';
-            var budget = s.budget || s.estimated_budget || '';
-            var best = s.best_time || s.best_month || '';
-
+          result.innerHTML = recs.slice(0, 3).map(function (s) {
+            var flag = s.emoji || getFlag(s.destination || '');
+            var name = s.destination || 'Destination';
+            var why = s.why_perfect || '';
+            var cost = s.estimated_cost || s.budget_level || '';
+            var best = s.best_time || '';
+            var vibe = s.vibe || '';
             return '<div class="next-trip-card" onclick="planThisTrip(\'' + name.replace(/'/g, "\\'") + '\')">' +
               '<div class="ntc-flag">' + flag + '</div>' +
               '<div class="ntc-info">' +
               '<div class="ntc-dest">' + name + '</div>' +
               (why ? '<div class="ntc-why">' + why + '</div>' : '') +
               '<div class="ntc-meta">' +
-              (budget ? '<span class="ntc-tag">💰 ' + budget + '</span>' : '') +
+              (cost ? '<span class="ntc-tag">💰 ' + cost + '</span>' : '') +
               (best ? '<span class="ntc-tag">📅 ' + best + '</span>' : '') +
-              '</div>' +
-              '</div>' +
+              (vibe ? '<span class="ntc-tag">' + vibe + '</span>' : '') +
+              '</div></div>' +
               '<div class="ntc-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>' +
               '</div>';
           }).join('');
@@ -2546,53 +2612,51 @@
 
       try {
         var peopleArr = people.split('\n').map(function (p) { return p.trim(); }).filter(Boolean);
+        var cur = document.getElementById('split-currency').value;
+        var totalAmt = parseFloat(total);
+        var expenses = _allExpenses.length
+          ? _allExpenses.map(function (e) {
+              return { amount: parseFloat(e.amount) || 0, paid_by: peopleArr[0], split_between: peopleArr, category: e.category || 'other' };
+            })
+          : [{ amount: totalAmt, paid_by: peopleArr[0], split_between: peopleArr, category: 'other' }];
+
         var res = await fetch('/api/split-bill', {
           method: 'POST', headers: _headers,
-          body: JSON.stringify({
-            past_destination: _currentTrip.destination,
-            loved: _currentTrip.vibes || 'adventure',
-            budget: _currentTrip.budget || '',
-            travel_month: '',
-            passport: _currentTrip.passport || 'India',
-          })
+          body: JSON.stringify({ people: peopleArr, expenses: expenses, currency: cur, total: totalAmt })
         });
         var data = await res.json();
         setToolState(btn, loading, false);
 
         if (data.success) {
-          var d = data.split || data.data || {};
-          var perPerson = d.per_person || (total / peopleArr.length).toFixed(2);
-          var cur = document.getElementById('split-currency').value;
+          var d = data.data || {};
+          var perPerson = d.per_person || (totalAmt / peopleArr.length).toFixed(2);
+          var settlements = Array.isArray(d.settlements) ? d.settlements : [];
 
-          result.innerHTML =
-            '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:14px;padding:16px;margin-top:14px;text-align:center;margin-bottom:12px;">' +
+          var html = '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:14px;padding:16px;margin-top:14px;text-align:center;margin-bottom:12px;">' +
             '<div style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Per Person</div>' +
             '<div style="font-family:var(--font-mono);font-size:28px;font-weight:800;color:white;">' + cur + ' ' + perPerson + '</div>' +
             '</div>';
 
-          // Who owes whom
-          var owes = d.settlements || d.owes || [];
-          if (owes.length) {
-            result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">';
-            result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Settlements</div>';
-            owes.forEach(function (o) {
-              var text = typeof o === 'string' ? o : (o.from + ' → ' + o.to + ': ' + cur + ' ' + o.amount);
-              result.innerHTML += '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);">💸 ' + text + '</div>';
+          if (settlements.length) {
+            html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">';
+            html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Settlements</div>';
+            settlements.forEach(function (o) {
+              var text = typeof o === 'string' ? o : (o.from + ' → ' + o.to + ': ' + (o.currency || cur) + ' ' + o.amount);
+              html += '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);">💸 ' + text + '</div>';
             });
-            result.innerHTML += '</div>';
+            html += '</div>';
           }
 
-          // WhatsApp share
-          var msg = '💰 Bill Split — ' + (d.trip_name || _currentTrip.destination || 'Trip') + '\n' +
-            'Total: ' + cur + ' ' + total + '\n' +
-            'Per person: ' + cur + ' ' + perPerson + '\n' +
-            (owes.length ? '\nSettlements:\n' + owes.map(function (o) { return typeof o === 'string' ? o : (o.from + ' → ' + o.to + ': ' + cur + ' ' + o.amount); }).join('\n') : '') +
-            '\n\nSplit via yaply.live';
+          var msg = '💰 Bill Split — ' + (_currentTrip.destination || 'Trip') + '\nTotal: ' + cur + ' ' + totalAmt +
+            '\nPer person: ' + cur + ' ' + perPerson +
+            (settlements.length ? '\n\nSettlements:\n' + settlements.map(function (o) {
+              return typeof o === 'string' ? o : (o.from + ' → ' + o.to + ': ' + (o.currency || cur) + ' ' + o.amount);
+            }).join('\n') : '') + '\n\nSplit via yaply.live';
 
-          result.innerHTML +=
-            '<button onclick="window.open(\'https://wa.me/?text=\' + encodeURIComponent(\'' + msg.replace(/'/g, "\\'") + '\'))"' +
+          html += '<button data-copy="' + escapeAttr(msg) + '" onclick="window.open(\'https://wa.me/?text=\' + encodeURIComponent(this.getAttribute(\'data-copy\')))" ' +
             'style="width:100%;padding:12px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:14px;font-weight:700;color:white;cursor:pointer;">💚 Send on WhatsApp</button>';
 
+          result.innerHTML = html;
           result.style.display = 'block';
         } else { showToast(data.error || 'Could not calculate'); }
       } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
@@ -2625,30 +2689,41 @@
         setToolState(btn, loading, false);
 
         if (data.success) {
-          var d = data.guide || data.data || {};
-          result.innerHTML = '<div style="margin-top:14px;">';
+          var d = data.data || {};
+          var options = Array.isArray(d.options) ? d.options : [];
+          var tips = Array.isArray(d.tips) ? d.tips : [];
+          var html = '<div style="margin-top:14px;">';
 
-          // Conversion
-          if (d.converted_amount) {
-            result.innerHTML +=
-              '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;">' +
-              '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:4px;">' + amount + ' ' + currency + ' =</div>' +
-              '<div style="font-family:var(--font-mono);font-size:26px;font-weight:800;color:white;">' + d.converted_amount + '</div>' +
-              '<div style="font-size:12px;color:rgba(255,255,255,0.25);margin-top:4px;">Today\'s rate: ' + (d.exchange_rate || '—') + '</div>' +
+          if (d.best_option) {
+            html += '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:14px;padding:16px;margin-bottom:12px;">' +
+              '<div style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Best Option</div>' +
+              '<div style="font-size:14px;font-weight:600;color:white;line-height:1.6;">' + d.best_option + '</div>' +
               '</div>';
           }
 
-          var options = d.options || d.what_to_do || [];
           if (options.length) {
-            result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;">';
-            result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">What to do with it</div>';
+            html += '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">';
             options.forEach(function (o) {
-              result.innerHTML += '<div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);"><span>💡</span>' + o + '</div>';
+              html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:12px;">' +
+                '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;">' +
+                '<div style="font-size:13px;font-weight:600;color:var(--text);">' + (o.option || '') + '</div>' +
+                (o.estimated_value ? '<div style="font-size:11px;font-weight:700;color:var(--green);flex-shrink:0;">' + o.estimated_value + '</div>' : '') +
+                '</div>' +
+                (o.description ? '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + o.description + '</div>' : '') +
+                '</div>';
             });
-            result.innerHTML += '</div>';
+            html += '</div>';
           }
 
-          result.innerHTML += '</div>';
+          if (tips.length) {
+            html += '<div style="background:var(--amber-g);border:1px solid rgba(245,185,66,0.2);border-radius:12px;padding:12px;">';
+            html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--amber);margin-bottom:8px;">Tips</div>';
+            tips.forEach(function (t) { html += '<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">💡 ' + t + '</div>'; });
+            html += '</div>';
+          }
+
+          html += '</div>';
+          result.innerHTML = html;
           result.style.display = 'block';
         } else { showToast(data.error || 'Could not check rates'); }
       } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
@@ -2680,13 +2755,12 @@
         if (data.success) {
           var d = data.data || {};
           var summary = d.instagram_caption || d.tagline ||
-            ('Just back from' + _currentTrip.days + 'day in' + _currentTrip.destination + '#yaply');
+            ('Just back from ' + (_currentTrip.days || '') + ' days in ' + (_currentTrip.destination || '') + ' #yaply');
+          result.innerHTML =
             '<div class="result-block" style="font-size:15px;font-weight:500;line-height:1.7;text-align:center;">' + summary + '</div>' +
             '<div style="display:flex;gap:8px;margin-top:10px;">' +
-            '<button onclick="copyText(\'' + summary.replace(/'/g, "\\'") + '\')" ' +
-            'style="flex:1;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy</button>' +
-            '<button onclick="shareWhatsAppText(\'' + summary.replace(/'/g, "\\'") + '\')" ' +
-            'style="flex:1;padding:11px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">💚 Share</button>' +
+            '<button data-copy="' + escapeAttr(summary) + '" onclick="copyFromAttr(this)" style="flex:1;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy</button>' +
+            '<button data-copy="' + escapeAttr(summary) + '" onclick="shareWhatsAppFromAttr(this)" style="flex:1;padding:11px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">💚 Share</button>' +
             '</div>';
           result.style.display = 'block';
         } else { showToast(data.error || 'Could not generate summary'); }
@@ -2697,8 +2771,7 @@
     //  SHARE
     // ════════════════════════════════════════════════════════
     function shareTrip() {
-      switchTab('share', document.querySelectorAll('.tab-btn')[2]);
-      document.querySelector('.tab-btn:nth-child(3)').click();
+      document.querySelectorAll('.tab-btn')[2].click();
     }
 
     function shareWhatsApp() {
@@ -2706,14 +2779,6 @@
       var days = _currentTrip ? _currentTrip.days : '';
       var msg = '✈️ Just got back from ' + dest + '! ' + days + ' days of pure adventure. Check out Yaply — the app I used to plan everything: yaply.live 🌍';
       window.open('https://wa.me/?text=' + encodeURIComponent(msg));
-    }
-
-    function shareWhatsAppText(text) {
-      window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n\nPlanned with yaply.live ✈️'));
-    }
-
-    function shareReviewWhatsApp(review) {
-      window.open('https://wa.me/?text=' + encodeURIComponent(review));
     }
 
     function shareInstagram() {
@@ -2733,28 +2798,6 @@
       });
     }
 
-    // ════════════════════════════════════════════════════════
-    //  HELPERS
-    // ════════════════════════════════════════════════════════
-    function setToolState(btn, loading, isLoading) {
-      if (btn) btn.disabled = isLoading;
-      if (loading) { loading.style.display = isLoading ? 'block' : 'none'; }
-    }
-
-    function copyText(text) {
-      navigator.clipboard.writeText(text).then(function () {
-        showToast('Copied to clipboard ✅');
-      }).catch(function () {
-        showToast('Copy failed — please select manually');
-      });
-    }
-
-    function showToast(msg) {
-      var el = document.getElementById('toast');
-      el.textContent = msg;
-      el.classList.add('show');
-      setTimeout(function () { el.classList.remove('show'); }, 2800);
-    }
   </script>
 
 </body>
