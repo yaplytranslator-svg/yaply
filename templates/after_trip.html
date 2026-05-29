@@ -1,1832 +1,2761 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"/>
-<title>Yaply — After Trip</title>
-<link rel="icon" href="/static/favicon.png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>Yaply — After Trip</title>
+  <link rel="icon" href="/static/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
 
-<style>
-/* ── Reset ── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{font-size:16px;-webkit-text-size-adjust:100%;}
-body{font-family:'DM Sans',sans-serif;background:#F7F9FC;color:#111827;min-height:100vh;overscroll-behavior:none;}
+  <style>
+    /* ── Reset ── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* ── Variables ── */
-:root{
-  --blue:#2563FF;--blue-d:#1D4ED8;--blue-g:rgba(37,99,255,0.07);
-  --midnight:#0B1220;--bg:#F7F9FC;--white:#FFFFFF;
-  --text:#111827;--text2:#374151;--muted:#6B7280;--muted2:#9CA3AF;
-  --coral:#FF7A59;--coral-g:rgba(255,122,89,0.08);
-  --green:#18C29C;--green-g:rgba(24,194,156,0.08);
-  --amber:#F5B942;--amber-g:rgba(245,185,66,0.08);
-  --red:#EF4444;--red-g:rgba(239,68,68,0.08);
-  --border:#E5E7EB;--border2:#D1D5DB;
-  --bg2:#F3F4F6;--bg3:#EEF2FF;
-  --r:12px;--r-lg:16px;--r-xl:20px;--r-2xl:24px;
-  --shadow:0 1px 4px rgba(17,24,39,0.06);
-  --shadow-md:0 4px 16px rgba(17,24,39,0.10);
-  --shadow-lg:0 8px 32px rgba(17,24,39,0.14);
-  --font-head:'Instrument Serif',serif;
-  --font-body:'DM Sans',sans-serif;
-  --font-mono:'DM Mono',monospace;
-}
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
 
-/* ── Animations ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-@keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
-@keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #F7F9FC;
+      color: #111827;
+      min-height: 100vh;
+      overscroll-behavior: none;
+    }
 
-.au{animation:fadeUp .5s ease both}
-.d1{animation-delay:.05s}.d2{animation-delay:.1s}
-.d3{animation-delay:.15s}.d4{animation-delay:.2s}
-.d5{animation-delay:.25s}
+    /* ── Variables ── */
+    :root {
+      --blue: #2563FF;
+      --blue-d: #1D4ED8;
+      --blue-g: rgba(37, 99, 255, 0.07);
+      --midnight: #0B1220;
+      --bg: #F7F9FC;
+      --white: #FFFFFF;
+      --text: #111827;
+      --text2: #374151;
+      --muted: #6B7280;
+      --muted2: #9CA3AF;
+      --coral: #FF7A59;
+      --coral-g: rgba(255, 122, 89, 0.08);
+      --green: #18C29C;
+      --green-g: rgba(24, 194, 156, 0.08);
+      --amber: #F5B942;
+      --amber-g: rgba(245, 185, 66, 0.08);
+      --red: #EF4444;
+      --red-g: rgba(239, 68, 68, 0.08);
+      --border: #E5E7EB;
+      --border2: #D1D5DB;
+      --bg2: #F3F4F6;
+      --bg3: #EEF2FF;
+      --r: 12px;
+      --r-lg: 16px;
+      --r-xl: 20px;
+      --r-2xl: 24px;
+      --shadow: 0 1px 4px rgba(17, 24, 39, 0.06);
+      --shadow-md: 0 4px 16px rgba(17, 24, 39, 0.10);
+      --shadow-lg: 0 8px 32px rgba(17, 24, 39, 0.14);
+      --font-head: 'Instrument Serif', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
 
-/* ── Layout ── */
-.page{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:100px;}
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px)
+      }
 
-/* ── Top Nav ── */
-.top-nav{
-  position:sticky;top:0;z-index:100;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 18px;
-  background:rgba(247,249,252,0.92);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-}
-.nav-back{
-  display:flex;align-items:center;gap:4px;
-  font-size:14px;font-weight:500;color:var(--muted);
-  text-decoration:none;transition:color .2s;
-}
-.nav-back:hover{color:var(--text)}
-.nav-back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;}
-.nav-title{font-size:16px;font-weight:700;color:var(--text);}
-.nav-share-btn{
-  display:flex;align-items:center;gap:5px;
-  padding:7px 14px;background:var(--midnight);
-  color:white;border:none;border-radius:100px;
-  font-family:var(--font-body);font-size:12px;font-weight:700;
-  cursor:pointer;transition:all .2s;
-}
-.nav-share-btn:hover{background:#1a2a4a}
-.nav-share-btn svg{width:13px;height:13px;stroke:white;fill:none;stroke-width:2;}
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
 
-/* ── Section padding ── */
-.p18{padding:0 18px}
-.pt16{padding-top:16px}
-.pt20{padding-top:20px}
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
 
-/* ── Trip selector ── */
-.trip-selector-scroll{
-  display:flex;gap:10px;
-  overflow-x:auto;padding:0 18px 4px;
-  scrollbar-width:none;
-}
-.trip-selector-scroll::-webkit-scrollbar{display:none}
+      to {
+        opacity: 1
+      }
+    }
 
-.trip-sel-card{
-  flex-shrink:0;
-  width:160px;
-  background:var(--white);
-  border:2px solid var(--border);
-  border-radius:var(--r-xl);
-  padding:14px;cursor:pointer;
-  transition:all .25s;
-  position:relative;overflow:hidden;
-}
-.trip-sel-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);}
-.trip-sel-card.active{
-  border-color:var(--blue);
-  background:linear-gradient(135deg,var(--blue-g),var(--white));
-}
-.trip-sel-card.active::before{
-  content:'✓';
-  position:absolute;top:8px;right:10px;
-  font-size:10px;font-weight:800;color:var(--blue);
-}
-.tsc-flag{font-size:24px;margin-bottom:8px;}
-.tsc-dest{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.tsc-meta{font-size:11px;color:var(--muted);}
-.tsc-days{
-  display:inline-block;margin-top:6px;
-  padding:2px 8px;background:var(--blue-g);
-  border-radius:100px;font-size:10px;font-weight:700;color:var(--blue);
-}
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0
+      }
 
-/* ── Manual entry form ── */
-.manual-form-card{
-  margin:16px 18px;
-  background:var(--white);
-  border:1.5px dashed var(--border2);
-  border-radius:var(--r-xl);
-  padding:20px;
-}
-.mf-title{
-  font-family:var(--font-head);
-  font-size:18px;color:var(--text);
-  margin-bottom:4px;
-}
-.mf-sub{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;}
-.mf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.mf-field{display:flex;flex-direction:column;gap:5px;}
-.mf-field.full{grid-column:1/-1;}
-.mf-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);}
-.mf-input{
-  padding:11px 14px;
-  background:var(--bg);border:1.5px solid var(--border);
-  border-radius:var(--r);font-family:var(--font-body);
-  font-size:14px;color:var(--text);outline:none;
-  transition:border-color .2s;
-}
-.mf-input:focus{border-color:var(--blue);background:var(--white);}
-.mf-btn{
-  width:100%;padding:13px;
-  background:var(--midnight);color:white;
-  border:none;border-radius:var(--r);
-  font-family:var(--font-body);font-size:14px;font-weight:700;
-  cursor:pointer;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.mf-btn:hover{background:#1a2a4a}
-.mf-btn svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2;}
+      100% {
+        background-position: -200% 0
+      }
+    }
 
-/* ── Trip Hero ── */
-.trip-hero{
-  margin:16px 18px;
-  background:linear-gradient(135deg,#060d1a,#0d1f3c,#060d1a);
-  border-radius:var(--r-2xl);
-  padding:22px 20px;
-  position:relative;overflow:hidden;
-}
-.th-grid{
-  position:absolute;inset:0;
-  background-image:
-    linear-gradient(rgba(37,99,255,0.07) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(37,99,255,0.07) 1px,transparent 1px);
-  background-size:32px 32px;
-  pointer-events:none;
-}
-.th-orb1{
-  position:absolute;top:-40px;right:-40px;
-  width:160px;height:160px;border-radius:50%;
-  background:radial-gradient(circle,rgba(37,99,255,0.15),transparent 70%);
-  pointer-events:none;
-}
-.th-orb2{
-  position:absolute;bottom:-30px;left:-20px;
-  width:100px;height:100px;border-radius:50%;
-  background:radial-gradient(circle,rgba(255,122,89,0.12),transparent 70%);
-  pointer-events:none;
-}
-.th-badge{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:4px 12px;
-  background:rgba(24,194,156,0.15);
-  border:1px solid rgba(24,194,156,0.25);
-  border-radius:100px;
-  font-size:10px;font-weight:700;
-  color:#4ade80;text-transform:uppercase;
-  letter-spacing:.8px;margin-bottom:12px;
-}
-.th-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;display:block;}
-.th-dest{
-  font-family:var(--font-head);
-  font-size:26px;color:white;
-  letter-spacing:-.3px;margin-bottom:4px;
-  position:relative;z-index:1;
-}
-.th-meta{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px;position:relative;z-index:1;}
-.th-stats{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  gap:8px;position:relative;z-index:1;
-}
-.th-stat{
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:12px;padding:10px 8px;text-align:center;
-}
-.th-stat-val{
-  font-family:var(--font-mono);
-  font-size:16px;font-weight:800;color:white;
-  margin-bottom:3px;
-}
-.th-stat-lbl{font-size:9px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.6px;line-height:1.3;}
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
 
-/* ── Tabs ── */
-.tabs-row{
-  display:flex;gap:0;
-  margin:0 18px 16px;
-  background:var(--bg2);
-  border-radius:var(--r-lg);
-  padding:4px;
-}
-.tab-btn{
-  flex:1;padding:10px 8px;
-  border:none;background:none;
-  font-family:var(--font-body);
-  font-size:13px;font-weight:600;
-  color:var(--muted);cursor:pointer;
-  border-radius:var(--r);
-  transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:5px;
-}
-.tab-btn.active{
-  background:var(--white);
-  color:var(--text);
-  box-shadow:var(--shadow-md);
-}
-.tab-btn span{font-size:14px;}
+    @keyframes pulse {
 
-.tab-panel{display:none;}
-.tab-panel.active{display:block;}
+      0%,
+      100% {
+        opacity: 1
+      }
 
-/* ── Cards ── */
-.card{
-  background:var(--white);
-  border:1px solid var(--border);
-  border-radius:var(--r-xl);
-  box-shadow:var(--shadow);
-  overflow:hidden;
-  margin-bottom:12px;
-}
-.card-head{
-  display:flex;align-items:center;gap:12px;
-  padding:16px 18px;
-  border-bottom:1px solid var(--border);
-}
-.card-icon{
-  width:38px;height:38px;border-radius:11px;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
-.card-icon svg{width:18px;height:18px;fill:none;stroke-width:1.8;}
-.card-title{font-size:15px;font-weight:700;color:var(--text);}
-.card-sub{font-size:12px;color:var(--muted);margin-top:1px;}
-.card-body{padding:16px 18px;}
-.card-ai{
-  font-size:9px;font-weight:700;
-  text-transform:uppercase;letter-spacing:.8px;
-  color:var(--blue);background:var(--blue-g);
-  padding:2px 8px;border-radius:100px;
-  margin-left:auto;flex-shrink:0;
-}
+      50% {
+        opacity: .5
+      }
+    }
 
-/* ── Run button ── */
-.run-btn{
-  width:100%;padding:13px;
-  border:none;border-radius:var(--r);
-  font-family:var(--font-body);
-  font-size:14px;font-weight:700;
-  color:white;cursor:pointer;
-  transition:all .22s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.run-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
-.run-btn:active{transform:scale(.98)}
-.run-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-.run-btn svg{width:15px;height:15px;stroke:white;fill:none;stroke-width:2;}
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95)
+      }
 
-/* ── Field ── */
-.field{margin-bottom:12px;}
-.field-label{
-  font-size:10px;font-weight:700;
-  text-transform:uppercase;letter-spacing:.8px;
-  color:var(--muted2);display:block;margin-bottom:5px;
-}
-.field-input{
-  width:100%;padding:11px 14px;
-  background:var(--bg);border:1.5px solid var(--border);
-  border-radius:var(--r);font-family:var(--font-body);
-  font-size:14px;color:var(--text);outline:none;
-  transition:border-color .2s;
-}
-.field-input:focus{border-color:var(--blue);background:var(--white);}
-.field-select{
-  width:100%;padding:11px 14px;
-  background:var(--bg);border:1.5px solid var(--border);
-  border-radius:var(--r);font-family:var(--font-body);
-  font-size:14px;color:var(--text);outline:none;cursor:pointer;
-  -webkit-appearance:none;
-}
-textarea.field-input{resize:vertical;min-height:90px;line-height:1.6;}
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
 
-/* ── Spinner ── */
-.spinner{
-  width:20px;height:20px;border-radius:50%;
-  border:2px solid rgba(255,255,255,0.3);
-  border-top-color:white;
-  animation:spin .7s linear infinite;
-  flex-shrink:0;
-}
+    @keyframes countUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
 
-/* ── Loading skeleton ── */
-.skel{
-  background:linear-gradient(90deg,var(--bg2) 25%,var(--border) 50%,var(--bg2) 75%);
-  background-size:200% 100%;
-  animation:shimmer 1.4s infinite;
-  border-radius:8px;
-}
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
 
-/* ── Result block ── */
-.result-block{
-  background:var(--bg);
-  border-radius:var(--r-lg);
-  padding:16px;margin-top:14px;
-  border:1px solid var(--border);
-  animation:scaleIn .3s ease both;
-  line-height:1.8;font-size:14px;color:var(--text2);
-}
-.result-block p{margin-bottom:8px;}
-.result-block p:last-child{margin-bottom:0;}
+    .au {
+      animation: fadeUp .5s ease both
+    }
 
-/* ── Expense ── */
-.expense-item{
-  display:flex;align-items:center;gap:12px;
-  padding:12px 0;border-bottom:1px solid var(--border);
-}
-.expense-item:last-child{border-bottom:none}
-.exp-icon{
-  width:36px;height:36px;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex-shrink:0;
-}
-.exp-info{flex:1;}
-.exp-name{font-size:13px;font-weight:600;color:var(--text);}
-.exp-cat{font-size:11px;color:var(--muted);}
-.exp-amount{font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text);}
+    .d1 {
+      animation-delay: .05s
+    }
 
-/* ── Category pills ── */
-.cat-pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-bottom:14px;}
-.cat-pills::-webkit-scrollbar{display:none}
-.cat-pill{
-  flex-shrink:0;padding:6px 14px;
-  background:var(--white);border:1.5px solid var(--border);
-  border-radius:100px;font-size:12px;font-weight:600;
-  color:var(--muted);cursor:pointer;transition:all .2s;
-  white-space:nowrap;
-}
-.cat-pill.active{
-  background:var(--blue);border-color:var(--blue);color:white;
-}
+    .d2 {
+      animation-delay: .1s
+    }
 
-/* ── Add expense btn ── */
-.add-exp-btn{
-  display:flex;align-items:center;gap:8px;
-  width:100%;padding:11px 14px;
-  background:var(--bg);border:1.5px dashed var(--border2);
-  border-radius:var(--r);font-family:var(--font-body);
-  font-size:13px;font-weight:600;color:var(--blue);
-  cursor:pointer;transition:all .2s;margin-top:10px;
-}
-.add-exp-btn:hover{background:var(--blue-g);border-color:var(--blue);}
-.add-exp-btn svg{width:14px;height:14px;stroke:var(--blue);fill:none;stroke-width:2.5;}
+    .d3 {
+      animation-delay: .15s
+    }
 
-/* ── Budget bar ── */
-.budget-compare{margin-top:14px;}
-.bc-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;}
-.bc-track{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;margin-bottom:4px;}
-.bc-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+    .d4 {
+      animation-delay: .2s
+    }
 
-/* ── Bill splitter ── */
-.person-row{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 0;border-bottom:1px solid var(--border);
-}
-.person-row:last-child{border-bottom:none}
-.person-avatar{
-  width:32px;height:32px;border-radius:50%;
-  background:var(--blue);color:white;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;flex-shrink:0;
-}
-.person-name{flex:1;font-size:13px;font-weight:600;color:var(--text);}
-.person-amount input{
-  width:90px;padding:7px 10px;
-  background:var(--bg);border:1px solid var(--border);
-  border-radius:8px;font-family:var(--font-mono);
-  font-size:13px;font-weight:600;text-align:right;
-  outline:none;
-}
+    .d5 {
+      animation-delay: .25s
+    }
 
-/* ── Trip card canvas ── */
-.trip-card-wrap{
-  background:linear-gradient(135deg,var(--midnight),#0d1f3c);
-  border-radius:var(--r-xl);
-  padding:24px 20px;
-  text-align:center;
-  margin-bottom:16px;
-  position:relative;overflow:hidden;
-}
-.tc-grid{
-  position:absolute;inset:0;
-  background-image:
-    linear-gradient(rgba(37,99,255,0.06) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(37,99,255,0.06) 1px,transparent 1px);
-  background-size:24px 24px;pointer-events:none;
-}
-.tc-content{position:relative;z-index:1;}
-.tc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);margin-bottom:12px;}
-.tc-dest{font-family:var(--font-head);font-size:28px;color:white;letter-spacing:-.3px;margin-bottom:4px;}
-.tc-meta{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px;}
-.tc-vibes{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
-.tc-vibe-tag{padding:4px 12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:100px;font-size:11px;color:rgba(255,255,255,0.6);}
-.tc-branding{font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:.5px;}
+    /* ── Layout ── */
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
 
-/* ── Share buttons ── */
-.share-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.share-btn{
-  padding:12px;border:none;border-radius:var(--r);
-  font-family:var(--font-body);font-size:13px;font-weight:700;
-  cursor:pointer;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:7px;
-}
-.share-btn:hover{filter:brightness(1.05);transform:translateY(-1px)}
-.share-btn svg{width:16px;height:16px;}
-.sb-whatsapp{background:#25D366;color:white;}
-.sb-instagram{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white;}
-.sb-copy{background:var(--bg2);color:var(--text);}
-.sb-save{background:var(--midnight);color:white;}
+    /* ── Top Nav ── */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: rgba(247, 249, 252, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
 
-/* ── Next trip cards ── */
-.next-trip-card{
-  background:var(--white);border:1px solid var(--border);
-  border-radius:var(--r-xl);padding:14px 16px;
-  display:flex;gap:12px;align-items:center;
-  cursor:pointer;transition:all .2s;
-  margin-bottom:8px;
-}
-.next-trip-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);}
-.ntc-flag{font-size:28px;flex-shrink:0;}
-.ntc-info{flex:1;}
-.ntc-dest{font-size:14px;font-weight:700;color:var(--text);}
-.ntc-why{font-size:12px;color:var(--muted);margin-top:2px;}
-.ntc-meta{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
-.ntc-tag{padding:3px 8px;background:var(--bg2);border-radius:100px;font-size:10px;font-weight:600;color:var(--muted);}
-.ntc-arrow{color:var(--muted2);}
-.ntc-arrow svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
 
-/* ── Review stars ── */
-.star-row{display:flex;gap:6px;margin:10px 0;}
-.star{font-size:24px;cursor:pointer;transition:transform .15s;}
-.star:hover{transform:scale(1.2)}
+    .nav-back:hover {
+      color: var(--text)
+    }
 
-/* ── Stats grid ── */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
-.stat-card{
-  background:var(--bg);border:1px solid var(--border);
-  border-radius:var(--r-lg);padding:14px;
-  text-align:center;
-}
-.stat-card-val{font-family:var(--font-mono);font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px;}
-.stat-card-lbl{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;}
-.stat-card-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+    .nav-back svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
 
-/* ── Empty state ── */
-.empty-state{
-  text-align:center;padding:40px 20px;
-  display:flex;flex-direction:column;align-items:center;gap:12px;
-}
-.empty-icon{font-size:48px;}
-.empty-title{font-family:var(--font-head);font-size:20px;color:var(--text);}
-.empty-sub{font-size:14px;color:var(--muted);line-height:1.6;max-width:280px;}
+    .nav-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
 
-/* ── Bottom CTA ── */
-.bottom-cta{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:480px;
-  padding:16px 18px;
-  background:rgba(247,249,252,0.95);
-  backdrop-filter:blur(20px);
-  border-top:1px solid var(--border);
-  z-index:50;
-}
-.bottom-cta-btn{
-  width:100%;padding:14px;
-  background:var(--blue);color:white;
-  border:none;border-radius:var(--r);
-  font-family:var(--font-body);font-size:15px;font-weight:700;
-  cursor:pointer;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  box-shadow:0 8px 24px rgba(37,99,255,0.3);
-}
-.bottom-cta-btn:hover{background:var(--blue-d);transform:translateY(-1px)}
-.bottom-cta-btn svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2;}
+    .nav-share-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      background: var(--midnight);
+      color: white;
+      border: none;
+      border-radius: 100px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+    }
 
-/* ── Modal ── */
-.modal-overlay{
-  position:fixed;inset:0;z-index:300;
-  background:rgba(11,18,32,0.6);
-  backdrop-filter:blur(12px);
-  display:none;align-items:flex-end;justify-content:center;
-}
-.modal-overlay.open{display:flex;}
-.modal-sheet{
-  background:var(--white);
-  border-radius:28px 28px 0 0;
-  width:100%;max-width:480px;
-  max-height:85vh;overflow-y:auto;
-  animation:fadeUp .35s cubic-bezier(.34,1.2,.64,1) both;
-  padding-bottom:40px;
-}
-.modal-handle{width:40px;height:4px;background:var(--bg2);border-radius:2px;margin:14px auto 0;}
-.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);}
-.modal-title{font-size:17px;font-weight:700;color:var(--text);}
-.modal-body{padding:16px 20px 0;}
+    .nav-share-btn:hover {
+      background: #1a2a4a
+    }
 
-/* ── Toast ── */
-.toast{
-  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
-  background:var(--midnight);color:white;
-  padding:10px 20px;border-radius:100px;
-  font-size:13px;font-weight:600;
-  white-space:nowrap;z-index:999;
-  opacity:0;transition:opacity .3s;pointer-events:none;
-}
-.toast.show{opacity:1;}
-</style>
+    .nav-share-btn svg {
+      width: 13px;
+      height: 13px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ── Section padding ── */
+    .p18 {
+      padding: 0 18px
+    }
+
+    .pt16 {
+      padding-top: 16px
+    }
+
+    .pt20 {
+      padding-top: 20px
+    }
+
+    /* ── Trip selector ── */
+    .trip-selector-scroll {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 0 18px 4px;
+      scrollbar-width: none;
+    }
+
+    .trip-selector-scroll::-webkit-scrollbar {
+      display: none
+    }
+
+    .trip-sel-card {
+      flex-shrink: 0;
+      width: 160px;
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 14px;
+      cursor: pointer;
+      transition: all .25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .trip-sel-card:hover {
+      border-color: var(--blue);
+      box-shadow: var(--shadow-md);
+    }
+
+    .trip-sel-card.active {
+      border-color: var(--blue);
+      background: linear-gradient(135deg, var(--blue-g), var(--white));
+    }
+
+    .trip-sel-card.active::before {
+      content: '✓';
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--blue);
+    }
+
+    .tsc-flag {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .tsc-dest {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tsc-meta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .tsc-days {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 2px 8px;
+      background: var(--blue-g);
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    /* ── Manual entry form ── */
+    .manual-form-card {
+      margin: 16px 18px;
+      background: var(--white);
+      border: 1.5px dashed var(--border2);
+      border-radius: var(--r-xl);
+      padding: 20px;
+    }
+
+    .mf-title {
+      font-family: var(--font-head);
+      font-size: 18px;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .mf-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .mf-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .mf-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .mf-field.full {
+      grid-column: 1/-1;
+    }
+
+    .mf-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted2);
+    }
+
+    .mf-input {
+      padding: 11px 14px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .mf-input:focus {
+      border-color: var(--blue);
+      background: var(--white);
+    }
+
+    .mf-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--midnight);
+      color: white;
+      border: none;
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .mf-btn:hover {
+      background: #1a2a4a
+    }
+
+    .mf-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ── Trip Hero ── */
+    .trip-hero {
+      margin: 16px 18px;
+      background: linear-gradient(135deg, #060d1a, #0d1f3c, #060d1a);
+      border-radius: var(--r-2xl);
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .th-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(37, 99, 255, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 255, 0.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    .th-orb1 {
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37, 99, 255, 0.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    .th-orb2 {
+      position: absolute;
+      bottom: -30px;
+      left: -20px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 122, 89, 0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .th-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      background: rgba(24, 194, 156, 0.15);
+      border: 1px solid rgba(24, 194, 156, 0.25);
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #4ade80;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 12px;
+    }
+
+    .th-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+      display: block;
+    }
+
+    .th-dest {
+      font-family: var(--font-head);
+      font-size: 26px;
+      color: white;
+      letter-spacing: -.3px;
+      margin-bottom: 4px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .th-meta {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.35);
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .th-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .th-stat {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .th-stat-val {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 3px;
+    }
+
+    .th-stat-lbl {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.3);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      line-height: 1.3;
+    }
+
+    /* ── Tabs ── */
+    .tabs-row {
+      display: flex;
+      gap: 0;
+      margin: 0 18px 16px;
+      background: var(--bg2);
+      border-radius: var(--r-lg);
+      padding: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border: none;
+      background: none;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: var(--r);
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .tab-btn.active {
+      background: var(--white);
+      color: var(--text);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tab-btn span {
+      font-size: 14px;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .card-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .card-body {
+      padding: 16px 18px;
+    }
+
+    .card-ai {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--blue);
+      background: var(--blue-g);
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* ── Run button ── */
+    .run-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      transition: all .22s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .run-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px)
+    }
+
+    .run-btn:active {
+      transform: scale(.98)
+    }
+
+    .run-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .run-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ── Field ── */
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted2);
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .field-input:focus {
+      border-color: var(--blue);
+      background: var(--white);
+    }
+
+    .field-select {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    textarea.field-input {
+      resize: vertical;
+      min-height: 90px;
+      line-height: 1.6;
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* ── Loading skeleton ── */
+    .skel {
+      background: linear-gradient(90deg, var(--bg2) 25%, var(--border) 50%, var(--bg2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+
+    /* ── Result block ── */
+    .result-block {
+      background: var(--bg);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      margin-top: 14px;
+      border: 1px solid var(--border);
+      animation: scaleIn .3s ease both;
+      line-height: 1.8;
+      font-size: 14px;
+      color: var(--text2);
+    }
+
+    .result-block p {
+      margin-bottom: 8px;
+    }
+
+    .result-block p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ── Expense ── */
+    .expense-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .expense-item:last-child {
+      border-bottom: none
+    }
+
+    .exp-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .exp-info {
+      flex: 1;
+    }
+
+    .exp-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .exp-cat {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .exp-amount {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* ── Category pills ── */
+    .cat-pills {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+      margin-bottom: 14px;
+    }
+
+    .cat-pills::-webkit-scrollbar {
+      display: none
+    }
+
+    .cat-pill {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+
+    .cat-pill.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: white;
+    }
+
+    /* ── Add expense btn ── */
+    .add-exp-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--bg);
+      border: 1.5px dashed var(--border2);
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue);
+      cursor: pointer;
+      transition: all .2s;
+      margin-top: 10px;
+    }
+
+    .add-exp-btn:hover {
+      background: var(--blue-g);
+      border-color: var(--blue);
+    }
+
+    .add-exp-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--blue);
+      fill: none;
+      stroke-width: 2.5;
+    }
+
+    /* ── Budget bar ── */
+    .budget-compare {
+      margin-top: 14px;
+    }
+
+    .bc-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .bc-track {
+      height: 8px;
+      background: var(--bg2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .bc-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 1s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    /* ── Bill splitter ── */
+    .person-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .person-row:last-child {
+      border-bottom: none
+    }
+
+    .person-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .person-name {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .person-amount input {
+      width: 90px;
+      padding: 7px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: right;
+      outline: none;
+    }
+
+    /* ── Trip card canvas ── */
+    .trip-card-wrap {
+      background: linear-gradient(135deg, var(--midnight), #0d1f3c);
+      border-radius: var(--r-xl);
+      padding: 24px 20px;
+      text-align: center;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tc-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(37, 99, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 255, 0.06) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+
+    .tc-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .tc-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: rgba(255, 255, 255, 0.3);
+      margin-bottom: 12px;
+    }
+
+    .tc-dest {
+      font-family: var(--font-head);
+      font-size: 28px;
+      color: white;
+      letter-spacing: -.3px;
+      margin-bottom: 4px;
+    }
+
+    .tc-meta {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.35);
+      margin-bottom: 16px;
+    }
+
+    .tc-vibes {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .tc-vibe-tag {
+      padding: 4px 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 100px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .tc-branding {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.2);
+      letter-spacing: .5px;
+    }
+
+    /* ── Share buttons ── */
+    .share-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .share-btn {
+      padding: 12px;
+      border: none;
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .share-btn:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px)
+    }
+
+    .share-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .sb-whatsapp {
+      background: #25D366;
+      color: white;
+    }
+
+    .sb-instagram {
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      color: white;
+    }
+
+    .sb-copy {
+      background: var(--bg2);
+      color: var(--text);
+    }
+
+    .sb-save {
+      background: var(--midnight);
+      color: white;
+    }
+
+    /* ── Next trip cards ── */
+    .next-trip-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      cursor: pointer;
+      transition: all .2s;
+      margin-bottom: 8px;
+    }
+
+    .next-trip-card:hover {
+      border-color: var(--blue);
+      box-shadow: var(--shadow-md);
+    }
+
+    .ntc-flag {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .ntc-info {
+      flex: 1;
+    }
+
+    .ntc-dest {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .ntc-why {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .ntc-meta {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .ntc-tag {
+      padding: 3px 8px;
+      background: var(--bg2);
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .ntc-arrow {
+      color: var(--muted2);
+    }
+
+    .ntc-arrow svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ── Review stars ── */
+    .star-row {
+      display: flex;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .star {
+      font-size: 24px;
+      cursor: pointer;
+      transition: transform .15s;
+    }
+
+    .star:hover {
+      transform: scale(1.2)
+    }
+
+    /* ── Stats grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .stat-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-card-val {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .stat-card-lbl {
+      font-size: 10px;
+      color: var(--muted2);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    .stat-card-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+    }
+
+    .empty-title {
+      font-family: var(--font-head);
+      font-size: 20px;
+      color: var(--text);
+    }
+
+    .empty-sub {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    /* ── Bottom CTA ── */
+    .bottom-cta {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      padding: 16px 18px;
+      background: rgba(247, 249, 252, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      z-index: 50;
+    }
+
+    .bottom-cta-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(37, 99, 255, 0.3);
+    }
+
+    .bottom-cta-btn:hover {
+      background: var(--blue-d);
+      transform: translateY(-1px)
+    }
+
+    .bottom-cta-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(11, 18, 32, 0.6);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-sheet {
+      background: var(--white);
+      border-radius: 28px 28px 0 0;
+      width: 100%;
+      max-width: 480px;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: fadeUp .35s cubic-bezier(.34, 1.2, .64, 1) both;
+      padding-bottom: 40px;
+    }
+
+    .modal-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--bg2);
+      border-radius: 2px;
+      margin: 14px auto 0;
+    }
+
+    .modal-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .modal-body {
+      padding: 16px 20px 0;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--midnight);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
 </head>
 
 <body>
-<div class="page">
+  <div class="page">
 
-<!-- ── TOP NAV ── -->
-<nav class="top-nav">
-  <a href="/app" class="nav-back">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    Home
-  </a>
-  <div class="nav-title">After Trip</div>
-  <button class="nav-share-btn" onclick="shareTrip()">
-    <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-    Share
-  </button>
-</nav>
+    <!-- ── TOP NAV ── -->
+    <nav class="top-nav">
+      <a href="/app" class="nav-back">
+        <svg viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        Home
+      </a>
+      <div class="nav-title">After Trip</div>
+      <button class="nav-share-btn" onclick="shareTrip()">
+        <svg viewBox="0 0 24 24">
+          <circle cx="18" cy="5" r="3" />
+          <circle cx="6" cy="12" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+        </svg>
+        Share
+      </button>
+    </nav>
 
-<!-- ── MAIN CONTENT ── -->
-<div id="loadingState" class="p18 pt20">
-  <div class="skel" style="height:24px;width:60%;margin-bottom:16px;"></div>
-  <div style="display:flex;gap:10px;overflow:hidden;">
-    <div class="skel" style="height:110px;width:160px;flex-shrink:0;border-radius:20px;"></div>
-    <div class="skel" style="height:110px;width:160px;flex-shrink:0;border-radius:20px;"></div>
-  </div>
-</div>
-
-<!-- Trip selector (shown when trips exist) -->
-<div id="tripSelectorSection" style="display:none;" class="au">
-  <div class="p18 pt20" style="margin-bottom:10px;">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);">Your Trips</div>
-  </div>
-  <div class="trip-selector-scroll" id="tripSelectorScroll"></div>
-</div>
-
-<!-- Manual entry form (shown when no trips) -->
-<div id="manualFormSection" style="display:none;" class="au">
-  <div class="manual-form-card">
-    <div class="mf-title">Where did you travel?</div>
-    <div class="mf-sub">Tell us about your trip and we'll unlock all the after trip tools for you.</div>
-    <div class="mf-grid">
-      <div class="mf-field full">
-        <label class="mf-label">Destination</label>
-        <input class="mf-input" id="mf-dest" type="text" placeholder="e.g. Tokyo, Japan"/>
-      </div>
-      <div class="mf-field">
-        <label class="mf-label">Days</label>
-        <input class="mf-input" id="mf-days" type="number" placeholder="6" value="5"/>
-      </div>
-      <div class="mf-field">
-        <label class="mf-label">Currency</label>
-        <select class="mf-input" id="mf-currency">
-          <option value="INR">INR ₹</option>
-          <option value="USD">USD $</option>
-          <option value="EUR">EUR €</option>
-          <option value="GBP">GBP £</option>
-          <option value="AED">AED د.إ</option>
-        </select>
-      </div>
-      <div class="mf-field">
-        <label class="mf-label">Budget</label>
-        <input class="mf-input" id="mf-budget" type="text" placeholder="80,000"/>
-      </div>
-      <div class="mf-field full">
-        <label class="mf-label">Travel Style</label>
-        <input class="mf-input" id="mf-vibe" type="text" placeholder="e.g. Adventure, Foodie, Cultural"/>
-      </div>
-    </div>
-    <button class="mf-btn" onclick="loadManualTrip()">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
-      Unlock After Trip
-    </button>
-  </div>
-</div>
-
-<!-- Trip data section (shown after trip selected/entered) -->
-<div id="tripDataSection" style="display:none;">
-
-  <!-- Hero -->
-  <div class="trip-hero au" id="tripHero">
-    <div class="th-grid"></div>
-    <div class="th-orb1"></div>
-    <div class="th-orb2"></div>
-    <div class="th-badge">✈️ Trip Complete</div>
-    <div class="th-dest" id="heroDestination">—</div>
-    <div class="th-meta" id="heroMeta">—</div>
-    <div class="th-stats">
-      <div class="th-stat">
-        <div class="th-stat-val" id="heroDays">0</div>
-        <div class="th-stat-lbl">Days</div>
-      </div>
-      <div class="th-stat">
-        <div class="th-stat-val" id="heroPeople">0</div>
-        <div class="th-stat-lbl">People</div>
-      </div>
-      <div class="th-stat">
-        <div class="th-stat-val" id="heroSpent">₹0</div>
-        <div class="th-stat-lbl">Budget</div>
-      </div>
-      <div class="th-stat">
-        <div class="th-stat-val" id="heroPlaces">0</div>
-        <div class="th-stat-lbl">Places</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs-row au d2">
-    <button class="tab-btn active" onclick="switchTab('stats',this)"><span>📊</span> Stats</button>
-    <button class="tab-btn" onclick="switchTab('money',this)"><span>💰</span> Money</button>
-    <button class="tab-btn" onclick="switchTab('share',this)"><span>🔗</span> Share</button>
-  </div>
-
-  <!-- ══════════ TAB: STATS ══════════ -->
-  <div class="tab-panel active p18" id="tab-stats">
-
-    <!-- AI Trip Journal -->
-    <div class="card au d1">
-      <div class="card-head">
-        <div class="card-icon" style="background:rgba(37,99,255,0.09);">
-          <svg viewBox="0 0 24 24" stroke="var(--blue)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </div>
-        <div>
-          <div class="card-title">AI Trip Journal</div>
-          <div class="card-sub">Your story, beautifully written</div>
-        </div>
-        <div class="card-ai">AI</div>
-      </div>
-      <div class="card-body">
-        <div class="field">
-          <label class="field-label">Your highlights & memories</label>
-          <textarea class="field-input" id="journal-memories" placeholder="What moved you? Your best moments, surprises, food you loved, people you met..."></textarea>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-          <div>
-            <label class="field-label">Travelled with</label>
-            <select class="field-select field-input" id="journal-with" style="padding:10px 12px;">
-              <option value="Solo">Solo</option>
-              <option value="Partner">Partner</option>
-              <option value="Friends">Friends</option>
-              <option value="Family">Family</option>
-              <option value="Group">Group</option>
-            </select>
-          </div>
-          <div>
-            <label class="field-label">Story style</label>
-            <select class="field-select field-input" id="journal-style" style="padding:10px 12px;">
-              <option value="poetic">Poetic</option>
-              <option value="casual">Casual</option>
-              <option value="detailed">Detailed</option>
-              <option value="funny">Funny</option>
-            </select>
-          </div>
-        </div>
-        <button class="run-btn" style="background:var(--blue);" onclick="runJournal()" id="journalBtn">
-          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>
-          Write My Journey
-        </button>
-        <div id="journalLoading" style="display:none;text-align:center;padding:24px;">
-          <div style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--blue);animation:spin .7s linear infinite;margin:0 auto 10px;"></div>
-          <div style="font-size:13px;color:var(--muted);">Writing your story...</div>
-        </div>
-        <div id="journalResult" style="display:none;"></div>
+    <!-- ── MAIN CONTENT ── -->
+    <div id="loadingState" class="p18 pt20">
+      <div class="skel" style="height:24px;width:60%;margin-bottom:16px;"></div>
+      <div style="display:flex;gap:10px;overflow:hidden;">
+        <div class="skel" style="height:110px;width:160px;flex-shrink:0;border-radius:20px;"></div>
+        <div class="skel" style="height:110px;width:160px;flex-shrink:0;border-radius:20px;"></div>
       </div>
     </div>
 
-    <!-- Trip Stats -->
-    <div class="card au d2">
-      <div class="card-head">
-        <div class="card-icon" style="background:var(--amber-g);">
-          <svg viewBox="0 0 24 24" stroke="var(--amber)"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>
-        </div>
-        <div>
-          <div class="card-title">Trip Stats</div>
-          <div class="card-sub">Fun facts about your trip</div>
-        </div>
-        <div class="card-ai">AI</div>
+    <!-- Trip selector (shown when trips exist) -->
+    <div id="tripSelectorSection" style="display:none;" class="au">
+      <div class="p18 pt20" style="margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);">
+          Your Trips</div>
       </div>
-      <div class="card-body">
-        <button class="run-btn" style="background:var(--amber);" onclick="runTripStats()" id="statsBtn">
-          <svg viewBox="0 0 24 24"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/></svg>
-          Generate My Stats
-        </button>
-        <div id="statsLoading" style="display:none;text-align:center;padding:24px;">
-          <div style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--amber);animation:spin .7s linear infinite;margin:0 auto 10px;"></div>
-          <div style="font-size:13px;color:var(--muted);">Analysing your trip...</div>
-        </div>
-        <div id="statsResult" style="display:none;"></div>
-      </div>
+      <div class="trip-selector-scroll" id="tripSelectorScroll"></div>
     </div>
 
-    <!-- Write Review -->
-    <div class="card au d3">
-      <div class="card-head">
-        <div class="card-icon" style="background:var(--coral-g);">
-          <svg viewBox="0 0 24 24" stroke="var(--coral)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        </div>
-        <div>
-          <div class="card-title">Write a Review</div>
-          <div class="card-sub">AI writes it, you post it</div>
-        </div>
-        <div class="card-ai">AI</div>
-      </div>
-      <div class="card-body">
-        <div style="margin-bottom:12px;">
-          <label class="field-label">Your rating</label>
-          <div class="star-row" id="starRow">
-            <span class="star" onclick="setRating(1)">⭐</span>
-            <span class="star" onclick="setRating(2)">⭐</span>
-            <span class="star" onclick="setRating(3)">⭐</span>
-            <span class="star" onclick="setRating(4)">⭐</span>
-            <span class="star" onclick="setRating(5)">⭐</span>
+    <!-- Manual entry form (shown when no trips) -->
+    <div id="manualFormSection" style="display:none;" class="au">
+      <div class="manual-form-card">
+        <div class="mf-title">Where did you travel?</div>
+        <div class="mf-sub">Tell us about your trip and we'll unlock all the after trip tools for you.</div>
+        <div class="mf-grid">
+          <div class="mf-field full">
+            <label class="mf-label">Destination</label>
+            <input class="mf-input" id="mf-dest" type="text" placeholder="e.g. Tokyo, Japan" />
           </div>
-        </div>
-        <div class="field">
-          <label class="field-label">What did you love most?</label>
-          <input class="field-input" id="review-highlight" type="text" placeholder="e.g. The street food, sunsets, local people"/>
-        </div>
-        <button class="run-btn" style="background:var(--coral);" onclick="runReview()" id="reviewBtn">
-          <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Generate Review
-        </button>
-        <div id="reviewLoading" style="display:none;text-align:center;padding:24px;">
-          <div style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--coral);animation:spin .7s linear infinite;margin:0 auto 10px;"></div>
-          <div style="font-size:13px;color:var(--muted);">Writing your review...</div>
-        </div>
-        <div id="reviewResult" style="display:none;"></div>
-      </div>
-    </div>
-
-    <!-- Next Trip -->
-    <div class="card au d4">
-      <div class="card-head">
-        <div class="card-icon" style="background:var(--green-g);">
-          <svg viewBox="0 0 24 24" stroke="var(--green)"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
-        </div>
-        <div>
-          <div class="card-title">Next Trip Ideas</div>
-          <div class="card-sub">Based on where you went</div>
-        </div>
-        <div class="card-ai">AI</div>
-      </div>
-      <div class="card-body">
-        <button class="run-btn" style="background:var(--green);" onclick="runNextTrip()" id="nextTripBtn">
-          <svg viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4"/></svg>
-          Suggest My Next Trip
-        </button>
-        <div id="nextTripLoading" style="display:none;text-align:center;padding:24px;">
-          <div style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--green);animation:spin .7s linear infinite;margin:0 auto 10px;"></div>
-          <div style="font-size:13px;color:var(--muted);">Finding perfect destinations...</div>
-        </div>
-        <div id="nextTripResult" style="display:none;margin-top:14px;"></div>
-      </div>
-    </div>
-
-  </div><!-- /tab-stats -->
-
-  <!-- ══════════ TAB: MONEY ══════════ -->
-  <div class="tab-panel p18" id="tab-money">
-
-    <!-- Expense Tracker -->
-    <div class="card au d1">
-      <div class="card-head">
-        <div class="card-icon" style="background:var(--amber-g);">
-          <svg viewBox="0 0 24 24" stroke="var(--amber)"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        </div>
-        <div style="flex:1;">
-          <div class="card-title">Expense Tracker</div>
-          <div class="card-sub" id="expenseTotal">Loading...</div>
-        </div>
-        <button onclick="openAddExpense()" style="padding:7px 14px;background:var(--blue);color:white;border:none;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;">+ Add</button>
-      </div>
-      <div class="card-body">
-        <div class="cat-pills" id="catPills">
-          <div class="cat-pill active" onclick="filterExpenses('all',this)">All</div>
-          <div class="cat-pill" onclick="filterExpenses('food',this)">🍜 Food</div>
-          <div class="cat-pill" onclick="filterExpenses('transport',this)">🚌 Transport</div>
-          <div class="cat-pill" onclick="filterExpenses('stay',this)">🏨 Stay</div>
-          <div class="cat-pill" onclick="filterExpenses('activities',this)">🎭 Activities</div>
-          <div class="cat-pill" onclick="filterExpenses('shopping',this)">🛍️ Shopping</div>
-          <div class="cat-pill" onclick="filterExpenses('other',this)">📦 Other</div>
-        </div>
-        <div id="expenseList">
-          <div style="text-align:center;padding:20px;">
-            <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:var(--amber);animation:spin .7s linear infinite;margin:0 auto;"></div>
+          <div class="mf-field">
+            <label class="mf-label">Days</label>
+            <input class="mf-input" id="mf-days" type="number" placeholder="6" value="5" />
           </div>
-        </div>
-        <!-- Budget comparison -->
-        <div class="budget-compare" id="budgetCompare" style="display:none;">
-          <div class="bc-label">
-            <span>Budget vs Spent</span>
-            <span id="bc-pct">0%</span>
-          </div>
-          <div class="bc-track">
-            <div class="bc-fill" id="bc-fill" style="width:0%;background:var(--green);"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);">
-            <span id="bc-spent">Spent: ₹0</span>
-            <span id="bc-budget">Budget: ₹0</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bill Splitter -->
-    <div class="card au d2">
-      <div class="card-head">
-        <div class="card-icon" style="background:rgba(139,92,246,0.09);">
-          <svg viewBox="0 0 24 24" stroke="#8B5CF6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <div>
-          <div class="card-title">Bill Splitter</div>
-          <div class="card-sub">Who owes whom — settled instantly</div>
-        </div>
-        <div class="card-ai">AI</div>
-      </div>
-      <div class="card-body">
-        <div class="field">
-          <label class="field-label">Total Bill</label>
-          <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;">
-            <select class="field-select field-input" id="split-currency" style="padding:10px 12px;">
-              <option value="INR">INR</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-            </select>
-            <input class="field-input" id="split-total" type="number" placeholder="Total amount"/>
-          </div>
-        </div>
-        <div class="field">
-          <label class="field-label">People (names, one per line)</label>
-          <textarea class="field-input" id="split-people" placeholder="Rahul&#10;Priya&#10;Amit&#10;Sara" style="min-height:80px;"></textarea>
-        </div>
-        <button class="run-btn" style="background:#8B5CF6;" onclick="runSplitBill()" id="splitBtn">
-          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg>
-          Calculate Split
-        </button>
-        <div id="splitLoading" style="display:none;text-align:center;padding:20px;">
-          <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:#8B5CF6;animation:spin .7s linear infinite;margin:0 auto 8px;"></div>
-          <div style="font-size:13px;color:var(--muted);">Calculating...</div>
-        </div>
-        <div id="splitResult" style="display:none;"></div>
-      </div>
-    </div>
-
-    <!-- Leftover Money -->
-    <div class="card au d3">
-      <div class="card-head">
-        <div class="card-icon" style="background:var(--green-g);">
-          <svg viewBox="0 0 24 24" stroke="var(--green)"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        </div>
-        <div>
-          <div class="card-title">Leftover Money</div>
-          <div class="card-sub">Convert your remaining foreign currency</div>
-        </div>
-        <div class="card-ai">AI</div>
-      </div>
-      <div class="card-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-          <div>
-            <label class="field-label">Amount left</label>
-            <input class="field-input" id="leftover-amount" type="number" placeholder="e.g. 5000"/>
-          </div>
-          <div>
-            <label class="field-label">Currency</label>
-            <select class="field-select field-input" id="leftover-currency" style="padding:10px 12px;">
-              <option value="JPY">JPY ¥</option>
-              <option value="THB">THB ฿</option>
+          <div class="mf-field">
+            <label class="mf-label">Currency</label>
+            <select class="mf-input" id="mf-currency">
+              <option value="INR">INR ₹</option>
               <option value="USD">USD $</option>
               <option value="EUR">EUR €</option>
-              <option value="AED">AED د.إ</option>
               <option value="GBP">GBP £</option>
-              <option value="SGD">SGD $</option>
+              <option value="AED">AED د.إ</option>
             </select>
           </div>
-        </div>
-        <button class="run-btn" style="background:var(--green);" onclick="runLeftoverMoney()" id="leftoverBtn">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          What Can I Do With This?
-        </button>
-        <div id="leftoverLoading" style="display:none;text-align:center;padding:20px;">
-          <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:var(--green);animation:spin .7s linear infinite;margin:0 auto 8px;"></div>
-          <div style="font-size:13px;color:var(--muted);">Checking rates...</div>
-        </div>
-        <div id="leftoverResult" style="display:none;"></div>
-      </div>
-    </div>
-
-  </div><!-- /tab-money -->
-
-  <!-- ══════════ TAB: SHARE ══════════ -->
-  <div class="tab-panel p18" id="tab-share">
-
-    <!-- Trip Card -->
-    <div class="card au d1">
-      <div class="card-head">
-        <div class="card-icon" style="background:var(--midnight);justify-content:center;">
-          <svg viewBox="0 0 24 24" stroke="white"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </div>
-        <div>
-          <div class="card-title">Trip Card</div>
-          <div class="card-sub">Beautiful shareable memory</div>
-        </div>
-      </div>
-      <div class="card-body">
-        <!-- Generated card -->
-        <div class="trip-card-wrap" id="shareCard">
-          <div class="tc-grid"></div>
-          <div class="tc-content">
-            <div class="tc-label">✈️ Yaply Travel</div>
-            <div class="tc-dest" id="sc-dest">—</div>
-            <div class="tc-meta" id="sc-meta">—</div>
-            <div class="tc-vibes" id="sc-vibes"></div>
-            <div class="tc-branding">yaply.live</div>
+          <div class="mf-field">
+            <label class="mf-label">Budget</label>
+            <input class="mf-input" id="mf-budget" type="text" placeholder="80,000" />
+          </div>
+          <div class="mf-field full">
+            <label class="mf-label">Travel Style</label>
+            <input class="mf-input" id="mf-vibe" type="text" placeholder="e.g. Adventure, Foodie, Cultural" />
           </div>
         </div>
-        <!-- Share buttons -->
-        <div class="share-btns">
-          <button class="share-btn sb-whatsapp" onclick="shareWhatsApp()">
-            <svg viewBox="0 0 24 24" fill="white" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.5 2C6.253 2 2 6.253 2 11.5c0 1.938.563 3.744 1.537 5.272L2 22l5.385-1.512A9.452 9.452 0 0 0 11.5 21C16.747 21 21 16.747 21 11.5S16.747 2 11.5 2z"/></svg>
-            WhatsApp
-          </button>
-          <button class="share-btn sb-instagram" onclick="shareInstagram()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-            Instagram
-          </button>
-        </div>
-        <div class="share-btns">
-          <button class="share-btn sb-save" onclick="saveCard()">
-            <svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Save Image
-          </button>
-          <button class="share-btn sb-copy" onclick="copyLink()">
-            <svg viewBox="0 0 24 24" stroke="var(--text)" fill="none" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            Copy Link
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- AI Summary -->
-    <div class="card au d2">
-      <div class="card-head">
-        <div class="card-icon" style="background:var(--blue-g);">
-          <svg viewBox="0 0 24 24" stroke="var(--blue)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <div>
-          <div class="card-title">Trip Summary</div>
-          <div class="card-sub">One-liner to share anywhere</div>
-        </div>
-        <div class="card-ai">AI</div>
-      </div>
-      <div class="card-body">
-        <button class="run-btn" style="background:var(--blue);" onclick="runSummary()" id="summaryBtn">
-          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Generate Summary
+        <button class="mf-btn" onclick="loadManualTrip()">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+          </svg>
+          Unlock After Trip
         </button>
-        <div id="summaryLoading" style="display:none;text-align:center;padding:20px;">
-          <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:var(--blue);animation:spin .7s linear infinite;margin:0 auto 8px;"></div>
-          <div style="font-size:13px;color:var(--muted);">Crafting your summary...</div>
-        </div>
-        <div id="summaryResult" style="display:none;"></div>
       </div>
     </div>
 
-  </div><!-- /tab-share -->
+    <!-- Trip data section (shown after trip selected/entered) -->
+    <div id="tripDataSection" style="display:none;">
 
-</div><!-- /tripDataSection -->
-
-<!-- ── BOTTOM CTA ── -->
-<div class="bottom-cta" id="bottomCta" style="display:none;">
-  <button class="bottom-cta-btn" onclick="window.location.href='/plan'">
-    <svg viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
-    Plan Your Next Trip
-  </button>
-</div>
-
-</div><!-- /page -->
-
-<!-- ── ADD EXPENSE MODAL ── -->
-<div class="modal-overlay" id="addExpenseModal" onclick="if(event.target===this)closeAddExpense()">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <div class="modal-title">Add Expense</div>
-    </div>
-    <div class="modal-body">
-      <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:20px;">
-        <div>
-          <label class="field-label">What did you spend on?</label>
-          <input class="field-input" id="exp-name" type="text" placeholder="e.g. Dinner at Ramen place"/>
+      <!-- Hero -->
+      <div class="trip-hero au" id="tripHero">
+        <div class="th-grid"></div>
+        <div class="th-orb1"></div>
+        <div class="th-orb2"></div>
+        <div class="th-badge">✈️ Trip Complete</div>
+        <div class="th-dest" id="heroDestination">—</div>
+        <div class="th-meta" id="heroMeta">—</div>
+        <div class="th-stats">
+          <div class="th-stat">
+            <div class="th-stat-val" id="heroDays">0</div>
+            <div class="th-stat-lbl">Days</div>
+          </div>
+          <div class="th-stat">
+            <div class="th-stat-val" id="heroPeople">0</div>
+            <div class="th-stat-lbl">People</div>
+          </div>
+          <div class="th-stat">
+            <div class="th-stat-val" id="heroSpent">₹0</div>
+            <div class="th-stat-lbl">Budget</div>
+          </div>
+          <div class="th-stat">
+            <div class="th-stat-val" id="heroPlaces">0</div>
+            <div class="th-stat-lbl">Places</div>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;">
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs-row au d2">
+        <button class="tab-btn active" onclick="switchTab('stats',this)"><span>📊</span> Stats</button>
+        <button class="tab-btn" onclick="switchTab('money',this)"><span>💰</span> Money</button>
+        <button class="tab-btn" onclick="switchTab('share',this)"><span>🔗</span> Share</button>
+      </div>
+
+      <!-- ══════════ TAB: STATS ══════════ -->
+      <div class="tab-panel active p18" id="tab-stats">
+
+        <!-- AI Trip Journal -->
+        <div class="card au d1">
+          <div class="card-head">
+            <div class="card-icon" style="background:rgba(37,99,255,0.09);">
+              <svg viewBox="0 0 24 24" stroke="var(--blue)">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+            </div>
+            <div>
+              <div class="card-title">AI Trip Journal</div>
+              <div class="card-sub">Your story, beautifully written</div>
+            </div>
+            <div class="card-ai">AI</div>
+          </div>
+          <div class="card-body">
+            <div class="field">
+              <label class="field-label">Your highlights & memories</label>
+              <textarea class="field-input" id="journal-memories"
+                placeholder="What moved you? Your best moments, surprises, food you loved, people you met..."></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+              <div>
+                <label class="field-label">Travelled with</label>
+                <select class="field-select field-input" id="journal-with" style="padding:10px 12px;">
+                  <option value="Solo">Solo</option>
+                  <option value="Partner">Partner</option>
+                  <option value="Friends">Friends</option>
+                  <option value="Family">Family</option>
+                  <option value="Group">Group</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Story style</label>
+                <select class="field-select field-input" id="journal-style" style="padding:10px 12px;">
+                  <option value="poetic">Poetic</option>
+                  <option value="casual">Casual</option>
+                  <option value="detailed">Detailed</option>
+                  <option value="funny">Funny</option>
+                </select>
+              </div>
+            </div>
+            <button class="run-btn" style="background:var(--blue);" onclick="runJournal()" id="journalBtn">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              </svg>
+              Write My Journey
+            </button>
+            <div id="journalLoading" style="display:none;text-align:center;padding:24px;">
+              <div
+                style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--blue);animation:spin .7s linear infinite;margin:0 auto 10px;">
+              </div>
+              <div style="font-size:13px;color:var(--muted);">Writing your story...</div>
+            </div>
+            <div id="journalResult" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Trip Stats -->
+        <div class="card au d2">
+          <div class="card-head">
+            <div class="card-icon" style="background:var(--amber-g);">
+              <svg viewBox="0 0 24 24" stroke="var(--amber)">
+                <path d="M2 20h.01" />
+                <path d="M7 20v-4" />
+                <path d="M12 20v-8" />
+                <path d="M17 20V8" />
+                <path d="M22 4v16" />
+              </svg>
+            </div>
+            <div>
+              <div class="card-title">Trip Stats</div>
+              <div class="card-sub">Fun facts about your trip</div>
+            </div>
+            <div class="card-ai">AI</div>
+          </div>
+          <div class="card-body">
+            <button class="run-btn" style="background:var(--amber);" onclick="runTripStats()" id="statsBtn">
+              <svg viewBox="0 0 24 24">
+                <path d="M2 20h.01" />
+                <path d="M7 20v-4" />
+                <path d="M12 20v-8" />
+              </svg>
+              Generate My Stats
+            </button>
+            <div id="statsLoading" style="display:none;text-align:center;padding:24px;">
+              <div
+                style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--amber);animation:spin .7s linear infinite;margin:0 auto 10px;">
+              </div>
+              <div style="font-size:13px;color:var(--muted);">Analysing your trip...</div>
+            </div>
+            <div id="statsResult" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Write Review -->
+        <div class="card au d3">
+          <div class="card-head">
+            <div class="card-icon" style="background:var(--coral-g);">
+              <svg viewBox="0 0 24 24" stroke="var(--coral)">
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+            </div>
+            <div>
+              <div class="card-title">Write a Review</div>
+              <div class="card-sub">AI writes it, you post it</div>
+            </div>
+            <div class="card-ai">AI</div>
+          </div>
+          <div class="card-body">
+            <div style="margin-bottom:12px;">
+              <label class="field-label">Your rating</label>
+              <div class="star-row" id="starRow">
+                <span class="star" onclick="setRating(1)">⭐</span>
+                <span class="star" onclick="setRating(2)">⭐</span>
+                <span class="star" onclick="setRating(3)">⭐</span>
+                <span class="star" onclick="setRating(4)">⭐</span>
+                <span class="star" onclick="setRating(5)">⭐</span>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">What did you love most?</label>
+              <input class="field-input" id="review-highlight" type="text"
+                placeholder="e.g. The street food, sunsets, local people" />
+            </div>
+            <button class="run-btn" style="background:var(--coral);" onclick="runReview()" id="reviewBtn">
+              <svg viewBox="0 0 24 24">
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              Generate Review
+            </button>
+            <div id="reviewLoading" style="display:none;text-align:center;padding:24px;">
+              <div
+                style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--coral);animation:spin .7s linear infinite;margin:0 auto 10px;">
+              </div>
+              <div style="font-size:13px;color:var(--muted);">Writing your review...</div>
+            </div>
+            <div id="reviewResult" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Next Trip -->
+        <div class="card au d4">
+          <div class="card-head">
+            <div class="card-icon" style="background:var(--green-g);">
+              <svg viewBox="0 0 24 24" stroke="var(--green)">
+                <path
+                  d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" />
+              </svg>
+            </div>
+            <div>
+              <div class="card-title">Next Trip Ideas</div>
+              <div class="card-sub">Based on where you went</div>
+            </div>
+            <div class="card-ai">AI</div>
+          </div>
+          <div class="card-body">
+            <button class="run-btn" style="background:var(--green);" onclick="runNextTrip()" id="nextTripBtn">
+              <svg viewBox="0 0 24 24">
+                <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4" />
+              </svg>
+              Suggest My Next Trip
+            </button>
+            <div id="nextTripLoading" style="display:none;text-align:center;padding:24px;">
+              <div
+                style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--green);animation:spin .7s linear infinite;margin:0 auto 10px;">
+              </div>
+              <div style="font-size:13px;color:var(--muted);">Finding perfect destinations...</div>
+            </div>
+            <div id="nextTripResult" style="display:none;margin-top:14px;"></div>
+          </div>
+        </div>
+
+      </div><!-- /tab-stats -->
+
+      <!-- ══════════ TAB: MONEY ══════════ -->
+      <div class="tab-panel p18" id="tab-money">
+
+        <!-- Expense Tracker -->
+        <div class="card au d1">
+          <div class="card-head">
+            <div class="card-icon" style="background:var(--amber-g);">
+              <svg viewBox="0 0 24 24" stroke="var(--amber)">
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+            </div>
+            <div style="flex:1;">
+              <div class="card-title">Expense Tracker</div>
+              <div class="card-sub" id="expenseTotal">Loading...</div>
+            </div>
+            <button onclick="openAddExpense()"
+              style="padding:7px 14px;background:var(--blue);color:white;border:none;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;">+
+              Add</button>
+          </div>
+          <div class="card-body">
+            <div class="cat-pills" id="catPills">
+              <div class="cat-pill active" onclick="filterExpenses('all',this)">All</div>
+              <div class="cat-pill" onclick="filterExpenses('food',this)">🍜 Food</div>
+              <div class="cat-pill" onclick="filterExpenses('transport',this)">🚌 Transport</div>
+              <div class="cat-pill" onclick="filterExpenses('stay',this)">🏨 Stay</div>
+              <div class="cat-pill" onclick="filterExpenses('activities',this)">🎭 Activities</div>
+              <div class="cat-pill" onclick="filterExpenses('shopping',this)">🛍️ Shopping</div>
+              <div class="cat-pill" onclick="filterExpenses('other',this)">📦 Other</div>
+            </div>
+            <div id="expenseList">
+              <div style="text-align:center;padding:20px;">
+                <div
+                  style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:var(--amber);animation:spin .7s linear infinite;margin:0 auto;">
+                </div>
+              </div>
+            </div>
+            <!-- Budget comparison -->
+            <div class="budget-compare" id="budgetCompare" style="display:none;">
+              <div class="bc-label">
+                <span>Budget vs Spent</span>
+                <span id="bc-pct">0%</span>
+              </div>
+              <div class="bc-track">
+                <div class="bc-fill" id="bc-fill" style="width:0%;background:var(--green);"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);">
+                <span id="bc-spent">Spent: ₹0</span>
+                <span id="bc-budget">Budget: ₹0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bill Splitter -->
+        <div class="card au d2">
+          <div class="card-head">
+            <div class="card-icon" style="background:rgba(139,92,246,0.09);">
+              <svg viewBox="0 0 24 24" stroke="#8B5CF6">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <div>
+              <div class="card-title">Bill Splitter</div>
+              <div class="card-sub">Who owes whom — settled instantly</div>
+            </div>
+            <div class="card-ai">AI</div>
+          </div>
+          <div class="card-body">
+            <div class="field">
+              <label class="field-label">Total Bill</label>
+              <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;">
+                <select class="field-select field-input" id="split-currency" style="padding:10px 12px;">
+                  <option value="INR">INR</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
+                <input class="field-input" id="split-total" type="number" placeholder="Total amount" />
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">People (names, one per line)</label>
+              <textarea class="field-input" id="split-people" placeholder="Rahul&#10;Priya&#10;Amit&#10;Sara"
+                style="min-height:80px;"></textarea>
+            </div>
+            <button class="run-btn" style="background:#8B5CF6;" onclick="runSplitBill()" id="splitBtn">
+              <svg viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              </svg>
+              Calculate Split
+            </button>
+            <div id="splitLoading" style="display:none;text-align:center;padding:20px;">
+              <div
+                style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:#8B5CF6;animation:spin .7s linear infinite;margin:0 auto 8px;">
+              </div>
+              <div style="font-size:13px;color:var(--muted);">Calculating...</div>
+            </div>
+            <div id="splitResult" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Leftover Money -->
+        <div class="card au d3">
+          <div class="card-head">
+            <div class="card-icon" style="background:var(--green-g);">
+              <svg viewBox="0 0 24 24" stroke="var(--green)">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+              </svg>
+            </div>
+            <div>
+              <div class="card-title">Leftover Money</div>
+              <div class="card-sub">Convert your remaining foreign currency</div>
+            </div>
+            <div class="card-ai">AI</div>
+          </div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+              <div>
+                <label class="field-label">Amount left</label>
+                <input class="field-input" id="leftover-amount" type="number" placeholder="e.g. 5000" />
+              </div>
+              <div>
+                <label class="field-label">Currency</label>
+                <select class="field-select field-input" id="leftover-currency" style="padding:10px 12px;">
+                  <option value="JPY">JPY ¥</option>
+                  <option value="THB">THB ฿</option>
+                  <option value="USD">USD $</option>
+                  <option value="EUR">EUR €</option>
+                  <option value="AED">AED د.إ</option>
+                  <option value="GBP">GBP £</option>
+                  <option value="SGD">SGD $</option>
+                </select>
+              </div>
+            </div>
+            <button class="run-btn" style="background:var(--green);" onclick="runCurrencyLeftover()" id="leftoverBtn">
+              <svg viewBox="0 0 24 24">
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+              What Can I Do With This?
+            </button>
+            <div id="leftoverLoading" style="display:none;text-align:center;padding:20px;">
+              <div
+                style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:var(--green);animation:spin .7s linear infinite;margin:0 auto 8px;">
+              </div>
+              <div style="font-size:13px;color:var(--muted);">Checking rates...</div>
+            </div>
+            <div id="leftoverResult" style="display:none;"></div>
+          </div>
+        </div>
+
+      </div><!-- /tab-money -->
+
+      <!-- ══════════ TAB: SHARE ══════════ -->
+      <div class="tab-panel p18" id="tab-share">
+
+        <!-- Trip Card -->
+        <div class="card au d1">
+          <div class="card-head">
+            <div class="card-icon" style="background:var(--midnight);justify-content:center;">
+              <svg viewBox="0 0 24 24" stroke="white">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+            </div>
+            <div>
+              <div class="card-title">Trip Card</div>
+              <div class="card-sub">Beautiful shareable memory</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Generated card -->
+            <div class="trip-card-wrap" id="shareCard">
+              <div class="tc-grid"></div>
+              <div class="tc-content">
+                <div class="tc-label">✈️ Yaply Travel</div>
+                <div class="tc-dest" id="sc-dest">—</div>
+                <div class="tc-meta" id="sc-meta">—</div>
+                <div class="tc-vibes" id="sc-vibes"></div>
+                <div class="tc-branding">yaply.live</div>
+              </div>
+            </div>
+            <!-- Share buttons -->
+            <div class="share-btns">
+              <button class="share-btn sb-whatsapp" onclick="shareWhatsApp()">
+                <svg viewBox="0 0 24 24" fill="white" stroke="none">
+                  <path
+                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                  <path
+                    d="M11.5 2C6.253 2 2 6.253 2 11.5c0 1.938.563 3.744 1.537 5.272L2 22l5.385-1.512A9.452 9.452 0 0 0 11.5 21C16.747 21 21 16.747 21 11.5S16.747 2 11.5 2z" />
+                </svg>
+                WhatsApp
+              </button>
+              <button class="share-btn sb-instagram" onclick="shareInstagram()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                </svg>
+                Instagram
+              </button>
+            </div>
+            <div class="share-btns">
+              <button class="share-btn sb-save" onclick="saveCard()">
+                <svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Save Image
+              </button>
+              <button class="share-btn sb-copy" onclick="copyLink()">
+                <svg viewBox="0 0 24 24" stroke="var(--text)" fill="none" stroke-width="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Summary -->
+        <div class="card au d2">
+          <div class="card-head">
+            <div class="card-icon" style="background:var(--blue-g);">
+              <svg viewBox="0 0 24 24" stroke="var(--blue)">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </div>
+            <div>
+              <div class="card-title">Trip Summary</div>
+              <div class="card-sub">One-liner to share anywhere</div>
+            </div>
+            <div class="card-ai">AI</div>
+          </div>
+          <div class="card-body">
+            <button class="run-btn" style="background:var(--blue);" onclick="runSummary()" id="summaryBtn">
+              <svg viewBox="0 0 24 24">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              Generate Summary
+            </button>
+            <div id="summaryLoading" style="display:none;text-align:center;padding:20px;">
+              <div
+                style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:var(--blue);animation:spin .7s linear infinite;margin:0 auto 8px;">
+              </div>
+              <div style="font-size:13px;color:var(--muted);">Crafting your summary...</div>
+            </div>
+            <div id="summaryResult" style="display:none;"></div>
+          </div>
+        </div>
+
+      </div><!-- /tab-share -->
+
+    </div><!-- /tripDataSection -->
+
+    <!-- ── BOTTOM CTA ── -->
+    <div class="bottom-cta" id="bottomCta" style="display:none;">
+      <button class="bottom-cta-btn" onclick="window.location.href='/plan'">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" />
+        </svg>
+        Plan Your Next Trip
+      </button>
+    </div>
+
+  </div><!-- /page -->
+
+  <!-- ── ADD EXPENSE MODAL ── -->
+  <div class="modal-overlay" id="addExpenseModal" onclick="if(event.target===this)closeAddExpense()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <div class="modal-title">Add Expense</div>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:20px;">
           <div>
-            <label class="field-label">Currency</label>
-            <select class="field-select field-input" id="exp-currency" style="padding:10px 12px;">
-              <option value="INR">INR</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-              <option value="JPY">JPY</option>
-              <option value="THB">THB</option>
-              <option value="AED">AED</option>
+            <label class="field-label">What did you spend on?</label>
+            <input class="field-input" id="exp-name" type="text" placeholder="e.g. Dinner at Ramen place" />
+          </div>
+          <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;">
+            <div>
+              <label class="field-label">Currency</label>
+              <select class="field-select field-input" id="exp-currency" style="padding:10px 12px;">
+                <option value="INR">INR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="JPY">JPY</option>
+                <option value="THB">THB</option>
+                <option value="AED">AED</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Amount</label>
+              <input class="field-input" id="exp-amount" type="number" placeholder="0" />
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Category</label>
+            <select class="field-select field-input" id="exp-category" style="padding:10px 12px;">
+              <option value="food">🍜 Food</option>
+              <option value="transport">🚌 Transport</option>
+              <option value="stay">🏨 Stay</option>
+              <option value="activities">🎭 Activities</option>
+              <option value="shopping">🛍️ Shopping</option>
+              <option value="other">📦 Other</option>
             </select>
           </div>
-          <div>
-            <label class="field-label">Amount</label>
-            <input class="field-input" id="exp-amount" type="number" placeholder="0"/>
-          </div>
+          <button class="run-btn" style="background:var(--amber);" onclick="saveExpense()">
+            <svg viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add Expense
+          </button>
         </div>
-        <div>
-          <label class="field-label">Category</label>
-          <select class="field-select field-input" id="exp-category" style="padding:10px 12px;">
-            <option value="food">🍜 Food</option>
-            <option value="transport">🚌 Transport</option>
-            <option value="stay">🏨 Stay</option>
-            <option value="activities">🎭 Activities</option>
-            <option value="shopping">🛍️ Shopping</option>
-            <option value="other">📦 Other</option>
-          </select>
-        </div>
-        <button class="run-btn" style="background:var(--amber);" onclick="saveExpense()">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Expense
-        </button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ── TOAST ── -->
-<div class="toast" id="toast"></div>
+  <!-- ── TOAST ── -->
+  <div class="toast" id="toast"></div>
 
-<script>
-// ════════════════════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════════════════════
-var _currentTrip   = null;
-var _allExpenses   = [];
-var _starRating    = 5;
-var _token         = localStorage.getItem('yaply_token') || '';
-var _headers       = { 'Content-Type':'application/json', 'Authorization':'Bearer ' + _token };
+  <script>
+    // ════════════════════════════════════════════════════════
+    //  STATE
+    // ════════════════════════════════════════════════════════
+    var _currentTrip = null;
+    var _allExpenses = [];
+    var _starRating = 5;
+    var _token = localStorage.getItem('yaply_token') || '';
+    var _headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token };
 
-// ════════════════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', function() {
-  // Capture token from URL if Google OAuth
-  var params = new URLSearchParams(window.location.search);
-  if (params.get('token')) {
-    localStorage.setItem('yaply_token', params.get('token'));
-    _token = params.get('token');
-    _headers['Authorization'] = 'Bearer ' + _token;
-    window.history.replaceState({}, '', '/after');
-  }
-  if (!_token) { window.location.href = '/login'; return; }
-  initAfterTrip();
-});
+    // ════════════════════════════════════════════════════════
+    //  INIT
+    // ════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function () {
+      // Capture token from URL if Google OAuth
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('token')) {
+        localStorage.setItem('yaply_token', params.get('token'));
+        _token = params.get('token');
+        _headers['Authorization'] = 'Bearer ' + _token;
+        window.history.replaceState({}, '', '/after');
+      }
+      if (!_token) { window.location.href = '/login'; return; }
+      initAfterTrip();
+    });
 
-async function initAfterTrip() {
-  try {
-    var res  = await fetch('/api/trips', { headers: _headers });
-    var data = await res.json();
+    async function initAfterTrip() {
+      try {
+        var res = await fetch('/api/trips', { headers: _headers });
+        var data = await res.json();
 
-    document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('loadingState').style.display = 'none';
 
-    if (data.success && data.trips && data.trips.length) {
-      // Show trip selector
-      renderTripSelector(data.trips);
-      // Auto-select most recent
-      selectTrip(data.trips[0]);
-    } else {
-      // No trips — show manual form
-      document.getElementById('manualFormSection').style.display = 'block';
+        if (data.success && data.trips && data.trips.length) {
+          // Show trip selector
+          renderTripSelector(data.trips);
+          // Auto-select most recent
+          selectTrip(data.trips[0]);
+        } else {
+          // No trips — show manual form
+          document.getElementById('manualFormSection').style.display = 'block';
+        }
+      } catch (e) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('manualFormSection').style.display = 'block';
+      }
     }
-  } catch(e) {
-    document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('manualFormSection').style.display = 'block';
-  }
-}
 
-// ════════════════════════════════════════════════════════
-//  TRIP SELECTOR
-// ════════════════════════════════════════════════════════
-var COUNTRY_FLAGS = {
-  'japan':'🇯🇵','tokyo':'🇯🇵','thailand':'🇹🇭','bangkok':'🇹🇭',
-  'france':'🇫🇷','paris':'🇫🇷','bali':'🇮🇩','indonesia':'🇮🇩',
-  'dubai':'🇦🇪','uae':'🇦🇪','uk':'🇬🇧','london':'🇬🇧',
-  'singapore':'🇸🇬','usa':'🇺🇸','new york':'🇺🇸','india':'🇮🇳',
-  'goa':'🇮🇳','delhi':'🇮🇳','mumbai':'🇮🇳','nepal':'🇳🇵',
-  'sri lanka':'🇱🇰','malaysia':'🇲🇾','vietnam':'🇻🇳',
-  'italy':'🇮🇹','rome':'🇮🇹','spain':'🇪🇸','barcelona':'🇪🇸',
-  'germany':'🇩🇪','greece':'🇬🇷','turkey':'🇹🇷','australia':'🇦🇺',
-  'canada':'🇨🇦','south korea':'🇰🇷','seoul':'🇰🇷','maldives':'🇲🇻',
-  'morocco':'🇲🇦','egypt':'🇪🇬','switzerland':'🇨🇭','portugal':'🇵🇹',
-};
+    // ════════════════════════════════════════════════════════
+    //  TRIP SELECTOR
+    // ════════════════════════════════════════════════════════
+    var COUNTRY_FLAGS = {
+      'japan': '🇯🇵', 'tokyo': '🇯🇵', 'thailand': '🇹🇭', 'bangkok': '🇹🇭',
+      'france': '🇫🇷', 'paris': '🇫🇷', 'bali': '🇮🇩', 'indonesia': '🇮🇩',
+      'dubai': '🇦🇪', 'uae': '🇦🇪', 'uk': '🇬🇧', 'london': '🇬🇧',
+      'singapore': '🇸🇬', 'usa': '🇺🇸', 'new york': '🇺🇸', 'india': '🇮🇳',
+      'goa': '🇮🇳', 'delhi': '🇮🇳', 'mumbai': '🇮🇳', 'nepal': '🇳🇵',
+      'sri lanka': '🇱🇰', 'malaysia': '🇲🇾', 'vietnam': '🇻🇳',
+      'italy': '🇮🇹', 'rome': '🇮🇹', 'spain': '🇪🇸', 'barcelona': '🇪🇸',
+      'germany': '🇩🇪', 'greece': '🇬🇷', 'turkey': '🇹🇷', 'australia': '🇦🇺',
+      'canada': '🇨🇦', 'south korea': '🇰🇷', 'seoul': '🇰🇷', 'maldives': '🇲🇻',
+      'morocco': '🇲🇦', 'egypt': '🇪🇬', 'switzerland': '🇨🇭', 'portugal': '🇵🇹',
+    };
 
-function getFlag(dest) {
-  if (!dest) return '🌍';
-  var d = dest.toLowerCase();
-  for (var key in COUNTRY_FLAGS) {
-    if (d.includes(key)) return COUNTRY_FLAGS[key];
-  }
-  return '🌍';
-}
+    function getFlag(dest) {
+      if (!dest) return '🌍';
+      var d = dest.toLowerCase();
+      for (var key in COUNTRY_FLAGS) {
+        if (d.includes(key)) return COUNTRY_FLAGS[key];
+      }
+      return '🌍';
+    }
 
-function renderTripSelector(trips) {
-  var section = document.getElementById('tripSelectorSection');
-  var scroll  = document.getElementById('tripSelectorScroll');
-  section.style.display = 'block';
+    function renderTripSelector(trips) {
+      var section = document.getElementById('tripSelectorSection');
+      var scroll = document.getElementById('tripSelectorScroll');
+      section.style.display = 'block';
 
-  scroll.innerHTML = trips.map(function(t, i) {
-    var flag = getFlag(t.destination);
-    var date = t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN',{month:'short',year:'numeric'}) : '';
-    return '<div class="trip-sel-card' + (i===0?' active':'') + '" onclick="selectTrip(' + JSON.stringify(t).replace(/"/g,'&quot;') + ',this)" data-id="' + t.id + '">' +
-      '<div class="tsc-flag">' + flag + '</div>' +
-      '<div class="tsc-dest">' + (t.destination || 'Trip') + '</div>' +
-      '<div class="tsc-meta">' + date + '</div>' +
-      '<div class="tsc-days">' + (t.days || 0) + ' days</div>' +
-    '</div>';
-  }).join('');
-}
-
-function selectTrip(trip, cardEl) {
-  _currentTrip = trip;
-
-  // Update active card
-  document.querySelectorAll('.trip-sel-card').forEach(function(c) { c.classList.remove('active'); });
-  if (cardEl) cardEl.classList.add('active');
-
-  // Update hero
-  var flag = getFlag(trip.destination);
-  document.getElementById('heroDestination').textContent = flag + ' ' + (trip.destination || 'Your Trip');
-  var date = trip.created_at ? new Date(trip.created_at).toLocaleDateString('en-IN',{month:'long',year:'numeric'}) : '';
-  document.getElementById('heroMeta').textContent = (trip.days || 0) + ' days' + (date ? ' · ' + date : '');
-  document.getElementById('heroDays').textContent    = trip.days || 0;
-  document.getElementById('heroPeople').textContent  = trip.people || 1;
-  document.getElementById('heroSpent').textContent   = (trip.currency||'₹') + ' ' + (parseInt(trip.budget)||0).toLocaleString();
-
-  // Count places from plan_data
-  var places = 0;
-  try {
-    var plan = typeof trip.plan_data === 'string' ? JSON.parse(trip.plan_data) : trip.plan_data;
-    if (plan && plan.itinerary) places = plan.itinerary.length * 2;
-  } catch(e) {}
-  document.getElementById('heroPlaces').textContent = places || (trip.days * 2) || 0;
-
-  // Update share card
-  document.getElementById('sc-dest').textContent = flag + ' ' + (trip.destination || 'Your Trip');
-  document.getElementById('sc-meta').textContent = (trip.days||0) + ' Days · ' + date;
-  var vibes = (trip.vibes || 'Adventure').split('+').map(function(v) { return v.trim(); });
-  document.getElementById('sc-vibes').innerHTML = vibes.map(function(v) {
-    return '<span class="tc-vibe-tag">' + v + '</span>';
-  }).join('');
-
-  // Pre-fill journal fields
-  var destEl = document.getElementById('journal-memories');
-  if (destEl && !destEl.value) destEl.placeholder = 'What did you love about ' + (trip.destination || 'your trip') + '? Your best moments, food, people...';
-
-  // Show everything
-  document.getElementById('tripDataSection').style.display = 'block';
-  document.getElementById('bottomCta').style.display = 'block';
-
-  // Load expenses
-  loadExpenses();
-}
-
-// ════════════════════════════════════════════════════════
-//  MANUAL TRIP ENTRY
-// ════════════════════════════════════════════════════════
-function loadManualTrip() {
-  var dest = document.getElementById('mf-dest').value.trim();
-  if (!dest) { showToast('Enter your destination'); return; }
-
-  var trip = {
-    id:          null,
-    destination: dest,
-    days:        parseInt(document.getElementById('mf-days').value) || 5,
-    currency:    document.getElementById('mf-currency').value || 'INR',
-    budget:      document.getElementById('mf-budget').value || '0',
-    vibes:       document.getElementById('mf-vibe').value || 'Adventure',
-    people:      1,
-    created_at:  new Date().toISOString(),
-  };
-
-  document.getElementById('manualFormSection').style.display = 'none';
-  selectTrip(trip, null);
-  showToast('Trip loaded ✅');
-}
-
-// ════════════════════════════════════════════════════════
-//  TABS
-// ════════════════════════════════════════════════════════
-function switchTab(tabId, btn) {
-  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-  btn.classList.add('active');
-  document.getElementById('tab-' + tabId).classList.add('active');
-}
-
-// ════════════════════════════════════════════════════════
-//  JOURNAL
-// ════════════════════════════════════════════════════════
-async function runJournal() {
-  var memories = document.getElementById('journal-memories').value.trim();
-  var btn      = document.getElementById('journalBtn');
-  var loading  = document.getElementById('journalLoading');
-  var result   = document.getElementById('journalResult');
-
-  setToolState(btn, loading, true);
-  result.style.display = 'none';
-
-  try {
-    var res  = await fetch('/api/trip-journal', {
-      method:'POST', headers:_headers,
-      body: JSON.stringify({
-        destination:  _currentTrip.destination,
-        days:         _currentTrip.days,
-        vibe:         _currentTrip.vibes || 'adventure',
-        memories:     memories || 'amazing trip with great food and sights',
-        travelled_with: document.getElementById('journal-with').value,
-        style:        document.getElementById('journal-style').value,
-      })
-    });
-    var data = await res.json();
-    setToolState(btn, loading, false);
-
-    if (data.success) {
-      var story = data.journal || data.story || data.data || '';
-      result.innerHTML =
-        '<div class="result-block" style="font-style:italic;line-height:1.9;white-space:pre-line;">' + story + '</div>' +
-        '<button onclick="copyText(\'' + story.replace(/'/g,"\\'").replace(/\n/g,'\\n') + '\')" ' +
-        'style="margin-top:10px;width:100%;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">' +
-        '📋 Copy Story</button>';
-      result.style.display = 'block';
-    } else { showToast(data.error || 'Could not write journal'); }
-  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
-}
-
-// ════════════════════════════════════════════════════════
-//  TRIP STATS
-// ════════════════════════════════════════════════════════
-async function runTripStats() {
-  var btn     = document.getElementById('statsBtn');
-  var loading = document.getElementById('statsLoading');
-  var result  = document.getElementById('statsResult');
-  setToolState(btn, loading, true);
-  result.style.display = 'none';
-
-  try {
-    var res  = await fetch('/api/trip-stats', {
-      method:'POST', headers:_headers,
-      body: JSON.stringify({
-        destination: _currentTrip.destination,
-        days:        _currentTrip.days,
-        budget:      _currentTrip.budget,
-        currency:    _currentTrip.currency,
-        vibe:        _currentTrip.vibes,
-        people:      _currentTrip.people,
-      })
-    });
-    var data = await res.json();
-    setToolState(btn, loading, false);
-
-    if (data.success) {
-      var d = data.stats || data.data || {};
-      var funFacts = d.fun_facts || d.highlights || [];
-      var statsItems = d.stats || [];
-
-      result.innerHTML = '<div style="margin-top:14px;">';
-
-      // Traveller type
-      if (d.traveller_type) {
-        result.innerHTML +=
-          '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:16px;padding:16px;margin-bottom:12px;text-align:center;">' +
-          '<div style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Your Traveller Type</div>' +
-          '<div style="font-family:var(--font-head);font-size:20px;color:white;">' + d.traveller_type + '</div>' +
-          (d.traveller_desc ? '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:6px;">' + d.traveller_desc + '</div>' : '') +
+      scroll.innerHTML = trips.map(function (t, i) {
+        var flag = getFlag(t.destination);
+        var date = t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : '';
+        return '<div class="trip-sel-card' + (i === 0 ? ' active' : '') + '" onclick="selectTrip(' + JSON.stringify(t).replace(/"/g, '&quot;') + ',this)" data-id="' + t.id + '">' +
+          '<div class="tsc-flag">' + flag + '</div>' +
+          '<div class="tsc-dest">' + (t.destination || 'Trip') + '</div>' +
+          '<div class="tsc-meta">' + date + '</div>' +
+          '<div class="tsc-days">' + (t.days || 0) + ' days</div>' +
           '</div>';
-      }
-
-      // Stats grid
-      if (statsItems.length) {
-        result.innerHTML += '<div class="stats-grid">';
-        statsItems.slice(0,6).forEach(function(s) {
-          var val   = typeof s === 'object' ? (s.value||s.val||'—') : s;
-          var label = typeof s === 'object' ? (s.label||s.name||'') : '';
-          var sub   = typeof s === 'object' ? (s.sub||s.description||'') : '';
-          result.innerHTML +=
-            '<div class="stat-card">' +
-            '<div class="stat-card-val">' + val + '</div>' +
-            (label ? '<div class="stat-card-lbl">' + label + '</div>' : '') +
-            (sub   ? '<div class="stat-card-sub">' + sub + '</div>' : '') +
-            '</div>';
-        });
-        result.innerHTML += '</div>';
-      }
-
-      // Fun facts
-      if (funFacts.length) {
-        result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:10px;">';
-        result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Fun Facts</div>';
-        funFacts.forEach(function(f) {
-          result.innerHTML += '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);"><span>🎯</span>' + f + '</div>';
-        });
-        result.innerHTML += '</div>';
-      }
-
-      result.innerHTML += '</div>';
-      result.style.display = 'block';
-    } else { showToast(data.error || 'Could not get stats'); }
-  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
-}
-
-// ════════════════════════════════════════════════════════
-//  REVIEW
-// ════════════════════════════════════════════════════════
-var _starRating = 5;
-function setRating(n) {
-  _starRating = n;
-  var stars = document.querySelectorAll('#starRow .star');
-  stars.forEach(function(s,i) { s.textContent = i < n ? '⭐' : '☆'; });
-}
-
-async function runReview() {
-  var highlight = document.getElementById('review-highlight').value.trim();
-  var btn       = document.getElementById('reviewBtn');
-  var loading   = document.getElementById('reviewLoading');
-  var result    = document.getElementById('reviewResult');
-  setToolState(btn, loading, true);
-  result.style.display = 'none';
-
-  try {
-    var res  = await fetch('/api/review-generator', {
-      method:'POST', headers:_headers,
-      body: JSON.stringify({
-        destination: _currentTrip.destination,
-        days:        _currentTrip.days,
-        rating:      _starRating,
-        highlight:   highlight || 'amazing experience',
-        vibe:        _currentTrip.vibes,
-      })
-    });
-    var data = await res.json();
-    setToolState(btn, loading, false);
-
-    if (data.success) {
-      var review = data.review || data.data || '';
-      result.innerHTML =
-        '<div class="result-block">' +
-          '<div style="font-size:16px;margin-bottom:8px;">'+('⭐'.repeat(_starRating))+'</div>' +
-          '<div style="line-height:1.8;">' + review + '</div>' +
-        '</div>' +
-        '<div style="display:flex;gap:8px;margin-top:10px;">' +
-          '<button onclick="copyText(\'' + review.replace(/'/g,"\\'") + '\')" ' +
-          'style="flex:1;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy</button>' +
-          '<button onclick="shareReviewWhatsApp(\'' + review.replace(/'/g,"\\'").replace(/\n/g,' ') + '\')" ' +
-          'style="flex:1;padding:11px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">💚 Share</button>' +
-        '</div>';
-      result.style.display = 'block';
-    } else { showToast(data.error || 'Could not generate review'); }
-  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
-}
-
-// ════════════════════════════════════════════════════════
-//  NEXT TRIP
-// ════════════════════════════════════════════════════════
-async function runNextTrip() {
-  var btn     = document.getElementById('nextTripBtn');
-  var loading = document.getElementById('nextTripLoading');
-  var result  = document.getElementById('nextTripResult');
-  setToolState(btn, loading, true);
-  result.style.display = 'none';
-
-  try {
-    var res  = await fetch('/api/next-trip', {
-      method:'POST', headers:_headers,
-      body: JSON.stringify({
-        last_destination: _currentTrip.destination,
-        vibe:             _currentTrip.vibes,
-        budget:           _currentTrip.budget,
-        currency:         _currentTrip.currency,
-        passport:         _currentTrip.passport || 'India',
-      })
-    });
-    var data = await res.json();
-    setToolState(btn, loading, false);
-
-    if (data.success) {
-      var suggestions = data.suggestions || data.destinations || data.data || [];
-      if (!Array.isArray(suggestions)) suggestions = [suggestions];
-
-      result.innerHTML = suggestions.slice(0,3).map(function(s) {
-        var flag  = getFlag(s.destination || s.name || '');
-        var name  = s.destination || s.name || 'Destination';
-        var why   = s.why || s.reason || '';
-        var budget = s.budget || s.estimated_budget || '';
-        var best  = s.best_time || s.best_month || '';
-
-        return '<div class="next-trip-card" onclick="planThisTrip(\'' + name.replace(/'/g,"\\'") + '\')">' +
-          '<div class="ntc-flag">' + flag + '</div>' +
-          '<div class="ntc-info">' +
-            '<div class="ntc-dest">' + name + '</div>' +
-            (why ? '<div class="ntc-why">' + why + '</div>' : '') +
-            '<div class="ntc-meta">' +
-              (budget ? '<span class="ntc-tag">💰 ' + budget + '</span>' : '') +
-              (best   ? '<span class="ntc-tag">📅 ' + best + '</span>' : '') +
-            '</div>' +
-          '</div>' +
-          '<div class="ntc-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>' +
-        '</div>';
       }).join('');
-      result.style.display = 'block';
-    } else { showToast(data.error || 'Could not get suggestions'); }
-  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
-}
-
-function planThisTrip(dest) {
-  window.location.href = '/plan?dest=' + encodeURIComponent(dest);
-}
-
-// ════════════════════════════════════════════════════════
-//  EXPENSES
-// ════════════════════════════════════════════════════════
-var CAT_ICONS = {food:'🍜',transport:'🚌',stay:'🏨',activities:'🎭',shopping:'🛍️',other:'📦'};
-var CAT_COLORS = {food:'var(--coral-g)',transport:'var(--blue-g)',stay:'var(--amber-g)',activities:'rgba(139,92,246,0.08)',shopping:'var(--green-g)',other:'var(--bg2)'};
-
-async function loadExpenses() {
-  if (!_currentTrip || !_currentTrip.id) {
-    document.getElementById('expenseList').innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--muted);">No expenses yet<br><span style="font-size:11px;">Add your first expense above</span></div>';
-    document.getElementById('expenseTotal').textContent = 'Track your spending';
-    return;
-  }
-
-  try {
-    var res  = await fetch('/api/trips/' + _currentTrip.id + '/expenses', { headers:_headers });
-    var data = await res.json();
-    if (data.success) {
-      _allExpenses = data.expenses || [];
-      renderExpenses('all');
-      updateBudgetBar();
     }
-  } catch(e) {
-    document.getElementById('expenseList').innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--muted);">Add your first expense</div>';
-  }
-}
 
-function renderExpenses(filter) {
-  var expenses = filter === 'all' ? _allExpenses : _allExpenses.filter(function(e) { return e.category === filter; });
-  var listEl   = document.getElementById('expenseList');
-  var total    = expenses.reduce(function(s,e) { return s + (parseFloat(e.amount)||0); }, 0);
+    function selectTrip(trip, cardEl) {
+      _currentTrip = trip;
 
-  document.getElementById('expenseTotal').textContent = 'Total: ' + (_currentTrip.currency||'₹') + ' ' + total.toLocaleString();
+      // Update active card
+      document.querySelectorAll('.trip-sel-card').forEach(function (c) { c.classList.remove('active'); });
+      if (cardEl) cardEl.classList.add('active');
 
-  if (!expenses.length) {
-    listEl.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--muted);">' + (filter==='all'?'No expenses yet':'No '+filter+' expenses') + '</div>';
-    return;
-  }
+      // Update hero
+      var flag = getFlag(trip.destination);
+      document.getElementById('heroDestination').textContent = flag + ' ' + (trip.destination || 'Your Trip');
+      var date = trip.created_at ? new Date(trip.created_at).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : '';
+      document.getElementById('heroMeta').textContent = (trip.days || 0) + ' days' + (date ? ' · ' + date : '');
+      document.getElementById('heroDays').textContent = trip.days || 0;
+      document.getElementById('heroPeople').textContent = trip.people || 1;
+      document.getElementById('heroSpent').textContent = (trip.currency || '₹') + ' ' + (parseInt(trip.budget) || 0).toLocaleString();
 
-  listEl.innerHTML = expenses.map(function(e) {
-    var icon = CAT_ICONS[e.category] || '📦';
-    var bg   = CAT_COLORS[e.category] || 'var(--bg2)';
-    return '<div class="expense-item">' +
-      '<div class="exp-icon" style="background:' + bg + ';">' + icon + '</div>' +
-      '<div class="exp-info">' +
-        '<div class="exp-name">' + (e.name||e.description||'Expense') + '</div>' +
-        '<div class="exp-cat">' + (e.category||'other') + (e.date?' · '+new Date(e.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'') + '</div>' +
-      '</div>' +
-      '<div class="exp-amount">' + (e.currency||_currentTrip.currency||'₹') + ' ' + parseFloat(e.amount||0).toLocaleString() + '</div>' +
-    '</div>';
-  }).join('');
-}
+      // Count places from plan_data
+      var places = 0;
+      try {
+        var plan = typeof trip.plan_data === 'string' ? JSON.parse(trip.plan_data) : trip.plan_data;
+        if (plan && plan.itinerary) places = plan.itinerary.length * 2;
+      } catch (e) { }
+      document.getElementById('heroPlaces').textContent = places || (trip.days * 2) || 0;
 
-function filterExpenses(cat, btn) {
-  document.querySelectorAll('.cat-pill').forEach(function(p) { p.classList.remove('active'); });
-  btn.classList.add('active');
-  renderExpenses(cat);
-}
+      // Update share card
+      document.getElementById('sc-dest').textContent = flag + ' ' + (trip.destination || 'Your Trip');
+      document.getElementById('sc-meta').textContent = (trip.days || 0) + ' Days · ' + date;
+      var vibes = (trip.vibes || 'Adventure').split('+').map(function (v) { return v.trim(); });
+      document.getElementById('sc-vibes').innerHTML = vibes.map(function (v) {
+        return '<span class="tc-vibe-tag">' + v + '</span>';
+      }).join('');
 
-function updateBudgetBar() {
-  var total   = _allExpenses.reduce(function(s,e) { return s + (parseFloat(e.amount)||0); }, 0);
-  var budget  = parseFloat(_currentTrip.budget) || 0;
-  if (!budget) return;
+      // Pre-fill journal fields
+      var destEl = document.getElementById('journal-memories');
+      if (destEl && !destEl.value) destEl.placeholder = 'What did you love about ' + (trip.destination || 'your trip') + '? Your best moments, food, people...';
 
-  var pct     = Math.min(Math.round(total/budget*100), 100);
-  var color   = pct > 90 ? 'var(--red)' : pct > 70 ? 'var(--amber)' : 'var(--green)';
-  var cur     = _currentTrip.currency || '₹';
+      // Show everything
+      document.getElementById('tripDataSection').style.display = 'block';
+      document.getElementById('bottomCta').style.display = 'block';
 
-  document.getElementById('bc-fill').style.width    = pct + '%';
-  document.getElementById('bc-fill').style.background = color;
-  document.getElementById('bc-pct').textContent     = pct + '%';
-  document.getElementById('bc-spent').textContent   = 'Spent: ' + cur + ' ' + total.toLocaleString();
-  document.getElementById('bc-budget').textContent  = 'Budget: ' + cur + ' ' + budget.toLocaleString();
-  document.getElementById('budgetCompare').style.display = 'block';
-}
-
-function openAddExpense() {
-  if (_currentTrip && _currentTrip.currency) {
-    document.getElementById('exp-currency').value = _currentTrip.currency;
-  }
-  document.getElementById('addExpenseModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeAddExpense() {
-  document.getElementById('addExpenseModal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-async function saveExpense() {
-  var name   = document.getElementById('exp-name').value.trim();
-  var amount = document.getElementById('exp-amount').value;
-  if (!name || !amount) { showToast('Fill in name and amount'); return; }
-
-  if (!_currentTrip || !_currentTrip.id) {
-    // Store locally if no trip ID
-    _allExpenses.push({
-      name:     name,
-      amount:   parseFloat(amount),
-      category: document.getElementById('exp-category').value,
-      currency: document.getElementById('exp-currency').value,
-      date:     new Date().toISOString(),
-    });
-    renderExpenses('all');
-    updateBudgetBar();
-    closeAddExpense();
-    document.getElementById('exp-name').value = '';
-    document.getElementById('exp-amount').value = '';
-    showToast('Expense added ✅');
-    return;
-  }
-
-  try {
-    var res  = await fetch('/api/trips/' + _currentTrip.id + '/expenses', {
-      method:'POST', headers:_headers,
-      body: JSON.stringify({
-        name:     name,
-        amount:   parseFloat(amount),
-        category: document.getElementById('exp-category').value,
-        currency: document.getElementById('exp-currency').value,
-      })
-    });
-    var data = await res.json();
-    if (data.success) {
-      closeAddExpense();
-      document.getElementById('exp-name').value = '';
-      document.getElementById('exp-amount').value = '';
+      // Load expenses
       loadExpenses();
-      showToast('Expense added ✅');
-    } else { showToast(data.error || 'Could not save'); }
-  } catch(e) { showToast('Connection error'); }
-}
+    }
 
-// ════════════════════════════════════════════════════════
-//  SPLIT BILL
-// ════════════════════════════════════════════════════════
-async function runSplitBill() {
-  var total  = document.getElementById('split-total').value;
-  var people = document.getElementById('split-people').value.trim();
-  var btn    = document.getElementById('splitBtn');
-  var loading= document.getElementById('splitLoading');
-  var result = document.getElementById('splitResult');
+    // ════════════════════════════════════════════════════════
+    //  MANUAL TRIP ENTRY
+    // ════════════════════════════════════════════════════════
+    function loadManualTrip() {
+      var dest = document.getElementById('mf-dest').value.trim();
+      if (!dest) { showToast('Enter your destination'); return; }
 
-  if (!total || !people) { showToast('Fill in total and people'); return; }
-  setToolState(btn, loading, true);
-  result.style.display = 'none';
+      var trip = {
+        id: null,
+        destination: dest,
+        days: parseInt(document.getElementById('mf-days').value) || 5,
+        currency: document.getElementById('mf-currency').value || 'INR',
+        budget: document.getElementById('mf-budget').value || '0',
+        vibes: document.getElementById('mf-vibe').value || 'Adventure',
+        people: 1,
+        created_at: new Date().toISOString(),
+      };
 
-  try {
-    var peopleArr = people.split('\n').map(function(p) { return p.trim(); }).filter(Boolean);
-    var res  = await fetch('/api/split-bill', {
-      method:'POST', headers:_headers,
-      body: JSON.stringify({
-        total:    parseFloat(total),
-        currency: document.getElementById('split-currency').value,
-        people:   peopleArr,
-        expenses: _allExpenses,
-      })
-    });
-    var data = await res.json();
-    setToolState(btn, loading, false);
+      document.getElementById('manualFormSection').style.display = 'none';
+      selectTrip(trip, null);
+      showToast('Trip loaded ✅');
+    }
 
-    if (data.success) {
-      var d        = data.split || data.data || {};
-      var perPerson = d.per_person || (total / peopleArr.length).toFixed(2);
-      var cur      = document.getElementById('split-currency').value;
+    // ════════════════════════════════════════════════════════
+    //  TABS
+    // ════════════════════════════════════════════════════════
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
 
-      result.innerHTML =
-        '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:14px;padding:16px;margin-top:14px;text-align:center;margin-bottom:12px;">' +
-          '<div style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Per Person</div>' +
-          '<div style="font-family:var(--font-mono);font-size:28px;font-weight:800;color:white;">' + cur + ' ' + perPerson + '</div>' +
-        '</div>';
+    // ════════════════════════════════════════════════════════
+    //  JOURNAL
+    // ════════════════════════════════════════════════════════
+    async function runJournal() {
+      var memories = document.getElementById('journal-memories').value.trim();
+      var btn = document.getElementById('journalBtn');
+      var loading = document.getElementById('journalLoading');
+      var result = document.getElementById('journalResult');
 
-      // Who owes whom
-      var owes = d.settlements || d.owes || [];
-      if (owes.length) {
-        result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">';
-        result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Settlements</div>';
-        owes.forEach(function(o) {
-          var text = typeof o === 'string' ? o : (o.from + ' → ' + o.to + ': ' + cur + ' ' + o.amount);
-          result.innerHTML += '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);">💸 ' + text + '</div>';
+      setToolState(btn, loading, true);
+      result.style.display = 'none';
+
+      try {
+        var res = await fetch('/api/trip-journal', {
+          method: 'POST', headers: _headers,
+          body: JSON.stringify({
+            destination: _currentTrip.destination,
+            days: _currentTrip.days,
+            travel_with: document.getElementById('journal-with').value,
+            vibe: _currentTrip.vibes || 'adventure',
+            highlights: documnet.getElementById('journal-memories').value || 'amazing trip',
+          })
         });
-        result.innerHTML += '</div>';
+        var data = await res.json();
+        setToolState(btn, loading, false);
+
+        if (data.success) {
+          var story = data.journal || data.story || data.data || '';
+          result.innerHTML =
+            '<div class="result-block" style="font-style:italic;line-height:1.9;white-space:pre-line;">' + story + '</div>' +
+            '<button onclick="copyText(\'' + story.replace(/'/g, "\\'").replace(/\n/g, '\\n') + '\')" ' +
+            'style="margin-top:10px;width:100%;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">' +
+            '📋 Copy Story</button>';
+          result.style.display = 'block';
+        } else { showToast(data.error || 'Could not write journal'); }
+      } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  TRIP STATS
+    // ════════════════════════════════════════════════════════
+    async function runTripStats() {
+      var btn = document.getElementById('statsBtn');
+      var loading = document.getElementById('statsLoading');
+      var result = document.getElementById('statsResult');
+      setToolState(btn, loading, true);
+      result.style.display = 'none';
+
+      try {
+        var res = await fetch('/api/trip-stats', {
+          method: 'POST', headers: _headers,
+          body: JSON.stringify({
+            destination: _currentTrip.destination,
+            days: _currentTrip.days,
+            travel_with: 'Solo',
+            vibes: _currentTrip.vibes || 'adventure',
+          })
+        });
+        var data = await res.json();
+        setToolState(btn, loading, false);
+
+        if (data.success) {
+          var d = data.stats || data.data || {};
+          var funFacts = d.fun_facts || d.highlights || [];
+          var statsItems = d.stats || [];
+
+          result.innerHTML = '<div style="margin-top:14px;">';
+
+          // Traveller type
+          if (d.traveller_type) {
+            result.innerHTML +=
+              '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:16px;padding:16px;margin-bottom:12px;text-align:center;">' +
+              '<div style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Your Traveller Type</div>' +
+              '<div style="font-family:var(--font-head);font-size:20px;color:white;">' + d.traveller_type + '</div>' +
+              (d.traveller_desc ? '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:6px;">' + d.traveller_desc + '</div>' : '') +
+              '</div>';
+          }
+
+          // Stats grid
+          if (statsItems.length) {
+            result.innerHTML += '<div class="stats-grid">';
+            statsItems.slice(0, 6).forEach(function (s) {
+              var val = typeof s === 'object' ? (s.value || s.val || '—') : s;
+              var label = typeof s === 'object' ? (s.label || s.name || '') : '';
+              var sub = typeof s === 'object' ? (s.sub || s.description || '') : '';
+              result.innerHTML +=
+                '<div class="stat-card">' +
+                '<div class="stat-card-val">' + val + '</div>' +
+                (label ? '<div class="stat-card-lbl">' + label + '</div>' : '') +
+                (sub ? '<div class="stat-card-sub">' + sub + '</div>' : '') +
+                '</div>';
+            });
+            result.innerHTML += '</div>';
+          }
+
+          // Fun facts
+          if (funFacts.length) {
+            result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:10px;">';
+            result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Fun Facts</div>';
+            funFacts.forEach(function (f) {
+              result.innerHTML += '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);"><span>🎯</span>' + f + '</div>';
+            });
+            result.innerHTML += '</div>';
+          }
+
+          result.innerHTML += '</div>';
+          result.style.display = 'block';
+        } else { showToast(data.error || 'Could not get stats'); }
+      } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  REVIEW
+    // ════════════════════════════════════════════════════════
+    var _starRating = 5;
+    function setRating(n) {
+      _starRating = n;
+      var stars = document.querySelectorAll('#starRow .star');
+      stars.forEach(function (s, i) { s.textContent = i < n ? '⭐' : '☆'; });
+    }
+
+    async function runReview() {
+      var highlight = document.getElementById('review-highlight').value.trim();
+      var btn = document.getElementById('reviewBtn');
+      var loading = document.getElementById('reviewLoading');
+      var result = document.getElementById('reviewResult');
+      setToolState(btn, loading, true);
+      result.style.display = 'none';
+
+      try {
+        var res = await fetch('/api/review-generator', {
+          method: 'POST', headers: _headers,
+          body: JSON.stringify({
+            place: _currentTrip.destination,
+            experience: document.getElementById('review-highlight').value || 'amazing experience',
+            rating: _starRating,
+            platform: 'Google',
+          })
+        });
+        var data = await res.json();
+        setToolState(btn, loading, false);
+
+        if (data.success) {
+          var review = data.review || data.data || '';
+          result.innerHTML =
+            '<div class="result-block">' +
+            '<div style="font-size:16px;margin-bottom:8px;">' + ('⭐'.repeat(_starRating)) + '</div>' +
+            '<div style="line-height:1.8;">' + review + '</div>' +
+            '</div>' +
+            '<div style="display:flex;gap:8px;margin-top:10px;">' +
+            '<button onclick="copyText(\'' + review.replace(/'/g, "\\'") + '\')" ' +
+            'style="flex:1;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy</button>' +
+            '<button onclick="shareReviewWhatsApp(\'' + review.replace(/'/g, "\\'").replace(/\n/g, ' ') + '\')" ' +
+            'style="flex:1;padding:11px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">💚 Share</button>' +
+            '</div>';
+          result.style.display = 'block';
+        } else { showToast(data.error || 'Could not generate review'); }
+      } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  NEXT TRIP
+    // ════════════════════════════════════════════════════════
+    async function runNextTrip() {
+      var btn = document.getElementById('nextTripBtn');
+      var loading = document.getElementById('nextTripLoading');
+      var result = document.getElementById('nextTripResult');
+      setToolState(btn, loading, true);
+      result.style.display = 'none';
+
+      try {
+        var res = await fetch('/api/next-trip', {
+          method: 'POST', headers: _headers,
+          body: JSON.stringify({
+            past_destination: _currentTrip.destination,
+            loved: _currentTrip.vibes || 'adventure',
+            budget: _currentTrip.budget || '',
+            travel_month: '',
+            passport: _currentTrip.passport || 'India',
+          })
+        });
+        var data = await res.json();
+        setToolState(btn, loading, false);
+
+        if (data.success) {
+          var suggestions = data.suggestions || data.destinations || data.data || [];
+          if (!Array.isArray(suggestions)) suggestions = [suggestions];
+
+          result.innerHTML = suggestions.slice(0, 3).map(function (s) {
+            var flag = getFlag(s.destination || s.name || '');
+            var name = s.destination || s.name || 'Destination';
+            var why = s.why || s.reason || '';
+            var budget = s.budget || s.estimated_budget || '';
+            var best = s.best_time || s.best_month || '';
+
+            return '<div class="next-trip-card" onclick="planThisTrip(\'' + name.replace(/'/g, "\\'") + '\')">' +
+              '<div class="ntc-flag">' + flag + '</div>' +
+              '<div class="ntc-info">' +
+              '<div class="ntc-dest">' + name + '</div>' +
+              (why ? '<div class="ntc-why">' + why + '</div>' : '') +
+              '<div class="ntc-meta">' +
+              (budget ? '<span class="ntc-tag">💰 ' + budget + '</span>' : '') +
+              (best ? '<span class="ntc-tag">📅 ' + best + '</span>' : '') +
+              '</div>' +
+              '</div>' +
+              '<div class="ntc-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>' +
+              '</div>';
+          }).join('');
+          result.style.display = 'block';
+        } else { showToast(data.error || 'Could not get suggestions'); }
+      } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
+    }
+
+    function planThisTrip(dest) {
+      window.location.href = '/plan?dest=' + encodeURIComponent(dest);
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  EXPENSES
+    // ════════════════════════════════════════════════════════
+    var CAT_ICONS = { food: '🍜', transport: '🚌', stay: '🏨', activities: '🎭', shopping: '🛍️', other: '📦' };
+    var CAT_COLORS = { food: 'var(--coral-g)', transport: 'var(--blue-g)', stay: 'var(--amber-g)', activities: 'rgba(139,92,246,0.08)', shopping: 'var(--green-g)', other: 'var(--bg2)' };
+
+    async function loadExpenses() {
+      if (!_currentTrip || !_currentTrip.id) {
+        document.getElementById('expenseList').innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--muted);">No expenses yet<br><span style="font-size:11px;">Add your first expense above</span></div>';
+        document.getElementById('expenseTotal').textContent = 'Track your spending';
+        return;
       }
 
-      // WhatsApp share
-      var msg = '💰 Bill Split — ' + (d.trip_name||_currentTrip.destination||'Trip') + '\n' +
-        'Total: ' + cur + ' ' + total + '\n' +
-        'Per person: ' + cur + ' ' + perPerson + '\n' +
-        (owes.length ? '\nSettlements:\n' + owes.map(function(o) { return typeof o==='string'?o:(o.from+' → '+o.to+': '+cur+' '+o.amount); }).join('\n') : '') +
-        '\n\nSplit via yaply.live';
+      try {
+        var res = await fetch('/api/trips/' + _currentTrip.id + '/expenses', { headers: _headers });
+        var data = await res.json();
+        if (data.success) {
+          _allExpenses = data.expenses || [];
+          renderExpenses('all');
+          updateBudgetBar();
+        }
+      } catch (e) {
+        document.getElementById('expenseList').innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--muted);">Add your first expense</div>';
+      }
+    }
 
-      result.innerHTML +=
-        '<button onclick="window.open(\'https://wa.me/?text=\' + encodeURIComponent(\'' + msg.replace(/'/g,"\\'") + '\'))"' +
-        'style="width:100%;padding:12px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:14px;font-weight:700;color:white;cursor:pointer;">💚 Send on WhatsApp</button>';
+    function renderExpenses(filter) {
+      var expenses = filter === 'all' ? _allExpenses : _allExpenses.filter(function (e) { return e.category === filter; });
+      var listEl = document.getElementById('expenseList');
+      var total = expenses.reduce(function (s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
 
-      result.style.display = 'block';
-    } else { showToast(data.error || 'Could not calculate'); }
-  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
-}
+      document.getElementById('expenseTotal').textContent = 'Total: ' + (_currentTrip.currency || '₹') + ' ' + total.toLocaleString();
 
-// ════════════════════════════════════════════════════════
-//  LEFTOVER MONEY
-// ════════════════════════════════════════════════════════
-async function runLeftoverMoney() {
-  var amount  = document.getElementById('leftover-amount').value;
-  var currency= document.getElementById('leftover-currency').value;
-  var btn     = document.getElementById('leftoverBtn');
-  var loading = document.getElementById('leftoverLoading');
-  var result  = document.getElementById('leftoverResult');
+      if (!expenses.length) {
+        listEl.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--muted);">' + (filter === 'all' ? 'No expenses yet' : 'No ' + filter + ' expenses') + '</div>';
+        return;
+      }
 
-  if (!amount) { showToast('Enter an amount'); return; }
-  setToolState(btn, loading, true);
-  result.style.display = 'none';
-
-  try {
-    var res  = await fetch('/api/currency-leftover', {
-      method:'POST', headers:_headers,
-      body: JSON.stringify({
-        amount:   parseFloat(amount),
-        currency: currency,
-        home_currency: _currentTrip.currency || 'INR',
-      })
-    });
-    var data = await res.json();
-    setToolState(btn, loading, false);
-
-    if (data.success) {
-      var d = data.guide || data.data || {};
-      result.innerHTML = '<div style="margin-top:14px;">';
-
-      // Conversion
-      if (d.converted_amount) {
-        result.innerHTML +=
-          '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;">' +
-          '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:4px;">' + amount + ' ' + currency + ' =</div>' +
-          '<div style="font-family:var(--font-mono);font-size:26px;font-weight:800;color:white;">' + d.converted_amount + '</div>' +
-          '<div style="font-size:12px;color:rgba(255,255,255,0.25);margin-top:4px;">Today\'s rate: ' + (d.exchange_rate||'—') + '</div>' +
+      listEl.innerHTML = expenses.map(function (e) {
+        var icon = CAT_ICONS[e.category] || '📦';
+        var bg = CAT_COLORS[e.category] || 'var(--bg2)';
+        return '<div class="expense-item">' +
+          '<div class="exp-icon" style="background:' + bg + ';">' + icon + '</div>' +
+          '<div class="exp-info">' +
+          '<div class="exp-name">' + (e.name || e.description || 'Expense') + '</div>' +
+          '<div class="exp-cat">' + (e.category || 'other') + (e.date ? ' · ' + new Date(e.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '') + '</div>' +
+          '</div>' +
+          '<div class="exp-amount">' + (e.currency || _currentTrip.currency || '₹') + ' ' + parseFloat(e.amount || 0).toLocaleString() + '</div>' +
           '</div>';
-      }
+      }).join('');
+    }
 
-      var options = d.options || d.what_to_do || [];
-      if (options.length) {
-        result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;">';
-        result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">What to do with it</div>';
-        options.forEach(function(o) {
-          result.innerHTML += '<div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);"><span>💡</span>' + o + '</div>';
+    function filterExpenses(cat, btn) {
+      document.querySelectorAll('.cat-pill').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      renderExpenses(cat);
+    }
+
+    function updateBudgetBar() {
+      var total = _allExpenses.reduce(function (s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+      var budget = parseFloat(_currentTrip.budget) || 0;
+      if (!budget) return;
+
+      var pct = Math.min(Math.round(total / budget * 100), 100);
+      var color = pct > 90 ? 'var(--red)' : pct > 70 ? 'var(--amber)' : 'var(--green)';
+      var cur = _currentTrip.currency || '₹';
+
+      document.getElementById('bc-fill').style.width = pct + '%';
+      document.getElementById('bc-fill').style.background = color;
+      document.getElementById('bc-pct').textContent = pct + '%';
+      document.getElementById('bc-spent').textContent = 'Spent: ' + cur + ' ' + total.toLocaleString();
+      document.getElementById('bc-budget').textContent = 'Budget: ' + cur + ' ' + budget.toLocaleString();
+      document.getElementById('budgetCompare').style.display = 'block';
+    }
+
+    function openAddExpense() {
+      if (_currentTrip && _currentTrip.currency) {
+        document.getElementById('exp-currency').value = _currentTrip.currency;
+      }
+      document.getElementById('addExpenseModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAddExpense() {
+      document.getElementById('addExpenseModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    async function saveExpense() {
+      var name = document.getElementById('exp-name').value.trim();
+      var amount = document.getElementById('exp-amount').value;
+      if (!name || !amount) { showToast('Fill in name and amount'); return; }
+
+      if (!_currentTrip || !_currentTrip.id) {
+        // Store locally if no trip ID
+        _allExpenses.push({
+          name: name,
+          amount: parseFloat(amount),
+          category: document.getElementById('exp-category').value,
+          currency: document.getElementById('exp-currency').value,
+          date: new Date().toISOString(),
         });
-        result.innerHTML += '</div>';
+        renderExpenses('all');
+        updateBudgetBar();
+        closeAddExpense();
+        document.getElementById('exp-name').value = '';
+        document.getElementById('exp-amount').value = '';
+        showToast('Expense added ✅');
+        return;
       }
 
-      result.innerHTML += '</div>';
-      result.style.display = 'block';
-    } else { showToast(data.error || 'Could not check rates'); }
-  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
-}
+      try {
+        var res = await fetch('/api/trips/' + _currentTrip.id + '/expenses', {
+          method: 'POST', headers: _headers,
+          body: JSON.stringify({
+            name: name,
+            amount: parseFloat(amount),
+            category: document.getElementById('exp-category').value,
+            currency: document.getElementById('exp-currency').value,
+          })
+        });
+        var data = await res.json();
+        if (data.success) {
+          closeAddExpense();
+          document.getElementById('exp-name').value = '';
+          document.getElementById('exp-amount').value = '';
+          loadExpenses();
+          showToast('Expense added ✅');
+        } else { showToast(data.error || 'Could not save'); }
+      } catch (e) { showToast('Connection error'); }
+    }
 
-// ════════════════════════════════════════════════════════
-//  SUMMARY
-// ════════════════════════════════════════════════════════
-async function runSummary() {
-  var btn     = document.getElementById('summaryBtn');
-  var loading = document.getElementById('summaryLoading');
-  var result  = document.getElementById('summaryResult');
-  setToolState(btn, loading, true);
-  result.style.display = 'none';
+    // ════════════════════════════════════════════════════════
+    //  SPLIT BILL
+    // ════════════════════════════════════════════════════════
+    async function runSplitBill() {
+      var total = document.getElementById('split-total').value;
+      var people = document.getElementById('split-people').value.trim();
+      var btn = document.getElementById('splitBtn');
+      var loading = document.getElementById('splitLoading');
+      var result = document.getElementById('splitResult');
 
-  try {
-    var res  = await fetch('/api/trip-stats', {
-      method:'POST', headers:_headers,
-      body: JSON.stringify({
-        destination: _currentTrip.destination,
-        days:        _currentTrip.days,
-        vibe:        _currentTrip.vibes,
-        summary_only: true,
-      })
-    });
-    var data = await res.json();
-    setToolState(btn, loading, false);
+      if (!total || !people) { showToast('Fill in total and people'); return; }
+      setToolState(btn, loading, true);
+      result.style.display = 'none';
 
-    if (data.success) {
-      var summary = data.one_liner || data.summary || data.stats?.summary || ('Just got back from an amazing ' + _currentTrip.days + '-day trip to ' + _currentTrip.destination + '! 🌍✈️ #yaply');
-      result.innerHTML =
-        '<div class="result-block" style="font-size:15px;font-weight:500;line-height:1.7;text-align:center;">' + summary + '</div>' +
-        '<div style="display:flex;gap:8px;margin-top:10px;">' +
-          '<button onclick="copyText(\'' + summary.replace(/'/g,"\\'") + '\')" ' +
-          'style="flex:1;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy</button>' +
-          '<button onclick="shareWhatsAppText(\'' + summary.replace(/'/g,"\\'") + '\')" ' +
-          'style="flex:1;padding:11px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">💚 Share</button>' +
-        '</div>';
-      result.style.display = 'block';
-    } else { showToast(data.error || 'Could not generate summary'); }
-  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
-}
+      try {
+        var peopleArr = people.split('\n').map(function (p) { return p.trim(); }).filter(Boolean);
+        var res = await fetch('/api/split-bill', {
+          method: 'POST', headers: _headers,
+          body: JSON.stringify({
+            past_destination: _currentTrip.destination,
+            loved: _currentTrip.vibes || 'adventure',
+            budget: _currentTrip.budget || '',
+            travel_month: '',
+            passport: _currentTrip.passport || 'India',
+          })
+        });
+        var data = await res.json();
+        setToolState(btn, loading, false);
 
-// ════════════════════════════════════════════════════════
-//  SHARE
-// ════════════════════════════════════════════════════════
-function shareTrip() {
-  switchTab('share', document.querySelectorAll('.tab-btn')[2]);
-  document.querySelector('.tab-btn:nth-child(3)').click();
-}
+        if (data.success) {
+          var d = data.split || data.data || {};
+          var perPerson = d.per_person || (total / peopleArr.length).toFixed(2);
+          var cur = document.getElementById('split-currency').value;
 
-function shareWhatsApp() {
-  var dest = _currentTrip ? _currentTrip.destination : 'my trip';
-  var days = _currentTrip ? _currentTrip.days : '';
-  var msg  = '✈️ Just got back from ' + dest + '! ' + days + ' days of pure adventure. Check out Yaply — the app I used to plan everything: yaply.live 🌍';
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg));
-}
+          result.innerHTML =
+            '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:14px;padding:16px;margin-top:14px;text-align:center;margin-bottom:12px;">' +
+            '<div style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Per Person</div>' +
+            '<div style="font-family:var(--font-mono);font-size:28px;font-weight:800;color:white;">' + cur + ' ' + perPerson + '</div>' +
+            '</div>';
 
-function shareWhatsAppText(text) {
-  window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n\nPlanned with yaply.live ✈️'));
-}
+          // Who owes whom
+          var owes = d.settlements || d.owes || [];
+          if (owes.length) {
+            result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">';
+            result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Settlements</div>';
+            owes.forEach(function (o) {
+              var text = typeof o === 'string' ? o : (o.from + ' → ' + o.to + ': ' + cur + ' ' + o.amount);
+              result.innerHTML += '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);">💸 ' + text + '</div>';
+            });
+            result.innerHTML += '</div>';
+          }
 
-function shareReviewWhatsApp(review) {
-  window.open('https://wa.me/?text=' + encodeURIComponent(review));
-}
+          // WhatsApp share
+          var msg = '💰 Bill Split — ' + (d.trip_name || _currentTrip.destination || 'Trip') + '\n' +
+            'Total: ' + cur + ' ' + total + '\n' +
+            'Per person: ' + cur + ' ' + perPerson + '\n' +
+            (owes.length ? '\nSettlements:\n' + owes.map(function (o) { return typeof o === 'string' ? o : (o.from + ' → ' + o.to + ': ' + cur + ' ' + o.amount); }).join('\n') : '') +
+            '\n\nSplit via yaply.live';
 
-function shareInstagram() {
-  copyText('Planned with @yaply.live ✈️ ' + (_currentTrip ? _currentTrip.destination : 'my trip') + ' #travel #yaply');
-  showToast('Caption copied! Open Instagram to post 📸');
-}
+          result.innerHTML +=
+            '<button onclick="window.open(\'https://wa.me/?text=\' + encodeURIComponent(\'' + msg.replace(/'/g, "\\'") + '\'))"' +
+            'style="width:100%;padding:12px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:14px;font-weight:700;color:white;cursor:pointer;">💚 Send on WhatsApp</button>';
 
-function saveCard() {
-  showToast('Screenshot your screen to save the card 📸');
-}
+          result.style.display = 'block';
+        } else { showToast(data.error || 'Could not calculate'); }
+      } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
+    }
 
-function copyLink() {
-  navigator.clipboard.writeText('https://yaply.live').then(function() {
-    showToast('Link copied! ✅');
-  }).catch(function() {
-    showToast('yaply.live — copied!');
-  });
-}
+    // ════════════════════════════════════════════════════════
+    //  LEFTOVER MONEY
+    // ════════════════════════════════════════════════════════
+    async function runCurrencyLeftover() {
+      var amount = document.getElementById('leftover-amount').value;
+      var currency = document.getElementById('leftover-currency').value;
+      var btn = document.getElementById('leftoverBtn');
+      var loading = document.getElementById('leftoverLoading');
+      var result = document.getElementById('leftoverResult');
 
-// ════════════════════════════════════════════════════════
-//  HELPERS
-// ════════════════════════════════════════════════════════
-function setToolState(btn, loading, isLoading) {
-  if (btn) btn.disabled = isLoading;
-  if (loading) { loading.style.display = isLoading ? 'block' : 'none'; }
-}
+      if (!amount) { showToast('Enter an amount'); return; }
+      setToolState(btn, loading, true);
+      result.style.display = 'none';
 
-function copyText(text) {
-  navigator.clipboard.writeText(text).then(function() {
-    showToast('Copied to clipboard ✅');
-  }).catch(function() {
-    showToast('Copy failed — please select manually');
-  });
-}
+      try {
+        var res = await fetch('/api/currency-leftover', {
+          method: 'POST', headers: _headers,
+          body: JSON.stringify({
+            amount: parseFloat(document.getElementById('leftover-amount').value) || 0,
+            currency: document.getElementById('leftover-currency').value,
+            home_currency: _currentTrip.currency || 'INR',
+          })
+        });
+        var data = await res.json();
+        setToolState(btn, loading, false);
 
-function showToast(msg) {
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(function() { el.classList.remove('show'); }, 2800);
-}
-</script>
+        if (data.success) {
+          var d = data.guide || data.data || {};
+          result.innerHTML = '<div style="margin-top:14px;">';
+
+          // Conversion
+          if (d.converted_amount) {
+            result.innerHTML +=
+              '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;">' +
+              '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:4px;">' + amount + ' ' + currency + ' =</div>' +
+              '<div style="font-family:var(--font-mono);font-size:26px;font-weight:800;color:white;">' + d.converted_amount + '</div>' +
+              '<div style="font-size:12px;color:rgba(255,255,255,0.25);margin-top:4px;">Today\'s rate: ' + (d.exchange_rate || '—') + '</div>' +
+              '</div>';
+          }
+
+          var options = d.options || d.what_to_do || [];
+          if (options.length) {
+            result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;">';
+            result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">What to do with it</div>';
+            options.forEach(function (o) {
+              result.innerHTML += '<div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);"><span>💡</span>' + o + '</div>';
+            });
+            result.innerHTML += '</div>';
+          }
+
+          result.innerHTML += '</div>';
+          result.style.display = 'block';
+        } else { showToast(data.error || 'Could not check rates'); }
+      } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  SUMMARY
+    // ════════════════════════════════════════════════════════
+    async function runSummary() {
+      var btn = document.getElementById('summaryBtn');
+      var loading = document.getElementById('summaryLoading');
+      var result = document.getElementById('summaryResult');
+      setToolState(btn, loading, true);
+      result.style.display = 'none';
+
+      try {
+        var res = await fetch('/api/trip-stats', {
+          method: 'POST', headers: _headers,
+          body: JSON.stringify({
+            destination: _currentTrip.destination,
+            days: _currentTrip.days,
+            travel_with: 'Solo',
+            vibes: _currentTrip.vibes || 'adventure',
+          })
+        });
+        var data = await res.json();
+        setToolState(btn, loading, false);
+
+        if (data.success) {
+          var d = data.data || {};
+          var summary = d.instagram_caption || d.tagline ||
+            ('Just back from' + _currentTrip.days + 'day in' + _currentTrip.destination + '#yaply');
+            '<div class="result-block" style="font-size:15px;font-weight:500;line-height:1.7;text-align:center;">' + summary + '</div>' +
+            '<div style="display:flex;gap:8px;margin-top:10px;">' +
+            '<button onclick="copyText(\'' + summary.replace(/'/g, "\\'") + '\')" ' +
+            'style="flex:1;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy</button>' +
+            '<button onclick="shareWhatsAppText(\'' + summary.replace(/'/g, "\\'") + '\')" ' +
+            'style="flex:1;padding:11px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">💚 Share</button>' +
+            '</div>';
+          result.style.display = 'block';
+        } else { showToast(data.error || 'Could not generate summary'); }
+      } catch (e) { setToolState(btn, loading, false); showToast('Connection error'); }
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  SHARE
+    // ════════════════════════════════════════════════════════
+    function shareTrip() {
+      switchTab('share', document.querySelectorAll('.tab-btn')[2]);
+      document.querySelector('.tab-btn:nth-child(3)').click();
+    }
+
+    function shareWhatsApp() {
+      var dest = _currentTrip ? _currentTrip.destination : 'my trip';
+      var days = _currentTrip ? _currentTrip.days : '';
+      var msg = '✈️ Just got back from ' + dest + '! ' + days + ' days of pure adventure. Check out Yaply — the app I used to plan everything: yaply.live 🌍';
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg));
+    }
+
+    function shareWhatsAppText(text) {
+      window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n\nPlanned with yaply.live ✈️'));
+    }
+
+    function shareReviewWhatsApp(review) {
+      window.open('https://wa.me/?text=' + encodeURIComponent(review));
+    }
+
+    function shareInstagram() {
+      copyText('Planned with @yaply.live ✈️ ' + (_currentTrip ? _currentTrip.destination : 'my trip') + ' #travel #yaply');
+      showToast('Caption copied! Open Instagram to post 📸');
+    }
+
+    function saveCard() {
+      showToast('Screenshot your screen to save the card 📸');
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText('https://yaply.live').then(function () {
+        showToast('Link copied! ✅');
+      }).catch(function () {
+        showToast('yaply.live — copied!');
+      });
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  HELPERS
+    // ════════════════════════════════════════════════════════
+    function setToolState(btn, loading, isLoading) {
+      if (btn) btn.disabled = isLoading;
+      if (loading) { loading.style.display = isLoading ? 'block' : 'none'; }
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(function () {
+        showToast('Copied to clipboard ✅');
+      }).catch(function () {
+        showToast('Copy failed — please select manually');
+      });
+    }
+
+    function showToast(msg) {
+      var el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(function () { el.classList.remove('show'); }, 2800);
+    }
+  </script>
 
 </body>
+
 </html>
