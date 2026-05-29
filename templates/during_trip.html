@@ -1605,6 +1605,76 @@
       color: var(--muted);
     }
 
+    /* Coming Soon tool cards */
+    .cs-tool-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      cursor: pointer;
+      transition: all .2s;
+      box-shadow: var(--shadow);
+      opacity: 0.75;
+    }
+
+    .cs-tool-card:hover {
+      opacity: 1;
+      border-color: var(--border2);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+
+    .cs-tool-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .cs-tool-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .cs-tool-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .cs-tool-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .cs-tool-desc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .cs-pill {
+      padding: 4px 10px;
+      background: var(--bg2);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      flex-shrink: 0;
+    }
+
     /* ══════════════════════════════════
    SECTION UTILS
 ══════════════════════════════════ */
@@ -2167,10 +2237,11 @@
     <div class="tab-panel" id="panel-tools">
       <div class="p18 pt20">
 
+        <!-- Live Tools -->
         <div class="sec-label au">Live Tools</div>
-        <div style="display:flex;flex-direction:column;gap:10px;" class="au d1">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;" class="au d1">
 
-          <a href="/currency" class="tool-card t-green">
+          <a href="#" onclick="openDuringTool('currency');return false;" class="tool-card t-green">
             <div class="tool-icon">
               <svg viewBox="0 0 24 24">
                 <line x1="12" y1="1" x2="12" y2="23" />
@@ -2188,7 +2259,7 @@
             </div>
           </a>
 
-          <a href="/weather" class="tool-card t-sky">
+          <a href="#" onclick="openDuringTool('weather');return false;" class="tool-card t-sky">
             <div class="tool-icon">
               <svg viewBox="0 0 24 24">
                 <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
@@ -2207,88 +2278,159 @@
 
         </div>
 
+        <!-- Coming Soon -->
         <div class="sec-label au" style="margin-top:4px;">Coming Soon</div>
         <div style="display:flex;flex-direction:column;gap:10px;" class="au d2">
 
-          <div class="tool-card t-purple" style="opacity:0.65;cursor:default;"
-            onclick="showToast('Crowd Predictor — coming soon!')">
-            <div class="tool-icon">
-              <svg viewBox="0 0 24 24">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+          <div class="cs-tool-card"
+            onclick="showComingSoon('Crowd Predictor', 'Know the best time to visit any attraction. See live busyness and avoid the crowds.', '👥')">
+            <div class="cs-tool-left">
+              <div class="cs-tool-icon" style="background:rgba(139,92,246,0.1);">
+                <svg viewBox="0 0 24 24" stroke="#8B5CF6">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <div>
+                <div class="cs-tool-label">Crowd Predictor</div>
+                <div class="cs-tool-desc">Best time to visit · Live busyness</div>
+              </div>
             </div>
-            <div class="tool-info">
-              <div class="tool-label">Crowd Predictor</div>
-              <div class="tool-desc">Best time to visit any attraction · Live busyness</div>
-            </div>
-            <div class="cs-badge">Soon</div>
+            <div class="cs-pill">Soon</div>
           </div>
 
-          <div class="tool-card t-coral" style="opacity:0.65;cursor:default;"
-            onclick="showToast('Offline Maps — coming soon!')">
-            <div class="tool-icon">
-              <svg viewBox="0 0 24 24">
-                <polygon points="3 11 22 2 13 21 11 13 3 11" />
-              </svg>
+          <div class="cs-tool-card"
+            onclick="showComingSoon('Offline Maps', 'Download maps for your destination before you go. Works without wifi — perfect for areas with poor connectivity.', '🗺️')">
+            <div class="cs-tool-left">
+              <div class="cs-tool-icon" style="background:rgba(255,122,89,0.1);">
+                <svg viewBox="0 0 24 24" stroke="var(--coral)">
+                  <polygon points="3 11 22 2 13 21 11 13 3 11" />
+                </svg>
+              </div>
+              <div>
+                <div class="cs-tool-label">Offline Maps</div>
+                <div class="cs-tool-desc">Download before you go · Works without wifi</div>
+              </div>
             </div>
-            <div class="tool-info">
-              <div class="tool-label">Offline Maps</div>
-              <div class="tool-desc">Download maps before you go · Works without wifi</div>
-            </div>
-            <div class="cs-badge">Soon</div>
+            <div class="cs-pill">Soon</div>
           </div>
 
-          <div class="tool-card t-amber" style="opacity:0.65;cursor:default;"
-            onclick="showToast('Trip Sharing — coming soon!')">
-            <div class="tool-icon">
-              <svg viewBox="0 0 24 24">
-                <circle cx="18" cy="5" r="3" />
-                <circle cx="6" cy="12" r="3" />
-                <circle cx="18" cy="19" r="3" />
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-              </svg>
+          <div class="cs-tool-card"
+            onclick="showComingSoon('Trip Sharing', 'Share a live link of your trip with friends and family. They can see your location, itinerary and updates in real time.', '🔗')">
+            <div class="cs-tool-left">
+              <div class="cs-tool-icon" style="background:var(--amber-g);">
+                <svg viewBox="0 0 24 24" stroke="var(--amber)">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              </div>
+              <div>
+                <div class="cs-tool-label">Trip Sharing</div>
+                <div class="cs-tool-desc">Share live trip link with friends and family</div>
+              </div>
             </div>
-            <div class="tool-info">
-              <div class="tool-label">Trip Sharing</div>
-              <div class="tool-desc">Share live trip link with friends and family</div>
-            </div>
-            <div class="cs-badge">Soon</div>
+            <div class="cs-pill">Soon</div>
           </div>
 
-        </div>
+          <div class="cs-tool-card"
+            onclick="showComingSoon('AI Travel Buddy', 'Your personal AI travel companion. Ask anything about your destination — restaurants, transport, culture, emergencies.', '🤖')">
+            <div class="cs-tool-left">
+              <div class="cs-tool-icon" style="background:var(--blue-g);">
+                <svg viewBox="0 0 24 24" stroke="var(--blue)">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <div>
+                <div class="cs-tool-label">AI Travel Buddy</div>
+                <div class="cs-tool-desc">Ask anything · Your 24/7 travel companion</div>
+              </div>
+            </div>
+            <div class="cs-pill" style="background:var(--blue-g);color:var(--blue);">Soon</div>
+          </div>
 
-        <!-- Diary CTA -->
-        <div class="au d3" style="margin-top:14px;">
-          <a href="/diary"
-            style="display:flex;align-items:center;gap:14px;padding:16px;background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:var(--r-xl);text-decoration:none;transition:all .2s;"
-            onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-            <div
-              style="width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7"
-                stroke-linecap="round">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-              </svg>
+          <div class="cs-tool-card"
+            onclick="showComingSoon('Live Flight Tracker', 'Track any flight in real time. Get gate changes, delays and arrival updates instantly.', '✈️')">
+            <div class="cs-tool-left">
+              <div class="cs-tool-icon" style="background:rgba(14,165,233,0.1);">
+                <svg viewBox="0 0 24 24" stroke="#0EA5E9">
+                  <path
+                    d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" />
+                </svg>
+              </div>
+              <div>
+                <div class="cs-tool-label">Live Flight Tracker</div>
+                <div class="cs-tool-desc">Real-time flight status · Gate updates</div>
+              </div>
             </div>
-            <div style="flex:1;">
-              <div
-                style="font-family:var(--font-head);font-size:16px;color:white;letter-spacing:-0.2px;margin-bottom:2px;">
-                Write in your diary</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.35);font-weight:300;">Log this moment, expense or
-                memory</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </a>
+            <div class="cs-pill">Soon</div>
+          </div>
+
         </div>
 
         <div style="height:20px;"></div>
       </div>
+
+
+      <!-- Coming Soon modal -->
+      <div class="tool-overlay" id="comingSoonOverlay" onclick="if(event.target===this)closeComingSoon()">
+        <div class="tool-sheet" id="comingSoonSheet">
+          <div class="tool-sheet-handle"></div>
+          <div style="padding:24px 20px;text-align:center;">
+            <div id="cs-emoji" style="font-size:48px;margin-bottom:16px;"></div>
+            <div id="cs-title"
+              style="font-family:var(--font-head);font-size:24px;color:var(--text);margin-bottom:10px;letter-spacing:-0.3px;">
+            </div>
+            <div id="cs-desc" style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;"></div>
+            <div
+              style="background:var(--blue-g);border:1px solid rgba(37,99,255,0.15);border-radius:14px;padding:16px;margin-bottom:20px;">
+              <div
+                style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:6px;">
+                We're building this</div>
+              <div style="font-size:13px;color:var(--muted);">This feature is coming in the next update. Stay tuned —
+                Yaply gets better every week.</div>
+            </div>
+            <button onclick="closeComingSoon()" style="width:100%;padding:14px;background:var(--midnight);color:white;border:none;
+               border-radius:14px;font-family:var(--font-body);font-size:15px;
+               font-weight:700;cursor:pointer;">
+              Got it 👍
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Diary CTA -->
+      <div class="au d3" style="margin-top:14px;">
+        <a href="/diary"
+          style="display:flex;align-items:center;gap:14px;padding:16px;background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:var(--r-xl);text-decoration:none;transition:all .2s;"
+          onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+          <div
+            style="width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7"
+              stroke-linecap="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+          </div>
+          <div style="flex:1;">
+            <div
+              style="font-family:var(--font-head);font-size:16px;color:white;letter-spacing:-0.2px;margin-bottom:2px;">
+              Write in your diary</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.35);font-weight:300;">Log this moment, expense or
+              memory</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </a>
+      </div>
+
+      <div style="height:20px;"></div>
+    </div>
     </div>
 
   </main>
@@ -2843,6 +2985,144 @@
         <div class="tool-results" id="sresults-immigration"></div>
       </div>
     </div>
+
+    <!-- ── CURRENCY (during tools) ── -->
+    <div class="tool-sheet" id="dtsheet-currency" style="display:none;">
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-header">
+        <div class="tool-sheet-icon" style="background:rgba(24,194,156,0.09);">
+          <svg viewBox="0 0 24 24" stroke="var(--green)">
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+        </div>
+        <div class="tool-sheet-titles">
+          <div class="tool-sheet-title">Currency Converter</div>
+          <div class="tool-sheet-sub">Live exchange rates</div>
+        </div>
+        <button class="tool-sheet-close" onclick="closeSafeTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool-sheet-body">
+        <div class="tool-input-wrap">
+          <div>
+            <label class="tool-field-label">Amount</label>
+            <input class="tool-input" id="dt-currency-amount" type="number" placeholder="1000" value="1000" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:8px;align-items:end;">
+            <div>
+              <label class="tool-field-label">From</label>
+              <select class="tool-select" id="dt-currency-from">
+                <option value="INR">🇮🇳 INR</option>
+                <option value="USD">🇺🇸 USD</option>
+                <option value="EUR">🇪🇺 EUR</option>
+                <option value="GBP">🇬🇧 GBP</option>
+                <option value="AED">🇦🇪 AED</option>
+                <option value="JPY">🇯🇵 JPY</option>
+                <option value="THB">🇹🇭 THB</option>
+                <option value="SGD">🇸🇬 SGD</option>
+              </select>
+            </div>
+            <button onclick="dtSwapCurrency()" style="height:44px;border-radius:10px;border:1.5px solid var(--border2);
+                   background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2">
+                <path d="M7 16V4m0 0L3 8m4-4l4 4" />
+                <path d="M17 8v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+            </button>
+            <div>
+              <label class="tool-field-label">To</label>
+              <select class="tool-select" id="dt-currency-to">
+                <option value="USD">🇺🇸 USD</option>
+                <option value="JPY">🇯🇵 JPY</option>
+                <option value="EUR">🇪🇺 EUR</option>
+                <option value="THB">🇹🇭 THB</option>
+                <option value="AED">🇦🇪 AED</option>
+                <option value="GBP">🇬🇧 GBP</option>
+                <option value="SGD">🇸🇬 SGD</option>
+                <option value="INR">🇮🇳 INR</option>
+                <option value="IDR">🇮🇩 IDR</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button class="tool-run-btn" style="background:var(--green);" onclick="runDuringTool('currency')">
+          <svg viewBox="0 0 24 24">
+            <line x1="12" y1="1" x2="12" y2="23" />
+          </svg>
+          Convert Now
+        </button>
+        <div class="tool-loading" id="dtloading-currency">
+          <div class="tool-spinner" style="border-top-color:var(--green);"></div>
+          <div class="tool-loading-text">Getting live rates...</div>
+          <div class="tool-loading-sub">Fetching real-time exchange data</div>
+        </div>
+        <div class="tool-error" id="dterror-currency">
+          <div class="tool-error-icon">💱</div>
+          <div class="tool-error-msg" id="dterror-currency-msg">Could not get rates. Try again.</div>
+        </div>
+        <div class="tool-results" id="dtresults-currency"></div>
+      </div>
+    </div>
+
+    <!-- ── WEATHER (during tools) ── -->
+    <div class="tool-sheet" id="dtsheet-weather" style="display:none;">
+      <div class="tool-sheet-handle"></div>
+      <div class="tool-sheet-header">
+        <div class="tool-sheet-icon" style="background:rgba(14,165,233,0.09);">
+          <svg viewBox="0 0 24 24" stroke="#0EA5E9">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+          </svg>
+        </div>
+        <div class="tool-sheet-titles">
+          <div class="tool-sheet-title">Weather Forecast</div>
+          <div class="tool-sheet-sub">7-day forecast for your destination</div>
+        </div>
+        <button class="tool-sheet-close" onclick="closeSafeTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool-sheet-body">
+        <div class="tool-input-wrap">
+          <div>
+            <label class="tool-field-label">City</label>
+            <input class="tool-input" id="dt-weather-city" type="text" placeholder="e.g. Tokyo, Bangkok, Dubai" />
+          </div>
+        </div>
+        <button class="tool-run-btn" style="background:#0EA5E9;" onclick="runDuringTool('weather')">
+          <svg viewBox="0 0 24 24">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+          </svg>
+          Get Forecast
+        </button>
+        <div class="tool-loading" id="dtloading-weather">
+          <div class="tool-spinner" style="border-top-color:#0EA5E9;"></div>
+          <div class="tool-loading-text">Fetching live weather...</div>
+          <div class="tool-loading-sub">Getting 7-day forecast</div>
+        </div>
+        <div class="tool-error" id="dterror-weather">
+          <div class="tool-error-icon">🌤️</div>
+          <div class="tool-error-msg" id="dterror-weather-msg">City not found. Try again.</div>
+        </div>
+        <div class="tool-results" id="dtresults-weather"></div>
+      </div>
+    </div>
+
+    <!-- Helper -->
+    <script>
+      function dtSwapCurrency() {
+        var from = document.getElementById('dt-currency-from');
+        var to = document.getElementById('dt-currency-to');
+        var tmp = from.value; from.value = to.value; to.value = tmp;
+      }
+    </script>
 
   </div>
 
@@ -3663,6 +3943,169 @@
 
       html += '</div>';
       return html;
+    }
+
+    function openDuringTool(toolId) {
+      // Reuse the safeToolOverlay system but for currency/weather
+      // Hide all safe tool sheets
+      document.querySelectorAll('#safeToolOverlay .tool-sheet').forEach(function (s) {
+        s.style.display = 'none';
+      });
+
+      // Reset
+      var loadEl = document.getElementById('dtloading-' + toolId);
+      var resEl = document.getElementById('dtresults-' + toolId);
+      var errEl = document.getElementById('dterror-' + toolId);
+      if (loadEl) { loadEl.classList.remove('show'); loadEl.style.display = 'none'; }
+      if (resEl) { resEl.classList.remove('show'); resEl.style.display = 'none'; }
+      if (errEl) { errEl.classList.remove('show'); errEl.style.display = 'none'; }
+
+      var overlay = document.getElementById('safeToolOverlay');
+      overlay.classList.add('open');
+      var sheet = document.getElementById('dtsheet-' + toolId);
+      if (sheet) sheet.style.display = 'block';
+
+      // Pre-fill city from current country
+      if (_currentCountry) {
+        var cityEl = document.getElementById('dt-weather-city');
+        if (cityEl && !cityEl.value) cityEl.value = _currentCountry;
+      }
+
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Coming soon modal
+    function showComingSoon(title, desc, emoji) {
+      document.getElementById('cs-title').textContent = title;
+      document.getElementById('cs-desc').textContent = desc;
+      document.getElementById('cs-emoji').textContent = emoji;
+      document.getElementById('comingSoonOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeComingSoon() {
+      document.getElementById('comingSoonOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // Run during tools
+    async function runDuringTool(toolId) {
+      var token = localStorage.getItem('yaply_token') || '';
+      var headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+      var loadEl = document.getElementById('dtloading-' + toolId);
+      var resEl = document.getElementById('dtresults-' + toolId);
+      var errEl = document.getElementById('dterror-' + toolId);
+      var btn = document.querySelector('#dtsheet-' + toolId + ' .tool-run-btn');
+
+      if (loadEl) { loadEl.style.display = 'flex'; loadEl.classList.add('show'); }
+      if (resEl) { resEl.style.display = 'none'; resEl.classList.remove('show'); }
+      if (errEl) { errEl.style.display = 'none'; errEl.classList.remove('show'); }
+      if (btn) btn.disabled = true;
+
+      try {
+        var result = null;
+
+        if (toolId === 'currency') {
+          var r = await fetch('/api/currency', {
+            method: 'POST', headers: headers, body: JSON.stringify({
+              amount: parseFloat(document.getElementById('dt-currency-amount').value) || 1,
+              from: document.getElementById('dt-currency-from').value,
+              to: document.getElementById('dt-currency-to').value,
+            })
+          });
+          result = await r.json();
+        }
+        else if (toolId === 'weather') {
+          var city = document.getElementById('dt-weather-city').value.trim();
+          if (!city) { showToast('Enter a city'); throw new Error('skip'); }
+          var r = await fetch('/api/weather', { method: 'POST', headers: headers, body: JSON.stringify({ city: city }) });
+          result = await r.json();
+        }
+
+        if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.remove('show'); }
+        if (btn) btn.disabled = false;
+
+        if (result && result.success) {
+          var html = _renderDuringToolResult(toolId, result);
+          if (resEl) { resEl.innerHTML = html; resEl.style.display = 'block'; resEl.classList.add('show'); }
+        } else {
+          var errMsg = document.getElementById('dterror-' + toolId + '-msg');
+          if (errMsg) errMsg.textContent = (result && result.error) || 'Something went wrong.';
+          if (errEl) { errEl.style.display = 'block'; errEl.classList.add('show'); }
+        }
+
+      } catch (e) {
+        if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.remove('show'); }
+        if (btn) btn.disabled = false;
+        if (e.message !== 'skip') {
+          if (errEl) { errEl.style.display = 'block'; errEl.classList.add('show'); }
+        }
+      }
+    }
+
+    function _renderDuringToolResult(toolId, result) {
+      if (toolId === 'currency') {
+        var from = result.from || ''; var to = result.to || '';
+        var amt = result.amount || 0; var conv = result.converted || 0; var rate = result.rate || 0;
+        var html = '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:18px;padding:20px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden;">';
+        html += '<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(37,99,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,255,0.05) 1px,transparent 1px);background-size:28px 28px;"></div>';
+        html += '<div style="position:relative;z-index:1;">';
+        html += '<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:6px;">' + amt.toLocaleString() + ' ' + from + ' =</div>';
+        html += '<div style="font-family:var(--font-mono);font-size:36px;font-weight:800;color:white;">' + conv.toLocaleString() + '</div>';
+        html += '<div style="font-size:18px;color:rgba(255,255,255,0.5);margin-top:4px;">' + to + '</div>';
+        html += '<div style="font-size:12px;color:rgba(255,255,255,0.25);margin-top:8px;">1 ' + from + ' = ' + rate + ' ' + to + '</div>';
+        html += '</div></div>';
+        html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">';
+        html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Quick Reference</div>';
+        [100, 500, 1000, 5000, 10000].forEach(function (a) {
+          var c = (a * rate).toFixed(2);
+          html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">' +
+            '<span style="font-size:13px;color:var(--muted);">' + a.toLocaleString() + ' ' + from + '</span>' +
+            '<span style="font-size:13px;font-weight:600;color:var(--text);">' + c + ' ' + to + '</span></div>';
+        });
+        html += '</div>';
+        return '<div style="margin-top:14px;">' + html + '</div>';
+      }
+
+      if (toolId === 'weather') {
+        var city = result.city || ''; var country = result.country || '';
+        var forecast = result.forecast || [];
+        if (!forecast.length) return '<p style="color:var(--muted);padding:16px;">No forecast available</p>';
+        var wIcons = { '01d': '☀️', '01n': '🌙', '02d': '⛅', '03d': '☁️', '04d': '☁️', '09d': '🌧️', '10d': '🌦️', '11d': '⛈️', '13d': '❄️', '50d': '🌫️' };
+        var html = '<div style="margin-top:14px;">';
+        html += '<div style="background:linear-gradient(135deg,#0c1a2e,#1a3a5c);border-radius:18px;padding:16px;margin-bottom:12px;">';
+        html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Live Weather</div>';
+        html += '<div style="font-size:20px;font-weight:700;color:white;">' + city + ', ' + country + '</div>';
+        html += '</div>';
+        html += '<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none;">';
+        forecast.forEach(function (day, i) {
+          var date = new Date(day.date);
+          var dName = i === 0 ? 'Today' : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+          var icon = wIcons[day.icon] || '🌤️';
+          html += '<div style="flex-shrink:0;background:' + (i === 0 ? 'rgba(37,99,255,0.08)' : 'var(--white)') + ';border:1px solid ' + (i === 0 ? 'rgba(37,99,255,0.2)' : 'var(--border)') + ';border-radius:14px;padding:12px 10px;text-align:center;min-width:68px;">';
+          html += '<div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-weight:600;">' + dName + '</div>';
+          html += '<div style="font-size:22px;margin-bottom:6px;">' + icon + '</div>';
+          html += '<div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text);">' + Math.round(day.temp_max) + '°</div>';
+          html += '<div style="font-size:9px;color:var(--muted2);margin-top:2px;">' + (day.description || '') + '</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+        var today = forecast[0];
+        html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">';
+        html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Today</div>';
+        [['High / Low', Math.round(today.temp_max) + '° / ' + Math.round(today.temp_min) + '°C'],
+        ['Condition', today.description || '—'],
+        ['Humidity', (today.humidity || '—') + '%'],
+        ['Wind', (today.wind || '—') + ' m/s']
+        ].forEach(function (r) {
+          html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">' +
+            '<span style="font-size:13px;color:var(--muted);">' + r[0] + '</span>' +
+            '<span style="font-size:13px;font-weight:600;color:var(--text);">' + r[1] + '</span></div>';
+        });
+        html += '</div></div>';
+        return html;
+      }
+      return '';
     }
 
     // ── TOAST ──────────────────────────────────────
