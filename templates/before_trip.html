@@ -11,6 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet" />
+  <script src="/static/yaply-core.js"></script>
   <style>
     :root {
       --blue: #2563FF;
@@ -7662,6 +7663,12 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') closeTool();
     });
+
+    // Instead of repeating auth code everywhere
+// Just call:
+YaplyCore.requireAuth();   // redirect if not logged in
+YaplyCore.getUser();       // get current user
+YaplyCore.logout();        // logout from anywhere
 
   </script>
 </body>

@@ -6,6 +6,7 @@
 <title>Yaply — Travel Tools</title>
 <link rel="icon" href="/static/yaply favicon.jpeg" type="image/jpeg"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<script src="/static/yaply-core.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -880,6 +881,13 @@ function printCard() {
   w.document.write(`<html><head><title>Emergency Card — Yaply</title><style>body{font-family:sans-serif;padding:24px;background:#fff;}.em-card-visual{background:linear-gradient(135deg,#2C2B28,#1e2a3a);border-radius:20px;padding:24px;color:white;max-width:380px;position:relative;}.ec-logo-text{font-size:.55rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px;}.ec-name-text{font-size:1.1rem;font-weight:700;margin-bottom:4px;}.ec-details-text{font-size:.7rem;color:rgba(255,255,255,.5);margin-bottom:16px;}.ec-em-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}.ec-em-label{font-size:.55rem;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:2px;}.ec-em-num{font-size:.88rem;font-weight:700;}</style></head><body>${card}</body></html>`);
   w.document.close(); w.print();
 }
+
+// Instead of repeating auth code everywhere
+// Just call:
+YaplyCore.requireAuth();   // redirect if not logged in
+YaplyCore.getUser();       // get current user
+YaplyCore.logout();        // logout from anywhere
+
 </script>
 </body>
 </html>

@@ -1,2115 +1,3409 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Yaply — Dashboard</title>
-<link rel="icon" href="/static/favicon.png" type="image/png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>
-/* ═══════════════════════════════════════════
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Yaply — Dashboard</title>
+  <link rel="icon" href="/static/favicon.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <script src="/static/yaply-core.js"></script>
+  <style>
+    /* ═══════════════════════════════════════════
    YAPLY DESIGN SYSTEM
 ═══════════════════════════════════════════ */
-:root {
-  --blue:      #2563FF;
-  --blue-d:    #1D4ED8;
-  --blue-g:    rgba(37,99,255,0.08);
-  --blue-gm:   rgba(37,99,255,0.15);
-  --blue-glow: rgba(37,99,255,0.2);
-  --midnight:  #0B1220;
-  --night:     #0E1829;
-  --bg:        #F7F9FC;
-  --bg2:       #EEF2F8;
-  --white:     #FFFFFF;
-  --text:      #111827;
-  --text2:     #374151;
-  --muted:     #6B7280;
-  --muted2:    #9CA3AF;
-  --border:    rgba(17,24,39,0.07);
-  --border2:   rgba(17,24,39,0.12);
-  --coral:     #FF7A59;
-  --coral-g:   rgba(255,122,89,0.1);
-  --green:     #18C29C;
-  --green-g:   rgba(24,194,156,0.1);
-  --amber:     #F5B942;
-  --amber-g:   rgba(245,185,66,0.1);
-  --red:       #EF4444;
+    :root {
+      --blue: #2563FF;
+      --blue-d: #1D4ED8;
+      --blue-g: rgba(37, 99, 255, 0.08);
+      --blue-gm: rgba(37, 99, 255, 0.15);
+      --blue-glow: rgba(37, 99, 255, 0.2);
+      --midnight: #0B1220;
+      --night: #0E1829;
+      --bg: #F7F9FC;
+      --bg2: #EEF2F8;
+      --white: #FFFFFF;
+      --text: #111827;
+      --text2: #374151;
+      --muted: #6B7280;
+      --muted2: #9CA3AF;
+      --border: rgba(17, 24, 39, 0.07);
+      --border2: rgba(17, 24, 39, 0.12);
+      --coral: #FF7A59;
+      --coral-g: rgba(255, 122, 89, 0.1);
+      --green: #18C29C;
+      --green-g: rgba(24, 194, 156, 0.1);
+      --amber: #F5B942;
+      --amber-g: rgba(245, 185, 66, 0.1);
+      --red: #EF4444;
 
-  --font-head: 'Instrument Serif', Georgia, serif;
-  --font-body: 'DM Sans', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+      --font-head: 'Instrument Serif', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
 
-  --r:    12px;
-  --r-lg: 18px;
-  --r-xl: 24px;
-  --r-2xl:32px;
+      --r: 12px;
+      --r-lg: 18px;
+      --r-xl: 24px;
+      --r-2xl: 32px;
 
-  --nav-h: 64px;
-  --shadow:    0 1px 12px rgba(17,24,39,0.06);
-  --shadow-md: 0 4px 24px rgba(17,24,39,0.08);
-  --shadow-lg: 0 12px 48px rgba(17,24,39,0.1);
-  --shadow-blue: 0 8px 32px rgba(37,99,255,0.2);
-}
+      --nav-h: 64px;
+      --shadow: 0 1px 12px rgba(17, 24, 39, 0.06);
+      --shadow-md: 0 4px 24px rgba(17, 24, 39, 0.08);
+      --shadow-lg: 0 12px 48px rgba(17, 24, 39, 0.1);
+      --shadow-blue: 0 8px 32px rgba(37, 99, 255, 0.2);
+    }
 
-*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: var(--font-body);
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-/* ═══════════════════════════════════════════
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ═══════════════════════════════════════════
    SKELETON / SHIMMER  (BUG 5)
 ═══════════════════════════════════════════ */
-@keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position:  200% 0; }
-}
-.skel {
-  background: linear-gradient(90deg, #EEF2F8 25%, #E0E7F0 50%, #EEF2F8 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 8px;
-}
-.skel-dark {
-  background: linear-gradient(90deg,
-    rgba(255,255,255,0.05) 25%,
-    rgba(255,255,255,0.12) 50%,
-    rgba(255,255,255,0.05) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 8px;
-}
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
 
-/* ═══════════════════════════════════════════
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    .skel {
+      background: linear-gradient(90deg, #EEF2F8 25%, #E0E7F0 50%, #EEF2F8 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+
+    .skel-dark {
+      background: linear-gradient(90deg,
+          rgba(255, 255, 255, 0.05) 25%,
+          rgba(255, 255, 255, 0.12) 50%,
+          rgba(255, 255, 255, 0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+
+    /* ═══════════════════════════════════════════
    TOP NAV
 ═══════════════════════════════════════════ */
-.top-nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: var(--nav-h);
-  background: rgba(247,249,252,0.88);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  gap: 16px;
-}
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-h);
+      background: rgba(247, 249, 252, 0.88);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+    }
 
-.nav-logo {
-  display: flex; align-items: center; gap: 9px;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-.nav-logo-mark {
-  width: 34px; height: 34px;
-  background: var(--blue);
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 12px var(--blue-glow);
-  flex-shrink: 0;
-}
-.nav-logo-mark svg { width: 16px; height: 16px; }
-.nav-logo-name {
-  font-family: var(--font-head);
-  font-size: 20px;
-  color: var(--text);
-  letter-spacing: -0.3px;
-}
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
 
-.nav-spacer { flex: 1; }
+    .nav-logo-mark {
+      width: 34px;
+      height: 34px;
+      background: var(--blue);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px var(--blue-glow);
+      flex-shrink: 0;
+    }
 
-/* Greeting */
-.nav-greeting {
-  font-size: 13px;
-  color: var(--muted);
-  font-weight: 300;
-  white-space: nowrap;
-}
-.nav-greeting strong {
-  color: var(--text);
-  font-weight: 500;
-}
+    .nav-logo-mark svg {
+      width: 16px;
+      height: 16px;
+    }
 
-/* Nav actions */
-.nav-actions { display: flex; align-items: center; gap: 8px; }
+    .nav-logo-name {
+      font-family: var(--font-head);
+      font-size: 20px;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
 
-.nav-icon-btn {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  border: 1px solid var(--border2);
-  background: var(--white);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: all .2s;
-  position: relative;
-  color: var(--muted);
-}
-.nav-icon-btn:hover { background: var(--bg2); color: var(--text); border-color: var(--border2); }
-.nav-icon-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+    .nav-spacer {
+      flex: 1;
+    }
 
-.notif-dot {
-  position: absolute;
-  top: 7px; right: 7px;
-  width: 7px; height: 7px;
-  background: var(--coral);
-  border-radius: 50%;
-  border: 2px solid var(--white);
-}
+    /* Greeting */
+    .nav-greeting {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 300;
+      white-space: nowrap;
+    }
 
-/* Avatar wrapper + dropdown  (BUG 3 & BUG 6) */
-.nav-avatar-wrapper {
-  position: relative;
-  flex-shrink: 0;
-}
-.nav-avatar {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--blue), var(--blue-d));
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-head);
-  font-style: italic;
-  font-size: 16px;
-  color: white;
-  cursor: pointer;
-  border: 2px solid var(--white);
-  box-shadow: var(--shadow-blue);
-  transition: transform .2s;
-  overflow: hidden;
-}
-.nav-avatar:hover { transform: scale(1.06); }
-.nav-avatar img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
+    .nav-greeting strong {
+      color: var(--text);
+      font-weight: 500;
+    }
 
-.avatar-dropdown {
-  display: none;
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  background: var(--white);
-  border: 1px solid var(--border2);
-  border-radius: var(--r);
-  box-shadow: var(--shadow-md);
-  min-width: 170px;
-  z-index: 200;
-  overflow: hidden;
-}
-.avatar-dropdown.open { display: block; }
-.avatar-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 11px 16px;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
-  text-decoration: none;
-  cursor: pointer;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  transition: background .15s;
-}
-.avatar-menu-item:hover { background: var(--bg2); }
-.avatar-menu-item.logout { color: var(--red); }
-.avatar-menu-item svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
-.avatar-menu-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 2px 0;
-}
+    /* Nav actions */
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-/* Date pill */
-.nav-date {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 12px;
-  background: var(--white);
-  border: 1px solid var(--border2);
-  border-radius: 100px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-  white-space: nowrap;
-}
-.nav-date svg { width: 13px; height: 13px; stroke: var(--blue); fill: none; stroke-width: 1.8; }
+    .nav-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border2);
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .2s;
+      position: relative;
+      color: var(--muted);
+    }
 
-/* ═══════════════════════════════════════════
+    .nav-icon-btn:hover {
+      background: var(--bg2);
+      color: var(--text);
+      border-color: var(--border2);
+    }
+
+    .nav-icon-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .notif-dot {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 7px;
+      height: 7px;
+      background: var(--coral);
+      border-radius: 50%;
+      border: 2px solid var(--white);
+    }
+
+    /* Avatar wrapper + dropdown  (BUG 3 & BUG 6) */
+    .nav-avatar-wrapper {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .nav-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--blue-d));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-head);
+      font-style: italic;
+      font-size: 16px;
+      color: white;
+      cursor: pointer;
+      border: 2px solid var(--white);
+      box-shadow: var(--shadow-blue);
+      transition: transform .2s;
+      overflow: hidden;
+    }
+
+    .nav-avatar:hover {
+      transform: scale(1.06);
+    }
+
+    .nav-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .avatar-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      background: var(--white);
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      box-shadow: var(--shadow-md);
+      min-width: 170px;
+      z-index: 200;
+      overflow: hidden;
+    }
+
+    .avatar-dropdown.open {
+      display: block;
+    }
+
+    .avatar-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 16px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: background .15s;
+    }
+
+    .avatar-menu-item:hover {
+      background: var(--bg2);
+    }
+
+    .avatar-menu-item.logout {
+      color: var(--red);
+    }
+
+    .avatar-menu-item svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+    }
+
+    .avatar-menu-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 2px 0;
+    }
+
+    /* Date pill */
+    .nav-date {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--white);
+      border: 1px solid var(--border2);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .nav-date svg {
+      width: 13px;
+      height: 13px;
+      stroke: var(--blue);
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    /* ═══════════════════════════════════════════
    MAIN LAYOUT
 ═══════════════════════════════════════════ */
-.main {
-  padding-top: var(--nav-h);
-  padding-bottom: 100px;
-  max-width: 480px;
-  margin: 0 auto;
-}
+    .main {
+      padding-top: var(--nav-h);
+      padding-bottom: 100px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
 
-/* ═══════════════════════════════════════════
+    /* ═══════════════════════════════════════════
    SECTIONS
 ═══════════════════════════════════════════ */
-.section { padding: 20px 20px 0; }
+    .section {
+      padding: 20px 20px 0;
+    }
 
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.section-title {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: var(--muted);
-}
-.section-link {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--blue);
-  text-decoration: none;
-  transition: opacity .2s;
-}
-.section-link:hover { opacity: 0.7; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
 
-/* ═══════════════════════════════════════════
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+    }
+
+    .section-link {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--blue);
+      text-decoration: none;
+      transition: opacity .2s;
+    }
+
+    .section-link:hover {
+      opacity: 0.7;
+    }
+
+    /* ═══════════════════════════════════════════
    HERO GREETING
 ═══════════════════════════════════════════ */
-.hero-greeting {
-  padding: 24px 20px 0;
-  animation: fadeUp .6s ease both;
-}
-.hero-greeting-sub {
-  font-size: 13px;
-  color: var(--muted);
-  font-weight: 300;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.live-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 0 3px rgba(24,194,156,0.2);
-  animation: livePulse 2s ease-in-out infinite;
-}
-@keyframes livePulse {
-  0%,100% { box-shadow: 0 0 0 3px rgba(24,194,156,0.2); }
-  50%      { box-shadow: 0 0 0 6px rgba(24,194,156,0); }
-}
-.hero-greeting-name {
-  font-family: var(--font-head);
-  font-size: 28px;
-  font-weight: 400;
-  color: var(--text);
-  letter-spacing: -0.5px;
-  line-height: 1.15;
-}
-.hero-greeting-name em {
-  font-style: italic;
-  color: var(--blue);
-}
+    .hero-greeting {
+      padding: 24px 20px 0;
+      animation: fadeUp .6s ease both;
+    }
 
-/* ═══════════════════════════════════════════
+    .hero-greeting-sub {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 300;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(24, 194, 156, 0.2);
+      animation: livePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes livePulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 3px rgba(24, 194, 156, 0.2);
+      }
+
+      50% {
+        box-shadow: 0 0 0 6px rgba(24, 194, 156, 0);
+      }
+    }
+
+    .hero-greeting-name {
+      font-family: var(--font-head);
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+    }
+
+    .hero-greeting-name em {
+      font-style: italic;
+      color: var(--blue);
+    }
+
+    /* ═══════════════════════════════════════════
    ACTIVE TRIP CARD
 ═══════════════════════════════════════════ */
-.active-trip-card {
-  margin: 20px 20px 0;
-  border-radius: var(--r-xl);
-  overflow: hidden;
-  position: relative;
-  box-shadow: var(--shadow-lg);
-  animation: fadeUp .6s .1s ease both;
-  cursor: pointer;
-}
+    .active-trip-card {
+      margin: 20px 20px 0;
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      position: relative;
+      box-shadow: var(--shadow-lg);
+      animation: fadeUp .6s .1s ease both;
+      cursor: pointer;
+    }
 
-.atc-bg {
-  background: linear-gradient(145deg, #0D1628 0%, #0B1220 60%, #060C17 100%);
-  padding: 24px;
-  position: relative;
-  overflow: hidden;
-}
+    .atc-bg {
+      background: linear-gradient(145deg, #0D1628 0%, #0B1220 60%, #060C17 100%);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
 
-/* Grid lines */
-.atc-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(37,99,255,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37,99,255,0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none;
-}
+    /* Grid lines */
+    .atc-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(37, 99, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 255, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
 
-/* Blue glow orb */
-.atc-orb {
-  position: absolute;
-  width: 200px; height: 200px;
-  background: radial-gradient(circle, rgba(37,99,255,0.25) 0%, transparent 70%);
-  top: -80px; right: -60px;
-  border-radius: 50%;
-  pointer-events: none;
-  animation: orbShift 8s ease-in-out infinite;
-}
-@keyframes orbShift {
-  0%,100% { transform: translate(0,0); }
-  50%      { transform: translate(-10px,12px); }
-}
+    /* Blue glow orb */
+    .atc-orb {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(37, 99, 255, 0.25) 0%, transparent 70%);
+      top: -80px;
+      right: -60px;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: orbShift 8s ease-in-out infinite;
+    }
 
-.atc-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 1;
-}
+    @keyframes orbShift {
 
-.atc-badge {
-  display: flex; align-items: center; gap: 6px;
-  padding: 5px 10px;
-  background: rgba(24,194,156,0.12);
-  border: 1px solid rgba(24,194,156,0.2);
-  border-radius: 100px;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--green);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-.atc-badge-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--green);
-  animation: livePulse 2s ease-in-out infinite;
-}
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
 
-.atc-day-badge {
-  padding: 5px 10px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 100px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: rgba(255,255,255,0.5);
-}
+      50% {
+        transform: translate(-10px, 12px);
+      }
+    }
 
-.atc-dest {
-  position: relative; z-index: 1;
-  margin-bottom: 20px;
-}
-.atc-country {
-  font-size: 11px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.atc-city {
-  font-family: var(--font-head);
-  font-size: 36px;
-  font-weight: 400;
-  color: white;
-  letter-spacing: -1px;
-  line-height: 1;
-  margin-bottom: 6px;
-}
-.atc-dates {
-  font-size: 13px;
-  color: rgba(255,255,255,0.4);
-  font-weight: 300;
-}
+    .atc-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
 
-/* Progress */
-.atc-progress {
-  position: relative; z-index: 1;
-  margin-bottom: 20px;
-}
-.atc-progress-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.atc-progress-label {
-  font-size: 11px;
-  color: rgba(255,255,255,0.3);
-  font-weight: 400;
-}
-.atc-progress-pct {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--blue);
-}
-.atc-progress-track {
-  height: 3px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.atc-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--blue), var(--green));
-  border-radius: 2px;
-  width: 0;
-  transition: width 1.4s cubic-bezier(.4,0,.2,1);
-}
+    .atc-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(24, 194, 156, 0.12);
+      border: 1px solid rgba(24, 194, 156, 0.2);
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--green);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
 
-/* Trip actions */
-.atc-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  position: relative; z-index: 1;
-}
-.atc-action {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 8px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--r);
-  cursor: pointer;
-  transition: all .2s;
-  text-decoration: none;
-}
-.atc-action:hover {
-  background: rgba(255,255,255,0.10);
-  border-color: rgba(255,255,255,0.14);
-  transform: translateY(-2px);
-}
-.atc-action.sos {
-  background: rgba(239,68,68,0.1);
-  border-color: rgba(239,68,68,0.2);
-}
-.atc-action.sos:hover { background: rgba(239,68,68,0.15); }
-.atc-action-icon {
-  width: 32px; height: 32px;
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-}
-.atc-action-icon svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-.atc-action-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.6);
-  letter-spacing: 0.2px;
-  text-align: center;
-}
+    .atc-badge-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: livePulse 2s ease-in-out infinite;
+    }
 
-/* Bottom strip */
-.atc-strip {
-  background: rgba(37,99,255,0.08);
-  border-top: 1px solid rgba(37,99,255,0.12);
-  padding: 10px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.atc-strip-text {
-  font-size: 12px;
-  color: rgba(255,255,255,0.3);
-}
-.atc-strip-text strong {
-  color: var(--blue);
-  font-weight: 500;
-}
-.atc-strip-chevron {
-  width: 14px; height: 14px;
-  stroke: rgba(255,255,255,0.2);
-  fill: none;
-  stroke-width: 2;
-}
+    .atc-day-badge {
+      padding: 5px 10px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 100px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+    }
 
-/* No trip state */
-.no-trip-card {
-  margin: 20px 20px 0;
-  border-radius: var(--r-xl);
-  border: 1.5px dashed rgba(37,99,255,0.2);
-  background: var(--blue-g);
-  padding: 28px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all .2s;
-  animation: fadeUp .6s .1s ease both;
-  text-decoration: none;
-}
-.no-trip-card:hover {
-  background: rgba(37,99,255,0.1);
-  border-color: rgba(37,99,255,0.35);
-  transform: translateY(-2px);
-}
-.no-trip-icon {
-  width: 52px; height: 52px;
-  border-radius: 16px;
-  background: var(--blue);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: var(--shadow-blue);
-}
-.no-trip-icon svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 1.8; }
-.no-trip-title {
-  font-family: var(--font-head);
-  font-size: 20px;
-  color: var(--text);
-  letter-spacing: -0.3px;
-}
-.no-trip-sub {
-  font-size: 13px;
-  color: var(--muted);
-  font-weight: 300;
-  line-height: 1.6;
-  max-width: 240px;
-}
-.no-trip-btn {
-  padding: 11px 24px;
-  background: var(--blue);
-  color: white;
-  border-radius: var(--r);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  display: flex; align-items: center; gap: 7px;
-  transition: all .2s;
-  box-shadow: var(--shadow-blue);
-}
-.no-trip-btn:hover { background: var(--blue-d); transform: translateY(-1px); }
-.no-trip-btn svg { width: 14px; height: 14px; stroke: white; fill: none; stroke-width: 2; }
+    .atc-dest {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 20px;
+    }
 
-/* ═══════════════════════════════════════════
+    .atc-country {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .atc-city {
+      font-family: var(--font-head);
+      font-size: 36px;
+      font-weight: 400;
+      color: white;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .atc-dates {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 300;
+    }
+
+    /* Progress */
+    .atc-progress {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 20px;
+    }
+
+    .atc-progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .atc-progress-label {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.3);
+      font-weight: 400;
+    }
+
+    .atc-progress-pct {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--blue);
+    }
+
+    .atc-progress-track {
+      height: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .atc-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      border-radius: 2px;
+      width: 0;
+      transition: width 1.4s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    /* Trip actions */
+    .atc-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .atc-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--r);
+      cursor: pointer;
+      transition: all .2s;
+      text-decoration: none;
+    }
+
+    .atc-action:hover {
+      background: rgba(255, 255, 255, 0.10);
+      border-color: rgba(255, 255, 255, 0.14);
+      transform: translateY(-2px);
+    }
+
+    .atc-action.sos {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .atc-action.sos:hover {
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .atc-action-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .atc-action-icon svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .atc-action-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 0.2px;
+      text-align: center;
+    }
+
+    /* Bottom strip */
+    .atc-strip {
+      background: rgba(37, 99, 255, 0.08);
+      border-top: 1px solid rgba(37, 99, 255, 0.12);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .atc-strip-text {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .atc-strip-text strong {
+      color: var(--blue);
+      font-weight: 500;
+    }
+
+    .atc-strip-chevron {
+      width: 14px;
+      height: 14px;
+      stroke: rgba(255, 255, 255, 0.2);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* No trip state */
+    .no-trip-card {
+      margin: 20px 20px 0;
+      border-radius: var(--r-xl);
+      border: 1.5px dashed rgba(37, 99, 255, 0.2);
+      background: var(--blue-g);
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all .2s;
+      animation: fadeUp .6s .1s ease both;
+      text-decoration: none;
+    }
+
+    .no-trip-card:hover {
+      background: rgba(37, 99, 255, 0.1);
+      border-color: rgba(37, 99, 255, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .no-trip-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-blue);
+    }
+
+    .no-trip-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: white;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .no-trip-title {
+      font-family: var(--font-head);
+      font-size: 20px;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .no-trip-sub {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 240px;
+    }
+
+    .no-trip-btn {
+      padding: 11px 24px;
+      background: var(--blue);
+      color: white;
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all .2s;
+      box-shadow: var(--shadow-blue);
+    }
+
+    .no-trip-btn:hover {
+      background: var(--blue-d);
+      transform: translateY(-1px);
+    }
+
+    .no-trip-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ═══════════════════════════════════════════
    THREE PHASE CARDS
 ═══════════════════════════════════════════ */
-.phases-grid {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 10px;
-  animation: fadeUp .6s .2s ease both;
-}
+    .phases-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      animation: fadeUp .6s .2s ease both;
+    }
 
-.phase-card {
-  border-radius: var(--r-lg);
-  padding: 16px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all .25s cubic-bezier(.4,0,.2,1);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid transparent;
-}
-.phase-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: var(--r-lg);
-  opacity: 0;
-  transition: opacity .3s;
-}
-.phase-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-.phase-card:hover::before { opacity: 1; }
-.phase-card:active { transform: scale(0.97); }
+    .phase-card {
+      border-radius: var(--r-lg);
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .25s cubic-bezier(.4, 0, .2, 1);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid transparent;
+    }
 
-.phase-card.before {
-  background: linear-gradient(145deg, #EEF4FF, #E8F0FE);
-  border-color: rgba(37,99,255,0.1);
-}
-.phase-card.before::before {
-  background: linear-gradient(145deg, rgba(37,99,255,0.05), transparent);
-}
-.phase-card.before:hover { border-color: rgba(37,99,255,0.2); }
+    .phase-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--r-lg);
+      opacity: 0;
+      transition: opacity .3s;
+    }
 
-.phase-card.during {
-  background: linear-gradient(145deg, #FFF4EE, #FEF0E8);
-  border-color: rgba(255,122,89,0.1);
-}
-.phase-card.during::before {
-  background: linear-gradient(145deg, rgba(255,122,89,0.05), transparent);
-}
-.phase-card.during:hover { border-color: rgba(255,122,89,0.25); }
+    .phase-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
 
-.phase-card.after {
-  background: linear-gradient(145deg, #EEFAF6, #E8F7F2);
-  border-color: rgba(24,194,156,0.1);
-}
-.phase-card.after::before {
-  background: linear-gradient(145deg, rgba(24,194,156,0.05), transparent);
-}
-.phase-card.after:hover { border-color: rgba(24,194,156,0.25); }
+    .phase-card:hover::before {
+      opacity: 1;
+    }
 
-.phase-icon {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.phase-card.before .phase-icon  { background: rgba(37,99,255,0.1); }
-.phase-card.during .phase-icon  { background: rgba(255,122,89,0.12); }
-.phase-card.after  .phase-icon  { background: rgba(24,194,156,0.12); }
-.phase-icon svg { width: 17px; height: 17px; fill: none; stroke-width: 1.8; }
-.phase-card.before .phase-icon svg { stroke: var(--blue); }
-.phase-card.during .phase-icon svg { stroke: var(--coral); }
-.phase-card.after  .phase-icon svg { stroke: var(--green); }
+    .phase-card:active {
+      transform: scale(0.97);
+    }
 
-.phase-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-.phase-card.before .phase-label { color: var(--blue); }
-.phase-card.during .phase-label { color: var(--coral); }
-.phase-card.after  .phase-label { color: var(--green); }
+    .phase-card.before {
+      background: linear-gradient(145deg, #EEF4FF, #E8F0FE);
+      border-color: rgba(37, 99, 255, 0.1);
+    }
 
-.phase-name {
-  font-family: var(--font-head);
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  line-height: 1.2;
-}
-.phase-count {
-  font-size: 10px;
-  color: var(--muted2);
-  margin-top: auto;
-  font-weight: 400;
-}
+    .phase-card.before::before {
+      background: linear-gradient(145deg, rgba(37, 99, 255, 0.05), transparent);
+    }
 
-.phase-arrow {
-  width: 24px; height: 24px;
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  align-self: flex-end;
-  transition: transform .2s;
-}
-.phase-card.before .phase-arrow { background: rgba(37,99,255,0.1); }
-.phase-card.during .phase-arrow { background: rgba(255,122,89,0.1); }
-.phase-card.after  .phase-arrow { background: rgba(24,194,156,0.1); }
-.phase-arrow svg { width: 12px; height: 12px; fill: none; stroke-width: 2; }
-.phase-card.before .phase-arrow svg { stroke: var(--blue); }
-.phase-card.during .phase-arrow svg { stroke: var(--coral); }
-.phase-card.after  .phase-arrow svg { stroke: var(--green); }
-.phase-card:hover .phase-arrow { transform: translateX(3px); }
+    .phase-card.before:hover {
+      border-color: rgba(37, 99, 255, 0.2);
+    }
 
-/* ═══════════════════════════════════════════
+    .phase-card.during {
+      background: linear-gradient(145deg, #FFF4EE, #FEF0E8);
+      border-color: rgba(255, 122, 89, 0.1);
+    }
+
+    .phase-card.during::before {
+      background: linear-gradient(145deg, rgba(255, 122, 89, 0.05), transparent);
+    }
+
+    .phase-card.during:hover {
+      border-color: rgba(255, 122, 89, 0.25);
+    }
+
+    .phase-card.after {
+      background: linear-gradient(145deg, #EEFAF6, #E8F7F2);
+      border-color: rgba(24, 194, 156, 0.1);
+    }
+
+    .phase-card.after::before {
+      background: linear-gradient(145deg, rgba(24, 194, 156, 0.05), transparent);
+    }
+
+    .phase-card.after:hover {
+      border-color: rgba(24, 194, 156, 0.25);
+    }
+
+    .phase-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .phase-card.before .phase-icon {
+      background: rgba(37, 99, 255, 0.1);
+    }
+
+    .phase-card.during .phase-icon {
+      background: rgba(255, 122, 89, 0.12);
+    }
+
+    .phase-card.after .phase-icon {
+      background: rgba(24, 194, 156, 0.12);
+    }
+
+    .phase-icon svg {
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .phase-card.before .phase-icon svg {
+      stroke: var(--blue);
+    }
+
+    .phase-card.during .phase-icon svg {
+      stroke: var(--coral);
+    }
+
+    .phase-card.after .phase-icon svg {
+      stroke: var(--green);
+    }
+
+    .phase-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .phase-card.before .phase-label {
+      color: var(--blue);
+    }
+
+    .phase-card.during .phase-label {
+      color: var(--coral);
+    }
+
+    .phase-card.after .phase-label {
+      color: var(--green);
+    }
+
+    .phase-name {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: -0.2px;
+      line-height: 1.2;
+    }
+
+    .phase-count {
+      font-size: 10px;
+      color: var(--muted2);
+      margin-top: auto;
+      font-weight: 400;
+    }
+
+    .phase-arrow {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      align-self: flex-end;
+      transition: transform .2s;
+    }
+
+    .phase-card.before .phase-arrow {
+      background: rgba(37, 99, 255, 0.1);
+    }
+
+    .phase-card.during .phase-arrow {
+      background: rgba(255, 122, 89, 0.1);
+    }
+
+    .phase-card.after .phase-arrow {
+      background: rgba(24, 194, 156, 0.1);
+    }
+
+    .phase-arrow svg {
+      width: 12px;
+      height: 12px;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .phase-card.before .phase-arrow svg {
+      stroke: var(--blue);
+    }
+
+    .phase-card.during .phase-arrow svg {
+      stroke: var(--coral);
+    }
+
+    .phase-card.after .phase-arrow svg {
+      stroke: var(--green);
+    }
+
+    .phase-card:hover .phase-arrow {
+      transform: translateX(3px);
+    }
+
+    /* ═══════════════════════════════════════════
    QUICK TOOLS
 ═══════════════════════════════════════════ */
-.quick-tools-grid {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 10px;
-  animation: fadeUp .6s .3s ease both;
-}
+    .quick-tools-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      animation: fadeUp .6s .3s ease both;
+    }
 
-.quick-tool {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 10px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all .22s cubic-bezier(.4,0,.2,1);
-  box-shadow: var(--shadow);
-}
-.quick-tool:hover {
-  border-color: var(--blue);
-  background: var(--blue-g);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(37,99,255,0.1);
-}
-.quick-tool:active { transform: scale(0.96); }
+    .quick-tool {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 10px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .22s cubic-bezier(.4, 0, .2, 1);
+      box-shadow: var(--shadow);
+    }
 
-.qt-icon {
-  width: 40px; height: 40px;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  transition: transform .2s;
-}
-.quick-tool:hover .qt-icon { transform: scale(1.1); }
-.qt-icon svg { width: 18px; height: 18px; fill: none; stroke-width: 1.8; }
+    .quick-tool:hover {
+      border-color: var(--blue);
+      background: var(--blue-g);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(37, 99, 255, 0.1);
+    }
 
-.qt-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text2);
-  text-align: center;
-  line-height: 1.3;
-  transition: color .2s;
-}
-.quick-tool:hover .qt-label { color: var(--blue); }
+    .quick-tool:active {
+      transform: scale(0.96);
+    }
 
-/* Tool color variants */
-.qt-blue   { background: var(--blue-g); }
-.qt-blue svg   { stroke: var(--blue); }
-.qt-coral  { background: var(--coral-g); }
-.qt-coral svg  { stroke: var(--coral); }
-.qt-green  { background: var(--green-g); }
-.qt-green svg  { stroke: var(--green); }
-.qt-amber  { background: var(--amber-g); }
-.qt-amber svg  { stroke: var(--amber); }
-.qt-purple { background: rgba(139,92,246,0.08); }
-.qt-purple svg { stroke: #8B5CF6; }
-.qt-sky    { background: rgba(14,165,233,0.08); }
-.qt-sky svg    { stroke: #0EA5E9; }
+    .qt-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .2s;
+    }
 
-/* ═══════════════════════════════════════════
+    .quick-tool:hover .qt-icon {
+      transform: scale(1.1);
+    }
+
+    .qt-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .qt-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text2);
+      text-align: center;
+      line-height: 1.3;
+      transition: color .2s;
+    }
+
+    .quick-tool:hover .qt-label {
+      color: var(--blue);
+    }
+
+    /* Tool color variants */
+    .qt-blue {
+      background: var(--blue-g);
+    }
+
+    .qt-blue svg {
+      stroke: var(--blue);
+    }
+
+    .qt-coral {
+      background: var(--coral-g);
+    }
+
+    .qt-coral svg {
+      stroke: var(--coral);
+    }
+
+    .qt-green {
+      background: var(--green-g);
+    }
+
+    .qt-green svg {
+      stroke: var(--green);
+    }
+
+    .qt-amber {
+      background: var(--amber-g);
+    }
+
+    .qt-amber svg {
+      stroke: var(--amber);
+    }
+
+    .qt-purple {
+      background: rgba(139, 92, 246, 0.08);
+    }
+
+    .qt-purple svg {
+      stroke: #8B5CF6;
+    }
+
+    .qt-sky {
+      background: rgba(14, 165, 233, 0.08);
+    }
+
+    .qt-sky svg {
+      stroke: #0EA5E9;
+    }
+
+    /* ═══════════════════════════════════════════
    MY TRIPS
 ═══════════════════════════════════════════ */
-.trips-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  animation: fadeUp .6s .4s ease both;
-}
+    .trips-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: fadeUp .6s .4s ease both;
+    }
 
-.trip-item {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all .22s;
-  box-shadow: var(--shadow);
-}
-.trip-item:hover {
-  border-color: var(--border2);
-  box-shadow: var(--shadow-md);
-  transform: translateX(3px);
-}
+    .trip-item {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .22s;
+      box-shadow: var(--shadow);
+    }
 
-.trip-flag {
-  width: 44px; height: 44px;
-  border-radius: 14px;
-  background: var(--bg2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-}
+    .trip-item:hover {
+      border-color: var(--border2);
+      box-shadow: var(--shadow-md);
+      transform: translateX(3px);
+    }
 
-.trip-info { flex: 1; min-width: 0; }
-.trip-name {
-  font-family: var(--font-head);
-  font-size: 16px;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  margin-bottom: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.trip-meta {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 300;
-}
+    .trip-flag {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: var(--bg2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
 
-.trip-status {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: 100px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.status-active {
-  background: rgba(24,194,156,0.1);
-  color: var(--green);
-  border: 1px solid rgba(24,194,156,0.2);
-}
-.status-done {
-  background: var(--bg2);
-  color: var(--muted);
-  border: 1px solid var(--border2);
-}
-.status-planning {
-  background: var(--blue-g);
-  color: var(--blue);
-  border: 1px solid rgba(37,99,255,0.15);
-}
-.status-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-}
-.status-active .status-dot { background: var(--green); }
-.status-done .status-dot   { background: var(--muted); }
-.status-planning .status-dot { background: var(--blue); animation: livePulse 2s ease-in-out infinite; }
+    .trip-info {
+      flex: 1;
+      min-width: 0;
+    }
 
-.trip-chevron {
-  width: 14px; height: 14px;
-  stroke: var(--muted2);
-  fill: none;
-  stroke-width: 2;
-  flex-shrink: 0;
-}
+    .trip-name {
+      font-family: var(--font-head);
+      font-size: 16px;
+      color: var(--text);
+      letter-spacing: -0.2px;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-/* Trip actions row */
-.trip-actions-row {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
-.trip-action-btn {
-  flex: 1;
-  padding: 7px;
-  background: var(--bg);
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .15s;
-  display: flex; align-items: center; justify-content: center; gap: 4px;
-  text-decoration: none;
-}
-.trip-action-btn:hover { background: var(--blue-g); color: var(--blue); border-color: rgba(37,99,255,0.2); }
-.trip-action-btn svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .trip-meta {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 300;
+    }
 
-/* New trip button */
-.new-trip-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px;
-  background: var(--white);
-  border: 1.5px dashed rgba(37,99,255,0.2);
-  border-radius: var(--r-lg);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--blue);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all .2s;
-}
-.new-trip-btn:hover { background: var(--blue-g); border-color: rgba(37,99,255,0.35); transform: translateY(-2px); }
-.new-trip-btn svg { width: 16px; height: 16px; stroke: var(--blue); fill: none; stroke-width: 2; }
+    .trip-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
 
-/* ═══════════════════════════════════════════
+    .status-active {
+      background: rgba(24, 194, 156, 0.1);
+      color: var(--green);
+      border: 1px solid rgba(24, 194, 156, 0.2);
+    }
+
+    .status-done {
+      background: var(--bg2);
+      color: var(--muted);
+      border: 1px solid var(--border2);
+    }
+
+    .status-planning {
+      background: var(--blue-g);
+      color: var(--blue);
+      border: 1px solid rgba(37, 99, 255, 0.15);
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    .status-active .status-dot {
+      background: var(--green);
+    }
+
+    .status-done .status-dot {
+      background: var(--muted);
+    }
+
+    .status-planning .status-dot {
+      background: var(--blue);
+      animation: livePulse 2s ease-in-out infinite;
+    }
+
+    .trip-chevron {
+      width: 14px;
+      height: 14px;
+      stroke: var(--muted2);
+      fill: none;
+      stroke-width: 2;
+      flex-shrink: 0;
+    }
+
+    /* Trip actions row */
+    .trip-actions-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .trip-action-btn {
+      flex: 1;
+      padding: 7px;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      text-decoration: none;
+    }
+
+    .trip-action-btn:hover {
+      background: var(--blue-g);
+      color: var(--blue);
+      border-color: rgba(37, 99, 255, 0.2);
+    }
+
+    .trip-action-btn svg {
+      width: 11px;
+      height: 11px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* New trip button */
+    .new-trip-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px;
+      background: var(--white);
+      border: 1.5px dashed rgba(37, 99, 255, 0.2);
+      border-radius: var(--r-lg);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--blue);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+    }
+
+    .new-trip-btn:hover {
+      background: var(--blue-g);
+      border-color: rgba(37, 99, 255, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .new-trip-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--blue);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ═══════════════════════════════════════════
    SQUAD CARD
 ═══════════════════════════════════════════ */
-.squad-card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--r-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  animation: fadeUp .6s .5s ease both;
-}
+    .squad-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: fadeUp .6s .5s ease both;
+    }
 
-.squad-header {
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.squad-icon {
-  width: 40px; height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--midnight), #1a2a4a);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.squad-icon svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 1.8; }
-.squad-name {
-  font-family: var(--font-head);
-  font-size: 16px;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  margin-bottom: 2px;
-}
-.squad-meta {
-  font-size: 11px;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.squad-online-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  animation: livePulse 2s ease-in-out infinite;
-}
+    .squad-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-.squad-open-btn {
-  margin-left: auto;
-  padding: 7px 14px;
-  background: var(--midnight);
-  color: white;
-  border-radius: 9px;
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all .2s;
-  flex-shrink: 0;
-}
-.squad-open-btn:hover { background: #1a2a4a; transform: translateY(-1px); }
+    .squad-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--midnight), #1a2a4a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
 
-/* Members row */
-.squad-members {
-  padding: 14px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.squad-member {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 0;
-  border-bottom: 1px solid var(--border);
-}
-.squad-member:last-child { border-bottom: none; }
+    .squad-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: white;
+      fill: none;
+      stroke-width: 1.8;
+    }
 
-.squad-member-av {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: white;
-  border: 2px solid;
-  flex-shrink: 0;
-  position: relative;
-  font-family: var(--font-head);
-}
-.sm-status {
-  position: absolute;
-  bottom: -1px; right: -1px;
-  width: 9px; height: 9px;
-  border-radius: 50%;
-  border: 2px solid var(--white);
-}
-.sm-online   { background: var(--green); }
-.sm-offline  { background: var(--muted2); }
+    .squad-name {
+      font-family: var(--font-head);
+      font-size: 16px;
+      color: var(--text);
+      letter-spacing: -0.2px;
+      margin-bottom: 2px;
+    }
 
-.squad-member-info { flex: 1; min-width: 0; }
-.squad-member-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 1px;
-}
-.squad-member-loc {
-  font-size: 11px;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.squad-member-dist {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--green);
-  flex-shrink: 0;
-}
+    .squad-meta {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
 
-/* Last activity */
-.squad-activity {
-  padding: 10px 18px;
-  background: var(--bg);
-  border-top: 1px solid var(--border);
-  font-size: 12px;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.squad-activity svg { width: 12px; height: 12px; stroke: var(--blue); fill: none; stroke-width: 2; flex-shrink: 0; }
-.squad-activity strong { color: var(--text); font-weight: 500; }
+    .squad-online-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: livePulse 2s ease-in-out infinite;
+    }
 
-/* Squad empty state */
-.squad-empty {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--r-xl);
-  padding: 32px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-  box-shadow: var(--shadow);
-}
-.squad-empty-icon {
-  width: 52px; height: 52px;
-  border-radius: 16px;
-  background: var(--bg2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px;
-}
-.squad-empty-title {
-  font-family: var(--font-head);
-  font-size: 18px;
-  color: var(--text);
-  letter-spacing: -0.2px;
-}
-.squad-empty-sub {
-  font-size: 13px;
-  color: var(--muted);
-  font-weight: 300;
-  line-height: 1.6;
-  max-width: 240px;
-}
+    .squad-open-btn {
+      margin-left: auto;
+      padding: 7px 14px;
+      background: var(--midnight);
+      color: white;
+      border-radius: 9px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
 
-/* Squad CTA row */
-.squad-cta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 10px;
-}
-.squad-cta-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 13px;
-  border-radius: var(--r-lg);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all .2s;
-  border: none;
-}
-.scb-create {
-  background: var(--midnight);
-  color: white;
-  box-shadow: 0 4px 16px rgba(11,18,32,0.2);
-}
-.scb-create:hover { background: #1a2a4a; transform: translateY(-2px); }
-.scb-join {
-  background: var(--white);
-  color: var(--text);
-  border: 1px solid var(--border2) !important;
-  box-shadow: var(--shadow);
-}
-.scb-join:hover { border-color: var(--blue) !important; background: var(--blue-g); color: var(--blue); transform: translateY(-2px); }
-.squad-cta-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .squad-open-btn:hover {
+      background: #1a2a4a;
+      transform: translateY(-1px);
+    }
 
-/* ═══════════════════════════════════════════
+    /* Members row */
+    .squad-members {
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .squad-member {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .squad-member:last-child {
+      border-bottom: none;
+    }
+
+    .squad-member-av {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      border: 2px solid;
+      flex-shrink: 0;
+      position: relative;
+      font-family: var(--font-head);
+    }
+
+    .sm-status {
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 2px solid var(--white);
+    }
+
+    .sm-online {
+      background: var(--green);
+    }
+
+    .sm-offline {
+      background: var(--muted2);
+    }
+
+    .squad-member-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .squad-member-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 1px;
+    }
+
+    .squad-member-loc {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .squad-member-dist {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+
+    /* Last activity */
+    .squad-activity {
+      padding: 10px 18px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .squad-activity svg {
+      width: 12px;
+      height: 12px;
+      stroke: var(--blue);
+      fill: none;
+      stroke-width: 2;
+      flex-shrink: 0;
+    }
+
+    .squad-activity strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* Squad empty state */
+    .squad-empty {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .squad-empty-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: var(--bg2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .squad-empty-title {
+      font-family: var(--font-head);
+      font-size: 18px;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+
+    .squad-empty-sub {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 240px;
+    }
+
+    /* Squad CTA row */
+    .squad-cta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .squad-cta-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px;
+      border-radius: var(--r-lg);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+      border: none;
+    }
+
+    .scb-create {
+      background: var(--midnight);
+      color: white;
+      box-shadow: 0 4px 16px rgba(11, 18, 32, 0.2);
+    }
+
+    .scb-create:hover {
+      background: #1a2a4a;
+      transform: translateY(-2px);
+    }
+
+    .scb-join {
+      background: var(--white);
+      color: var(--text);
+      border: 1px solid var(--border2) !important;
+      box-shadow: var(--shadow);
+    }
+
+    .scb-join:hover {
+      border-color: var(--blue) !important;
+      background: var(--blue-g);
+      color: var(--blue);
+      transform: translateY(-2px);
+    }
+
+    .squad-cta-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ═══════════════════════════════════════════
    BOTTOM NAV
 ═══════════════════════════════════════════ */
-.bottom-nav {
-  position: fixed;
-  bottom: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  background: rgba(247,249,252,0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid var(--border);
-  display: flex;
-  padding: 10px 8px 20px;
-  z-index: 100;
-}
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  text-decoration: none;
-  position: relative;
-  padding: 4px 0;
-  transition: all .2s;
-}
-.nav-item-icon {
-  width: 32px; height: 32px;
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .25s cubic-bezier(.34,1.56,.64,1);
-}
-.nav-item-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; transition: all .2s; }
-.nav-item-label {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-  color: var(--muted2);
-  transition: color .2s;
-}
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: rgba(247, 249, 252, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      padding: 10px 8px 20px;
+      z-index: 100;
+    }
 
-.nav-item:not(.active) .nav-item-icon { color: var(--muted2); }
-.nav-item:not(.active):hover .nav-item-icon { color: var(--text); background: var(--bg2); }
-.nav-item:not(.active):hover .nav-item-label { color: var(--muted); }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      position: relative;
+      padding: 4px 0;
+      transition: all .2s;
+    }
 
-.nav-item.active .nav-item-icon {
-  background: var(--blue);
-  color: white;
-  box-shadow: 0 4px 12px rgba(37,99,255,0.35);
-  transform: scale(1.08);
-}
-.nav-item.active .nav-item-label { color: var(--blue); }
+    .nav-item-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .25s cubic-bezier(.34, 1.56, .64, 1);
+    }
 
-/* ═══════════════════════════════════════════
+    .nav-item-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      transition: all .2s;
+    }
+
+    .nav-item-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      color: var(--muted2);
+      transition: color .2s;
+    }
+
+    .nav-item:not(.active) .nav-item-icon {
+      color: var(--muted2);
+    }
+
+    .nav-item:not(.active):hover .nav-item-icon {
+      color: var(--text);
+      background: var(--bg2);
+    }
+
+    .nav-item:not(.active):hover .nav-item-label {
+      color: var(--muted);
+    }
+
+    .nav-item.active .nav-item-icon {
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 4px 12px rgba(37, 99, 255, 0.35);
+      transform: scale(1.08);
+    }
+
+    .nav-item.active .nav-item-label {
+      color: var(--blue);
+    }
+
+    /* ── Dashboard Tool Modal System ── */
+    .dash-tool-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(11, 18, 32, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .dash-tool-overlay.open {
+      display: flex;
+    }
+
+    .dash-tool-sheet {
+      background: var(--white, #ffffff);
+      border-radius: 28px 28px 0 0;
+      width: 100%;
+      max-width: 480px;
+      max-height: 92vh;
+      overflow-y: auto;
+      animation: dashSheetUp .38s cubic-bezier(.34, 1.2, .64, 1) both;
+      padding-bottom: 40px;
+    }
+
+    @keyframes dashSheetUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .dash-sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: #F3F4F6;
+      border-radius: 2px;
+      margin: 14px auto 0;
+    }
+
+    .dash-sheet-header {
+      padding: 16px 20px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .dash-sheet-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .dash-sheet-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .dash-sheet-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.3px;
+      margin-bottom: 3px;
+    }
+
+    .dash-sheet-sub {
+      font-size: 12px;
+      color: #6B7280;
+    }
+
+    .dash-sheet-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #F3F4F6;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .dash-sheet-close svg {
+      width: 14px;
+      height: 14px;
+      stroke: #6B7280;
+      fill: none;
+      stroke-width: 2.5;
+    }
+
+    .dash-sheet-body {
+      padding: 16px 20px 0;
+    }
+
+    .dash-tool-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #9CA3AF;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .dash-tool-input {
+      width: 100%;
+      padding: 12px 14px;
+      background: #F7F9FC;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #111827;
+      outline: none;
+      transition: border-color .2s;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .dash-tool-input:focus {
+      border-color: #2563FF;
+      background: #fff;
+    }
+
+    .dash-tool-select {
+      width: 100%;
+      padding: 12px 14px;
+      background: #F7F9FC;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #111827;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+    }
+
+    .dash-run-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all .2s;
+      margin-top: 4px;
+    }
+
+    .dash-run-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .dash-run-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .dash-run-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .dash-tool-loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px;
+      gap: 12px;
+    }
+
+    .dash-tool-loading.show {
+      display: flex;
+    }
+
+    .dash-tool-spinner {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid #F3F4F6;
+      border-top-color: #2563FF;
+      animation: dashSpin .7s linear infinite;
+    }
+
+    @keyframes dashSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .dash-tool-results {
+      display: none;
+      margin-top: 16px;
+      animation: fadeUp .4s ease both;
+    }
+
+    .dash-tool-results.show {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .dtr-card {
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(17, 24, 39, 0.06);
+    }
+
+    .dtr-card-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #9CA3AF;
+      margin-bottom: 10px;
+    }
+
+    .dtr-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid #F3F4F6;
+      gap: 12px;
+    }
+
+    .dtr-row:last-child {
+      border-bottom: none;
+    }
+
+    .dtr-row-label {
+      font-size: 13px;
+      color: #6B7280;
+      flex-shrink: 0;
+    }
+
+    .dtr-row-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+      text-align: right;
+    }
+
+    /* ═══════════════════════════════════════════
    ANIMATIONS
 ═══════════════════════════════════════════ */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
 
-/* ═══════════════════════════════════════════
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ═══════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════ */
-@media(max-width:380px) {
-  .atc-city { font-size: 28px; }
-  .phase-name { font-size: 13px; }
-}
-</style>
+    @media(max-width:380px) {
+      .atc-city {
+        font-size: 28px;
+      }
+
+      .phase-name {
+        font-size: 13px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- TOP NAV -->
-<nav class="top-nav">
-  <a href="/app" class="nav-logo">
-    <div class="nav-logo-mark">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-        <path d="M2 17l10 5 10-5"/>
-        <path d="M2 12l10 5 10-5"/>
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <a href="/app" class="nav-logo">
+      <div class="nav-logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
+      </div>
+      <span class="nav-logo-name">yaply.</span>
+    </a>
+
+    <div class="nav-spacer"></div>
+
+    <div class="nav-date">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
       </svg>
+      <span id="navDate"></span>
     </div>
-    <span class="nav-logo-name">yaply.</span>
-  </a>
 
-  <div class="nav-spacer"></div>
+    <div class="nav-actions">
+      <button class="nav-icon-btn" onclick="window.location.href='/notifications'" title="Notifications">
+        <svg viewBox="0 0 24 24">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+        <div class="notif-dot"></div>
+      </button>
+      <!-- BUG 1 + BUG 3 + BUG 6: real avatar, /profile link, logout dropdown -->
+      <div class="nav-avatar-wrapper" id="navAvatarWrapper">
+        <div class="nav-avatar" id="navAvatar" onclick="toggleAvatarMenu()"></div>
+        <div class="avatar-dropdown" id="avatarDropdown">
+          <a href="/profile" class="avatar-menu-item">
+            <svg viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Profile
+          </a>
+          <div class="avatar-menu-divider"></div>
+          <button class="avatar-menu-item logout" onclick="doLogout()">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Log out
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
 
-  <div class="nav-date">
-    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    <span id="navDate"></span>
-  </div>
+  <!-- MAIN -->
+  <main class="main">
 
-  <div class="nav-actions">
-    <button class="nav-icon-btn" onclick="window.location.href='/notifications'" title="Notifications">
-      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <div class="notif-dot"></div>
-    </button>
-    <!-- BUG 1 + BUG 3 + BUG 6: real avatar, /profile link, logout dropdown -->
-    <div class="nav-avatar-wrapper" id="navAvatarWrapper">
-      <div class="nav-avatar" id="navAvatar" onclick="toggleAvatarMenu()"></div>
-      <div class="avatar-dropdown" id="avatarDropdown">
-        <a href="/profile" class="avatar-menu-item">
-          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Profile
+    <!-- HERO GREETING -->
+    <div class="hero-greeting">
+      <div class="hero-greeting-sub">
+        <div class="live-dot"></div>
+        <span id="greetTime">Good morning</span>
+      </div>
+      <!-- BUG 1: greeting name rendered by JS, no hardcoded name -->
+      <div class="hero-greeting-name" id="greetName">
+        Welcome back, <span class="skel"
+          style="display:inline-block;width:110px;height:26px;vertical-align:middle;border-radius:8px;"></span>
+      </div>
+    </div>
+
+    <!-- ACTIVE TRIP — BUG 5: skeleton shown immediately, replaced by JS -->
+    <div id="activeTripSection">
+      <div style="margin:20px 20px 0;">
+        <div style="border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-lg);">
+          <div style="background:#0D1628;padding:24px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+              <div class="skel-dark" style="width:90px;height:22px;border-radius:100px;"></div>
+              <div class="skel-dark" style="width:70px;height:22px;border-radius:100px;"></div>
+            </div>
+            <div class="skel-dark" style="width:55%;height:13px;border-radius:6px;margin-bottom:10px;"></div>
+            <div class="skel-dark" style="width:70%;height:40px;border-radius:10px;margin-bottom:10px;"></div>
+            <div class="skel-dark" style="width:85%;height:12px;border-radius:6px;margin-bottom:22px;"></div>
+            <div class="skel-dark" style="width:100%;height:3px;border-radius:2px;margin-bottom:22px;"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+              <div class="skel-dark" style="height:72px;border-radius:var(--r);"></div>
+              <div class="skel-dark" style="height:72px;border-radius:var(--r);"></div>
+              <div class="skel-dark" style="height:72px;border-radius:var(--r);"></div>
+            </div>
+          </div>
+          <div class="skel-dark" style="height:38px;border-radius:0;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THREE PHASES (keep exactly as is) -->
+    <div class="section" style="animation: fadeUp .6s .2s ease both;">
+      <div class="section-header">
+        <div class="section-title">Your Journey</div>
+      </div>
+      <div class="phases-grid">
+
+        <a href="/plan" class="phase-card before">
+          <div class="phase-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+          </div>
+          <div>
+            <div class="phase-label">Before</div>
+            <div class="phase-name">Plan it.</div>
+          </div>
+          <div class="phase-count">12 tools</div>
+          <div class="phase-arrow">
+            <svg viewBox="0 0 24 24">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
         </a>
-        <div class="avatar-menu-divider"></div>
-        <button class="avatar-menu-item logout" onclick="doLogout()">
-          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Log out
-        </button>
-      </div>
-    </div>
-  </div>
-</nav>
 
-<!-- MAIN -->
-<main class="main">
-
-  <!-- HERO GREETING -->
-  <div class="hero-greeting">
-    <div class="hero-greeting-sub">
-      <div class="live-dot"></div>
-      <span id="greetTime">Good morning</span>
-    </div>
-    <!-- BUG 1: greeting name rendered by JS, no hardcoded name -->
-    <div class="hero-greeting-name" id="greetName">
-      Welcome back, <span class="skel" style="display:inline-block;width:110px;height:26px;vertical-align:middle;border-radius:8px;"></span>
-    </div>
-  </div>
-
-  <!-- ACTIVE TRIP — BUG 5: skeleton shown immediately, replaced by JS -->
-  <div id="activeTripSection">
-    <div style="margin:20px 20px 0;">
-      <div style="border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-lg);">
-        <div style="background:#0D1628;padding:24px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
-            <div class="skel-dark" style="width:90px;height:22px;border-radius:100px;"></div>
-            <div class="skel-dark" style="width:70px;height:22px;border-radius:100px;"></div>
+        <a href="/during" class="phase-card during">
+          <div class="phase-icon">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
           </div>
-          <div class="skel-dark" style="width:55%;height:13px;border-radius:6px;margin-bottom:10px;"></div>
-          <div class="skel-dark" style="width:70%;height:40px;border-radius:10px;margin-bottom:10px;"></div>
-          <div class="skel-dark" style="width:85%;height:12px;border-radius:6px;margin-bottom:22px;"></div>
-          <div class="skel-dark" style="width:100%;height:3px;border-radius:2px;margin-bottom:22px;"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-            <div class="skel-dark" style="height:72px;border-radius:var(--r);"></div>
-            <div class="skel-dark" style="height:72px;border-radius:var(--r);"></div>
-            <div class="skel-dark" style="height:72px;border-radius:var(--r);"></div>
+          <div>
+            <div class="phase-label">During</div>
+            <div class="phase-name">Live it.</div>
           </div>
-        </div>
-        <div class="skel-dark" style="height:38px;border-radius:0;"></div>
+          <div class="phase-count">9 tools</div>
+          <div class="phase-arrow">
+            <svg viewBox="0 0 24 24">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+        </a>
+
+        <a href="/after" class="phase-card after">
+          <div class="phase-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+          </div>
+          <div>
+            <div class="phase-label">After</div>
+            <div class="phase-name">Cherish.</div>
+          </div>
+          <div class="phase-count">7 tools</div>
+          <div class="phase-arrow">
+            <svg viewBox="0 0 24 24">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+        </a>
+
       </div>
     </div>
-  </div>
 
-  <!-- THREE PHASES (keep exactly as is) -->
-  <div class="section" style="animation: fadeUp .6s .2s ease both;">
-    <div class="section-header">
-      <div class="section-title">Your Journey</div>
-    </div>
-    <div class="phases-grid">
-
-      <a href="/plan" class="phase-card before">
-        <div class="phase-icon">
-          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        </div>
-        <div>
-          <div class="phase-label">Before</div>
-          <div class="phase-name">Plan it.</div>
-        </div>
-        <div class="phase-count">12 tools</div>
-        <div class="phase-arrow">
-          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-      </a>
-
-      <a href="/during" class="phase-card during">
-        <div class="phase-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        </div>
-        <div>
-          <div class="phase-label">During</div>
-          <div class="phase-name">Live it.</div>
-        </div>
-        <div class="phase-count">9 tools</div>
-        <div class="phase-arrow">
-          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-      </a>
-
-      <a href="/after" class="phase-card after">
-        <div class="phase-icon">
-          <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        </div>
-        <div>
-          <div class="phase-label">After</div>
-          <div class="phase-name">Cherish.</div>
-        </div>
-        <div class="phase-count">7 tools</div>
-        <div class="phase-arrow">
-          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-      </a>
-
-    </div>
-  </div>
-
-  <!-- QUICK TOOLS (keep exactly as is) -->
-  <div class="section" style="animation: fadeUp .6s .3s ease both;">
-    <div class="section-header">
-      <div class="section-title">Quick Access</div>
-    </div>
-    <div class="quick-tools-grid">
-
-      <a href="/translate" class="quick-tool">
-        <div class="qt-icon qt-coral">
-          <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        </div>
-        <div class="qt-label">Translate</div>
-      </a>
-
-      <a href="/camera" class="quick-tool">
-        <div class="qt-icon qt-purple">
-          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        </div>
-        <div class="qt-label">Camera</div>
-      </a>
-
-      <a href="/discover" class="quick-tool">
-        <div class="qt-icon qt-blue">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </div>
-        <div class="qt-label">Discover</div>
-      </a>
-
-      <a href="/currency" class="quick-tool">
-        <div class="qt-icon qt-green">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        </div>
-        <div class="qt-label">Currency</div>
-      </a>
-
-      <a href="/visa" class="quick-tool">
-        <div class="qt-icon qt-amber">
-          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        </div>
-        <div class="qt-label">Visa Check</div>
-      </a>
-
-      <a href="/weather" class="quick-tool">
-        <div class="qt-icon qt-sky">
-          <svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>
-        </div>
-        <div class="qt-label">Weather</div>
-      </a>
-
-    </div>
-  </div>
-
-  <!-- MY TRIPS — BUG 5: skeleton shown immediately, BUG 7: no demo data ever -->
-  <div class="section" style="animation: fadeUp .6s .4s ease both;">
-    <div class="section-header">
-      <div class="section-title">My Trips</div>
-      <a href="/profile" class="section-link">See all</a>
-    </div>
-    <div class="trips-list" id="tripsList">
-      <!-- skeleton trip items -->
-      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);">
-        <div class="skel" style="width:44px;height:44px;border-radius:14px;flex-shrink:0;"></div>
-        <div style="flex:1;">
-          <div class="skel" style="width:65%;height:16px;border-radius:6px;margin-bottom:7px;"></div>
-          <div class="skel" style="width:45%;height:12px;border-radius:6px;"></div>
-        </div>
-        <div class="skel" style="width:58px;height:22px;border-radius:100px;"></div>
+    <!-- QUICK TOOLS (keep exactly as is) -->
+    <div class="section" style="animation: fadeUp .6s .3s ease both;">
+      <div class="section-header">
+        <div class="section-title">Quick Access</div>
       </div>
-      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);">
-        <div class="skel" style="width:44px;height:44px;border-radius:14px;flex-shrink:0;"></div>
-        <div style="flex:1;">
-          <div class="skel" style="width:55%;height:16px;border-radius:6px;margin-bottom:7px;"></div>
-          <div class="skel" style="width:50%;height:12px;border-radius:6px;"></div>
-        </div>
-        <div class="skel" style="width:58px;height:22px;border-radius:100px;"></div>
+      <div class="quick-tools-grid">
+
+        <a href="/translate" class="quick-tool">
+          <div class="qt-icon qt-coral">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+          </div>
+          <div class="qt-label">Translate</div>
+        </a>
+
+        <a href="/camera" class="quick-tool">
+          <div class="qt-icon qt-purple">
+            <svg viewBox="0 0 24 24">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+          </div>
+          <div class="qt-label">Camera</div>
+        </a>
+
+        <a href="/plan" class="quick-tool">
+          <div class="qt-icon qt-blue">
+            <svg viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </div>
+          <div class="qt-label">Discover</div>
+        </a>
+
+        <a href="#" onclick="openDashTool('currency');return false;" class="quick-tool">
+          <div class="qt-icon qt-green">
+            <svg viewBox="0 0 24 24">
+              <line x1="12" y1="1" x2="12" y2="23" />
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+          <div class="qt-label">Currency</div>
+        </a>
+
+        <a href="#" onclick="openDashTool('visa');return false;" class="quick-tool">
+          <div class="qt-icon qt-amber">
+            <svg viewBox="0 0 24 24">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+            </svg>
+          </div>
+          <div class="qt-label">Visa Check</div>
+        </a>
+
+        <a href="#" onclick="openDashTool('weather');return false;" class="quick-tool">
+          <div class="qt-icon qt-sky">
+            <svg viewBox="0 0 24 24">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+            </svg>
+          </div>
+          <div class="qt-label">Weather</div>
+        </a>
+
       </div>
     </div>
-  </div>
 
-  <!-- MY SQUAD — BUG 2: ALL hardcoded HTML removed, rendered by JS -->
-  <div class="section" style="animation: fadeUp .6s .5s ease both;">
-    <div class="section-header">
-      <div class="section-title">My Squad</div>
-      <a href="/groups" class="section-link">Manage</a>
-    </div>
-    <!-- BUG 5: squad skeleton shown immediately -->
-    <div id="squadSection">
-      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow);">
-        <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
-          <div class="skel" style="width:40px;height:40px;border-radius:12px;flex-shrink:0;"></div>
+    <!-- MY TRIPS — BUG 5: skeleton shown immediately, BUG 7: no demo data ever -->
+    <div class="section" style="animation: fadeUp .6s .4s ease both;">
+      <div class="section-header">
+        <div class="section-title">My Trips</div>
+        <a href="/profile" class="section-link">See all</a>
+      </div>
+      <div class="trips-list" id="tripsList">
+        <!-- skeleton trip items -->
+        <div
+          style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);">
+          <div class="skel" style="width:44px;height:44px;border-radius:14px;flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div class="skel" style="width:65%;height:16px;border-radius:6px;margin-bottom:7px;"></div>
+            <div class="skel" style="width:45%;height:12px;border-radius:6px;"></div>
+          </div>
+          <div class="skel" style="width:58px;height:22px;border-radius:100px;"></div>
+        </div>
+        <div
+          style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);">
+          <div class="skel" style="width:44px;height:44px;border-radius:14px;flex-shrink:0;"></div>
           <div style="flex:1;">
             <div class="skel" style="width:55%;height:16px;border-radius:6px;margin-bottom:7px;"></div>
-            <div class="skel" style="width:40%;height:11px;border-radius:6px;"></div>
+            <div class="skel" style="width:50%;height:12px;border-radius:6px;"></div>
           </div>
-          <div class="skel" style="width:52px;height:30px;border-radius:9px;"></div>
+          <div class="skel" style="width:58px;height:22px;border-radius:100px;"></div>
         </div>
-        <div style="padding:14px 18px;display:flex;flex-direction:column;gap:0;">
-          <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">
-            <div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div>
+      </div>
+    </div>
+
+    <!-- MY SQUAD — BUG 2: ALL hardcoded HTML removed, rendered by JS -->
+    <div class="section" style="animation: fadeUp .6s .5s ease both;">
+      <div class="section-header">
+        <div class="section-title">My Squad</div>
+        <a href="/groups" class="section-link">Manage</a>
+      </div>
+      <!-- BUG 5: squad skeleton shown immediately -->
+      <div id="squadSection">
+        <div
+          style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow);">
+          <div
+            style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+            <div class="skel" style="width:40px;height:40px;border-radius:12px;flex-shrink:0;"></div>
             <div style="flex:1;">
-              <div class="skel" style="width:50%;height:13px;border-radius:6px;margin-bottom:5px;"></div>
-              <div class="skel" style="width:70%;height:11px;border-radius:6px;"></div>
+              <div class="skel" style="width:55%;height:16px;border-radius:6px;margin-bottom:7px;"></div>
+              <div class="skel" style="width:40%;height:11px;border-radius:6px;"></div>
             </div>
-            <div class="skel" style="width:40px;height:13px;border-radius:6px;"></div>
+            <div class="skel" style="width:52px;height:30px;border-radius:9px;"></div>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;padding:9px 0;">
-            <div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div>
-            <div style="flex:1;">
-              <div class="skel" style="width:45%;height:13px;border-radius:6px;margin-bottom:5px;"></div>
-              <div class="skel" style="width:60%;height:11px;border-radius:6px;"></div>
+          <div style="padding:14px 18px;display:flex;flex-direction:column;gap:0;">
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">
+              <div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div>
+              <div style="flex:1;">
+                <div class="skel" style="width:50%;height:13px;border-radius:6px;margin-bottom:5px;"></div>
+                <div class="skel" style="width:70%;height:11px;border-radius:6px;"></div>
+              </div>
+              <div class="skel" style="width:40px;height:13px;border-radius:6px;"></div>
             </div>
-            <div class="skel" style="width:40px;height:13px;border-radius:6px;"></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;">
+              <div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div>
+              <div style="flex:1;">
+                <div class="skel" style="width:45%;height:13px;border-radius:6px;margin-bottom:5px;"></div>
+                <div class="skel" style="width:60%;height:11px;border-radius:6px;"></div>
+              </div>
+              <div class="skel" style="width:40px;height:13px;border-radius:6px;"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- BOTTOM SPACER -->
+    <div style="height: 20px;"></div>
+
+  </main>
+
+  <!-- BOTTOM NAV (keep exactly as is) -->
+  <nav class="bottom-nav">
+    <a href="/app" class="nav-item active">
+      <div class="nav-item-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      </div>
+      <div class="nav-item-label">Home</div>
+    </a>
+    <a href="/plan" class="nav-item">
+      <div class="nav-item-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+      </div>
+      <div class="nav-item-label">Plan</div>
+    </a>
+    <a href="/during" class="nav-item">
+      <div class="nav-item-icon">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+      </div>
+      <div class="nav-item-label">Live</div>
+    </a>
+    <a href="/diary" class="nav-item">
+      <div class="nav-item-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </svg>
+      </div>
+      <div class="nav-item-label">Diary</div>
+    </a>
+    <a href="/profile" class="nav-item">
+      <div class="nav-item-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </div>
+      <div class="nav-item-label">Me</div>
+    </a>
+  </nav>
+
+  <!-- JOIN MODAL — BUG 8: error message element added -->
+  <div id="joinModal"
+    style="display:none;position:fixed;inset:0;z-index:300;background:rgba(17,24,39,0.5);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;">
+    <div
+      style="background:var(--white);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;animation:fadeUp .35s ease both;">
+      <div style="width:36px;height:4px;background:var(--bg2);border-radius:2px;margin:0 auto 24px;"></div>
+      <div style="font-family:var(--font-head);font-size:22px;color:var(--text);margin-bottom:6px;">Join a Squad</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:20px;font-weight:300;">Enter the group code shared by
+        your friend</div>
+
+      <label
+        style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);display:block;margin-bottom:8px;">Group
+        Code</label>
+      <input id="joinCodeInput" type="text" placeholder="YAP-XXXX" maxlength="8" oninput="formatJoinCode(this)"
+        style="width:100%;padding:14px 16px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);font-family:var(--font-mono);font-size:22px;color:var(--text);outline:none;text-align:center;letter-spacing:4px;text-transform:uppercase;transition:border-color .2s;" />
+      <!-- Error message for invalid/not found code -->
+      <div id="joinError"
+        style="display:none;color:var(--red);font-size:13px;text-align:center;margin-top:8px;font-weight:500;"></div>
+
+      <button id="joinSubmitBtn" onclick="joinSquad()"
+        style="width:100%;margin-top:14px;padding:14px;background:var(--midnight);color:white;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;">
+        Join Squad
+      </button>
+      <button onclick="closeJoinModal()"
+        style="width:100%;margin-top:8px;padding:12px;background:none;color:var(--muted);border:none;font-family:var(--font-body);font-size:14px;cursor:pointer;">
+        Cancel
+      </button>
+    </div>
   </div>
 
-  <!-- BOTTOM SPACER -->
-  <div style="height: 20px;"></div>
 
-</main>
+  <div class="dash-tool-overlay" id="dashToolOverlay" onclick="if(event.target===this)closeDashTool()">
 
-<!-- BOTTOM NAV (keep exactly as is) -->
-<nav class="bottom-nav">
-  <a href="/app" class="nav-item active">
-    <div class="nav-item-icon">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <!-- ── CURRENCY ── -->
+    <div class="dash-tool-sheet" id="dsheet-currency" style="display:none;">
+      <div class="dash-sheet-handle"></div>
+      <div class="dash-sheet-header">
+        <div class="dash-sheet-icon" style="background:rgba(24,194,156,0.09);">
+          <svg viewBox="0 0 24 24" stroke="#18C29C">
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+        </div>
+        <div style="flex:1;">
+          <div class="dash-sheet-title">Currency Converter</div>
+          <div class="dash-sheet-sub">Live exchange rates</div>
+        </div>
+        <button class="dash-sheet-close" onclick="closeDashTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="dash-sheet-body">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+          <div>
+            <label class="dash-tool-label">Amount</label>
+            <input class="dash-tool-input" id="d-currency-amount" type="number" placeholder="1000" value="1000" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:8px;align-items:end;">
+            <div>
+              <label class="dash-tool-label">From</label>
+              <select class="dash-tool-select" id="d-currency-from">
+                <option value="INR">🇮🇳 INR</option>
+                <option value="USD">🇺🇸 USD</option>
+                <option value="EUR">🇪🇺 EUR</option>
+                <option value="GBP">🇬🇧 GBP</option>
+                <option value="AED">🇦🇪 AED</option>
+                <option value="JPY">🇯🇵 JPY</option>
+                <option value="THB">🇹🇭 THB</option>
+                <option value="SGD">🇸🇬 SGD</option>
+                <option value="AUD">🇦🇺 AUD</option>
+              </select>
+            </div>
+            <button onclick="dSwapCurrency()" style="height:44px;border-radius:10px;border:1.5px solid #E5E7EB;
+                   background:#F7F9FC;cursor:pointer;display:flex;align-items:center;
+                   justify-content:center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2">
+                <path d="M7 16V4m0 0L3 8m4-4l4 4" />
+                <path d="M17 8v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+            </button>
+            <div>
+              <label class="dash-tool-label">To</label>
+              <select class="dash-tool-select" id="d-currency-to">
+                <option value="USD">🇺🇸 USD</option>
+                <option value="JPY">🇯🇵 JPY</option>
+                <option value="EUR">🇪🇺 EUR</option>
+                <option value="GBP">🇬🇧 GBP</option>
+                <option value="THB">🇹🇭 THB</option>
+                <option value="AED">🇦🇪 AED</option>
+                <option value="SGD">🇸🇬 SGD</option>
+                <option value="AUD">🇦🇺 AUD</option>
+                <option value="INR">🇮🇳 INR</option>
+                <option value="IDR">🇮🇩 IDR</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button class="dash-run-btn" style="background:#18C29C;" onclick="runDashTool('currency')">
+          <svg viewBox="0 0 24 24">
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+          Convert Now
+        </button>
+        <div class="dash-tool-loading" id="dloading-currency">
+          <div class="dash-tool-spinner" style="border-top-color:#18C29C;"></div>
+          <div style="font-size:13px;font-weight:500;color:#111827;">Getting live rates...</div>
+        </div>
+        <div class="dash-tool-results" id="dresults-currency"></div>
+      </div>
     </div>
-    <div class="nav-item-label">Home</div>
-  </a>
-  <a href="/plan" class="nav-item">
-    <div class="nav-item-icon">
-      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-    </div>
-    <div class="nav-item-label">Plan</div>
-  </a>
-  <a href="/during" class="nav-item">
-    <div class="nav-item-icon">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-    </div>
-    <div class="nav-item-label">Live</div>
-  </a>
-  <a href="/diary" class="nav-item">
-    <div class="nav-item-icon">
-      <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-    </div>
-    <div class="nav-item-label">Diary</div>
-  </a>
-  <a href="/profile" class="nav-item">
-    <div class="nav-item-icon">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    </div>
-    <div class="nav-item-label">Me</div>
-  </a>
-</nav>
 
-<!-- JOIN MODAL — BUG 8: error message element added -->
-<div id="joinModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(17,24,39,0.5);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;">
-  <div style="background:var(--white);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;animation:fadeUp .35s ease both;">
-    <div style="width:36px;height:4px;background:var(--bg2);border-radius:2px;margin:0 auto 24px;"></div>
-    <div style="font-family:var(--font-head);font-size:22px;color:var(--text);margin-bottom:6px;">Join a Squad</div>
-    <div style="font-size:14px;color:var(--muted);margin-bottom:20px;font-weight:300;">Enter the group code shared by your friend</div>
+    <!-- ── VISA ── -->
+    <div class="dash-tool-sheet" id="dsheet-visa" style="display:none;">
+      <div class="dash-sheet-handle"></div>
+      <div class="dash-sheet-header">
+        <div class="dash-sheet-icon" style="background:rgba(245,185,66,0.09);">
+          <svg viewBox="0 0 24 24" stroke="#F5B942">
+            <rect x="2" y="7" width="20" height="14" rx="2" />
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+          </svg>
+        </div>
+        <div style="flex:1;">
+          <div class="dash-sheet-title">Visa Checker</div>
+          <div class="dash-sheet-sub">Requirements for any country</div>
+        </div>
+        <button class="dash-sheet-close" onclick="closeDashTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="dash-sheet-body">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+          <div>
+            <label class="dash-tool-label">Your Passport</label>
+            <select class="dash-tool-select" id="d-visa-passport">
+              <option value="India">🇮🇳 India</option>
+              <option value="USA">🇺🇸 USA</option>
+              <option value="UK">🇬🇧 UK</option>
+              <option value="UAE">🇦🇪 UAE</option>
+              <option value="Canada">🇨🇦 Canada</option>
+              <option value="Australia">🇦🇺 Australia</option>
+              <option value="Singapore">🇸🇬 Singapore</option>
+            </select>
+          </div>
+          <div>
+            <label class="dash-tool-label">Destination Country</label>
+            <input class="dash-tool-input" id="d-visa-dest" type="text" placeholder="e.g. Japan, Thailand, France" />
+          </div>
+        </div>
+        <button class="dash-run-btn" style="background:#F5B942;" onclick="runDashTool('visa')">
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          Check Visa Requirements
+        </button>
+        <div class="dash-tool-loading" id="dloading-visa">
+          <div class="dash-tool-spinner" style="border-top-color:#F5B942;"></div>
+          <div style="font-size:13px;font-weight:500;color:#111827;">Checking visa requirements...</div>
+        </div>
+        <div class="dash-tool-results" id="dresults-visa"></div>
+      </div>
+    </div>
 
-    <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);display:block;margin-bottom:8px;">Group Code</label>
-    <input
-      id="joinCodeInput"
-      type="text"
-      placeholder="YAP-XXXX"
-      maxlength="8"
-      oninput="formatJoinCode(this)"
-      style="width:100%;padding:14px 16px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);font-family:var(--font-mono);font-size:22px;color:var(--text);outline:none;text-align:center;letter-spacing:4px;text-transform:uppercase;transition:border-color .2s;"
-    />
-    <!-- Error message for invalid/not found code -->
-    <div id="joinError" style="display:none;color:var(--red);font-size:13px;text-align:center;margin-top:8px;font-weight:500;"></div>
+    <!-- ── WEATHER ── -->
+    <div class="dash-tool-sheet" id="dsheet-weather" style="display:none;">
+      <div class="dash-sheet-handle"></div>
+      <div class="dash-sheet-header">
+        <div class="dash-sheet-icon" style="background:rgba(14,165,233,0.09);">
+          <svg viewBox="0 0 24 24" stroke="#0EA5E9">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+          </svg>
+        </div>
+        <div style="flex:1;">
+          <div class="dash-sheet-title">Weather Forecast</div>
+          <div class="dash-sheet-sub">7-day forecast for any city</div>
+        </div>
+        <button class="dash-sheet-close" onclick="closeDashTool()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="dash-sheet-body">
+        <div style="margin-bottom:14px;">
+          <label class="dash-tool-label">City</label>
+          <input class="dash-tool-input" id="d-weather-city" type="text" placeholder="e.g. Tokyo, Bangkok, Paris" />
+        </div>
+        <button class="dash-run-btn" style="background:#0EA5E9;" onclick="runDashTool('weather')">
+          <svg viewBox="0 0 24 24">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+          </svg>
+          Get Forecast
+        </button>
+        <div class="dash-tool-loading" id="dloading-weather">
+          <div class="dash-tool-spinner" style="border-top-color:#0EA5E9;"></div>
+          <div style="font-size:13px;font-weight:500;color:#111827;">Fetching live weather...</div>
+        </div>
+        <div class="dash-tool-results" id="dresults-weather"></div>
+      </div>
+    </div>
 
-    <button id="joinSubmitBtn" onclick="joinSquad()" style="width:100%;margin-top:14px;padding:14px;background:var(--midnight);color:white;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;">
-      Join Squad
-    </button>
-    <button onclick="closeJoinModal()" style="width:100%;margin-top:8px;padding:12px;background:none;color:var(--muted);border:none;font-family:var(--font-body);font-size:14px;cursor:pointer;">
-      Cancel
-    </button>
   </div>
-</div>
 
-<script>
-/* ═══════════════════════════════════════════════════════════════
-   STEP 1 — CAPTURE GOOGLE OAUTH TOKEN FROM URL
-═══════════════════════════════════════════════════════════════ */
-(function () {
-  var params = new URLSearchParams(window.location.search);
-  var oauthToken = params.get('token');
-  if (oauthToken) {
-    localStorage.setItem('yaply_token', oauthToken);
-    window.history.replaceState({}, '', '/app');
-  }
-})();
+  <script>
+    /* ═══════════════════════════════════════════════════════════════
+       STEP 1 — CAPTURE GOOGLE OAUTH TOKEN FROM URL
+    ═══════════════════════════════════════════════════════════════ */
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var oauthToken = params.get('token');
+      if (oauthToken) {
+        localStorage.setItem('yaply_token', oauthToken);
+        window.history.replaceState({}, '', '/app');
+      }
+    })();
 
-/* ═══════════════════════════════════════════════════════════════
-   STEP 2 — AUTH CHECK: redirect to /login if no token
-═══════════════════════════════════════════════════════════════ */
-(function () {
-  var token = localStorage.getItem('yaply_token');
-  if (!token) {
-    window.location.href = '/login';
-  }
-})();
+    /* ═══════════════════════════════════════════════════════════════
+       STEP 2 — AUTH CHECK: redirect to /login if no token
+    ═══════════════════════════════════════════════════════════════ */
+    (function () {
+      var token = localStorage.getItem('yaply_token');
+      if (!token) {
+        window.location.href = '/login';
+      }
+    })();
 
-/* ═══════════════════════════════════════════════════════════════
-   DATE & TIME GREETING (runs immediately, no API needed)
-═══════════════════════════════════════════════════════════════ */
-(function () {
-  var now   = new Date();
-  var hr    = now.getHours();
-  var greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('greetTime').textContent = greet;
+    /* ═══════════════════════════════════════════════════════════════
+       DATE & TIME GREETING (runs immediately, no API needed)
+    ═══════════════════════════════════════════════════════════════ */
+    (function () {
+      var now = new Date();
+      var hr = now.getHours();
+      var greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+      document.getElementById('greetTime').textContent = greet;
 
-  var days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('navDate').textContent =
-    days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
-})();
+      var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      document.getElementById('navDate').textContent =
+        days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+    })();
 
-/* ═══════════════════════════════════════════════════════════════
-   STEP 3–9 — PARALLEL FETCH + RENDER (skeletons already shown)
-═══════════════════════════════════════════════════════════════ */
-(async function loadDashboard() {
-  var token = localStorage.getItem('yaply_token');
-  if (!token) return; // already redirected above
+    /* ═══════════════════════════════════════════════════════════════
+       STEP 3–9 — PARALLEL FETCH + RENDER (skeletons already shown)
+    ═══════════════════════════════════════════════════════════════ */
+    (async function loadDashboard() {
+      var token = localStorage.getItem('yaply_token');
+      if (!token) return; // already redirected above
 
-  var headers = { 'Authorization': 'Bearer ' + token };
+      var headers = { 'Authorization': 'Bearer ' + token };
 
-  try {
-    /* STEP 4 — parallel fetch all three endpoints */
-    var results = await Promise.all([
-      fetch('/api/me',     { headers: headers }),
-      fetch('/api/trips',  { headers: headers }),
-      fetch('/api/groups', { headers: headers }),
-    ]);
+      try {
+        /* STEP 4 — parallel fetch all three endpoints */
+        var results = await Promise.all([
+          fetch('/api/me', { headers: headers }),
+          fetch('/api/trips', { headers: headers }),
+          fetch('/api/groups', { headers: headers }),
+        ]);
 
-    var meRes     = results[0];
-    var tripsRes  = results[1];
-    var groupsRes = results[2];
+        var meRes = results[0];
+        var tripsRes = results[1];
+        var groupsRes = results[2];
 
-    /* Handle 401 on any response */
-    if (meRes.status === 401 || tripsRes.status === 401 || groupsRes.status === 401) {
+        /* Handle 401 on any response */
+        if (meRes.status === 401 || tripsRes.status === 401 || groupsRes.status === 401) {
+          localStorage.removeItem('yaply_token');
+          localStorage.removeItem('yaply_user');
+          window.location.href = '/login';
+          return;
+        }
+
+        var dataResults = await Promise.all([
+          meRes.ok ? meRes.json() : Promise.resolve({}),
+          tripsRes.ok ? tripsRes.json() : Promise.resolve({}),
+          groupsRes.ok ? groupsRes.json() : Promise.resolve({}),
+        ]);
+
+        var meData = dataResults[0];
+        var tripsData = dataResults[1];
+        var groupsData = dataResults[2];
+
+        /* STEP 5 — render user */
+        if (meData.user) {
+          renderUser(meData.user);
+        }
+
+        /* STEPS 6 & 7 — render trips */
+        var trips = (tripsData.success && Array.isArray(tripsData.trips)) ? tripsData.trips : [];
+        renderTrips(trips);
+
+        /* STEP 8 — render squad */
+        var groups = (groupsData.success && Array.isArray(groupsData.groups)) ? groupsData.groups : [];
+        renderSquad(groups);
+
+      } catch (err) {
+        console.error('[yaply] Dashboard load error:', err);
+        /* Show clean empty states — never demo data */
+        renderNoActiveTripSection();
+        renderNoTrips();
+        renderSquad([]);
+      }
+    })();
+
+    /* ═══════════════════════════════════════════════════════════════
+       BUG 1 — RENDER USER (real name + avatar, store in localStorage)
+    ═══════════════════════════════════════════════════════════════ */
+    function renderUser(user) {
+      localStorage.setItem('yaply_user', JSON.stringify(user));
+
+      var name = (user.name || 'Traveller').trim();
+      var first = name.split(' ')[0];
+      var initial = first.charAt(0).toUpperCase();
+
+      /* Greeting */
+      document.getElementById('greetName').innerHTML =
+        'Welcome back, <em>' + escapeHtml(first) + '.</em>';
+
+      /* Avatar: image if available, else initial letter */
+      var avatarEl = document.getElementById('navAvatar');
+      if (user.avatar) {
+        avatarEl.innerHTML =
+          '<img src="' + escapeHtml(user.avatar) + '" alt="' + escapeHtml(name) + '" ' +
+          'onerror="this.parentNode.textContent=\'' + initial + '\'">';
+      } else {
+        avatarEl.textContent = initial;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       BUG 6 — LOGOUT
+    ═══════════════════════════════════════════════════════════════ */
+    async function doLogout() {
+      var token = localStorage.getItem('yaply_token');
+      try {
+        if (token) {
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+        }
+      } catch (e) { /* ignore — we clear anyway */ }
       localStorage.removeItem('yaply_token');
       localStorage.removeItem('yaply_user');
       window.location.href = '/login';
-      return;
     }
 
-    var dataResults = await Promise.all([
-      meRes.ok     ? meRes.json()     : Promise.resolve({}),
-      tripsRes.ok  ? tripsRes.json()  : Promise.resolve({}),
-      groupsRes.ok ? groupsRes.json() : Promise.resolve({}),
-    ]);
-
-    var meData     = dataResults[0];
-    var tripsData  = dataResults[1];
-    var groupsData = dataResults[2];
-
-    /* STEP 5 — render user */
-    if (meData.user) {
-      renderUser(meData.user);
+    /* BUG 3 — Avatar dropdown toggle (navigates to /profile or shows menu) */
+    function toggleAvatarMenu() {
+      var dd = document.getElementById('avatarDropdown');
+      dd.classList.toggle('open');
     }
 
-    /* STEPS 6 & 7 — render trips */
-    var trips = (tripsData.success && Array.isArray(tripsData.trips)) ? tripsData.trips : [];
-    renderTrips(trips);
+    /* Close dropdown when clicking outside */
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('#navAvatarWrapper')) {
+        var dd = document.getElementById('avatarDropdown');
+        if (dd) dd.classList.remove('open');
+      }
+    });
 
-    /* STEP 8 — render squad */
-    var groups = (groupsData.success && Array.isArray(groupsData.groups)) ? groupsData.groups : [];
-    renderSquad(groups);
-
-  } catch (err) {
-    console.error('[yaply] Dashboard load error:', err);
-    /* Show clean empty states — never demo data */
-    renderNoActiveTripSection();
-    renderNoTrips();
-    renderSquad([]);
-  }
-})();
-
-/* ═══════════════════════════════════════════════════════════════
-   BUG 1 — RENDER USER (real name + avatar, store in localStorage)
-═══════════════════════════════════════════════════════════════ */
-function renderUser(user) {
-  localStorage.setItem('yaply_user', JSON.stringify(user));
-
-  var name    = (user.name || 'Traveller').trim();
-  var first   = name.split(' ')[0];
-  var initial = first.charAt(0).toUpperCase();
-
-  /* Greeting */
-  document.getElementById('greetName').innerHTML =
-    'Welcome back, <em>' + escapeHtml(first) + '.</em>';
-
-  /* Avatar: image if available, else initial letter */
-  var avatarEl = document.getElementById('navAvatar');
-  if (user.avatar) {
-    avatarEl.innerHTML =
-      '<img src="' + escapeHtml(user.avatar) + '" alt="' + escapeHtml(name) + '" ' +
-      'onerror="this.parentNode.textContent=\'' + initial + '\'">';
-  } else {
-    avatarEl.textContent = initial;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   BUG 6 — LOGOUT
-═══════════════════════════════════════════════════════════════ */
-async function doLogout() {
-  var token = localStorage.getItem('yaply_token');
-  try {
-    if (token) {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token }
+    /* ═══════════════════════════════════════════════════════════════
+       BUG 4 — COMPLETE FLAG MAP
+    ═══════════════════════════════════════════════════════════════ */
+    function getFlag(dest) {
+      if (!dest) return '🌍';
+      var map = {
+        'Japan': '🇯🇵', 'Tokyo': '🇯🇵',
+        'Thailand': '🇹🇭', 'Bangkok': '🇹🇭',
+        'France': '🇫🇷', 'Paris': '🇫🇷',
+        'Indonesia': '🇮🇩', 'Bali': '🇮🇩',
+        'UAE': '🇦🇪', 'Dubai': '🇦🇪',
+        'UK': '🇬🇧', 'London': '🇬🇧',
+        'Singapore': '🇸🇬',
+        'USA': '🇺🇸', 'New York': '🇺🇸',
+        'India': '🇮🇳', 'Delhi': '🇮🇳', 'Mumbai': '🇮🇳', 'Goa': '🇮🇳',
+        'Nepal': '🇳🇵',
+        'Sri Lanka': '🇱🇰',
+        'Malaysia': '🇲🇾', 'KL': '🇲🇾', 'Kuala Lumpur': '🇲🇾',
+        'Vietnam': '🇻🇳',
+        'Italy': '🇮🇹', 'Rome': '🇮🇹',
+        'Spain': '🇪🇸', 'Barcelona': '🇪🇸',
+        'Germany': '🇩🇪', 'Berlin': '🇩🇪',
+        'Greece': '🇬🇷', 'Santorini': '🇬🇷',
+        'Turkey': '🇹🇷', 'Istanbul': '🇹🇷',
+        'Australia': '🇦🇺', 'Sydney': '🇦🇺',
+        'Canada': '🇨🇦', 'Toronto': '🇨🇦',
+        'South Korea': '🇰🇷', 'Seoul': '🇰🇷',
+        'Maldives': '🇲🇻',
+        'Morocco': '🇲🇦', 'Marrakech': '🇲🇦',
+      };
+      var flag = '🌍';
+      Object.keys(map).forEach(function (k) {
+        if (dest.indexOf(k) !== -1) flag = map[k];
       });
+      return flag;
     }
-  } catch (e) { /* ignore — we clear anyway */ }
-  localStorage.removeItem('yaply_token');
-  localStorage.removeItem('yaply_user');
-  window.location.href = '/login';
-}
 
-/* BUG 3 — Avatar dropdown toggle (navigates to /profile or shows menu) */
-function toggleAvatarMenu() {
-  var dd = document.getElementById('avatarDropdown');
-  dd.classList.toggle('open');
-}
+    /* ═══════════════════════════════════════════════════════════════
+       RENDER ACTIVE TRIP CARD
+    ═══════════════════════════════════════════════════════════════ */
+    function renderActiveTripCard(trip) {
+      var section = document.getElementById('activeTripSection');
 
-/* Close dropdown when clicking outside */
-document.addEventListener('click', function (e) {
-  if (!e.target.closest('#navAvatarWrapper')) {
-    var dd = document.getElementById('avatarDropdown');
-    if (dd) dd.classList.remove('open');
-  }
-});
+      var start = new Date(trip.start_date || trip.created_at);
+      var today = new Date();
+      var dayNum = Math.max(1, Math.floor((today - start) / 86400000) + 1);
+      var totalD = trip.days || 7;
+      var pct = Math.min(100, Math.round(dayNum / totalD * 100));
 
-/* ═══════════════════════════════════════════════════════════════
-   BUG 4 — COMPLETE FLAG MAP
-═══════════════════════════════════════════════════════════════ */
-function getFlag(dest) {
-  if (!dest) return '🌍';
-  var map = {
-    'Japan': '🇯🇵',       'Tokyo': '🇯🇵',
-    'Thailand': '🇹🇭',    'Bangkok': '🇹🇭',
-    'France': '🇫🇷',      'Paris': '🇫🇷',
-    'Indonesia': '🇮🇩',   'Bali': '🇮🇩',
-    'UAE': '🇦🇪',          'Dubai': '🇦🇪',
-    'UK': '🇬🇧',           'London': '🇬🇧',
-    'Singapore': '🇸🇬',
-    'USA': '🇺🇸',          'New York': '🇺🇸',
-    'India': '🇮🇳',        'Delhi': '🇮🇳',    'Mumbai': '🇮🇳',    'Goa': '🇮🇳',
-    'Nepal': '🇳🇵',
-    'Sri Lanka': '🇱🇰',
-    'Malaysia': '🇲🇾',    'KL': '🇲🇾',        'Kuala Lumpur': '🇲🇾',
-    'Vietnam': '🇻🇳',
-    'Italy': '🇮🇹',        'Rome': '🇮🇹',
-    'Spain': '🇪🇸',        'Barcelona': '🇪🇸',
-    'Germany': '🇩🇪',     'Berlin': '🇩🇪',
-    'Greece': '🇬🇷',       'Santorini': '🇬🇷',
-    'Turkey': '🇹🇷',       'Istanbul': '🇹🇷',
-    'Australia': '🇦🇺',   'Sydney': '🇦🇺',
-    'Canada': '🇨🇦',       'Toronto': '🇨🇦',
-    'South Korea': '🇰🇷', 'Seoul': '🇰🇷',
-    'Maldives': '🇲🇻',
-    'Morocco': '🇲🇦',      'Marrakech': '🇲🇦',
-  };
-  var flag = '🌍';
-  Object.keys(map).forEach(function (k) {
-    if (dest.indexOf(k) !== -1) flag = map[k];
-  });
-  return flag;
-}
+      var dest = trip.destination || 'Destination';
+      var parts = dest.split(',');
+      var city = parts[0].trim();
+      var country = parts[1] ? parts[1].trim() : '';
+      var flag = getFlag(dest);
 
-/* ═══════════════════════════════════════════════════════════════
-   RENDER ACTIVE TRIP CARD
-═══════════════════════════════════════════════════════════════ */
-function renderActiveTripCard(trip) {
-  var section = document.getElementById('activeTripSection');
+      var dateStr = '';
+      if (trip.start_date) {
+        dateStr = trip.start_date;
+        if (trip.end_date) dateStr += ' – ' + trip.end_date;
+      }
+      dateStr += (dateStr ? ' · ' : '') + totalD + ' days';
+      if (trip.currency && trip.budget) {
+        dateStr += ' · ' + trip.currency + ' ' + trip.budget;
+      }
 
-  var start  = new Date(trip.start_date || trip.created_at);
-  var today  = new Date();
-  var dayNum = Math.max(1, Math.floor((today - start) / 86400000) + 1);
-  var totalD = trip.days || 7;
-  var pct    = Math.min(100, Math.round(dayNum / totalD * 100));
-
-  var dest    = trip.destination || 'Destination';
-  var parts   = dest.split(',');
-  var city    = parts[0].trim();
-  var country = parts[1] ? parts[1].trim() : '';
-  var flag    = getFlag(dest);
-
-  var dateStr = '';
-  if (trip.start_date) {
-    dateStr = trip.start_date;
-    if (trip.end_date) dateStr += ' – ' + trip.end_date;
-  }
-  dateStr += (dateStr ? ' · ' : '') + totalD + ' days';
-  if (trip.currency && trip.budget) {
-    dateStr += ' · ' + trip.currency + ' ' + trip.budget;
-  }
-
-  section.innerHTML =
-    '<div class="section" style="padding-top:20px;">' +
-    '<div class="active-trip-card" onclick="window.location.href=\'/plan?trip_id=' + trip.id + '\'">' +
-      '<div class="atc-bg">' +
+      section.innerHTML =
+        '<div class="section" style="padding-top:20px;">' +
+        '<div class="active-trip-card" onclick="window.location.href=\'/plan?trip_id=' + trip.id + '\'">' +
+        '<div class="atc-bg">' +
         '<div class="atc-grid"></div>' +
         '<div class="atc-orb"></div>' +
         '<div class="atc-top">' +
-          '<div class="atc-badge"><div class="atc-badge-dot"></div>Active Trip</div>' +
-          '<div class="atc-day-badge">Day ' + dayNum + ' of ' + totalD + '</div>' +
+        '<div class="atc-badge"><div class="atc-badge-dot"></div>Active Trip</div>' +
+        '<div class="atc-day-badge">Day ' + dayNum + ' of ' + totalD + '</div>' +
         '</div>' +
         '<div class="atc-dest">' +
-          '<div class="atc-country">' + escapeHtml(country || 'Destination') + ' ' + flag + '</div>' +
-          '<div class="atc-city">' + escapeHtml(city) + '</div>' +
-          '<div class="atc-dates">' + escapeHtml(dateStr) + '</div>' +
+        '<div class="atc-country">' + escapeHtml(country || 'Destination') + ' ' + flag + '</div>' +
+        '<div class="atc-city">' + escapeHtml(city) + '</div>' +
+        '<div class="atc-dates">' + escapeHtml(dateStr) + '</div>' +
         '</div>' +
         '<div class="atc-progress">' +
-          '<div class="atc-progress-row">' +
-            '<span class="atc-progress-label">Trip progress</span>' +
-            '<span class="atc-progress-pct">' + pct + '%</span>' +
-          '</div>' +
-          '<div class="atc-progress-track">' +
-            '<div class="atc-progress-fill" id="activeFill"></div>' +
-          '</div>' +
+        '<div class="atc-progress-row">' +
+        '<span class="atc-progress-label">Trip progress</span>' +
+        '<span class="atc-progress-pct">' + pct + '%</span>' +
+        '</div>' +
+        '<div class="atc-progress-track">' +
+        '<div class="atc-progress-fill" id="activeFill"></div>' +
+        '</div>' +
         '</div>' +
         '<div class="atc-actions">' +
-          '<a href="/plan?trip_id=' + trip.id + '" class="atc-action" onclick="event.stopPropagation()">' +
-            '<div class="atc-action-icon" style="background:rgba(37,99,255,0.15);">' +
-              '<svg viewBox="0 0 24 24" style="stroke:#60A5FA;width:15px;height:15px;fill:none;stroke-width:1.8;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
-            '</div>' +
-            '<span class="atc-action-label">View Plan</span>' +
-          '</a>' +
-          '<a href="/translate" class="atc-action" onclick="event.stopPropagation()">' +
-            '<div class="atc-action-icon" style="background:rgba(255,122,89,0.15);">' +
-              '<svg viewBox="0 0 24 24" style="stroke:#FF7A59;width:15px;height:15px;fill:none;stroke-width:1.8;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' +
-            '</div>' +
-            '<span class="atc-action-label">Translate</span>' +
-          '</a>' +
-          '<a href="/during" class="atc-action sos" onclick="event.stopPropagation()">' +
-            '<div class="atc-action-icon" style="background:rgba(239,68,68,0.15);">' +
-              '<svg viewBox="0 0 24 24" style="stroke:#EF4444;width:15px;height:15px;fill:none;stroke-width:1.8;"><polygon points="10.29 3.86 1.82 18 22.18 18 13.71 3.86 10.29 3.86"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
-            '</div>' +
-            '<span class="atc-action-label" style="color:rgba(239,68,68,0.7);">SOS</span>' +
-          '</a>' +
+        '<a href="/plan?trip_id=' + trip.id + '" class="atc-action" onclick="event.stopPropagation()">' +
+        '<div class="atc-action-icon" style="background:rgba(37,99,255,0.15);">' +
+        '<svg viewBox="0 0 24 24" style="stroke:#60A5FA;width:15px;height:15px;fill:none;stroke-width:1.8;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
         '</div>' +
-      '</div>' +
-      '<div class="atc-strip">' +
+        '<span class="atc-action-label">View Plan</span>' +
+        '</a>' +
+        '<a href="/translate" class="atc-action" onclick="event.stopPropagation()">' +
+        '<div class="atc-action-icon" style="background:rgba(255,122,89,0.15);">' +
+        '<svg viewBox="0 0 24 24" style="stroke:#FF7A59;width:15px;height:15px;fill:none;stroke-width:1.8;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' +
+        '</div>' +
+        '<span class="atc-action-label">Translate</span>' +
+        '</a>' +
+        '<a href="/during" class="atc-action sos" onclick="event.stopPropagation()">' +
+        '<div class="atc-action-icon" style="background:rgba(239,68,68,0.15);">' +
+        '<svg viewBox="0 0 24 24" style="stroke:#EF4444;width:15px;height:15px;fill:none;stroke-width:1.8;"><polygon points="10.29 3.86 1.82 18 22.18 18 13.71 3.86 10.29 3.86"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+        '</div>' +
+        '<span class="atc-action-label" style="color:rgba(239,68,68,0.7);">SOS</span>' +
+        '</a>' +
+        '</div>' +
+        '</div>' +
+        '<div class="atc-strip">' +
         '<span class="atc-strip-text">Next · <strong>Day ' + Math.min(dayNum + 1, totalD) + '</strong> coming up</span>' +
         '<svg class="atc-strip-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
-      '</div>' +
-    '</div>' +
-    '</div>';
+        '</div>' +
+        '</div>' +
+        '</div>';
 
-  /* Animate progress bar after render */
-  setTimeout(function () {
-    var fill = document.getElementById('activeFill');
-    if (fill) fill.style.width = pct + '%';
-  }, 300);
-}
+      /* Animate progress bar after render */
+      setTimeout(function () {
+        var fill = document.getElementById('activeFill');
+        if (fill) fill.style.width = pct + '%';
+      }, 300);
+    }
 
-function renderNoActiveTripSection() {
-  var section = document.getElementById('activeTripSection');
-  section.innerHTML =
-    '<div class="section" style="padding-top:20px;">' +
-    '<a href="/plan" class="no-trip-card">' +
-      '<div class="no-trip-icon">' +
+    function renderNoActiveTripSection() {
+      var section = document.getElementById('activeTripSection');
+      section.innerHTML =
+        '<div class="section" style="padding-top:20px;">' +
+        '<a href="/plan" class="no-trip-card">' +
+        '<div class="no-trip-icon">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
-          '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.5a16 16 0 0 0 6 6l.94-1.9a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.5 15h.5a2 2 0 0 1 0 1.92z"/>' +
+        '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.5a16 16 0 0 0 6 6l.94-1.9a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.5 15h.5a2 2 0 0 1 0 1.92z"/>' +
         '</svg>' +
-      '</div>' +
-      '<div class="no-trip-title">Where to next?</div>' +
-      '<div class="no-trip-sub">Plan your first trip with AI. Full itinerary in 15 seconds.</div>' +
-      '<div class="no-trip-btn">' +
+        '</div>' +
+        '<div class="no-trip-title">Where to next?</div>' +
+        '<div class="no-trip-sub">Plan your first trip with AI. Full itinerary in 15 seconds.</div>' +
+        '<div class="no-trip-btn">' +
         '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
         'Plan a Trip' +
-      '</div>' +
-    '</a>' +
-    '</div>';
-}
+        '</div>' +
+        '</a>' +
+        '</div>';
+    }
 
-/* ═══════════════════════════════════════════════════════════════
-   BUG 7 — RENDER TRIPS (never shows demo data)
-═══════════════════════════════════════════════════════════════ */
-function renderTrips(trips) {
-  if (!trips || trips.length === 0) {
-    renderNoActiveTripSection();
-    renderNoTrips();
-    return;
-  }
+    /* ═══════════════════════════════════════════════════════════════
+       BUG 7 — RENDER TRIPS (never shows demo data)
+    ═══════════════════════════════════════════════════════════════ */
+    function renderTrips(trips) {
+      if (!trips || trips.length === 0) {
+        renderNoActiveTripSection();
+        renderNoTrips();
+        return;
+      }
 
-  /* Active trip card */
-  var activeTrip = trips.find(function (t) { return t.status === 'active'; });
-  if (activeTrip) {
-    renderActiveTripCard(activeTrip);
-  } else {
-    renderNoActiveTripSection();
-  }
+      /* Active trip card */
+      var activeTrip = trips.find(function (t) { return t.status === 'active'; });
+      if (activeTrip) {
+        renderActiveTripCard(activeTrip);
+      } else {
+        renderNoActiveTripSection();
+      }
 
-  /* Trips list */
-  var list    = document.getElementById('tripsList');
-  var limited = trips.slice(0, 3);
-  var html    = '';
+      /* Trips list */
+      var list = document.getElementById('tripsList');
+      var limited = trips.slice(0, 3);
+      var html = '';
 
-  limited.forEach(function (trip) {
-    var sc    = trip.status === 'active'    ? 'status-active'   :
-                trip.status === 'completed' ? 'status-done'     : 'status-planning';
-    var label = trip.status === 'active'    ? 'Active'          :
-                trip.status === 'completed' ? 'Done'            : 'Planning';
-    var dest  = trip.destination || 'Trip';
-    var city  = dest.split(',')[0].trim();
-    var flag  = getFlag(dest);
+      limited.forEach(function (trip) {
+        var sc = trip.status === 'active' ? 'status-active' :
+          trip.status === 'completed' ? 'status-done' : 'status-planning';
+        var label = trip.status === 'active' ? 'Active' :
+          trip.status === 'completed' ? 'Done' : 'Planning';
+        var dest = trip.destination || 'Trip';
+        var city = dest.split(',')[0].trim();
+        var flag = getFlag(dest);
 
-    html +=
-      '<div class="trip-item" onclick="window.location.href=\'/plan?trip_id=' + trip.id + '\'">' +
-        '<div class="trip-flag">' + flag + '</div>' +
-        '<div class="trip-info">' +
+        html +=
+          '<div class="trip-item" onclick="window.location.href=\'/plan?trip_id=' + trip.id + '\'">' +
+          '<div class="trip-flag">' + flag + '</div>' +
+          '<div class="trip-info">' +
           '<div class="trip-name">' + escapeHtml(city) + '</div>' +
           '<div class="trip-meta">' + (trip.days || '?') + ' days' +
-            (trip.currency && trip.budget ? ' · ' + trip.currency + ' ' + trip.budget : '') +
+          (trip.currency && trip.budget ? ' · ' + trip.currency + ' ' + trip.budget : '') +
           '</div>' +
-        '</div>' +
-        '<div class="trip-status ' + sc + '">' +
+          '</div>' +
+          '<div class="trip-status ' + sc + '">' +
           '<div class="status-dot"></div>' + label +
-        '</div>' +
-        '<svg class="trip-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
-      '</div>';
-  });
+          '</div>' +
+          '<svg class="trip-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
+          '</div>';
+      });
 
-  html +=
-    '<a href="/plan" class="new-trip-btn">' +
-      '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-      'Plan a new trip' +
-    '</a>';
+      html +=
+        '<a href="/plan" class="new-trip-btn">' +
+        '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+        'Plan a new trip' +
+        '</a>';
 
-  list.innerHTML = html;
-}
+      list.innerHTML = html;
+    }
 
-function renderNoTrips() {
-  var list = document.getElementById('tripsList');
-  list.innerHTML =
-    '<a href="/plan" class="new-trip-btn" style="padding:20px;">' +
-      '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-      'Plan your first trip' +
-    '</a>';
-}
+    function renderNoTrips() {
+      var list = document.getElementById('tripsList');
+      list.innerHTML =
+        '<a href="/plan" class="new-trip-btn" style="padding:20px;">' +
+        '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+        'Plan your first trip' +
+        '</a>';
+    }
 
-/* ═══════════════════════════════════════════════════════════════
-   BUG 2 — RENDER SQUAD (replaces all hardcoded HTML)
-═══════════════════════════════════════════════════════════════ */
-var MEMBER_COLORS = ['#2563FF','#FF7A59','#18C29C','#F5B942','#8B5CF6','#0EA5E9','#EF4444'];
+    /* ═══════════════════════════════════════════════════════════════
+       BUG 2 — RENDER SQUAD (replaces all hardcoded HTML)
+    ═══════════════════════════════════════════════════════════════ */
+    var MEMBER_COLORS = ['#2563FF', '#FF7A59', '#18C29C', '#F5B942', '#8B5CF6', '#0EA5E9', '#EF4444'];
 
-function renderSquad(groups) {
-  var section = document.getElementById('squadSection');
-  var html    = '';
+    function renderSquad(groups) {
+      var section = document.getElementById('squadSection');
+      var html = '';
 
-  if (!groups || groups.length === 0) {
-    /* Empty state */
-    html =
-      '<div class="squad-empty">' +
-        '<div class="squad-empty-icon">👥</div>' +
-        '<div class="squad-empty-title">No squad yet</div>' +
-        '<div class="squad-empty-sub">Create a group or join with a YAP code to travel together.</div>' +
-      '</div>';
-  } else {
-    var group       = groups[0];
-    var members     = group.members || [];
-    var onlineCnt   = members.filter(function (m) { return m.is_online; }).length;
-    var totalCnt    = members.length;
-    var displayMems = members.slice(0, 5);
+      if (!groups || groups.length === 0) {
+        /* Empty state */
+        html =
+          '<div class="squad-empty">' +
+          '<div class="squad-empty-icon">👥</div>' +
+          '<div class="squad-empty-title">No squad yet</div>' +
+          '<div class="squad-empty-sub">Create a group or join with a YAP code to travel together.</div>' +
+          '</div>';
+      } else {
+        var group = groups[0];
+        var members = group.members || [];
+        var onlineCnt = members.filter(function (m) { return m.is_online; }).length;
+        var totalCnt = members.length;
+        var displayMems = members.slice(0, 5);
 
-    html +=
-      '<div class="squad-card">' +
-        '<div class="squad-header">' +
+        html +=
+          '<div class="squad-card">' +
+          '<div class="squad-header">' +
           '<div class="squad-icon">' +
-            '<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' +
+          '<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' +
           '</div>' +
           '<div>' +
-            '<div class="squad-name">' + escapeHtml(group.name || 'My Squad') + '</div>' +
-            '<div class="squad-meta">' +
-              (onlineCnt > 0 ? '<div class="squad-online-dot"></div>' + onlineCnt + ' online · ' : '') +
-              totalCnt + ' member' + (totalCnt !== 1 ? 's' : '') +
-            '</div>' +
+          '<div class="squad-name">' + escapeHtml(group.name || 'My Squad') + '</div>' +
+          '<div class="squad-meta">' +
+          (onlineCnt > 0 ? '<div class="squad-online-dot"></div>' + onlineCnt + ' online · ' : '') +
+          totalCnt + ' member' + (totalCnt !== 1 ? 's' : '') +
+          '</div>' +
           '</div>' +
           '<a href="/groups/' + group.id + '" class="squad-open-btn">Open</a>' +
-        '</div>' +
-        '<div class="squad-members">';
+          '</div>' +
+          '<div class="squad-members">';
 
-    displayMems.forEach(function (member, i) {
-      var color    = MEMBER_COLORS[i % MEMBER_COLORS.length];
-      var initial  = (member.name || '?').charAt(0).toUpperCase();
-      var isOnline = member.is_online;
-      var locText  = member.last_location || (isOnline ? 'Sharing location' : 'Last seen recently');
-      var distText = member.distance_km != null
-        ? member.distance_km.toFixed(1) + ' km'
-        : (isOnline ? 'Nearby' : 'offline');
-      var distColor = isOnline ? 'var(--green)' : 'var(--muted2)';
+        displayMems.forEach(function (member, i) {
+          var color = MEMBER_COLORS[i % MEMBER_COLORS.length];
+          var initial = (member.name || '?').charAt(0).toUpperCase();
+          var isOnline = member.is_online;
+          var locText = member.last_location || (isOnline ? 'Sharing location' : 'Last seen recently');
+          var distText = member.distance_km != null
+            ? member.distance_km.toFixed(1) + ' km'
+            : (isOnline ? 'Nearby' : 'offline');
+          var distColor = isOnline ? 'var(--green)' : 'var(--muted2)';
 
-      html +=
-        '<div class="squad-member">' +
-          '<div class="squad-member-av" style="background:' + color + ';border-color:' + color + ';">' +
+          html +=
+            '<div class="squad-member">' +
+            '<div class="squad-member-av" style="background:' + color + ';border-color:' + color + ';">' +
             escapeHtml(initial) +
             '<div class="sm-status ' + (isOnline ? 'sm-online' : 'sm-offline') + '"></div>' +
-          '</div>' +
-          '<div class="squad-member-info">' +
+            '</div>' +
+            '<div class="squad-member-info">' +
             '<div class="squad-member-name">' + escapeHtml(member.name || 'Member') + '</div>' +
             '<div class="squad-member-loc">' + escapeHtml(locText) + '</div>' +
-          '</div>' +
-          '<div class="squad-member-dist" style="color:' + distColor + ';">' + escapeHtml(distText) + '</div>' +
-        '</div>';
-    });
+            '</div>' +
+            '<div class="squad-member-dist" style="color:' + distColor + ';">' + escapeHtml(distText) + '</div>' +
+            '</div>';
+        });
 
-    html += '</div>'; /* end squad-members */
+        html += '</div>'; /* end squad-members */
 
-    /* Last activity row (if group code available show it) */
-    if (group.code) {
+        /* Last activity row (if group code available show it) */
+        if (group.code) {
+          html +=
+            '<div class="squad-activity">' +
+            '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+            '<span>Group code: <strong>' + escapeHtml(group.code) + '</strong></span>' +
+            '</div>';
+        }
+
+        html += '</div>'; /* end squad-card */
+      }
+
+      /* CTA buttons — always shown */
       html +=
-        '<div class="squad-activity">' +
-          '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
-          '<span>Group code: <strong>' + escapeHtml(group.code) + '</strong></span>' +
-        '</div>';
-    }
-
-    html += '</div>'; /* end squad-card */
-  }
-
-  /* CTA buttons — always shown */
-  html +=
-    '<div class="squad-cta">' +
-      '<a href="/groups/create" class="squad-cta-btn scb-create">' +
+        '<div class="squad-cta">' +
+        '<a href="/groups/create" class="squad-cta-btn scb-create">' +
         '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
         'Create Group' +
-      '</a>' +
-      '<button class="squad-cta-btn scb-join" id="joinSquadBtn">' +
+        '</a>' +
+        '<button class="squad-cta-btn scb-join" id="joinSquadBtn">' +
         '<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>' +
         'Join Squad' +
-      '</button>' +
-    '</div>';
+        '</button>' +
+        '</div>';
 
-  section.innerHTML = html;
+      section.innerHTML = html;
 
-  /* Bind join button (re-bind after innerHTML replace) */
-  var joinBtn = document.getElementById('joinSquadBtn');
-  if (joinBtn) joinBtn.addEventListener('click', openJoinModal);
-}
-
-/* Reload just the groups section (used after successful join) */
-async function loadGroups() {
-  var token = localStorage.getItem('yaply_token');
-  if (!token) return;
-  try {
-    var res = await fetch('/api/groups', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (res.ok) {
-      var data = await res.json();
-      renderSquad(data.groups || []);
+      /* Bind join button (re-bind after innerHTML replace) */
+      var joinBtn = document.getElementById('joinSquadBtn');
+      if (joinBtn) joinBtn.addEventListener('click', openJoinModal);
     }
-  } catch (e) {
-    console.error('[yaply] loadGroups error:', e);
-  }
-}
 
-/* ═══════════════════════════════════════════════════════════════
-   BUG 8 — JOIN MODAL (connected, error text, reloads squad)
-═══════════════════════════════════════════════════════════════ */
-function openJoinModal() {
-  var modal = document.getElementById('joinModal');
-  modal.style.display = 'flex';
-  clearJoinError();
-  setTimeout(function () {
-    document.getElementById('joinCodeInput').focus();
-  }, 100);
-}
-
-function closeJoinModal() {
-  document.getElementById('joinModal').style.display = 'none';
-  document.getElementById('joinCodeInput').value = '';
-  clearJoinError();
-}
-
-function clearJoinError() {
-  var err = document.getElementById('joinError');
-  err.style.display = 'none';
-  err.textContent = '';
-  document.getElementById('joinCodeInput').style.borderColor = 'var(--border2)';
-}
-
-function showJoinError(msg) {
-  var err = document.getElementById('joinError');
-  err.textContent = msg;
-  err.style.display = 'block';
-  document.getElementById('joinCodeInput').style.borderColor = 'var(--red)';
-}
-
-function formatJoinCode(input) {
-  /* Strip non-alphanumeric, uppercase */
-  var raw  = input.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-  /* Remove any leading YAP the user may have typed */
-  var code = raw.replace(/^YAP/i, '').substring(0, 4);
-  input.value = code.length > 0 ? 'YAP-' + code : '';
-}
-
-async function joinSquad() {
-  var code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
-
-  if (!/^YAP-[A-Z0-9]{4}$/.test(code)) {
-    showJoinError('Enter a valid code in the format YAP-XXXX');
-    return;
-  }
-
-  var btn = document.getElementById('joinSubmitBtn');
-  btn.disabled    = true;
-  btn.textContent = 'Joining…';
-
-  try {
-    var token = localStorage.getItem('yaply_token');
-    var res   = await fetch('/api/groups/join', {
-      method:  'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': 'Bearer ' + token
-      },
-      body: JSON.stringify({ code: code })
-    });
-    var data = await res.json();
-
-    if (data.success) {
-      closeJoinModal();
-      await loadGroups(); /* reload squad section in-place */
-    } else {
-      showJoinError(data.message || 'Code not found. Check and try again.');
+    /* Reload just the groups section (used after successful join) */
+    async function loadGroups() {
+      var token = localStorage.getItem('yaply_token');
+      if (!token) return;
+      try {
+        var res = await fetch('/api/groups', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+          var data = await res.json();
+          renderSquad(data.groups || []);
+        }
+      } catch (e) {
+        console.error('[yaply] loadGroups error:', e);
+      }
     }
-  } catch (e) {
-    showJoinError('Something went wrong. Please try again.');
-  } finally {
-    btn.disabled    = false;
-    btn.textContent = 'Join Squad';
-  }
-}
 
-/* Close modal on backdrop click */
-document.getElementById('joinModal').addEventListener('click', function (e) {
-  if (e.target === this) closeJoinModal();
-});
+    /* ═══════════════════════════════════════════════════════════════
+       BUG 8 — JOIN MODAL (connected, error text, reloads squad)
+    ═══════════════════════════════════════════════════════════════ */
+    function openJoinModal() {
+      var modal = document.getElementById('joinModal');
+      modal.style.display = 'flex';
+      clearJoinError();
+      setTimeout(function () {
+        document.getElementById('joinCodeInput').focus();
+      }, 100);
+    }
 
-/* Reset border on input focus */
-document.getElementById('joinCodeInput').addEventListener('focus', function () {
-  this.style.borderColor = 'var(--blue)';
-  var err = document.getElementById('joinError');
-  err.style.display = 'none';
-});
+    function closeJoinModal() {
+      document.getElementById('joinModal').style.display = 'none';
+      document.getElementById('joinCodeInput').value = '';
+      clearJoinError();
+    }
 
-/* ═══════════════════════════════════════════════════════════════
-   UTILITY — XSS-safe HTML escape
-═══════════════════════════════════════════════════════════════ */
-function escapeHtml(str) {
-  if (str == null) return '';
-  return String(str)
-    .replace(/&/g,  '&amp;')
-    .replace(/</g,  '&lt;')
-    .replace(/>/g,  '&gt;')
-    .replace(/"/g,  '&quot;')
-    .replace(/'/g,  '&#39;');
-}
-</script>
+    function clearJoinError() {
+      var err = document.getElementById('joinError');
+      err.style.display = 'none';
+      err.textContent = '';
+      document.getElementById('joinCodeInput').style.borderColor = 'var(--border2)';
+    }
+
+    function showJoinError(msg) {
+      var err = document.getElementById('joinError');
+      err.textContent = msg;
+      err.style.display = 'block';
+      document.getElementById('joinCodeInput').style.borderColor = 'var(--red)';
+    }
+
+    function formatJoinCode(input) {
+      /* Strip non-alphanumeric, uppercase */
+      var raw = input.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      /* Remove any leading YAP the user may have typed */
+      var code = raw.replace(/^YAP/i, '').substring(0, 4);
+      input.value = code.length > 0 ? 'YAP-' + code : '';
+    }
+
+    async function joinSquad() {
+      var code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+
+      if (!/^YAP-[A-Z0-9]{4}$/.test(code)) {
+        showJoinError('Enter a valid code in the format YAP-XXXX');
+        return;
+      }
+
+      var btn = document.getElementById('joinSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Joining…';
+
+      try {
+        var token = localStorage.getItem('yaply_token');
+        var res = await fetch('/api/groups/join', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ code: code })
+        });
+        var data = await res.json();
+
+        if (data.success) {
+          closeJoinModal();
+          await loadGroups(); /* reload squad section in-place */
+        } else {
+          showJoinError(data.message || 'Code not found. Check and try again.');
+        }
+      } catch (e) {
+        showJoinError('Something went wrong. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Join Squad';
+      }
+    }
+
+
+    function openDashTool(toolId) {
+      // Hide all sheets
+      document.querySelectorAll('.dash-tool-sheet').forEach(function (s) {
+        s.style.display = 'none';
+      });
+
+      // Reset states
+      var loadEl = document.getElementById('dloading-' + toolId);
+      var resEl = document.getElementById('dresults-' + toolId);
+      if (loadEl) { loadEl.classList.remove('show'); loadEl.style.display = 'none'; }
+      if (resEl) { resEl.classList.remove('show'); resEl.style.display = 'none'; }
+
+      // Show overlay + sheet
+      document.getElementById('dashToolOverlay').classList.add('open');
+      var sheet = document.getElementById('dsheet-' + toolId);
+      if (sheet) sheet.style.display = 'block';
+
+      // Smart pre-fill from user data
+      try {
+        var user = JSON.parse(localStorage.getItem('yaply_user') || '{}');
+        if (toolId === 'visa' && user.passport) {
+          document.getElementById('d-visa-passport').value = user.passport;
+        }
+      } catch (e) { }
+
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDashTool() {
+      document.getElementById('dashToolOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function dSwapCurrency() {
+      var from = document.getElementById('d-currency-from');
+      var to = document.getElementById('d-currency-to');
+      var tmp = from.value;
+      from.value = to.value;
+      to.value = tmp;
+    }
+
+    // Close on ESC
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeDashTool();
+    });
+
+    // ── Run tool API ──
+    async function runDashTool(toolId) {
+      var token = localStorage.getItem('yaply_token') || '';
+      var headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+      // Show loading
+      var loadEl = document.getElementById('dloading-' + toolId);
+      var resEl = document.getElementById('dresults-' + toolId);
+      var btn = document.querySelector('#dsheet-' + toolId + ' .dash-run-btn');
+      if (loadEl) { loadEl.style.display = 'flex'; loadEl.classList.add('show'); }
+      if (resEl) { resEl.style.display = 'none'; resEl.classList.remove('show'); }
+      if (btn) btn.disabled = true;
+
+      try {
+        var result = null;
+
+        if (toolId === 'currency') {
+          var res = await fetch('/api/currency', {
+            method: 'POST', headers: headers,
+            body: JSON.stringify({
+              amount: parseFloat(document.getElementById('d-currency-amount').value) || 1,
+              from: document.getElementById('d-currency-from').value,
+              to: document.getElementById('d-currency-to').value,
+            })
+          });
+          result = await res.json();
+        }
+
+        else if (toolId === 'visa') {
+          var dest = document.getElementById('d-visa-dest').value.trim();
+          if (!dest) { showToast('Enter a destination'); throw new Error('no dest'); }
+          var res = await fetch('/api/visa', {
+            method: 'POST', headers: headers,
+            body: JSON.stringify({
+              passport: document.getElementById('d-visa-passport').value,
+              destination: dest,
+            })
+          });
+          result = await res.json();
+        }
+
+        else if (toolId === 'weather') {
+          var city = document.getElementById('d-weather-city').value.trim();
+          if (!city) { showToast('Enter a city'); throw new Error('no city'); }
+          var res = await fetch('/api/weather', {
+            method: 'POST', headers: headers,
+            body: JSON.stringify({ city: city })
+          });
+          result = await res.json();
+        }
+
+        // Hide loading
+        if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.remove('show'); }
+        if (btn) btn.disabled = false;
+
+        if (result && result.success) {
+          var html = _renderDashToolResult(toolId, result);
+          if (resEl) {
+            resEl.innerHTML = html;
+            resEl.style.display = 'block';
+            resEl.classList.add('show');
+          }
+        } else {
+          showToast((result && result.error) || 'Something went wrong');
+        }
+
+      } catch (e) {
+        if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.remove('show'); }
+        if (btn) btn.disabled = false;
+        if (e.message !== 'no dest' && e.message !== 'no city') {
+          showToast('Connection error. Try again.');
+        }
+      }
+    }
+
+    // ── Render results ──
+    function _renderDashToolResult(toolId, result) {
+      if (toolId === 'currency') return _dRenderCurrency(result);
+      if (toolId === 'visa') return _dRenderVisa(result.visa || result.data || result);
+      if (toolId === 'weather') return _dRenderWeather(result);
+      return '';
+    }
+
+    // Currency result
+    function _dRenderCurrency(result) {
+      var from = result.from || '';
+      var to = result.to || '';
+      var amount = result.amount || 0;
+      var converted = result.converted || 0;
+      var rate = result.rate || 0;
+
+      var html = '<div style="background:linear-gradient(135deg,#0B1220,#1a2a4a);border-radius:18px;padding:20px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden;">';
+      html += '<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(37,99,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,255,0.05) 1px,transparent 1px);background-size:28px 28px;"></div>';
+      html += '<div style="position:relative;z-index:1;">';
+      html += '<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:6px;">' + amount.toLocaleString() + ' ' + from + ' =</div>';
+      html += '<div style="font-family:monospace;font-size:36px;font-weight:800;color:white;letter-spacing:-1px;">' + converted.toLocaleString() + '</div>';
+      html += '<div style="font-size:18px;color:rgba(255,255,255,0.5);margin-top:4px;">' + to + '</div>';
+      html += '<div style="font-size:12px;color:rgba(255,255,255,0.25);margin-top:8px;">1 ' + from + ' = ' + rate + ' ' + to + '</div>';
+      html += '</div></div>';
+
+      // Quick reference
+      html += '<div class="dtr-card">';
+      html += '<div class="dtr-card-title">Quick Reference</div>';
+      [100, 500, 1000, 5000, 10000].forEach(function (a) {
+        var conv = (a * rate).toFixed(2);
+        html += '<div class="dtr-row"><span class="dtr-row-label">' + a.toLocaleString() + ' ' + from + '</span><span class="dtr-row-value">' + conv + ' ' + to + '</span></div>';
+      });
+      html += '</div>';
+      return html;
+    }
+
+    // Visa result
+    function _dRenderVisa(d) {
+      if (!d) return '<p style="color:#6B7280;padding:16px;">No data available</p>';
+      var required = d.visa_required !== false;
+      var color = required ? '#F5B942' : '#18C29C';
+      var bg = required ? 'rgba(245,185,66,0.08)' : 'rgba(24,194,156,0.08)';
+      var label = required ? (d.visa_on_arrival ? '🛬 Visa on Arrival' : '📋 Visa Required') : '✅ Visa Free';
+
+      var html = '<div style="background:' + bg + ';border:1px solid ' + color + '33;border-radius:16px;padding:18px;text-align:center;margin-bottom:14px;">';
+      html += '<div style="font-size:32px;margin-bottom:8px;">' + (required ? (d.visa_on_arrival ? '🛬' : '📋') : '✅') + '</div>';
+      html += '<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:4px;">' + label + '</div>';
+      html += '<div style="font-size:13px;color:#6B7280;">' + (d.visa_type || '') + (d.validity ? ' · ' + d.validity : '') + '</div>';
+      html += '</div>';
+
+      html += '<div class="dtr-card">';
+      if (d.cost) html += '<div class="dtr-row"><span class="dtr-row-label">Cost</span><span class="dtr-row-value">' + d.cost + '</span></div>';
+      if (d.processing_days) html += '<div class="dtr-row"><span class="dtr-row-label">Processing</span><span class="dtr-row-value">' + d.processing_days + ' days</span></div>';
+      if (d.visa_free_days) html += '<div class="dtr-row"><span class="dtr-row-label">Duration</span><span class="dtr-row-value">' + d.visa_free_days + ' days</span></div>';
+      html += '</div>';
+
+      if (d.documents && d.documents.length) {
+        html += '<div class="dtr-card"><div class="dtr-card-title">Documents Required</div>';
+        d.documents.forEach(function (doc) {
+          html += '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #F3F4F6;font-size:13px;color:#374151;"><span style="color:#2563FF;">•</span>' + doc + '</div>';
+        });
+        html += '</div>';
+      }
+
+      if (d.tips && d.tips.length) {
+        html += '<div class="dtr-card"><div class="dtr-card-title">Pro Tips</div>';
+        d.tips.forEach(function (tip) {
+          html += '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #F3F4F6;font-size:13px;color:#374151;"><span>💡</span>' + tip + '</div>';
+        });
+        html += '</div>';
+      }
+
+      return html;
+    }
+
+    // Weather result
+    function _dRenderWeather(result) {
+      var city = result.city || '';
+      var country = result.country || '';
+      var forecast = result.forecast || [];
+      if (!forecast.length) return '<p style="color:#6B7280;padding:16px;">No forecast data</p>';
+
+      var weatherIcons = {
+        '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '⛅', '03d': '☁️', '03n': '☁️',
+        '04d': '☁️', '09d': '🌧️', '10d': '🌦️', '11d': '⛈️', '13d': '❄️', '50d': '🌫️'
+      };
+
+      var html = '<div style="background:linear-gradient(135deg,#0c1a2e,#1a3a5c);border-radius:18px;padding:16px;margin-bottom:12px;">';
+      html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Forecast</div>';
+      html += '<div style="font-size:20px;font-weight:700;color:white;">' + city + ', ' + country + '</div>';
+      html += '</div>';
+
+      html += '<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none;">';
+      forecast.forEach(function (day, i) {
+        var date = new Date(day.date);
+        var dayName = i === 0 ? 'Today' : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+        var icon = weatherIcons[day.icon] || '🌤️';
+        var isToday = i === 0;
+        html += '<div style="flex-shrink:0;background:' + (isToday ? 'rgba(37,99,255,0.08)' : '#fff') + ';border:1px solid ' + (isToday ? 'rgba(37,99,255,0.2)' : '#E5E7EB') + ';border-radius:14px;padding:12px 10px;text-align:center;min-width:72px;">';
+        html += '<div style="font-size:10px;color:#6B7280;margin-bottom:6px;font-weight:600;">' + dayName + '</div>';
+        html += '<div style="font-size:22px;margin-bottom:6px;">' + icon + '</div>';
+        html += '<div style="font-family:monospace;font-size:14px;font-weight:700;color:#111827;">' + Math.round(day.temp_max) + '°</div>';
+        html += '<div style="font-size:9px;color:#9CA3AF;margin-top:3px;">' + (day.description || '') + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+
+      var today = forecast[0];
+      html += '<div class="dtr-card"><div class="dtr-card-title">Today\'s Details</div>';
+      html += '<div class="dtr-row"><span class="dtr-row-label">High / Low</span><span class="dtr-row-value">' + Math.round(today.temp_max) + '° / ' + Math.round(today.temp_min) + '°C</span></div>';
+      html += '<div class="dtr-row"><span class="dtr-row-label">Condition</span><span class="dtr-row-value">' + (today.description || '—') + '</span></div>';
+      html += '<div class="dtr-row"><span class="dtr-row-label">Humidity</span><span class="dtr-row-value">' + (today.humidity || '—') + '%</span></div>';
+      html += '<div class="dtr-row"><span class="dtr-row-label">Wind</span><span class="dtr-row-value">' + (today.wind || '—') + ' m/s</span></div>';
+      html += '</div>';
+
+      return html;
+    }
+
+    /* Close modal on backdrop click */
+    document.getElementById('joinModal').addEventListener('click', function (e) {
+      if (e.target === this) closeJoinModal();
+    });
+
+    /* Reset border on input focus */
+    document.getElementById('joinCodeInput').addEventListener('focus', function () {
+      this.style.borderColor = 'var(--blue)';
+      var err = document.getElementById('joinError');
+      err.style.display = 'none';
+    });
+
+    /* ═══════════════════════════════════════════════════════════════
+       UTILITY — XSS-safe HTML escape
+    ═══════════════════════════════════════════════════════════════ */
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Instead of repeating auth code everywhere
+    // Just call:
+    YaplyCore.requireAuth();   // redirect if not logged in
+    YaplyCore.getUser();       // get current user
+    YaplyCore.logout();        // logout from anywhere
+
+  </script>
 </body>
+
 </html>

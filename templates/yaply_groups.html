@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Yaply Groups</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="/static/yaply-core.js"></script>
 <style>
 :root {
   --bg:      #080C12;
@@ -2119,6 +2120,11 @@ function formatTime(iso) {
   return new Date(iso).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
 }
 
+// Instead of repeating auth code everywhere
+// Just call:
+YaplyCore.requireAuth();   // redirect if not logged in
+YaplyCore.getUser();       // get current user
+YaplyCore.logout();        // logout from anywhere
 
 </script>
 </body>

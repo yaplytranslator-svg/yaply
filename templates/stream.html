@@ -6,6 +6,7 @@
 <title>Yaply Live — Real-Time Translation</title>
 <link rel="icon" href="/static/yaply favicon.jpeg" type="image/jpeg"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<script src="/static/yaply-core.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -669,6 +670,13 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// Instead of repeating auth code everywhere
+// Just call:
+YaplyCore.requireAuth();   // redirect if not logged in
+YaplyCore.getUser();       // get current user
+YaplyCore.logout();        // logout from anywhere
+
 </script>
 </body>
 </html>

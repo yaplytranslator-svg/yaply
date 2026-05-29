@@ -3,2534 +3,744 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Yaply — AI Travel Operating System</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet"/>
+<title>Yaply — AI Travel Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="/static/yaply-core.js"></script>
 <style>
-/* ═══════════════════════════════════════════════════════
-   YAPLY DESIGN SYSTEM
-═══════════════════════════════════════════════════════ */
 :root {
-  --blue:       #2563FF;
-  --blue-d:     #1D4ED8;
-  --blue-glow:  rgba(37,99,255,0.35);
-  --midnight:   #0B1220;
-  --midnight2:  #0E1829;
-  --bg:         #F7F9FC;
-  --white:      #FFFFFF;
-  --text:       #111827;
-  --muted:      #6B7280;
-  --coral:      #FF7A59;
-  --coral-d:    #E8603E;
-  --green:      #18C29C;
-  --amber:      #F5B942;
-  --glass:      rgba(255,255,255,0.06);
-  --glass-b:    rgba(255,255,255,0.10);
-
-  --font-head:  'Instrument Serif', Georgia, serif;
-  --font-body:  'DM Sans', sans-serif;
-
-  --r:    12px;
-  --r-lg: 20px;
-  --r-xl: 28px;
-}
-
-*,*::before,*::after { margin:0;padding:0;box-sizing:border-box; }
-html { scroll-behavior:smooth; }
-body {
-  font-family: var(--font-body);
-  background: var(--bg);
-  color: var(--text);
-  overflow-x: hidden;
-  cursor: none;
-}
-
-/* ── CUSTOM CURSOR ── */
-.cursor {
-  width: 12px; height: 12px;
-  background: var(--blue);
-  border-radius: 50%;
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  transition: transform .15s, background .2s;
-  transform: translate(-50%,-50%);
-}
-.cursor-ring {
-  width: 36px; height: 36px;
-  border: 1.5px solid rgba(37,99,255,0.4);
-  border-radius: 50%;
-  position: fixed;
-  pointer-events: none;
-  z-index: 9998;
-  transition: all .1s;
-  transform: translate(-50%,-50%);
-}
-body:hover .cursor { opacity: 1; }
-
-/* ── NAV ── */
-.nav {
-  position: fixed; top: 0; left: 0; right: 0;
-  z-index: 200;
-  padding: 0 40px;
-  height: 68px;
-  display: flex; align-items: center; justify-content: space-between;
-  transition: all .4s;
-}
-.nav.scrolled {
-  background: rgba(11,18,32,0.85);
-  backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-.nav-logo {
-  display: flex; align-items: center; gap: 10px;
-  text-decoration: none;
-}
-.nav-logo-mark {
-  width: 36px; height: 36px;
-  background: var(--blue);
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-head);
-  font-size: 18px;
-  color: white;
-  font-style: italic;
-  box-shadow: 0 0 20px var(--blue-glow);
-}
-.nav-logo-name {
-  font-family: var(--font-head);
-  font-size: 22px;
-  color: white;
-  letter-spacing: -0.5px;
-}
-.nav-links {
-  display: flex; align-items: center; gap: 8px;
-}
-.nav-link {
-  padding: 8px 16px;
-  color: rgba(255,255,255,0.6);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 400;
-  border-radius: 8px;
-  transition: all .2s;
-}
-.nav-link:hover { color: white; background: rgba(255,255,255,0.07); }
-.nav-cta {
-  padding: 10px 22px;
-  background: var(--coral);
-  color: white;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all .2s;
-  box-shadow: 0 4px 20px rgba(255,122,89,0.35);
-  margin-left: 8px;
-}
-.nav-cta:hover {
-  background: var(--coral-d);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 28px rgba(255,122,89,0.45);
-}
-
-/* ── HERO ── */
-.hero {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0D1628 0%, #0B1220 50%, #060C17 100%);
-  display: flex; flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  padding: 100px 24px 60px;
-}
-
-/* Mesh gradient orbs */
-.hero-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  pointer-events: none;
-}
-.orb-1 {
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(37,99,255,0.18) 0%, transparent 70%);
-  top: -100px; left: -200px;
-  animation: orbFloat 8s ease-in-out infinite;
-}
-.orb-2 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(255,122,89,0.10) 0%, transparent 70%);
-  bottom: -50px; right: -100px;
-  animation: orbFloat 10s ease-in-out infinite reverse;
-}
-.orb-3 {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(24,194,156,0.08) 0%, transparent 70%);
-  top: 50%; left: 50%;
-  animation: orbFloat 12s ease-in-out infinite;
-}
-@keyframes orbFloat {
-  0%,100% { transform: translate(0,0) scale(1); }
-  33%      { transform: translate(30px,-20px) scale(1.05); }
-  66%      { transform: translate(-20px,30px) scale(0.95); }
-}
-
-/* Grid overlay */
-.hero-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(37,99,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37,99,255,0.04) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
-}
-
-/* Particles */
-.particles { position: absolute; inset: 0; pointer-events: none; }
-.particle {
-  position: absolute;
-  width: 2px; height: 2px;
-  background: rgba(255,255,255,0.3);
-  border-radius: 50%;
-  animation: particleFloat linear infinite;
-}
-@keyframes particleFloat {
-  0%   { transform: translateY(100vh) translateX(0); opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { transform: translateY(-20px) translateX(var(--drift)); opacity: 0; }
-}
-
-/* Hero content */
-.hero-content {
-  position: relative; z-index: 10;
-  text-align: center;
-  max-width: 900px;
-}
-
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(37,99,255,0.12);
-  border: 1px solid rgba(37,99,255,0.25);
-  border-radius: 100px;
-  padding: 8px 18px;
-  font-size: 13px; font-weight: 500;
-  color: rgba(255,255,255,0.8);
-  margin-bottom: 32px;
-  backdrop-filter: blur(12px);
-  animation: fadeUp .8s ease both;
-}
-.hero-badge-dot {
-  width: 7px; height: 7px;
-  background: var(--green);
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-  box-shadow: 0 0 8px var(--green);
-}
-@keyframes pulse {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: .5; transform: scale(0.7); }
-}
-
-.hero-h1 {
-  font-family: var(--font-head);
-  font-size: clamp(48px, 7vw, 96px);
-  font-weight: 400;
-  color: white;
-  line-height: 1.05;
-  letter-spacing: -2px;
-  margin-bottom: 24px;
-  animation: fadeUp .8s .1s ease both;
-}
-.hero-h1 em {
-  font-style: italic;
-  background: linear-gradient(135deg, #60A5FA, #2563FF);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.hero-h1 .coral { color: var(--coral); -webkit-text-fill-color: var(--coral); }
-
-.hero-sub {
-  font-size: clamp(16px, 2vw, 20px);
-  color: rgba(255,255,255,0.45);
-  line-height: 1.7;
-  max-width: 560px;
-  margin: 0 auto 40px;
-  font-weight: 300;
-  animation: fadeUp .8s .2s ease both;
-}
-
-.hero-ctas {
-  display: flex; align-items: center; justify-content: center;
-  gap: 14px; flex-wrap: wrap;
-  animation: fadeUp .8s .3s ease both;
-  margin-bottom: 64px;
-}
-
-.btn-primary {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 16px 32px;
-  background: var(--coral);
-  color: white;
-  border-radius: var(--r);
-  font-size: 16px; font-weight: 600;
-  text-decoration: none;
-  transition: all .25s cubic-bezier(.34,1.56,.64,1);
-  box-shadow: 0 8px 32px rgba(255,122,89,0.4);
-  position: relative; overflow: hidden;
-}
-.btn-primary::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
-  opacity: 0;
-  transition: opacity .2s;
-}
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 48px rgba(255,122,89,0.5); }
-.btn-primary:hover::before { opacity: 1; }
-.btn-primary:active { transform: scale(0.97); }
-
-.btn-ghost {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 16px 28px;
-  background: rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.8);
-  border-radius: var(--r);
-  font-size: 16px; font-weight: 500;
-  text-decoration: none;
-  transition: all .2s;
-  border: 1px solid rgba(255,255,255,0.10);
-  backdrop-filter: blur(8px);
-}
-.btn-ghost:hover { background: rgba(255,255,255,0.10); color: white; border-color: rgba(255,255,255,0.2); }
-
-/* ── PHONE MOCKUPS ── */
-.hero-phones {
-  position: relative;
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-  height: 480px;
-  animation: fadeUp .8s .4s ease both;
-}
-
-.phone-wrap {
-  position: absolute;
-  transform-origin: center bottom;
-}
-
-.phone {
-  width: 220px;
-  background: #0D1628;
-  border-radius: 40px;
-  border: 1px solid rgba(255,255,255,0.12);
-  overflow: hidden;
-  box-shadow:
-    0 40px 80px rgba(0,0,0,0.6),
-    0 0 0 1px rgba(255,255,255,0.05),
-    inset 0 1px 0 rgba(255,255,255,0.1);
-  position: relative;
-}
-.phone::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 80px; height: 28px;
-  background: #0D1628;
-  border-radius: 0 0 18px 18px;
-  z-index: 10;
-  border: 1px solid rgba(255,255,255,0.06);
-  border-top: none;
-}
-
-.phone-screen { padding: 36px 14px 20px; }
-
-/* Main phone */
-.phone-main {
-  left: 50%; top: 0;
-  transform: translateX(-50%);
-  animation: phoneFloat 4s ease-in-out infinite;
-  z-index: 3;
-}
-.phone-main .phone { width: 240px; }
-@keyframes phoneFloat {
-  0%,100% { transform: translateX(-50%) translateY(0) rotateX(2deg); }
-  50%      { transform: translateX(-50%) translateY(-16px) rotateX(2deg); }
-}
-
-/* Left phone */
-.phone-left {
-  left: 5%; top: 60px;
-  transform: rotate(-12deg);
-  animation: phoneFloatL 5s ease-in-out infinite;
-  z-index: 2;
-  opacity: 0.7;
-}
-@keyframes phoneFloatL {
-  0%,100% { transform: rotate(-12deg) translateY(0); }
-  50%      { transform: rotate(-12deg) translateY(-10px); }
-}
-
-/* Right phone */
-.phone-right {
-  right: 5%; top: 80px;
-  transform: rotate(12deg);
-  animation: phoneFloatR 6s ease-in-out infinite;
-  z-index: 2;
-  opacity: 0.7;
-}
-@keyframes phoneFloatR {
-  0%,100% { transform: rotate(12deg) translateY(0); }
-  50%      { transform: rotate(12deg) translateY(-12px); }
-}
-
-/* Phone screen content */
-.ps-header {
-  background: linear-gradient(135deg, #1a2a4a, #0f1e38);
-  border-radius: 20px;
-  padding: 14px;
-  margin-bottom: 10px;
-}
-.ps-dest {
-  font-size: 10px; color: rgba(255,255,255,0.4);
-  text-transform: uppercase; letter-spacing: 1px;
-  margin-bottom: 4px;
-}
-.ps-name {
-  font-family: var(--font-head);
-  font-size: 18px; color: white;
-  margin-bottom: 2px;
-}
-.ps-meta { font-size: 10px; color: rgba(255,255,255,0.4); }
-
-.ps-progress {
-  height: 3px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 2px;
-  margin: 10px 0;
-  overflow: hidden;
-}
-.ps-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--blue), var(--green));
-  border-radius: 2px;
-  animation: progressFill 3s ease forwards;
-}
-@keyframes progressFill { from { width: 0; } to { width: 65%; } }
-
-.ps-day {
-  background: rgba(37,99,255,0.08);
-  border: 1px solid rgba(37,99,255,0.15);
-  border-radius: 12px;
-  padding: 10px;
-  margin-bottom: 7px;
-}
-.ps-day-label {
-  font-size: 9px; font-weight: 600;
-  color: var(--blue);
-  text-transform: uppercase; letter-spacing: 1px;
-  margin-bottom: 6px;
-}
-.ps-activity {
-  display: flex; align-items: center; gap: 7px;
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  font-size: 10px; color: rgba(255,255,255,0.7);
-}
-.ps-activity:last-child { border-bottom: none; padding-bottom: 0; }
-.ps-activity-time {
-  font-size: 9px; color: rgba(255,255,255,0.3);
-  margin-left: auto; white-space: nowrap;
-}
-
-/* Translate phone screen */
-.ps-translate {
-  background: #0D1628;
-}
-.ps-lang-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 12px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 10px;
-  margin-bottom: 10px;
-  font-size: 11px; color: rgba(255,255,255,0.5);
-}
-.ps-lang-active { color: var(--blue); font-weight: 600; }
-.ps-mic-area {
-  text-align: center;
-  padding: 16px 10px;
-  background: rgba(37,99,255,0.06);
-  border: 1px solid rgba(37,99,255,0.15);
-  border-radius: 14px;
-  margin-bottom: 10px;
-}
-.ps-mic-icon {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: var(--blue);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 8px;
-  font-size: 16px;
-  box-shadow: 0 0 20px rgba(37,99,255,0.4);
-  animation: micPulse 2s ease-in-out infinite;
-}
-@keyframes micPulse {
-  0%,100% { box-shadow: 0 0 20px rgba(37,99,255,0.4); }
-  50%      { box-shadow: 0 0 40px rgba(37,99,255,0.7); }
-}
-.ps-wave {
-  display: flex; align-items: center; justify-content: center; gap: 2px;
-  height: 20px;
-}
-.ps-wave-bar {
-  width: 3px;
-  background: var(--blue);
-  border-radius: 2px;
-  animation: waveAnim .8s ease-in-out infinite;
-}
-.ps-wave-bar:nth-child(2) { animation-delay: .1s; }
-.ps-wave-bar:nth-child(3) { animation-delay: .2s; }
-.ps-wave-bar:nth-child(4) { animation-delay: .3s; }
-.ps-wave-bar:nth-child(5) { animation-delay: .2s; }
-.ps-wave-bar:nth-child(6) { animation-delay: .1s; }
-@keyframes waveAnim {
-  0%,100% { height: 4px; }
-  50%      { height: 18px; }
-}
-.ps-translated-text {
-  font-size: 11px;
-  color: rgba(255,255,255,0.8);
-  background: rgba(255,255,255,0.04);
-  border-radius: 10px;
-  padding: 10px;
-  line-height: 1.5;
-}
-.ps-translated-rom {
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  font-style: italic;
-  margin-top: 4px;
-}
-
-/* Group phone screen */
-.ps-map-area {
-  height: 120px;
-  background: linear-gradient(135deg, #0a1428, #0f2040);
-  border-radius: 14px;
-  margin-bottom: 10px;
-  position: relative;
-  overflow: hidden;
-}
-.ps-map-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(37,99,255,0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37,99,255,0.07) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-.ps-map-pin {
-  position: absolute;
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-  border: 2px solid;
-  animation: pinBounce 2s ease-in-out infinite;
-}
-@keyframes pinBounce {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-4px); }
-}
-.ps-member-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.ps-member-row:last-child { border-bottom: none; }
-.ps-member-av {
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; flex-shrink: 0;
-  border: 1.5px solid;
-}
-.ps-member-name { font-size: 11px; color: rgba(255,255,255,0.7); flex: 1; }
-.ps-member-dist { font-size: 10px; color: var(--green); }
-.ps-online-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green);
-}
-
-/* ── TICKER ── */
-.ticker-section {
-  background: var(--midnight);
-  border-top: 1px solid rgba(255,255,255,0.06);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  padding: 16px 0;
-  overflow: hidden;
-}
-.ticker-track {
-  display: flex;
-  animation: tickerScroll 30s linear infinite;
-  white-space: nowrap;
-}
-.ticker-item {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 0 40px;
-  font-size: 14px;
-  color: rgba(255,255,255,0.4);
-  white-space: nowrap;
-}
-.ticker-item strong { color: rgba(255,255,255,0.8); font-weight: 500; }
-.ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--blue); }
-@keyframes tickerScroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-/* ── SECTIONS COMMON ── */
-section { padding: 120px 24px; }
-.section-label {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(37,99,255,0.08);
-  border: 1px solid rgba(37,99,255,0.15);
-  border-radius: 100px;
-  padding: 6px 14px;
-  font-size: 12px; font-weight: 500;
-  color: var(--blue);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-.section-h2 {
-  font-family: var(--font-head);
-  font-size: clamp(36px, 5vw, 64px);
-  font-weight: 400;
-  color: var(--text);
-  letter-spacing: -1.5px;
-  line-height: 1.1;
-  margin-bottom: 16px;
-}
-.section-h2 em { font-style: italic; color: var(--blue); }
-.section-sub {
-  font-size: 18px;
-  color: var(--muted);
-  line-height: 1.7;
-  font-weight: 300;
-}
-
-/* Reveal animation */
-.reveal {
-  opacity: 0;
-  transform: translateY(40px);
-  transition: opacity .8s cubic-bezier(.4,0,.2,1), transform .8s cubic-bezier(.4,0,.2,1);
-}
-.reveal.visible { opacity: 1; transform: translateY(0); }
-.reveal-l {
-  opacity: 0;
-  transform: translateX(-40px);
-  transition: opacity .8s cubic-bezier(.4,0,.2,1), transform .8s cubic-bezier(.4,0,.2,1);
-}
-.reveal-l.visible { opacity: 1; transform: translateX(0); }
-.reveal-r {
-  opacity: 0;
-  transform: translateX(40px);
-  transition: opacity .8s cubic-bezier(.4,0,.2,1), transform .8s cubic-bezier(.4,0,.2,1);
-}
-.reveal-r.visible { opacity: 1; transform: translateX(0); }
-
-/* ── PHASES SECTION ── */
-.phases-section {
-  background: var(--midnight);
-  position: relative;
-  overflow: hidden;
-}
-.phases-section::before {
-  content: '';
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(37,99,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37,99,255,0.03) 1px, transparent 1px);
-  background-size: 80px 80px;
-}
-.phases-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative; z-index: 1;
-}
-.phases-header { text-align: center; margin-bottom: 72px; }
-.phases-header .section-h2 { color: white; }
-.phases-header .section-sub { color: rgba(255,255,255,0.35); }
-
-.phases-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-@media(max-width:768px) { .phases-grid { grid-template-columns: 1fr; } }
-
-.phase-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: var(--r-xl);
-  padding: 32px;
-  transition: all .3s;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-.phase-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0;
-  height: 2px;
-  transition: opacity .3s;
-  opacity: 0;
-}
-.phase-card.before::before { background: linear-gradient(90deg, var(--blue), #60A5FA); }
-.phase-card.during::before { background: linear-gradient(90deg, var(--coral), var(--amber)); }
-.phase-card.after::before  { background: linear-gradient(90deg, var(--green), #60A5FA); }
-.phase-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); transform: translateY(-4px); }
-.phase-card:hover::before { opacity: 1; }
-
-.phase-icon {
-  width: 56px; height: 56px;
-  border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 26px;
-  margin-bottom: 20px;
-}
-.phase-card.before .phase-icon { background: rgba(37,99,255,0.12); }
-.phase-card.during .phase-icon { background: rgba(255,122,89,0.12); }
-.phase-card.after  .phase-icon { background: rgba(24,194,156,0.12); }
-
-.phase-label {
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 2px; text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.phase-card.before .phase-label { color: var(--blue); }
-.phase-card.during .phase-label { color: var(--coral); }
-.phase-card.after  .phase-label { color: var(--green); }
-
-.phase-title {
-  font-family: var(--font-head);
-  font-size: 26px; font-weight: 400;
-  color: white;
-  margin-bottom: 12px;
-  letter-spacing: -0.5px;
-}
-
-.phase-desc {
-  font-size: 14px;
-  color: rgba(255,255,255,0.35);
-  line-height: 1.7;
-  margin-bottom: 20px;
-}
-
-.phase-features {
-  display: flex; flex-direction: column; gap: 8px;
-}
-.phase-feat {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px;
-  color: rgba(255,255,255,0.55);
-}
-.phase-feat-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.phase-card.before .phase-feat-dot { background: var(--blue); }
-.phase-card.during .phase-feat-dot { background: var(--coral); }
-.phase-card.after  .phase-feat-dot { background: var(--green); }
-
-/* ── FEATURE SPOTLIGHTS ── */
-.features-section {
-  background: var(--bg);
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.features-header { text-align: center; margin-bottom: 80px; }
-
-.feature-spot {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
-  margin-bottom: 120px;
-}
-.feature-spot.flip { direction: rtl; }
-.feature-spot.flip > * { direction: ltr; }
-@media(max-width:768px) {
-  .feature-spot, .feature-spot.flip {
-    grid-template-columns: 1fr;
-    direction: ltr;
-    gap: 40px;
-    margin-bottom: 80px;
-  }
-}
-
-.feature-text-side {}
-.feature-number {
-  font-family: var(--font-head);
-  font-size: 80px;
-  color: rgba(37,99,255,0.08);
-  line-height: 1;
-  margin-bottom: -20px;
-  font-style: italic;
-}
-.feature-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 14px;
-  border-radius: 100px;
-  font-size: 12px; font-weight: 600;
-  letter-spacing: 0.5px; text-transform: uppercase;
-  margin-bottom: 16px;
-}
-.chip-blue   { background: rgba(37,99,255,0.08);  color: var(--blue); }
-.chip-coral  { background: rgba(255,122,89,0.08); color: var(--coral); }
-.chip-green  { background: rgba(24,194,156,0.08); color: var(--green); }
-.chip-amber  { background: rgba(245,185,66,0.08); color: var(--amber); }
-
-.feature-h3 {
-  font-family: var(--font-head);
-  font-size: clamp(28px, 4vw, 44px);
-  font-weight: 400;
-  color: var(--text);
-  letter-spacing: -1px;
-  line-height: 1.15;
-  margin-bottom: 16px;
-}
-.feature-h3 em { font-style: italic; color: var(--blue); }
-
-.feature-desc {
-  font-size: 17px;
-  color: var(--muted);
-  line-height: 1.75;
-  margin-bottom: 28px;
-  font-weight: 300;
-}
-
-.feature-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-.feature-list-item {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 15px;
-  color: var(--text);
-}
-.fli-check {
-  width: 22px; height: 22px;
-  border-radius: 50%;
-  background: rgba(37,99,255,0.08);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  font-size: 11px;
-  color: var(--blue);
-}
-
-.feature-cta {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 24px;
-  border-radius: var(--r);
-  font-size: 14px; font-weight: 600;
-  text-decoration: none;
-  transition: all .2s;
-  border: 1.5px solid;
-}
-.cta-blue { color: var(--blue); border-color: rgba(37,99,255,0.25); background: rgba(37,99,255,0.05); }
-.cta-blue:hover { background: rgba(37,99,255,0.1); border-color: var(--blue); transform: translateX(4px); }
-
-/* Feature visual side */
-.feature-visual {
-  position: relative;
-}
-
-.fv-card {
-  background: linear-gradient(135deg, #0D1628, #0B1220);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--r-xl);
-  padding: 28px;
-  box-shadow: 0 40px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.04);
-  position: relative;
-  overflow: hidden;
-}
-.fv-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-}
-.fv-glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  pointer-events: none;
-}
-
-/* Trip planner card */
-.trip-gen-header {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 20px;
-}
-.trip-gen-flag {
-  font-size: 28px;
-}
-.trip-gen-name {
-  font-family: var(--font-head);
-  font-size: 20px; color: white;
-}
-.trip-gen-meta { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 2px; }
-
-.trip-day-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 10px;
-  transition: all .2s;
-}
-.trip-day-card:hover { background: rgba(37,99,255,0.08); border-color: rgba(37,99,255,0.2); }
-.trip-day-label {
-  font-size: 10px; font-weight: 600;
-  color: var(--blue);
-  text-transform: uppercase; letter-spacing: 1px;
-  margin-bottom: 10px;
-}
-.trip-activity {
-  display: flex; align-items: center; gap: 10px;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.trip-activity:last-child { border-bottom: none; padding-bottom: 0; }
-.trip-act-icon {
-  width: 28px; height: 28px;
-  border-radius: 8px;
-  background: rgba(37,99,255,0.12);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-.trip-act-name { font-size: 12px; color: rgba(255,255,255,0.7); flex: 1; }
-.trip-act-time { font-size: 11px; color: rgba(255,255,255,0.25); }
-.trip-act-cost {
-  font-size: 11px; font-weight: 600;
-  color: var(--green);
-  background: rgba(24,194,156,0.08);
-  padding: 2px 7px;
-  border-radius: 100px;
-}
-
-.ai-generating {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px;
-  background: rgba(37,99,255,0.08);
-  border: 1px solid rgba(37,99,255,0.15);
-  border-radius: 10px;
-  margin-top: 12px;
-}
-.ai-dots {
-  display: flex; gap: 4px;
-}
-.ai-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--blue);
-  animation: aiDot 1.2s ease-in-out infinite;
-}
-.ai-dot:nth-child(2) { animation-delay: .2s; }
-.ai-dot:nth-child(3) { animation-delay: .4s; }
-@keyframes aiDot {
-  0%,60%,100% { transform: translateY(0); opacity: 0.4; }
-  30%          { transform: translateY(-5px); opacity: 1; }
-}
-.ai-text { font-size: 12px; color: var(--blue); }
-
-/* Place finder card */
-.place-finder-card {}
-.pf-photo-area {
-  height: 160px;
-  background: linear-gradient(135deg, #1a1a2e, #16213e);
-  border-radius: 14px;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.06);
-  cursor: pointer;
-}
-.pf-photo-emoji { font-size: 48px; opacity: 0.3; }
-.pf-scan-overlay {
-  position: absolute; inset: 0;
-  background: rgba(37,99,255,0.04);
-  display: flex; align-items: center; justify-content: center;
-}
-.pf-scan-line {
-  position: absolute;
-  left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--blue), transparent);
-  animation: pfScan 2s ease-in-out infinite;
-  box-shadow: 0 0 10px var(--blue);
-}
-@keyframes pfScan {
-  0%   { top: 10%; opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { top: 90%; opacity: 0; }
-}
-.pf-corners {
-  position: absolute; inset: 12px;
-  border: none;
-}
-.pf-corner {
-  position: absolute;
-  width: 16px; height: 16px;
-  border-color: var(--blue);
-  border-style: solid;
-}
-.pf-corner.tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
-.pf-corner.tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
-.pf-corner.bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
-.pf-corner.br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
-
-.pf-result {
-  background: rgba(24,194,156,0.08);
-  border: 1px solid rgba(24,194,156,0.2);
-  border-radius: 14px;
-  padding: 14px;
-  display: flex; align-items: center; gap: 12px;
-}
-.pf-result-icon {
-  width: 40px; height: 40px;
-  border-radius: 11px;
-  background: rgba(24,194,156,0.12);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-.pf-result-name {
-  font-size: 14px; font-weight: 600;
-  color: white;
-  margin-bottom: 2px;
-}
-.pf-result-loc { font-size: 12px; color: rgba(255,255,255,0.4); }
-.pf-result-conf {
-  margin-left: auto;
-  font-size: 11px; font-weight: 700;
-  color: var(--green);
-  background: rgba(24,194,156,0.1);
-  padding: 4px 8px;
-  border-radius: 100px;
-  flex-shrink: 0;
-}
-.pf-add-btn {
-  width: 100%;
-  padding: 11px;
-  margin-top: 12px;
-  background: rgba(37,99,255,0.1);
-  border: 1px solid rgba(37,99,255,0.2);
-  border-radius: 10px;
-  color: var(--blue);
-  font-size: 13px; font-weight: 600;
-  cursor: pointer;
-  transition: all .2s;
-  font-family: var(--font-body);
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.pf-add-btn:hover { background: rgba(37,99,255,0.15); }
-
-/* Groups card */
-.groups-card {}
-.gc-map {
-  height: 140px;
-  background: linear-gradient(135deg, #0a1428, #0f2040);
-  border-radius: 14px;
-  margin-bottom: 14px;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(37,99,255,0.1);
-}
-.gc-map-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(37,99,255,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37,99,255,0.06) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-.gc-pin {
-  position: absolute;
-  width: 32px; height: 32px;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  display: flex; align-items: center; justify-content: center;
-  border: 2px solid;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-.gc-pin-inner { transform: rotate(45deg); font-size: 14px; }
-.gc-route-line {
-  position: absolute;
-  background: rgba(37,99,255,0.3);
-  height: 1.5px;
-  border-radius: 1px;
-  transform-origin: left center;
-}
-
-.gc-member-list { display: flex; flex-direction: column; gap: 0; }
-.gc-member {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.gc-member:last-child { border-bottom: none; }
-.gc-member-av {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-  border: 2px solid;
-  flex-shrink: 0;
-  position: relative;
-}
-.gc-member-online {
-  position: absolute; bottom: -1px; right: -1px;
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  border: 2px solid var(--midnight);
-}
-.gc-member-name { font-size: 12px; color: rgba(255,255,255,0.7); flex: 1; }
-.gc-member-loc  { font-size: 11px; color: rgba(255,255,255,0.25); }
-.gc-member-dist { font-size: 11px; font-weight: 600; }
-
-.gc-sos-btn {
-  width: 100%;
-  padding: 10px;
-  margin-top: 12px;
-  background: rgba(239,68,68,0.08);
-  border: 1px solid rgba(239,68,68,0.2);
-  border-radius: 10px;
-  color: #EF4444;
-  font-size: 12px; font-weight: 600;
-  cursor: pointer;
-  transition: all .2s;
-  font-family: var(--font-body);
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.gc-sos-btn:hover { background: rgba(239,68,68,0.12); }
-
-/* Floating badges */
-.fv-float-badge {
-  position: absolute;
-  background: white;
-  border-radius: var(--r);
-  padding: 10px 14px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-  display: flex; align-items: center; gap: 8px;
-  font-size: 12px; font-weight: 600;
-  color: var(--text);
-  animation: badgeFloat 4s ease-in-out infinite;
-  z-index: 5;
-}
-@keyframes badgeFloat {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
-}
-.fb-icon { font-size: 18px; }
-.fb-label { font-size: 11px; color: var(--muted); font-weight: 400; }
-
-/* ── DEMO SECTION ── */
-.demo-section {
-  background: linear-gradient(135deg, var(--midnight) 0%, #0E1829 100%);
-  position: relative;
-  overflow: hidden;
-}
-.demo-section::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, rgba(37,99,255,0.08) 0%, transparent 70%);
-}
-.demo-inner {
-  max-width: 800px;
-  margin: 0 auto;
-  position: relative; z-index: 1;
-  text-align: center;
-}
-.demo-inner .section-h2 { color: white; }
-.demo-inner .section-sub { color: rgba(255,255,255,0.35); margin-bottom: 48px; }
-
-.demo-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--r-xl);
-  padding: 32px;
-  backdrop-filter: blur(20px);
-}
-.demo-input-wrap {
-  position: relative;
-  margin-bottom: 20px;
-}
-.demo-input-icon {
-  position: absolute; left: 16px; top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-}
-.demo-input {
-  width: 100%;
-  padding: 16px 16px 16px 48px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--r);
-  font-family: var(--font-body);
-  font-size: 16px;
-  color: white;
-  outline: none;
-  transition: all .2s;
-}
-.demo-input:focus {
-  border-color: rgba(37,99,255,0.5);
-  background: rgba(37,99,255,0.05);
-  box-shadow: 0 0 0 3px rgba(37,99,255,0.1);
-}
-.demo-input::placeholder { color: rgba(255,255,255,0.25); }
-
-.demo-quick-picks {
-  display: flex; gap: 8px; flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-.demo-pick {
-  padding: 8px 16px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 100px;
-  font-family: var(--font-body);
-  font-size: 14px;
-  color: rgba(255,255,255,0.6);
-  cursor: pointer;
-  transition: all .2s;
-}
-.demo-pick:hover { background: rgba(37,99,255,0.1); border-color: rgba(37,99,255,0.3); color: white; }
-.demo-pick.active { background: rgba(37,99,255,0.15); border-color: var(--blue); color: white; }
-
-.demo-result {
-  display: none;
-  text-align: left;
-  background: rgba(37,99,255,0.05);
-  border: 1px solid rgba(37,99,255,0.15);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
-  animation: fadeUp .4s ease both;
-}
-.demo-result.show { display: block; }
-.demo-res-header {
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 16px;
-}
-.demo-res-flag { font-size: 32px; }
-.demo-res-name {
-  font-family: var(--font-head);
-  font-size: 22px; color: white;
-}
-.demo-res-meta { font-size: 12px; color: rgba(255,255,255,0.35); }
-
-.demo-day-item {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.demo-day-item:last-child { border-bottom: none; }
-.demo-day-num {
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  background: var(--blue);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700;
-  color: white;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.demo-day-title { font-size: 13px; font-weight: 600; color: white; margin-bottom: 4px; }
-.demo-day-acts { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.6; }
-
-.demo-cta-row {
-  display: flex; align-items: center; gap: 12px; justify-content: center;
-}
-.demo-cta-label { font-size: 13px; color: rgba(255,255,255,0.35); }
-
-/* ── TESTIMONIALS ── */
-.testimonials-section { background: var(--bg); }
-.testimonials-inner { max-width: 1200px; margin: 0 auto; }
-.testimonials-header { text-align: center; margin-bottom: 60px; }
-
-.testimonials-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-@media(max-width:768px) { .testimonials-grid { grid-template-columns: 1fr; } }
-
-.testimonial-card {
-  background: white;
-  border-radius: var(--r-xl);
-  padding: 28px;
-  box-shadow: 0 2px 20px rgba(37,99,255,0.05);
-  border: 1px solid rgba(37,99,255,0.06);
-  transition: all .3s;
-  position: relative;
-}
-.testimonial-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(37,99,255,0.1);
-}
-.testimonial-card.featured {
-  background: linear-gradient(135deg, var(--midnight), #1a2a4a);
-  border-color: rgba(37,99,255,0.2);
-}
-.testimonial-card.featured .test-quote { color: rgba(255,255,255,0.8); }
-.testimonial-card.featured .test-name  { color: white; }
-.testimonial-card.featured .test-trip  { color: rgba(255,255,255,0.35); }
-
-.test-stars { color: var(--amber); font-size: 14px; margin-bottom: 16px; }
-.test-quote {
-  font-family: var(--font-head);
-  font-style: italic;
-  font-size: 18px;
-  color: var(--text);
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-.test-author { display: flex; align-items: center; gap: 12px; }
-.test-avatar {
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  background: var(--blue);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-head);
-  font-style: italic;
-  font-size: 18px;
-  color: white;
-  flex-shrink: 0;
-}
-.test-name { font-size: 14px; font-weight: 600; color: var(--text); }
-.test-trip { font-size: 12px; color: var(--muted); margin-top: 1px; }
-
-/* ── PRICING ── */
-.pricing-section {
-  background: var(--midnight);
-  position: relative; overflow: hidden;
-}
-.pricing-section::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 50% 100%, rgba(37,99,255,0.1) 0%, transparent 60%);
-}
-.pricing-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; text-align: center; }
-.pricing-inner .section-h2 { color: white; }
-.pricing-inner .section-sub { color: rgba(255,255,255,0.35); margin-bottom: 56px; }
-
-.pricing-toggle {
-  display: inline-flex;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 100px;
-  padding: 4px;
-  margin-bottom: 48px;
-  gap: 4px;
-}
-.pt-btn {
-  padding: 8px 20px;
-  border-radius: 100px;
-  border: none;
-  font-family: var(--font-body);
-  font-size: 14px; font-weight: 500;
-  cursor: pointer;
-  transition: all .2s;
-  background: none;
-  color: rgba(255,255,255,0.4);
-}
-.pt-btn.active { background: var(--blue); color: white; }
-
-.pricing-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  gap: 20px;
-}
-@media(max-width:640px) { .pricing-grid { grid-template-columns: 1fr; } }
-
-.pricing-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--r-xl);
-  padding: 32px;
-  text-align: left;
-  transition: all .3s;
-  position: relative;
-  overflow: hidden;
-}
-.pricing-card.pro {
-  background: linear-gradient(135deg, rgba(37,99,255,0.15), rgba(29,78,216,0.1));
-  border-color: rgba(37,99,255,0.3);
-}
-.pricing-card.pro::before {
-  content: '★ Most Popular';
-  position: absolute; top: 20px; right: 20px;
-  background: var(--blue);
-  color: white;
-  font-size: 11px; font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 100px;
-}
-
-.pc-plan { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.4); margin-bottom: 8px; }
-.pc-price {
-  font-family: var(--font-head);
-  font-size: 48px;
-  color: white;
-  line-height: 1;
-  margin-bottom: 4px;
-}
-.pc-price span { font-size: 20px; color: rgba(255,255,255,0.4); vertical-align: top; margin-top: 12px; display: inline-block; }
-.pc-price-sub { font-size: 13px; color: rgba(255,255,255,0.3); margin-bottom: 24px; }
-.pc-price-alt { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 4px; }
-
-.pc-divider { height: 1px; background: rgba(255,255,255,0.06); margin-bottom: 20px; }
-
-.pc-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-.pc-feat { display: flex; align-items: center; gap: 10px; font-size: 14px; color: rgba(255,255,255,0.65); }
-.pc-feat-check { color: var(--green); font-size: 13px; }
-.pc-feat-lock { color: rgba(255,255,255,0.2); font-size: 13px; }
-
-.pc-btn {
-  width: 100%;
-  padding: 14px;
-  border-radius: var(--r);
-  border: none;
-  font-family: var(--font-body);
-  font-size: 15px; font-weight: 600;
-  cursor: pointer;
-  transition: all .2s;
-  text-decoration: none;
-  display: flex; align-items: center; justify-content: center;
-}
-.pc-btn.free { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.1); }
-.pc-btn.free:hover { background: rgba(255,255,255,0.1); color: white; }
-.pc-btn.pro-btn { background: var(--blue); color: white; box-shadow: 0 8px 24px rgba(37,99,255,0.4); }
-.pc-btn.pro-btn:hover { background: var(--blue-d); transform: translateY(-1px); box-shadow: 0 12px 32px rgba(37,99,255,0.5); }
-
-/* ── FINAL CTA ── */
-.final-cta-section {
-  background: linear-gradient(135deg, #060C17 0%, var(--midnight) 50%, #060C17 100%);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.final-cta-section::before {
-  content: '';
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
-  width: 800px; height: 400px;
-  background: radial-gradient(ellipse, rgba(37,99,255,0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-.final-cta-inner {
-  position: relative; z-index: 1;
-  max-width: 700px; margin: 0 auto;
-}
-.final-cta-inner .section-h2 { color: white; font-size: clamp(40px,6vw,72px); }
-.final-cta-inner .section-sub { color: rgba(255,255,255,0.35); margin-bottom: 48px; }
-.final-flags { font-size: 28px; margin-bottom: 16px; letter-spacing: 4px; }
-.final-trust { font-size: 13px; color: rgba(255,255,255,0.2); margin-top: 16px; letter-spacing: 0.5px; }
-
-/* ── FOOTER ── */
-footer {
-  background: #050A14;
-  border-top: 1px solid rgba(255,255,255,0.05);
-  padding: 60px 40px 40px;
-}
-.footer-inner {
-  max-width: 1200px; margin: 0 auto;
-}
-.footer-top {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 40px;
-  margin-bottom: 48px;
-}
-@media(max-width:768px) { .footer-top { grid-template-columns: 1fr; } }
-.footer-brand-name {
-  font-family: var(--font-head);
-  font-size: 24px;
-  color: white;
-  margin-bottom: 12px;
-}
-.footer-brand-desc {
-  font-size: 14px;
-  color: rgba(255,255,255,0.25);
-  line-height: 1.7;
-  margin-bottom: 20px;
-  max-width: 260px;
-}
-.footer-col-title {
-  font-size: 12px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 1px;
-  color: rgba(255,255,255,0.3);
-  margin-bottom: 16px;
-}
-.footer-link {
-  display: block;
-  font-size: 14px;
-  color: rgba(255,255,255,0.35);
-  text-decoration: none;
-  margin-bottom: 10px;
-  transition: color .2s;
-}
-.footer-link:hover { color: white; }
-.footer-bottom {
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 16px;
-  border-top: 1px solid rgba(255,255,255,0.05);
-  padding-top: 24px;
-}
-.footer-copy { font-size: 13px; color: rgba(255,255,255,0.2); }
-.footer-india { font-size: 13px; color: rgba(255,255,255,0.2); }
-
-/* ── UTILITY ── */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.container { max-width: 1200px; margin: 0 auto; }
-.text-center { text-align: center; }
-
-@media(max-width:768px) {
-  .nav { padding: 0 20px; }
-  .nav-links { display: none; }
-  section { padding: 80px 20px; }
-  .hero { padding: 120px 20px 60px; }
-  .hero-phones { height: 360px; }
-  .phone-main .phone { width: 200px; }
-  .phone-left, .phone-right { display: none; }
-  footer { padding: 40px 20px; }
-}
+  --ink: #0A0A0A;
+  --cream: #F8F5EF;
+  --warm: #EDE8DC;
+  --border: rgba(0,0,0,0.08);
+  --muted: #7A7164;
+  --accent: #E8633A;
+  --accent2: #D4522A;
+  --teal: #1A9B8A;
+  --gold: #C9982A;
+  --surface: #FFFFFF;
+  --shadow: 0 4px 24px rgba(0,0,0,0.07);
+  --shadow-lg: 0 24px 64px rgba(0,0,0,0.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* Grain overlay */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:1000;
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 48px;
+  background:rgba(248,245,239,0.9);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+}
+@media(max-width:768px){nav{padding:16px 20px;}}
+
+.logo{
+  font-family:'Playfair Display',serif;
+  font-size:1.5rem;font-weight:700;
+  color:var(--ink);letter-spacing:-0.5px;
+}
+.logo em{color:var(--accent);font-style:italic;}
+
+.nav-right{display:flex;align-items:center;gap:16px;}
+.nav-btn{
+  padding:9px 22px;border-radius:100px;
+  font-family:'DM Sans',sans-serif;
+  font-size:0.82rem;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+  border:1.5px solid var(--border);
+  background:none;color:var(--muted);
+}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+.nav-btn-primary{
+  background:var(--ink);color:white;
+  border-color:var(--ink);
+}
+.nav-btn-primary:hover{background:var(--accent);border-color:var(--accent);color:white;}
+
+/* HERO */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:120px 24px 80px;
+  text-align:center;
+  position:relative;
+}
+
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:0.72rem;font-weight:600;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:28px;
+  opacity:0;animation:fadeUp 0.6s 0.2s ease both;
+}
+.hero-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
+
+.hero h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(3rem,8vw,6.5rem);
+  font-weight:900;
+  line-height:1.0;
+  letter-spacing:-2px;
+  max-width:900px;
+  margin-bottom:28px;
+  opacity:0;animation:fadeUp 0.6s 0.35s ease both;
+}
+.hero h1 em{
+  color:var(--accent);
+  font-style:italic;
+}
+
+.hero-sub{
+  font-size:1.1rem;
+  color:var(--muted);
+  line-height:1.8;
+  max-width:520px;
+  margin:0 auto 48px;
+  opacity:0;animation:fadeUp 0.6s 0.5s ease both;
+  font-weight:300;
+}
+
+/* TRIP SETUP FORM */
+.trip-setup{
+  width:100%;max-width:720px;
+  background:var(--surface);
+  border-radius:28px;
+  padding:36px;
+  box-shadow:var(--shadow-lg);
+  border:1px solid var(--border);
+  opacity:0;animation:fadeUp 0.6s 0.65s ease both;
+  position:relative;z-index:2;
+}
+
+.setup-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem;font-weight:700;
+  margin-bottom:24px;
+  display:flex;align-items:center;gap:10px;
+}
+
+.from-to{
+  display:grid;grid-template-columns:1fr auto 1fr;
+  gap:12px;align-items:center;margin-bottom:20px;
+}
+@media(max-width:600px){.from-to{grid-template-columns:1fr;}}
+
+.from-to-arrow{
+  font-size:1.2rem;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;
+}
+
+.input-group{
+  display:flex;flex-direction:column;gap:6px;
+}
+.input-label{
+  font-size:0.68rem;font-weight:700;
+  letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--muted);
+}
+.input-field{
+  width:100%;
+  background:var(--warm);
+  border:1.5px solid var(--border);
+  border-radius:14px;
+  padding:13px 16px;
+  font-family:'DM Sans',sans-serif;
+  font-size:0.95rem;color:var(--ink);
+  outline:none;transition:all 0.2s;
+}
+.input-field:focus{
+  border-color:var(--accent);
+  background:white;
+  box-shadow:0 0 0 4px rgba(232,99,58,0.08);
+}
+.input-field::placeholder{color:#B0A898;}
+
+.setup-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:14px;margin-bottom:20px;
+}
+@media(max-width:600px){.setup-row{grid-template-columns:1fr 1fr;}}
+
+/* Vibes */
+.vibes-label{
+  font-size:0.68rem;font-weight:700;
+  letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px;
+}
+.vibes-wrap{
+  display:flex;gap:8px;flex-wrap:wrap;
+  margin-bottom:24px;
+}
+.vibe{
+  padding:7px 16px;border-radius:100px;
+  border:1.5px solid var(--border);
+  background:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  font-size:0.8rem;font-weight:500;
+  color:var(--muted);transition:all 0.2s;
+}
+.vibe.active{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:white;
+}
+.vibe:hover:not(.active){border-color:var(--accent);color:var(--accent);}
+
+/* Start button */
+.start-btn{
+  width:100%;padding:17px;
+  background:var(--ink);color:white;
+  border:none;border-radius:100px;
+  font-family:'DM Sans',sans-serif;
+  font-size:1rem;font-weight:700;
+  cursor:pointer;transition:all 0.25s;
+  display:flex;align-items:center;
+  justify-content:center;gap:12px;
+  letter-spacing:0.3px;
+}
+.start-btn:hover{background:var(--accent);transform:translateY(-2px);box-shadow:0 12px 32px rgba(232,99,58,0.35);}
+.start-btn:active{transform:translateY(0);}
+
+/* FEATURES */
+.features{
+  padding:100px 24px;
+  max-width:1100px;margin:0 auto;
+}
+.features-eyebrow{
+  font-size:0.72rem;font-weight:600;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);text-align:center;
+  margin-bottom:16px;
+}
+.features-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2rem,4vw,3rem);
+  font-weight:900;text-align:center;
+  letter-spacing:-0.5px;margin-bottom:60px;
+}
+
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+@media(max-width:900px){.features-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:600px){.features-grid{grid-template-columns:1fr;}}
+
+.feature-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:28px;
+  transition:all 0.25s;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+}
+.feature-card::before{
+  content:'';
+  position:absolute;inset:0;
+  opacity:0;transition:opacity 0.25s;
+}
+.feature-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.feature-card:hover::before{opacity:1;}
+
+.fc-before::before{background:linear-gradient(135deg,rgba(232,99,58,0.04),transparent);}
+.fc-during::before{background:linear-gradient(135deg,rgba(26,155,138,0.04),transparent);}
+.fc-after::before{background:linear-gradient(135deg,rgba(201,152,42,0.04),transparent);}
+.fc-discover::before{background:linear-gradient(135deg,rgba(124,58,237,0.04),transparent);}
+.fc-translate::before{background:linear-gradient(135deg,rgba(59,130,246,0.04),transparent);}
+.fc-tools::before{background:linear-gradient(135deg,rgba(16,185,129,0.04),transparent);}
+
+.fc-icon{
+  width:52px;height:52px;
+  border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;margin-bottom:18px;
+}
+.fc-tag{
+  display:inline-block;
+  font-size:0.62rem;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;
+  padding:3px 10px;border-radius:100px;
+  margin-bottom:12px;
+}
+.fc-name{
+  font-family:'Playfair Display',serif;
+  font-size:1.2rem;font-weight:700;
+  margin-bottom:8px;letter-spacing:-0.3px;
+}
+.fc-desc{
+  font-size:0.85rem;color:var(--muted);
+  line-height:1.7;margin-bottom:16px;
+}
+.fc-features{
+  display:flex;flex-direction:column;gap:5px;
+}
+.fc-feature{
+  font-size:0.78rem;color:var(--muted);
+  display:flex;align-items:center;gap:6px;
+}
+.fc-feature::before{content:'→';color:var(--accent);font-size:0.65rem;}
+
+.fc-arrow{
+  position:absolute;top:28px;right:28px;
+  font-size:0.9rem;color:var(--border);
+  transition:all 0.2s;
+}
+.feature-card:hover .fc-arrow{color:var(--accent);transform:translate(2px,-2px);}
+
+/* Before */
+.fc-before .fc-icon{background:rgba(232,99,58,0.1);}
+.fc-before .fc-tag{background:rgba(232,99,58,0.1);color:var(--accent);}
+/* During */
+.fc-during .fc-icon{background:rgba(26,155,138,0.1);}
+.fc-during .fc-tag{background:rgba(26,155,138,0.1);color:var(--teal);}
+/* After */
+.fc-after .fc-icon{background:rgba(201,152,42,0.1);}
+.fc-after .fc-tag{background:rgba(201,152,42,0.1);color:var(--gold);}
+/* Discover */
+.fc-discover .fc-icon{background:rgba(124,58,237,0.1);}
+.fc-discover .fc-tag{background:rgba(124,58,237,0.1);color:#7C3AED;}
+/* Translate */
+.fc-translate .fc-icon{background:rgba(59,130,246,0.1);}
+.fc-translate .fc-tag{background:rgba(59,130,246,0.1);color:#3B82F6;}
+/* Tools */
+.fc-tools .fc-icon{background:rgba(16,185,129,0.1);}
+.fc-tools .fc-tag{background:rgba(16,185,129,0.1);color:#10B981;}
+
+/* STATS STRIP */
+.stats-strip{
+  background:var(--ink);
+  padding:60px 24px;
+  margin:0;
+}
+.stats-inner{
+  max-width:900px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:32px;text-align:center;
+}
+@media(max-width:700px){.stats-inner{grid-template-columns:repeat(2,1fr);}}
+.stat-num{
+  font-family:'Playfair Display',serif;
+  font-size:2.5rem;font-weight:700;
+  color:white;margin-bottom:6px;
+}
+.stat-label{
+  font-size:0.78rem;font-weight:500;
+  color:rgba(255,255,255,0.45);
+  text-transform:uppercase;letter-spacing:1px;
+}
+
+/* SAVED TRIPS */
+.saved-section{
+  padding:80px 24px;
+  max-width:1100px;margin:0 auto;
+  display:none;
+}
+.saved-section.show{display:block;}
+.saved-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.8rem;margin-bottom:24px;
+}
+.saved-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+@media(max-width:700px){.saved-grid{grid-template-columns:1fr;}}
+.saved-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;overflow:hidden;
+  cursor:pointer;transition:all 0.2s;
+}
+.saved-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+.saved-card-hero{
+  height:100px;
+  background:linear-gradient(135deg,var(--accent),#8B5CF6);
+  display:flex;align-items:flex-end;padding:16px;
+}
+.saved-card-name{
+  font-family:'Playfair Display',serif;
+  font-size:1.1rem;color:white;font-weight:700;
+}
+.saved-card-body{padding:16px;}
+.saved-card-meta{font-size:0.78rem;color:var(--muted);}
+.load-trip-btn{
+  margin-top:10px;width:100%;
+  padding:9px;background:var(--ink);color:white;
+  border:none;border-radius:100px;
+  font-family:'DM Sans',sans-serif;
+  font-size:0.78rem;font-weight:700;cursor:pointer;
+  transition:all 0.2s;
+}
+.load-trip-btn:hover{background:var(--accent);}
+
+/* FOOTER */
+footer{
+  background:var(--ink);
+  padding:48px;
+  display:flex;align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;gap:20px;
+}
+@media(max-width:600px){footer{padding:32px 20px;}}
+.footer-logo{
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem;font-weight:700;
+  color:white;
+}
+.footer-logo em{color:var(--accent);}
+.footer-links{display:flex;gap:24px;}
+.footer-link{
+  font-size:0.82rem;color:rgba(255,255,255,0.4);
+  text-decoration:none;transition:color 0.2s;
+}
+.footer-link:hover{color:white;}
+.footer-copy{font-size:0.78rem;color:rgba(255,255,255,0.25);}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
 </style>
 </head>
 <body>
 
-<!-- Custom cursor -->
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
-
 <!-- NAV -->
-<nav class="nav" id="nav">
-  <a href="/" class="nav-logo">
-    <div class="nav-logo-mark">Y</div>
-    <span class="nav-logo-name">yaply.</span>
-  </a>
-  <div class="nav-links">
-    <a href="#features" class="nav-link">Features</a>
-    <a href="#demo" class="nav-link">Try it</a>
-    <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="#stories" class="nav-link">Stories</a>
-    <a href="/login" class="nav-link">Sign in</a>
-    <a href="/login" class="nav-cta">Plan free →</a>
+<nav>
+  <div class="logo">ya<em>ply</em></div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="document.getElementById('savedSection').scrollIntoView({behavior:'smooth'})">My Trips</button>
+    <button class="nav-btn nav-btn-primary" onclick="document.getElementById('tripSetup').scrollIntoView({behavior:'smooth'})">Plan a Trip →</button>
   </div>
 </nav>
 
-<!-- ══════════════════════════════════════
-     HERO
-══════════════════════════════════════ -->
-<section class="hero" id="home">
-  <div class="hero-orb orb-1"></div>
-  <div class="hero-orb orb-2"></div>
-  <div class="hero-orb orb-3"></div>
-  <div class="hero-grid"></div>
-  <div class="particles" id="particles"></div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">
+    <div class="hero-tag-dot"></div>
+    AI Travel Companion
+  </div>
+  <h1>Travel smarter.<br/>Worry <em>less.</em></h1>
+  <p class="hero-sub">From planning your first flight to navigating a foreign emergency — Yaply has you covered before, during and after every trip.</p>
 
-  <div class="hero-content">
-    <div class="hero-badge">
-      <div class="hero-badge-dot"></div>
-      AI Travel Operating System · Live at yaply.live
+  <!-- TRIP SETUP -->
+  <div class="trip-setup" id="tripSetup">
+    <div class="setup-title">✈️ Where are you going?</div>
+
+    <div class="from-to">
+      <div class="input-group">
+        <label class="input-label">🛫 Flying From</label>
+        <input class="input-field" type="text" id="origin" placeholder="Mumbai, India" autocomplete="off"/>
+      </div>
+      <div class="from-to-arrow">→</div>
+      <div class="input-group">
+        <label class="input-label">🛬 Going To</label>
+        <input class="input-field" type="text" id="destination" placeholder="Tokyo, Japan" autocomplete="off"/>
+      </div>
     </div>
 
-    <h1 class="hero-h1">
-      Your entire trip.<br/>
-      <em>Planned in seconds.</em>
-    </h1>
-
-    <p class="hero-sub">
-      The AI that builds your itinerary, translates live in any language, identifies any place from a photo, coordinates your travel squad, and keeps you safe — all in one app.
-    </p>
-
-    <div class="hero-ctas">
-      <a href="/login" class="btn-primary">
-        ✈️ &nbsp;Plan My Trip Free
-      </a>
-      <a href="#demo" class="btn-ghost">
-        ▷ &nbsp;See it in action
-      </a>
+    <div class="setup-row">
+      <div class="input-group">
+        <label class="input-label">📅 Days</label>
+        <input class="input-field" type="number" id="days" value="7" min="1" max="60"/>
+      </div>
+      <div class="input-group">
+        <label class="input-label">👥 People</label>
+        <input class="input-field" type="number" id="people" value="2" min="1"/>
+      </div>
+      <div class="input-group">
+        <label class="input-label">💰 Budget</label>
+        <div style="display:flex;gap:6px;">
+          <select class="input-field" id="currency" style="width:80px;flex-shrink:0;padding-left:10px;">
+            <option value="INR">₹</option>
+            <option value="USD">$</option>
+            <option value="EUR">€</option>
+            <option value="GBP">£</option>
+          </select>
+          <input class="input-field" type="text" id="budget" placeholder="80,000" style="flex:1;"/>
+        </div>
+      </div>
     </div>
 
-    <!-- Phone mockups -->
-    <div class="hero-phones">
+    <div class="vibes-label">🎭 Travel Vibe (pick all that apply)</div>
+    <div class="vibes-wrap">
+      <button class="vibe active" onclick="toggleVibe(this,'Adventure')">🏔️ Adventure</button>
+      <button class="vibe" onclick="toggleVibe(this,'Cultural')">🏛️ Cultural</button>
+      <button class="vibe" onclick="toggleVibe(this,'Relaxation')">🏖️ Relaxation</button>
+      <button class="vibe" onclick="toggleVibe(this,'Foodie')">🍜 Foodie</button>
+      <button class="vibe" onclick="toggleVibe(this,'Budget')">💸 Budget</button>
+      <button class="vibe" onclick="toggleVibe(this,'Luxury')">✨ Luxury</button>
+      <button class="vibe" onclick="toggleVibe(this,'Romantic')">💑 Romantic</button>
+      <button class="vibe" onclick="toggleVibe(this,'Family')">👨‍👩‍👧 Family</button>
+      <button class="vibe" onclick="toggleVibe(this,'Solo')">🧳 Solo</button>
+      <button class="vibe" onclick="toggleVibe(this,'Wellness')">🧘 Wellness</button>
+    </div>
 
-      <!-- Left phone — Groups -->
-      <div class="phone-wrap phone-left">
-        <div class="phone">
-          <div class="phone-screen ps-translate">
-            <div class="ps-map-area" style="height:80px;margin-bottom:8px;">
-              <div class="ps-map-grid"></div>
-              <div class="ps-map-pin" style="left:30%;top:25%;background:rgba(37,99,255,0.15);border-color:#2563FF;">
-                <div class="ps-pin-inner">🧑</div>
-              </div>
-              <div class="ps-map-pin" style="left:60%;top:45%;background:rgba(255,122,89,0.15);border-color:#FF7A59;animation-delay:.5s;">
-                <div class="ps-pin-inner">👩</div>
-              </div>
-            </div>
-            <div class="ps-member-row">
-              <div class="ps-member-av" style="border-color:#FF7A59;">👩</div>
-              <div class="ps-member-name">Priya · Asakusa</div>
-              <div class="ps-member-dist" style="color:#18C29C;">1.2km</div>
-            </div>
-            <div class="ps-member-row">
-              <div class="ps-member-av" style="border-color:#F5B942;">👨‍🦱</div>
-              <div class="ps-member-name">Raj · Tsukiji</div>
-              <div class="ps-member-dist" style="color:#18C29C;">2.8km</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main phone — Trip plan -->
-      <div class="phone-wrap phone-main">
-        <div class="phone">
-          <div class="phone-screen">
-            <div class="ps-header">
-              <div class="ps-dest">AI Generated</div>
-              <div class="ps-name">🇯🇵 Tokyo, Japan</div>
-              <div class="ps-meta">5 days · 2 people · ₹80,000</div>
-              <div class="ps-progress"><div class="ps-progress-fill"></div></div>
-            </div>
-            <div class="ps-day">
-              <div class="ps-day-label">Day 1 — Arrival</div>
-              <div class="ps-activity">
-                <span>🌅</span>
-                <span>Senso-ji Temple</span>
-                <span class="ps-activity-time">9 AM</span>
-              </div>
-              <div class="ps-activity">
-                <span>🍜</span>
-                <span>Ichiran Ramen</span>
-                <span class="ps-activity-time">1 PM</span>
-              </div>
-              <div class="ps-activity">
-                <span>🌃</span>
-                <span>Shibuya Crossing</span>
-                <span class="ps-activity-time">7 PM</span>
-              </div>
-            </div>
-            <div class="ps-day">
-              <div class="ps-day-label">Day 2 — Culture</div>
-              <div class="ps-activity">
-                <span>🏯</span>
-                <span>TeamLab Planets</span>
-                <span class="ps-activity-time">10 AM</span>
-              </div>
-              <div class="ps-activity">
-                <span>🛍️</span>
-                <span>Harajuku</span>
-                <span class="ps-activity-time">3 PM</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right phone — Translation -->
-      <div class="phone-wrap phone-right">
-        <div class="phone">
-          <div class="phone-screen ps-translate">
-            <div class="ps-lang-row">
-              <span class="ps-lang-active">🇮🇳 Hindi</span>
-              <span>⇄</span>
-              <span class="ps-lang-active">🇯🇵 Japanese</span>
-            </div>
-            <div class="ps-mic-area">
-              <div class="ps-mic-icon">🎙️</div>
-              <div class="ps-wave">
-                <div class="ps-wave-bar"></div>
-                <div class="ps-wave-bar"></div>
-                <div class="ps-wave-bar"></div>
-                <div class="ps-wave-bar"></div>
-                <div class="ps-wave-bar"></div>
-                <div class="ps-wave-bar"></div>
-              </div>
-            </div>
-            <div class="ps-translated-text">
-              これはいくらですか？
-              <div class="ps-translated-rom">Kore wa ikura desu ka?</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /hero-phones -->
-
-  </div><!-- /hero-content -->
+    <button class="start-btn" onclick="startTrip()">
+      🚀 Start Planning My Trip
+    </button>
+  </div>
 </section>
 
-<!-- ══════════════════════════════════════
-     TICKER
-══════════════════════════════════════ -->
-<div class="ticker-section">
-  <div class="ticker-track" id="ticker">
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>AI Trip Planning</strong> · Full itinerary in seconds</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Live Translation</strong> · 50+ languages</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Place Finder</strong> · Any photo → exact location</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Yaply Groups</strong> · Live squad coordination</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Scam Protection</strong> · Real-time alerts</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Travel Diary</strong> · AI-powered journal</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>47 Countries</strong> · Trusted globally</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Made in India</strong></div>
-    <!-- Duplicate for seamless loop -->
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>AI Trip Planning</strong> · Full itinerary in seconds</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Live Translation</strong> · 50+ languages</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Place Finder</strong> · Any photo → exact location</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Yaply Groups</strong> · Live squad coordination</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Scam Protection</strong> · Real-time alerts</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Travel Diary</strong> · AI-powered journal</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>47 Countries</strong> · Trusted globally</div>
-    <div class="ticker-item"><div class="ticker-dot"></div> <strong>Made in India</strong></div>
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div><div class="stat-num">25+</div><div class="stat-label">AI Features</div></div>
+    <div><div class="stat-num">50+</div><div class="stat-label">Languages</div></div>
+    <div><div class="stat-num">190+</div><div class="stat-label">Countries</div></div>
+    <div><div class="stat-num">100%</div><div class="stat-label">Free to Use</div></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     THREE PHASES
-══════════════════════════════════════ -->
-<section class="phases-section">
-  <div class="phases-inner">
-    <div class="phases-header reveal">
-      <div class="section-label">One app · Every journey</div>
-      <h2 class="section-h2">Three phases.<br/><em>Total control.</em></h2>
-      <p class="section-sub" style="color:rgba(255,255,255,0.35);max-width:500px;margin:0 auto;">
-        From the moment you decide to travel, to the memory that lasts forever.
-      </p>
-    </div>
+<!-- FEATURES -->
+<section class="features">
+  <div class="features-eyebrow">Everything you need</div>
+  <div class="features-title">One app. Every journey.</div>
 
-    <div class="phases-grid">
-      <div class="phase-card before reveal" style="transition-delay:.1s">
-        <div class="phase-icon">✈️</div>
-        <div class="phase-label">Before Your Trip</div>
-        <div class="phase-title">Plan it perfectly.</div>
-        <div class="phase-desc">AI itinerary, visa checks, budget planning, door-to-door journey — everything sorted before you leave home.</div>
-        <div class="phase-features">
-          <div class="phase-feat"><div class="phase-feat-dot"></div>AI trip planner (single + multi-city)</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Door-to-door journey planner</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Visa, passport & packing checker</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Budget breakdown & SIM guide</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Download itinerary for offline use</div>
-        </div>
-      </div>
+  <div class="features-grid">
 
-      <div class="phase-card during reveal" style="transition-delay:.2s">
-        <div class="phase-icon">🌍</div>
-        <div class="phase-label">During Your Trip</div>
-        <div class="phase-title">Live with confidence.</div>
-        <div class="phase-desc">Translate anything live, scan menus with your camera, avoid scams, and stay safe — Yaply has your back 24/7.</div>
-        <div class="phase-features">
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Live voice translation · 50+ languages</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Camera scan — menus, signs, anything</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Scam alerts & price checker</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Medical SOS & safe route planner</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Squad coordination via Yaply Groups</div>
-        </div>
-      </div>
-
-      <div class="phase-card after reveal" style="transition-delay:.3s">
-        <div class="phase-icon">📖</div>
-        <div class="phase-label">After Your Trip</div>
-        <div class="phase-title">Remember everything.</div>
-        <div class="phase-desc">AI turns your diary into a beautiful travel story. Split bills, track expenses, and share your journey with the world.</div>
-        <div class="phase-features">
-          <div class="phase-feat"><div class="phase-feat-dot"></div>AI travel story from your diary</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Expense tracker & bill splitter</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Trip stats & highlight reel</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Review generator</div>
-          <div class="phase-feat"><div class="phase-feat-dot"></div>Share your trip as a beautiful card</div>
-        </div>
+    <div class="feature-card fc-before" onclick="goTo('plan')">
+      <div class="fc-arrow">↗</div>
+      <div class="fc-icon">✈️</div>
+      <div class="fc-tag">Before Trip</div>
+      <div class="fc-name">Trip Planner</div>
+      <div class="fc-desc">AI builds your complete itinerary, checks visas, forecasts weather and plans your route door-to-door.</div>
+      <div class="fc-features">
+        <div class="fc-feature">Full day-by-day itinerary with photos</div>
+        <div class="fc-feature">Door-to-door journey planner</div>
+        <div class="fc-feature">Visa, weather, packing & more</div>
       </div>
     </div>
+
+    <div class="feature-card fc-during" onclick="goTo('during')">
+      <div class="fc-arrow">↗</div>
+      <div class="fc-icon">🆘</div>
+      <div class="fc-tag">During Trip</div>
+      <div class="fc-name">Emergency Tools</div>
+      <div class="fc-desc">Real-time help for medical emergencies, scams, pricing, safe routes and flight rights.</div>
+      <div class="fc-features">
+        <div class="fc-feature">Medical symptom translator</div>
+        <div class="fc-feature">Price fairness checker</div>
+        <div class="fc-feature">Scam alerts + safe routes</div>
+      </div>
+    </div>
+
+    <div class="feature-card fc-after" onclick="goTo('after')">
+      <div class="fc-arrow">↗</div>
+      <div class="fc-icon">📖</div>
+      <div class="fc-tag">After Trip</div>
+      <div class="fc-name">Memories & More</div>
+      <div class="fc-desc">AI writes your travel journal, settles group bills, generates reviews and plans your next adventure.</div>
+      <div class="fc-features">
+        <div class="fc-feature">AI trip journal writer</div>
+        <div class="fc-feature">Group expense splitter</div>
+        <div class="fc-feature">Next trip recommendations</div>
+      </div>
+    </div>
+
+    <div class="feature-card fc-discover" onclick="goTo('discover')">
+      <div class="fc-arrow">↗</div>
+      <div class="fc-icon">🔍</div>
+      <div class="fc-tag">Discover</div>
+      <div class="fc-name">Place Finder</div>
+      <div class="fc-desc">Saw a beautiful place on Instagram or TikTok? Upload the screenshot — Yaply identifies it instantly.</div>
+      <div class="fc-features">
+        <div class="fc-feature">Photo identification with AI</div>
+        <div class="fc-feature">Text description search</div>
+        <div class="fc-feature">Add to your itinerary</div>
+      </div>
+    </div>
+
+    <div class="feature-card fc-translate" onclick="goTo('translate')">
+      <div class="fc-arrow">↗</div>
+      <div class="fc-icon">🎙️</div>
+      <div class="fc-tag">Translate</div>
+      <div class="fc-name">Live Translation</div>
+      <div class="fc-desc">Real-time voice translation, two-person conversation mode and camera text translation.</div>
+      <div class="fc-features">
+        <div class="fc-feature">Live streaming translation</div>
+        <div class="fc-feature">Two-way conversation mode</div>
+        <div class="fc-feature">Camera text scanner</div>
+      </div>
+    </div>
+
+    <div class="feature-card fc-tools" onclick="goTo('tools')">
+      <div class="fc-arrow">↗</div>
+      <div class="fc-icon">🛠️</div>
+      <div class="fc-tag">Smart Tools</div>
+      <div class="fc-name">Travel Toolkit</div>
+      <div class="fc-desc">Passport checker, jet lag calculator, festival calendar, luggage rules and emergency card generator.</div>
+      <div class="fc-features">
+        <div class="fc-feature">Passport validity checker</div>
+        <div class="fc-feature">Jet lag recovery plan</div>
+        <div class="fc-feature">Festival & holiday calendar</div>
+      </div>
+    </div>
+
   </div>
 </section>
 
-<!-- ══════════════════════════════════════
-     FEATURE SPOTLIGHTS
-══════════════════════════════════════ -->
-<section id="features" style="padding:120px 40px;background:var(--bg);">
-<div class="container">
-
-  <div class="features-header reveal">
-    <div class="section-label">Wow features</div>
-    <h2 class="section-h2">Features that feel<br/><em>like magic.</em></h2>
-    <p class="section-sub" style="max-width:500px;margin:0 auto;">Four things no other travel app does. Built for real travellers.</p>
-  </div>
-
-  <!-- FEATURE 1 — AI TRIP PLANNER -->
-  <div class="feature-spot">
-    <div class="feature-text-side reveal-l">
-      <div class="feature-number">01</div>
-      <div class="feature-chip chip-blue">✈️ &nbsp;AI Trip Planner</div>
-      <h3 class="feature-h3">Complete trip.<br/><em>15 seconds.</em></h3>
-      <p class="feature-desc">
-        Type your destination. Yaply's AI instantly generates a complete day-by-day itinerary — with hotels, restaurants, hidden gems, visa info, budget breakdown and a packing list. All perfectly matched to your style.
-      </p>
-      <div class="feature-list">
-        <div class="feature-list-item"><div class="fli-check">✓</div>Day-by-day itinerary with timings</div>
-        <div class="feature-list-item"><div class="fli-check">✓</div>Hidden gems</div>
-        <div class="feature-list-item"><div class="fli-check">✓</div>Visa, vaccinations & cultural guide</div>
-        <div class="feature-list-item"><div class="fli-check">✓</div>Full budget breakdown by category</div>
-        <div class="feature-list-item"><div class="fli-check">✓</div>Multi-city trips up to 6 destinations</div>
-        <div class="feature-list-item"><div class="fli-check">✓</div>Download offline — no wifi needed</div>
-      </div>
-      <a href="/plan" class="feature-cta cta-blue">Try the trip planner &nbsp;→</a>
-    </div>
-    <div class="feature-visual reveal-r">
-      <div class="fv-card">
-        <div class="fv-glow" style="width:300px;height:300px;background:radial-gradient(circle,rgba(37,99,255,0.15),transparent 70%);top:-100px;left:-100px;"></div>
-
-        <div class="trip-gen-header">
-          <div class="trip-gen-flag">🇯🇵</div>
-          <div>
-            <div class="trip-gen-name">Tokyo, Japan</div>
-            <div class="trip-gen-meta">5 days · 2 people · ₹80,000</div>
-          </div>
-        </div>
-
-        <div class="trip-day-card">
-          <div class="trip-day-label">Day 1 — Arrival & Asakusa</div>
-          <div class="trip-activity">
-            <div class="trip-act-icon">🌅</div>
-            <div class="trip-act-name">Senso-ji Temple</div>
-            <div class="trip-act-time">9:00 AM</div>
-            <div class="trip-act-cost">Free</div>
-          </div>
-          <div class="trip-activity">
-            <div class="trip-act-icon">🍜</div>
-            <div class="trip-act-name">Ichiran Ramen · Shinjuku</div>
-            <div class="trip-act-time">1:00 PM</div>
-            <div class="trip-act-cost">₹800</div>
-          </div>
-          <div class="trip-activity">
-            <div class="trip-act-icon">🌃</div>
-            <div class="trip-act-name">Shibuya Crossing</div>
-            <div class="trip-act-time">7:00 PM</div>
-            <div class="trip-act-cost">Free</div>
-          </div>
-        </div>
-
-        <div class="trip-day-card">
-          <div class="trip-day-label">Day 2 — Culture & Art</div>
-          <div class="trip-activity">
-            <div class="trip-act-icon">🏯</div>
-            <div class="trip-act-name">TeamLab Planets</div>
-            <div class="trip-act-time">10:00 AM</div>
-            <div class="trip-act-cost">₹2,400</div>
-          </div>
-          <div class="trip-activity">
-            <div class="trip-act-icon">🛍️</div>
-            <div class="trip-act-name">Harajuku Shopping</div>
-            <div class="trip-act-time">3:00 PM</div>
-            <div class="trip-act-cost">₹3,000</div>
-          </div>
-        </div>
-
-        <div class="ai-generating">
-          <div class="ai-dots">
-            <div class="ai-dot"></div>
-            <div class="ai-dot"></div>
-            <div class="ai-dot"></div>
-          </div>
-          <div class="ai-text">Generating Day 3 — Hidden gems of Kyoto...</div>
-        </div>
-      </div>
-
-      <!-- Floating badges -->
-      <div class="fv-float-badge" style="top:-20px;right:-20px;animation-delay:.5s;">
-        <span class="fb-icon">⚡</span>
-        <div>
-          <div>15 seconds</div>
-          <div class="fb-label">to full itinerary</div>
-        </div>
-      </div>
-      <div class="fv-float-badge" style="bottom:20px;left:-30px;animation-delay:1s;">
-        <span class="fb-icon">🔌</span>
-        <div>
-          <div>Works offline</div>
-          <div class="fb-label">download & go</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FEATURE 2 — PLACE FINDER -->
-  <div class="feature-spot flip">
-    <div class="feature-text-side reveal-r">
-      <div class="feature-number">02</div>
-      <div class="feature-chip chip-green">📸 &nbsp;AI Place Finder</div>
-      <h3 class="feature-h3">Screenshot a reel.<br/><em>Find the place.</em></h3>
-      <p class="feature-desc">
-        Saw a breathtaking place on Instagram but have no idea where it is? Take a screenshot. Yaply's AI identifies the exact location — country, city, landmark — and adds it to your trip plan instantly.
-      </p>
-      <div class="feature-list">
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(24,194,156,0.1);color:var(--green);">✓</div>Upload any photo — Yaply identifies it</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(24,194,156,0.1);color:var(--green);">✓</div>Or describe in words — AI finds it</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(24,194,156,0.1);color:var(--green);">✓</div>97%+ confidence with real sources</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(24,194,156,0.1);color:var(--green);">✓</div>Best time to visit · Entry cost</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(24,194,156,0.1);color:var(--green);">✓</div>One tap to add to your trip plan</div>
-      </div>
-      <a href="/discover" class="feature-cta" style="color:var(--green);border-color:rgba(24,194,156,0.25);background:rgba(24,194,156,0.05);">Try place finder &nbsp;→</a>
-    </div>
-    <div class="feature-visual reveal-l">
-      <div class="fv-card">
-        <div class="fv-glow" style="width:300px;height:300px;background:radial-gradient(circle,rgba(24,194,156,0.12),transparent 70%);bottom:-80px;right:-80px;"></div>
-
-        <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Upload a photo or screenshot</div>
-
-        <div class="pf-photo-area">
-          <div class="pf-photo-emoji">⛩️</div>
-          <div class="pf-scan-overlay">
-            <div class="pf-scan-line"></div>
-          </div>
-          <div class="pf-corners">
-            <div class="pf-corner tl"></div>
-            <div class="pf-corner tr"></div>
-            <div class="pf-corner bl"></div>
-            <div class="pf-corner br"></div>
-          </div>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:rgba(37,99,255,0.06);border-radius:10px;">
-          <div class="ai-dots">
-            <div class="ai-dot"></div>
-            <div class="ai-dot"></div>
-            <div class="ai-dot"></div>
-          </div>
-          <span style="font-size:12px;color:var(--blue);">Analyzing with Yaply Vision AI...</span>
-        </div>
-
-        <div class="pf-result">
-          <div class="pf-result-icon">⛩️</div>
-          <div>
-            <div class="pf-result-name">Fushimi Inari Shrine</div>
-            <div class="pf-result-loc">📍 Kyoto, Japan · Best: Mar–May</div>
-          </div>
-          <div class="pf-result-conf">97% ✓</div>
-        </div>
-
-        <button class="pf-add-btn">
-          <span>+</span> Add to my Tokyo trip
-        </button>
-      </div>
-
-      <div class="fv-float-badge" style="top:-16px;left:20px;animation-delay:.3s;">
-        <span class="fb-icon">🔍</span>
-        <div>
-          <div>Any photo</div>
-          <div class="fb-label">Instagram · Reels · Camera</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FEATURE 3 — LIVE TRANSLATION -->
-  <div class="feature-spot">
-    <div class="feature-text-side reveal-l">
-      <div class="feature-number">03</div>
-      <div class="feature-chip chip-coral">🎙️ &nbsp;Live Translation</div>
-      <h3 class="feature-h3">Speak.<br/><em>Yaply translates.</em></h3>
-      <p class="feature-desc">
-        Speak naturally in Hindi, English or any language. Yaply translates and speaks back in theirs — instantly. Works in restaurants, hospitals, markets and emergencies. Even reads menus with your camera.
-      </p>
-      <div class="feature-list">
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(255,122,89,0.1);color:var(--coral);">✓</div>50+ languages · Real-time voice</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(255,122,89,0.1);color:var(--coral);">✓</div>Camera scan — menus, signs, boards</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(255,122,89,0.1);color:var(--coral);">✓</div>Conversation mode — back and forth</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(255,122,89,0.1);color:var(--coral);">✓</div>Medical emergency phrases included</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(255,122,89,0.1);color:var(--coral);">✓</div>Powered by DeepL — world's most accurate</div>
-      </div>
-      <a href="/translate" class="feature-cta" style="color:var(--coral);border-color:rgba(255,122,89,0.25);background:rgba(255,122,89,0.05);">Try live translation &nbsp;→</a>
-    </div>
-    <div class="feature-visual reveal-r">
-      <div class="fv-card">
-        <div class="fv-glow" style="width:280px;height:280px;background:radial-gradient(circle,rgba(255,122,89,0.1),transparent 70%);top:-60px;right:-60px;"></div>
-
-        <div class="ps-lang-row" style="background:rgba(255,255,255,0.04);border-radius:12px;padding:12px 16px;margin-bottom:16px;">
-          <div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:2px;">From</div>
-            <div style="font-size:14px;font-weight:600;color:white;">🇮🇳 Hindi</div>
-          </div>
-          <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;">⇄</div>
-          <div style="text-align:right;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:2px;">To</div>
-            <div style="font-size:14px;font-weight:600;color:white;">🇯🇵 Japanese</div>
-          </div>
-        </div>
-
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;margin-bottom:14px;">
-          <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:6px;">You said</div>
-          <div style="font-size:15px;color:rgba(255,255,255,0.8);margin-bottom:4px;">यह कितने का है?</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.3);font-style:italic;">Yah kitne ka hai?</div>
-        </div>
-
-        <div style="background:rgba(255,122,89,0.08);border:1px solid rgba(255,122,89,0.15);border-radius:14px;padding:16px;margin-bottom:14px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-size:11px;color:var(--coral);">Translation</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.2);">🔊 Playing</div>
-          </div>
-          <div style="font-size:18px;color:white;margin-bottom:4px;">これはいくらですか？</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.35);font-style:italic;">Kore wa ikura desu ka?</div>
-        </div>
-
-        <div class="ps-mic-area" style="padding:14px;">
-          <div class="ps-mic-icon" style="background:var(--coral);box-shadow:0 0 20px rgba(255,122,89,0.5);">🎙️</div>
-          <div class="ps-wave">
-            <div class="ps-wave-bar" style="background:var(--coral);"></div>
-            <div class="ps-wave-bar" style="background:var(--coral);"></div>
-            <div class="ps-wave-bar" style="background:var(--coral);"></div>
-            <div class="ps-wave-bar" style="background:var(--coral);"></div>
-            <div class="ps-wave-bar" style="background:var(--coral);"></div>
-            <div class="ps-wave-bar" style="background:var(--coral);"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="fv-float-badge" style="bottom:20px;right:-20px;animation-delay:.8s;">
-        <span class="fb-icon">🌐</span>
-        <div>
-          <div>50+ languages</div>
-          <div class="fb-label">powered by DeepL</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FEATURE 4 — YAPLY GROUPS -->
-  <div class="feature-spot flip" style="margin-bottom:0;">
-    <div class="feature-text-side reveal-r">
-      <div class="feature-number">04</div>
-      <div class="feature-chip chip-amber">👥 &nbsp;Yaply Groups</div>
-      <h3 class="feature-h3">Travel together.<br/><em>Stay connected.</em></h3>
-      <p class="feature-desc">
-        The first travel-native group coordination tool. See every friend's live location on a map, chat in real-time, propose meetups with one tap, and send emergency SOS alerts that reach your entire squad instantly.
-      </p>
-      <div class="feature-list">
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(245,185,66,0.1);color:var(--amber);">✓</div>Live location of every squad member</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(245,185,66,0.1);color:var(--amber);">✓</div>Real-time group chat</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(245,185,66,0.1);color:var(--amber);">✓</div>Propose meetups — RSVP in one tap</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(245,185,66,0.1);color:var(--amber);">✓</div>Emergency SOS — alerts entire group</div>
-        <div class="feature-list-item"><div class="fli-check" style="background:rgba(245,185,66,0.1);color:var(--amber);">✓</div>Join with code YAP-XXXX instantly</div>
-      </div>
-      <a href="/groups" class="feature-cta" style="color:var(--amber);border-color:rgba(245,185,66,0.25);background:rgba(245,185,66,0.05);">Create your squad &nbsp;→</a>
-    </div>
-    <div class="feature-visual reveal-l">
-      <div class="fv-card">
-        <div class="fv-glow" style="width:280px;height:280px;background:radial-gradient(circle,rgba(245,185,66,0.08),transparent 70%);top:-60px;left:-60px;"></div>
-
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-          <div style="width:38px;height:38px;border-radius:10px;background:rgba(245,185,66,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;">🗺️</div>
-          <div>
-            <div style="font-size:14px;font-weight:600;color:white;">Tokyo Squad</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.3);">4 members · 3 online 🟢</div>
-          </div>
-          <div style="margin-left:auto;padding:4px 10px;background:rgba(24,194,156,0.1);border:1px solid rgba(24,194,156,0.2);border-radius:100px;font-size:11px;font-weight:600;color:var(--green);">Live</div>
-        </div>
-
-        <div class="gc-map">
-          <div class="gc-map-grid"></div>
-          <div class="gc-pin" style="left:35%;top:20%;background:rgba(37,99,255,0.15);border-color:#2563FF;">
-            <div class="gc-pin-inner">🧑</div>
-          </div>
-          <div class="gc-pin" style="left:58%;top:35%;background:rgba(255,122,89,0.15);border-color:#FF7A59;animation-delay:.4s;">
-            <div class="gc-pin-inner">👩</div>
-          </div>
-          <div class="gc-pin" style="left:22%;top:50%;background:rgba(245,185,66,0.15);border-color:#F5B942;animation-delay:.8s;">
-            <div class="gc-pin-inner">👨‍🦱</div>
-          </div>
-          <div class="gc-pin" style="left:65%;top:60%;background:rgba(74,158,255,0.15);border-color:#4A9EFF;animation-delay:.6s;opacity:0.5;">
-            <div class="gc-pin-inner">👩‍🦰</div>
-          </div>
-        </div>
-
-        <div class="gc-member-list">
-          <div class="gc-member">
-            <div class="gc-member-av" style="border-color:#2563FF;">🧑<div class="gc-member-online" style="background:var(--green);"></div></div>
-            <div class="gc-member-name">You · Shibuya</div>
-            <div class="gc-member-dist" style="color:#2563FF;">You</div>
-          </div>
-          <div class="gc-member">
-            <div class="gc-member-av" style="border-color:#FF7A59;">👩<div class="gc-member-online" style="background:var(--green);"></div></div>
-            <div class="gc-member-name">Priya · Senso-ji</div>
-            <div class="gc-member-dist" style="color:var(--green);">1.2 km</div>
-          </div>
-          <div class="gc-member">
-            <div class="gc-member-av" style="border-color:#F5B942;">👨‍🦱<div class="gc-member-online" style="background:var(--green);"></div></div>
-            <div class="gc-member-name">Raj · Tsukiji</div>
-            <div class="gc-member-dist" style="color:var(--green);">2.8 km</div>
-          </div>
-          <div class="gc-member">
-            <div class="gc-member-av" style="border-color:#4A9EFF;">👩‍🦰<div class="gc-member-online" style="background:var(--muted);"></div></div>
-            <div class="gc-member-name">Sara · Last seen 2h</div>
-            <div class="gc-member-dist" style="color:var(--muted);">offline</div>
-          </div>
-        </div>
-
-        <button class="gc-sos-btn">🆘 &nbsp;Send SOS to squad</button>
-      </div>
-
-      <div class="fv-float-badge" style="top:-16px;right:20px;animation-delay:.4s;">
-        <span class="fb-icon">📍</span>
-        <div>
-          <div>Live map</div>
-          <div class="fb-label">real-time locations</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-</section>
-
-<!-- ══════════════════════════════════════
-     INTERACTIVE DEMO
-══════════════════════════════════════ -->
-<section class="demo-section" id="demo">
-  <div class="demo-inner">
-    <div class="section-label" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);">Try it free · No signup</div>
-    <h2 class="section-h2" style="color:white;">See it work.<br/><em>Right now.</em></h2>
-    <p class="section-sub">Type any destination and watch Yaply plan your trip in seconds.</p>
-
-    <div class="demo-card reveal">
-      <div class="demo-input-wrap">
-        <div class="demo-input-icon">🌍</div>
-        <input
-          class="demo-input"
-          type="text"
-          placeholder="Where do you want to go?"
-          id="demoInput"
-          oninput="handleDemoInput(this.value)"
-        />
-      </div>
-
-      <div class="demo-quick-picks">
-        <button class="demo-pick" onclick="selectDemoDest('Tokyo, Japan','🇯🇵')">🇯🇵 Tokyo</button>
-        <button class="demo-pick" onclick="selectDemoDest('Bangkok, Thailand','🇹🇭')">🇹🇭 Bangkok</button>
-        <button class="demo-pick" onclick="selectDemoDest('Paris, France','🇫🇷')">🇫🇷 Paris</button>
-        <button class="demo-pick" onclick="selectDemoDest('Bali, Indonesia','🇮🇩')">🇮🇩 Bali</button>
-        <button class="demo-pick" onclick="selectDemoDest('Dubai, UAE','🇦🇪')">🇦🇪 Dubai</button>
-      </div>
-
-      <div class="demo-result" id="demoResult"></div>
-
-      <div class="demo-cta-row">
-        <span class="demo-cta-label">Want the full plan?</span>
-        <a href="/login" class="btn-primary" style="padding:12px 24px;font-size:14px;">
-          Plan free with AI →
-        </a>
-      </div>
-    </div>
+<!-- SAVED TRIPS -->
+<section class="saved-section" id="savedSection">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="saved-title">🗺️ Your Saved Trips</div>
+    <div class="saved-grid" id="savedGrid"></div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════
-     TESTIMONIALS
-══════════════════════════════════════ -->
-<section class="testimonials-section" id="stories">
-  <div class="testimonials-inner">
-    <div class="testimonials-header reveal">
-      <div class="section-label">Real travellers</div>
-      <h2 class="section-h2">Stories that<br/><em>give us chills.</em></h2>
-    </div>
-
-    <div class="testimonials-grid">
-      <div class="testimonial-card reveal" style="transition-delay:.1s;">
-        <div class="test-stars">★★★★★</div>
-        <div class="test-quote">"I had a medical emergency in Tokyo. Yaply translated my exact symptoms into Japanese and gave me the phrases to say to the doctor. It literally saved my trip."</div>
-        <div class="test-author">
-          <div class="test-avatar" style="background:#FF7A59;">P</div>
-          <div>
-            <div class="test-name">Priya Sharma</div>
-            <div class="test-trip">Mumbai → Tokyo · 7 days</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="testimonial-card featured reveal" style="transition-delay:.2s;">
-        <div class="test-stars">★★★★★</div>
-        <div class="test-quote">"I screenshot a reel of some beautiful shrine in Japan — no idea where it was. Yaply told me it was Fushimi Inari in Kyoto in 2 seconds and planned my whole day around it."</div>
-        <div class="test-author">
-          <div class="test-avatar" style="background:var(--blue);">R</div>
-          <div>
-            <div class="test-name">Rohan Mehta</div>
-            <div class="test-trip">Delhi → Kyoto · 10 days</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="testimonial-card reveal" style="transition-delay:.3s;">
-        <div class="test-stars">★★★★★</div>
-        <div class="test-quote">"I'm from Rajkot. Yaply found my nearest airport, the train to get there, my flights to Bangkok and planned my entire Thailand trip. I never thought this was possible for me."</div>
-        <div class="test-author">
-          <div class="test-avatar" style="background:var(--green);">A</div>
-          <div>
-            <div class="test-name">Arjun Kalra</div>
-            <div class="test-trip">Rajkot → Bangkok · 8 days</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════
-     PRICING
-══════════════════════════════════════ -->
-<section class="pricing-section" id="pricing">
-  <div class="pricing-inner">
-    <div class="section-label" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);">Pricing</div>
-    <h2 class="section-h2">Start free.<br/><em>Go pro when ready.</em></h2>
-    <p class="section-sub">No pressure. No hidden fees. Upgrade when Yaply blows your mind.</p>
-
-    <div class="pricing-toggle" id="pricingToggle">
-      <button class="pt-btn active" onclick="setPricingPeriod('monthly',this)">Monthly</button>
-      <button class="pt-btn" onclick="setPricingPeriod('weekly',this)">Weekly</button>
-    </div>
-
-    <div class="pricing-grid reveal">
-      <div class="pricing-card">
-        <div class="pc-plan">Explorer</div>
-        <div class="pc-price"><span>₹</span>0</div>
-        <div class="pc-price-sub">Forever free · No card needed</div>
-        <div class="pc-divider"></div>
-        <div class="pc-features">
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>AI trip planning · 5 trips/month</div>
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>Visa & passport checker</div>
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>Weather & currency converter</div>
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>Basic packing & budget tools</div>
-          <div class="pc-feat"><span class="pc-feat-lock">✗</span>Live voice translation</div>
-          <div class="pc-feat"><span class="pc-feat-lock">✗</span>Camera scan & place finder</div>
-          <div class="pc-feat"><span class="pc-feat-lock">✗</span>Yaply Groups & diary</div>
-        </div>
-        <a href="/login" class="pc-btn free">Start for free →</a>
-      </div>
-
-      <div class="pricing-card pro">
-        <div class="pc-plan">Pro</div>
-        <div class="pc-price" id="proPrice"><span>₹</span>399</div>
-        <div class="pc-price-sub" id="priceSub">per month · billed monthly</div>
-        <div class="pc-price-alt" id="priceAlt">or ₹49/week</div>
-        <div class="pc-divider"></div>
-        <div class="pc-features">
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>Everything in Explorer</div>
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>Unlimited AI trips · all styles</div>
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>Live voice translation · 50+ languages</div>
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>Camera scan · Place finder AI</div>
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>Yaply Groups · live location</div>
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>Travel diary · AI story generator</div>
-          <div class="pc-feat"><span class="pc-feat-check">✓</span>All safety & scam tools · full access</div>
-        </div>
-        <a href="/login" class="pc-btn pro-btn">Go Pro →</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════
-     FINAL CTA
-══════════════════════════════════════ -->
-<section class="final-cta-section">
-  <div class="final-cta-inner reveal">
-    <div class="final-flags">🇮🇳 🇯🇵 🇺🇸 🇬🇧 🇹🇭 🇫🇷 🇮🇩 🇦🇪</div>
-    <h2 class="section-h2">Your next trip<br/><em>starts here.</em></h2>
-    <p class="section-sub" style="color:rgba(255,255,255,0.35);">Join travellers from across India and the world who plan smarter, translate live, and travel safer with Yaply.</p>
-    <a href="/login" class="btn-primary" style="font-size:18px;padding:18px 40px;margin:0 auto;">
-      ✈️ &nbsp;Plan My Trip Free
-    </a>
-    <div class="final-trust">No credit card · Free forever plan · Works on any device</div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════
-     FOOTER
-══════════════════════════════════════ -->
+<!-- FOOTER -->
 <footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div>
-        <div class="footer-brand-name">yaply.</div>
-        <div class="footer-brand-desc">The world's first AI Travel Operating System. Plan, live, and remember every trip — all in one place.</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.2);">Built by Piyush, 17 · India 🇮🇳</div>
-      </div>
-      <div>
-        <div class="footer-col-title">Product</div>
-        <a href="/plan" class="footer-link">Trip Planner</a>
-        <a href="/translate" class="footer-link">Live Translate</a>
-        <a href="/discover" class="footer-link">Place Finder</a>
-        <a href="/groups" class="footer-link">Groups</a>
-        <a href="/diary" class="footer-link">Travel Diary</a>
-      </div>
-      <div>
-        <div class="footer-col-title">Company</div>
-        <a href="#" class="footer-link">About</a>
-        <a href="#" class="footer-link">Blog</a>
-        <a href="#" class="footer-link">Careers</a>
-        <a href="#" class="footer-link">Contact</a>
-      </div>
-      <div>
-        <div class="footer-col-title">Legal</div>
-        <a href="#" class="footer-link">Privacy</a>
-        <a href="#" class="footer-link">Terms</a>
-        <a href="#" class="footer-link">Cookies</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <div class="footer-copy">© 2026 Yaply. All rights reserved.</div>
-      <div class="footer-india">Live at yaply.live · Made with ❤️ in India</div>
-    </div>
+  <div class="footer-logo">ya<em>ply</em></div>
+  <div class="footer-links">
+    <a href="/plan" class="footer-link">Plan Trip</a>
+    <a href="/during" class="footer-link">During Trip</a>
+    <a href="/after" class="footer-link">After Trip</a>
+    <a href="/discover" class="footer-link">Discover</a>
+    <a href="/translate" class="footer-link">Translate</a>
   </div>
+  <div class="footer-copy">© 2025 Yaply · AI Travel Companion</div>
 </footer>
 
 <script>
-// ── CURSOR ──────────────────────────────────────────────
-var cursor     = document.getElementById('cursor');
-var cursorRing = document.getElementById('cursorRing');
-var mouseX = 0, mouseY = 0;
-var ringX  = 0, ringY  = 0;
+// ── VIBES ──
+let selectedVibes = ['Adventure'];
 
-document.addEventListener('mousemove', function(e) {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  cursor.style.left = mouseX + 'px';
-  cursor.style.top  = mouseY + 'px';
-});
-
-function animateRing() {
-  ringX += (mouseX - ringX) * 0.12;
-  ringY += (mouseY - ringY) * 0.12;
-  cursorRing.style.left = ringX + 'px';
-  cursorRing.style.top  = ringY + 'px';
-  requestAnimationFrame(animateRing);
-}
-animateRing();
-
-document.querySelectorAll('a, button, .phase-card, .testimonial-card').forEach(function(el) {
-  el.addEventListener('mouseenter', function() {
-    cursor.style.transform = 'translate(-50%,-50%) scale(2)';
-    cursorRing.style.transform = 'translate(-50%,-50%) scale(1.5)';
-    cursorRing.style.borderColor = 'rgba(37,99,255,0.6)';
-  });
-  el.addEventListener('mouseleave', function() {
-    cursor.style.transform = 'translate(-50%,-50%) scale(1)';
-    cursorRing.style.transform = 'translate(-50%,-50%) scale(1)';
-    cursorRing.style.borderColor = 'rgba(37,99,255,0.4)';
-  });
-});
-
-// ── NAV SCROLL ──────────────────────────────────────────
-window.addEventListener('scroll', function() {
-  var nav = document.getElementById('nav');
-  if (window.scrollY > 60) {
-    nav.classList.add('scrolled');
+function toggleVibe(el, vibe) {
+  if (selectedVibes.includes(vibe)) {
+    if (selectedVibes.length === 1) return;
+    selectedVibes = selectedVibes.filter(v => v !== vibe);
+    el.classList.remove('active');
   } else {
-    nav.classList.remove('scrolled');
-  }
-});
-
-// ── PARTICLES ───────────────────────────────────────────
-(function createParticles() {
-  var container = document.getElementById('particles');
-  for (var i = 0; i < 40; i++) {
-    var p = document.createElement('div');
-    p.className = 'particle';
-    var left  = Math.random() * 100;
-    var delay = Math.random() * 20;
-    var dur   = 15 + Math.random() * 25;
-    var drift = (Math.random() - 0.5) * 200;
-    p.style.cssText =
-      'left:' + left + '%;' +
-      'animation-duration:' + dur + 's;' +
-      'animation-delay:-' + delay + 's;' +
-      '--drift:' + drift + 'px;' +
-      'width:' + (1 + Math.random() * 2) + 'px;' +
-      'height:' + (1 + Math.random() * 2) + 'px;' +
-      'opacity:' + (0.1 + Math.random() * 0.4) + ';';
-    container.appendChild(p);
-  }
-})();
-
-// ── SCROLL REVEAL ───────────────────────────────────────
-var observer = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
-  });
-}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
-
-document.querySelectorAll('.reveal, .reveal-l, .reveal-r').forEach(function(el) {
-  observer.observe(el);
-});
-
-// ── DEMO ────────────────────────────────────────────────
-var DEMO_DATA = {
-  'Tokyo, Japan': {
-    flag: '🇯🇵',
-    days: [
-      { title: 'Arrival & Asakusa', acts: 'Senso-ji Temple · Nakamise Street · Shibuya Crossing at night' },
-      { title: 'Culture & Art',     acts: 'TeamLab Planets · Harajuku · Meiji Shrine · Takeshita Street' },
-      { title: 'Hidden Tokyo',      acts: 'Yanaka old town · Tsukiji outer market · Akihabara electronics' },
-      { title: 'Day Trip: Kyoto',   acts: 'Fushimi Inari · Arashiyama bamboo · Kinkaku-ji Golden Temple' },
-      { title: 'Final Day',         acts: 'Shinjuku park · Robot restaurant · Farewell ramen bowl' },
-    ]
-  },
-  'Bangkok, Thailand': {
-    flag: '🇹🇭',
-    days: [
-      { title: 'Grand Palace Day',  acts: 'Wat Phra Kaew · Grand Palace · Wat Pho reclining Buddha' },
-      { title: 'Float & Markets',   acts: 'Damnoen Saduak floating market · Chatuchak weekend market' },
-      { title: 'Night Bangkok',     acts: 'Khao San Road · Rooftop bar · Street food tour' },
-      { title: 'Temple Hopping',    acts: 'Wat Arun · Lhong 1919 · Chinatown Yaowarat' },
-      { title: 'Day Trip: Ayuthaya',acts: 'Ancient capital ruins · Elephant sanctuary · River cruise' },
-    ]
-  },
-  'Paris, France': {
-    flag: '🇫🇷',
-    days: [
-      { title: 'Iconic Paris',      acts: 'Eiffel Tower sunrise · Champs-Élysées · Arc de Triomphe' },
-      { title: 'Art & Culture',     acts: 'Louvre Museum · Tuileries Garden · Seine River cruise' },
-      { title: 'Montmartre',        acts: 'Sacré-Cœur · Artists quarter · Moulin Rouge evening' },
-      { title: 'Versailles',        acts: 'Palace of Versailles · Hall of Mirrors · Royal Gardens' },
-      { title: 'Hidden Paris',      acts: 'Le Marais · Shakespeare & Co · Café de Flore' },
-    ]
-  },
-  'Bali, Indonesia': {
-    flag: '🇮🇩',
-    days: [
-      { title: 'Ubud Highlands',    acts: 'Tegalalang rice terraces · Monkey Forest · Ubud Palace' },
-      { title: 'Temple & Volcano',  acts: 'Mount Batur sunrise trek · Tirta Empul holy spring' },
-      { title: 'Beach Day',         acts: 'Seminyak beach · Potato Head · Sunset at Tanah Lot' },
-      { title: 'Spiritual Bali',    acts: 'Uluwatu temple · Kecak fire dance · Jimbaran seafood' },
-      { title: 'Water Adventure',   acts: 'Nusa Penida snorkeling · Kelingking Beach viewpoint' },
-    ]
-  },
-  'Dubai, UAE': {
-    flag: '🇦🇪',
-    days: [
-      { title: 'Modern Dubai',      acts: 'Burj Khalifa observation deck · Dubai Mall · Dubai Fountain' },
-      { title: 'Desert & Culture',  acts: 'Desert safari · Old Dubai souks · Dubai Creek Dhow cruise' },
-      { title: 'Luxury Experience', acts: 'Palm Jumeirah · Atlantis · Burj Al Arab afternoon tea' },
-      { title: 'Theme Parks',       acts: 'Global Village · Dubai Frame · Miracle Garden' },
-      { title: 'Beach & Shopping',  acts: 'JBR beach · Marina Mall · Dubai Marina sunset walk' },
-    ]
-  }
-};
-
-var demoTimer = null;
-
-function selectDemoDest(dest, flag) {
-  document.getElementById('demoInput').value = dest;
-  document.querySelectorAll('.demo-pick').forEach(function(b) { b.classList.remove('active'); });
-  event.target.classList.add('active');
-  showDemoResult(dest);
-}
-
-function handleDemoInput(val) {
-  clearTimeout(demoTimer);
-  demoTimer = setTimeout(function() {
-    if (val.length > 2) showDemoResult(val);
-  }, 800);
-}
-
-function showDemoResult(dest) {
-  var result = document.getElementById('demoResult');
-  var destKey = Object.keys(DEMO_DATA).find(function(k) {
-    return k.toLowerCase().includes(dest.toLowerCase().split(',')[0]);
-  });
-
-  if (!destKey) destKey = 'Tokyo, Japan';
-  var data = DEMO_DATA[destKey];
-
-  var daysHtml = data.days.slice(0, 3).map(function(day, i) {
-    return '<div class="demo-day-item">' +
-      '<div class="demo-day-num">' + (i + 1) + '</div>' +
-      '<div>' +
-        '<div class="demo-day-title">Day ' + (i + 1) + ' — ' + day.title + '</div>' +
-        '<div class="demo-day-acts">' + day.acts + '</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-
-  result.innerHTML =
-    '<div class="demo-res-header">' +
-      '<div class="demo-res-flag">' + data.flag + '</div>' +
-      '<div>' +
-        '<div class="demo-res-name">' + destKey + '</div>' +
-        '<div class="demo-res-meta">5 days · AI-generated preview</div>' +
-      '</div>' +
-    '</div>' +
-    daysHtml +
-    '<div style="text-align:center;padding-top:16px;font-size:12px;color:rgba(255,255,255,0.25);">+ 2 more days · Hotels · Restaurants · Budget · Visa · Hidden gems</div>';
-
-  result.classList.add('show');
-}
-
-// ── PRICING TOGGLE ──────────────────────────────────────
-function setPricingPeriod(period, btn) {
-  document.querySelectorAll('.pt-btn').forEach(function(b) { b.classList.remove('active'); });
-  btn.classList.add('active');
-
-  var priceEl   = document.getElementById('proPrice');
-  var subEl     = document.getElementById('priceSub');
-  var altEl     = document.getElementById('priceAlt');
-
-  if (period === 'weekly') {
-    priceEl.innerHTML = '<span>₹</span>49';
-    subEl.textContent = 'per week · billed weekly';
-    altEl.textContent = 'or ₹399/month';
-  } else {
-    priceEl.innerHTML = '<span>₹</span>399';
-    subEl.textContent = 'per month · billed monthly';
-    altEl.textContent = 'or ₹49/week';
+    selectedVibes.push(vibe);
+    el.classList.add('active');
   }
 }
 
-// ── PARALLAX ────────────────────────────────────────────
-document.addEventListener('mousemove', function(e) {
-  var x = (e.clientX / window.innerWidth  - 0.5) * 20;
-  var y = (e.clientY / window.innerHeight - 0.5) * 20;
+// ── START TRIP ──
+function startTrip() {
+  const origin = document.getElementById('origin').value.trim();
+  const destination = document.getElementById('destination').value.trim();
 
-  document.querySelectorAll('.hero-orb').forEach(function(orb, i) {
-    var factor = (i + 1) * 0.3;
-    orb.style.transform = 'translate(' + (x * factor) + 'px, ' + (y * factor) + 'px)';
-  });
-});
+  if (!destination) {
+    document.getElementById('destination').focus();
+    document.getElementById('destination').style.borderColor = '#E84545';
+    setTimeout(() => document.getElementById('destination').style.borderColor = '', 2000);
+    return;
+  }
+  if (!origin) {
+    document.getElementById('origin').focus();
+    document.getElementById('origin').style.borderColor = '#E84545';
+    setTimeout(() => document.getElementById('origin').style.borderColor = '', 2000);
+    return;
+  }
 
-// ── SMOOTH ANCHOR SCROLL ────────────────────────────────
-document.querySelectorAll('a[href^="#"]').forEach(function(a) {
-  a.addEventListener('click', function(e) {
-    var target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  });
-});
+  // Save trip context to localStorage
+  const tripContext = {
+    destination,
+    origin,
+    days: parseInt(document.getElementById('days').value) || 7,
+    people: parseInt(document.getElementById('people').value) || 2,
+    budget: document.getElementById('budget').value || '80000',
+    currency: document.getElementById('currency').value || 'INR',
+    vibes: selectedVibes,
+    vibeString: selectedVibes.join(' + '),
+    savedAt: new Date().toISOString()
+  };
+
+  localStorage.setItem('yaply_active_trip', JSON.stringify(tripContext));
+  console.log('Trip context saved:', tripContext);
+
+  // Navigate to trip planner
+  window.location.href = '/plan';
+}
+
+// ── NAVIGATION ──
+function goTo(page) {
+  window.location.href = '/' + page;
+}
+
+// ── SAVED TRIPS ──
+function loadSavedTrips() {
+  const trips = JSON.parse(localStorage.getItem('yaply_trips') || '[]');
+  const section = document.getElementById('savedSection');
+  const grid = document.getElementById('savedGrid');
+
+  if (trips.length === 0) {
+    section.classList.remove('show');
+    return;
+  }
+
+  section.classList.add('show');
+  grid.innerHTML = trips.slice(0,6).map((trip, i) => `
+    <div class="saved-card" onclick="loadTrip(${i})">
+      <div class="saved-card-hero">
+        <div class="saved-card-name">${trip.destination || 'Unknown'}</div>
+      </div>
+      <div class="saved-card-body">
+        <div class="saved-card-meta">${trip.days || '?'} days · ${trip._meta?.vibes || 'Adventure'}</div>
+        <button class="load-trip-btn" onclick="event.stopPropagation();loadTrip(${i})">Continue Planning →</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadTrip(index) {
+  const trips = JSON.parse(localStorage.getItem('yaply_trips') || '[]');
+  const trip = trips[index];
+  if (!trip) return;
+
+  // Restore trip context
+  const ctx = {
+    destination: trip.destination,
+    origin: trip._meta?.origin || '',
+    days: trip.days,
+    people: trip._meta?.people || 2,
+    budget: trip._meta?.budget || '80000',
+    currency: trip._meta?.currency || 'INR',
+    vibes: (trip._meta?.vibes || 'Adventure').split(' + '),
+    vibeString: trip._meta?.vibes || 'Adventure',
+    loadedPlan: trip
+  };
+
+  localStorage.setItem('yaply_active_trip', JSON.stringify(ctx));
+  window.location.href = '/plan';
+}
+
+// Pre-fill from URL params if any
+function prefillFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('dest')) {
+    document.getElementById('destination').value = decodeURIComponent(params.get('dest'));
+  }
+  if (params.get('from')) {
+    document.getElementById('origin').value = decodeURIComponent(params.get('from'));
+  }
+  if (params.get('days')) {
+    document.getElementById('days').value = params.get('days');
+  }
+}
+
+// Init
+prefillFromURL();
+loadSavedTrips();
 </script>
-</body>
+<script src='/static/yaply-nav.js'></script></body>
 </html>

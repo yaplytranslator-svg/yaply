@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Yaply — Travel Diary</title>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="/static/yaply-core.js"></script>
+
 <style>
 :root {
   --teal:    #1A8A72;
@@ -2019,6 +2021,11 @@ function showAIJournal(journal) {
 }
 
 
+// Instead of repeating auth code everywhere
+// Just call:
+YaplyCore.requireAuth();   // redirect if not logged in
+YaplyCore.getUser();       // get current user
+YaplyCore.logout();        // logout from anywhere
 
 </script>
 </body>
