@@ -2,1087 +2,1831 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"/>
 <title>Yaply — After Trip</title>
-<link rel="icon" href="/static/yaply favicon.jpeg" type="image/jpeg"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
-<script src="/static/yaply-core.js"></script>
+<link rel="icon" href="/static/favicon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+
 <style>
+/* ── Reset ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:16px;-webkit-text-size-adjust:100%;}
+body{font-family:'DM Sans',sans-serif;background:#F7F9FC;color:#111827;min-height:100vh;overscroll-behavior:none;}
+
+/* ── Variables ── */
 :root{
-  --teal:#1A8A72;--teal-s:rgba(26,138,114,0.08);--teal-m:rgba(26,138,114,0.16);
-  --amber:#E8823A;--amber-s:rgba(232,130,58,0.08);--amber-m:rgba(232,130,58,0.18);
-  --sky:#3A6BC8;--sky-s:rgba(58,107,200,0.08);--sky-m:rgba(58,107,200,0.16);
-  --green:#28B06A;--green-s:rgba(40,176,106,0.08);--green-m:rgba(40,176,106,0.18);
-  --red:#D84C3E;--red-s:rgba(216,76,62,0.08);--red-m:rgba(216,76,62,0.16);
-  --purple:#8B5CF6;--purple-s:rgba(139,92,246,0.08);--purple-m:rgba(139,92,246,0.18);
-  --gold:#F0B429;--gold-s:rgba(240,180,41,0.08);
-  --charcoal:#2C2B28;--stone:#C8C4B2;
-  --bg:#F7F6F2;--bg2:#EFEDE8;--white:#FFFFFF;
-  --border:rgba(200,196,178,0.35);--border-md:rgba(200,196,178,0.6);
-  --text:#2C2B28;--muted:#6B6860;--muted2:#9B9890;
-  --nav-h:64px;--r:10px;--r-lg:16px;--r-xl:22px;
-  --shadow:0 2px 12px rgba(44,43,40,0.06);
-  --shadow-lg:0 16px 48px rgba(44,43,40,0.12);
+  --blue:#2563FF;--blue-d:#1D4ED8;--blue-g:rgba(37,99,255,0.07);
+  --midnight:#0B1220;--bg:#F7F9FC;--white:#FFFFFF;
+  --text:#111827;--text2:#374151;--muted:#6B7280;--muted2:#9CA3AF;
+  --coral:#FF7A59;--coral-g:rgba(255,122,89,0.08);
+  --green:#18C29C;--green-g:rgba(24,194,156,0.08);
+  --amber:#F5B942;--amber-g:rgba(245,185,66,0.08);
+  --red:#EF4444;--red-g:rgba(239,68,68,0.08);
+  --border:#E5E7EB;--border2:#D1D5DB;
+  --bg2:#F3F4F6;--bg3:#EEF2FF;
+  --r:12px;--r-lg:16px;--r-xl:20px;--r-2xl:24px;
+  --shadow:0 1px 4px rgba(17,24,39,0.06);
+  --shadow-md:0 4px 16px rgba(17,24,39,0.10);
+  --shadow-lg:0 8px 32px rgba(17,24,39,0.14);
+  --font-head:'Instrument Serif',serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
 }
-html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-/* ── NAV ── */
-.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:200;}
-.nav-left{display:flex;align-items:center;gap:9px;}
-.nav-back{display:flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .15s;}
-.nav-back:hover{background:var(--bg2);color:var(--charcoal);}
-.nav-back svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
-.nav-logo-mark{width:28px;height:28px;border-radius:8px;background:var(--teal);display:flex;align-items:center;justify-content:center;}
-.nav-logo-mark svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2;}
-.nav-logo{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--charcoal);}
-.nav-right{display:flex;align-items:center;gap:8px;}
-.share-btn{padding:7px 16px;background:linear-gradient(135deg,var(--teal),var(--sky));color:#fff;border:none;border-radius:100px;font-family:'Inter',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(26,138,114,.25);}
-.share-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,138,114,.35);}
-.share-btn svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2;}
-.nav-link{font-size:.72rem;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:7px;transition:all .15s;}
-.nav-link:hover{background:var(--bg2);color:var(--charcoal);}
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+@keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── HERO ── */
-.page-hero{
-  padding:calc(var(--nav-h) + 0px) 0 0;
-  min-height:340px;
-  background:linear-gradient(145deg,#1A2744 0%,#2C1A38 45%,#1A2C28 100%);
+.au{animation:fadeUp .5s ease both}
+.d1{animation-delay:.05s}.d2{animation-delay:.1s}
+.d3{animation-delay:.15s}.d4{animation-delay:.2s}
+.d5{animation-delay:.25s}
+
+/* ── Layout ── */
+.page{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:100px;}
+
+/* ── Top Nav ── */
+.top-nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;
+  background:rgba(247,249,252,0.92);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-back{
+  display:flex;align-items:center;gap:4px;
+  font-size:14px;font-weight:500;color:var(--muted);
+  text-decoration:none;transition:color .2s;
+}
+.nav-back:hover{color:var(--text)}
+.nav-back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;}
+.nav-title{font-size:16px;font-weight:700;color:var(--text);}
+.nav-share-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 14px;background:var(--midnight);
+  color:white;border:none;border-radius:100px;
+  font-family:var(--font-body);font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.nav-share-btn:hover{background:#1a2a4a}
+.nav-share-btn svg{width:13px;height:13px;stroke:white;fill:none;stroke-width:2;}
+
+/* ── Section padding ── */
+.p18{padding:0 18px}
+.pt16{padding-top:16px}
+.pt20{padding-top:20px}
+
+/* ── Trip selector ── */
+.trip-selector-scroll{
+  display:flex;gap:10px;
+  overflow-x:auto;padding:0 18px 4px;
+  scrollbar-width:none;
+}
+.trip-selector-scroll::-webkit-scrollbar{display:none}
+
+.trip-sel-card{
+  flex-shrink:0;
+  width:160px;
+  background:var(--white);
+  border:2px solid var(--border);
+  border-radius:var(--r-xl);
+  padding:14px;cursor:pointer;
+  transition:all .25s;
   position:relative;overflow:hidden;
-  display:flex;flex-direction:column;justify-content:flex-end;
 }
-.hero-mesh{position:absolute;inset:0;pointer-events:none;}
-.hm-orb{position:absolute;border-radius:50%;filter:blur(100px);}
-.hmo1{width:500px;height:500px;background:rgba(139,92,246,.15);top:-150px;right:-100px;animation:orbF 18s ease-in-out infinite;}
-.hmo2{width:350px;height:350px;background:rgba(26,138,114,.12);bottom:-80px;left:-50px;animation:orbF 22s 2s ease-in-out infinite reverse;}
-.hmo3{width:250px;height:250px;background:rgba(232,130,58,.1);top:40%;left:25%;animation:orbF 15s 1s ease-in-out infinite;}
-@keyframes orbF{0%,100%{transform:translate(0,0);}50%{transform:translate(25px,-20px);}}
-.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;}
-.hero-float-svg{position:absolute;pointer-events:none;opacity:.05;}
-.hfs1{top:18%;left:5%;animation:svgF 12s ease-in-out infinite;}
-.hfs2{top:25%;right:7%;animation:svgF 15s 1s ease-in-out infinite reverse;}
-.hfs3{bottom:28%;right:12%;animation:svgF 10s 2s ease-in-out infinite;}
-@keyframes svgF{0%,100%{transform:translateY(0) rotate(0);}50%{transform:translateY(-16px) rotate(4deg);}}
+.trip-sel-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);}
+.trip-sel-card.active{
+  border-color:var(--blue);
+  background:linear-gradient(135deg,var(--blue-g),var(--white));
+}
+.trip-sel-card.active::before{
+  content:'✓';
+  position:absolute;top:8px;right:10px;
+  font-size:10px;font-weight:800;color:var(--blue);
+}
+.tsc-flag{font-size:24px;margin-bottom:8px;}
+.tsc-dest{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tsc-meta{font-size:11px;color:var(--muted);}
+.tsc-days{
+  display:inline-block;margin-top:6px;
+  padding:2px 8px;background:var(--blue-g);
+  border-radius:100px;font-size:10px;font-weight:700;color:var(--blue);
+}
 
-.hero-content{position:relative;z-index:2;padding:44px 28px 36px;display:grid;grid-template-columns:1fr auto;gap:36px;align-items:end;max-width:980px;margin:0 auto;width:100%;}
-@media(max-width:680px){.hero-content{grid-template-columns:1fr;gap:24px;}}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:100px;padding:4px 12px;font-size:.62rem;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
-.hb-dot{width:4px;height:4px;border-radius:50%;background:var(--amber);animation:p 2s infinite;}
-@keyframes p{0%,100%{opacity:1;}50%{opacity:.3;}}
-.hero-h1{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;color:#fff;letter-spacing:-1.5px;line-height:1.05;margin-bottom:10px;}
-.hero-h1 em{color:var(--amber);font-style:normal;}
-.hero-sub{font-size:.82rem;color:rgba(255,255,255,.45);line-height:1.75;max-width:420px;}
-.hero-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:180px;}
-.hstat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-lg);padding:14px;text-align:center;backdrop-filter:blur(8px);}
-.hstat-num{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;}
-.hstat-lbl{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.35);margin-top:3px;}
+/* ── Manual entry form ── */
+.manual-form-card{
+  margin:16px 18px;
+  background:var(--white);
+  border:1.5px dashed var(--border2);
+  border-radius:var(--r-xl);
+  padding:20px;
+}
+.mf-title{
+  font-family:var(--font-head);
+  font-size:18px;color:var(--text);
+  margin-bottom:4px;
+}
+.mf-sub{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.mf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.mf-field{display:flex;flex-direction:column;gap:5px;}
+.mf-field.full{grid-column:1/-1;}
+.mf-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);}
+.mf-input{
+  padding:11px 14px;
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:var(--r);font-family:var(--font-body);
+  font-size:14px;color:var(--text);outline:none;
+  transition:border-color .2s;
+}
+.mf-input:focus{border-color:var(--blue);background:var(--white);}
+.mf-btn{
+  width:100%;padding:13px;
+  background:var(--midnight);color:white;
+  border:none;border-radius:var(--r);
+  font-family:var(--font-body);font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.mf-btn:hover{background:#1a2a4a}
+.mf-btn svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2;}
 
-/* ── TABS ── */
-.tabs-wrap{max-width:980px;margin:0 auto;padding:20px 24px 16px;}
-.tabs-scroll{display:flex;gap:4px;background:var(--white);border:1px solid var(--border);border-radius:100px;padding:4px;overflow-x:auto;scrollbar-width:none;box-shadow:var(--shadow);}
-.tabs-scroll::-webkit-scrollbar{display:none;}
-.tab{flex-shrink:0;padding:8px 16px;border-radius:100px;border:none;background:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.72rem;font-weight:600;color:var(--muted);transition:all .2s;white-space:nowrap;}
-.tab.active{background:var(--charcoal);color:#fff;box-shadow:0 2px 8px rgba(44,43,40,.2);}
+/* ── Trip Hero ── */
+.trip-hero{
+  margin:16px 18px;
+  background:linear-gradient(135deg,#060d1a,#0d1f3c,#060d1a);
+  border-radius:var(--r-2xl);
+  padding:22px 20px;
+  position:relative;overflow:hidden;
+}
+.th-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(37,99,255,0.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(37,99,255,0.07) 1px,transparent 1px);
+  background-size:32px 32px;
+  pointer-events:none;
+}
+.th-orb1{
+  position:absolute;top:-40px;right:-40px;
+  width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle,rgba(37,99,255,0.15),transparent 70%);
+  pointer-events:none;
+}
+.th-orb2{
+  position:absolute;bottom:-30px;left:-20px;
+  width:100px;height:100px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,122,89,0.12),transparent 70%);
+  pointer-events:none;
+}
+.th-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 12px;
+  background:rgba(24,194,156,0.15);
+  border:1px solid rgba(24,194,156,0.25);
+  border-radius:100px;
+  font-size:10px;font-weight:700;
+  color:#4ade80;text-transform:uppercase;
+  letter-spacing:.8px;margin-bottom:12px;
+}
+.th-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;display:block;}
+.th-dest{
+  font-family:var(--font-head);
+  font-size:26px;color:white;
+  letter-spacing:-.3px;margin-bottom:4px;
+  position:relative;z-index:1;
+}
+.th-meta{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px;position:relative;z-index:1;}
+.th-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:8px;position:relative;z-index:1;
+}
+.th-stat{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:10px 8px;text-align:center;
+}
+.th-stat-val{
+  font-family:var(--font-mono);
+  font-size:16px;font-weight:800;color:white;
+  margin-bottom:3px;
+}
+.th-stat-lbl{font-size:9px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.6px;line-height:1.3;}
 
-/* ── MAIN ── */
-.main{max-width:980px;margin:0 auto;padding:0 24px 80px;}
-.panel{display:none;}
-.panel.active{display:block;animation:fadeUp .35s cubic-bezier(.22,1,.36,1);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+/* ── Tabs ── */
+.tabs-row{
+  display:flex;gap:0;
+  margin:0 18px 16px;
+  background:var(--bg2);
+  border-radius:var(--r-lg);
+  padding:4px;
+}
+.tab-btn{
+  flex:1;padding:10px 8px;
+  border:none;background:none;
+  font-family:var(--font-body);
+  font-size:13px;font-weight:600;
+  color:var(--muted);cursor:pointer;
+  border-radius:var(--r);
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.tab-btn.active{
+  background:var(--white);
+  color:var(--text);
+  box-shadow:var(--shadow-md);
+}
+.tab-btn span{font-size:14px;}
 
-/* ── CARD ── */
-.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow);margin-bottom:12px;}
-.card-accent{height:3px;}
-.ca-purple{background:linear-gradient(90deg,var(--purple),var(--sky));}
-.ca-teal{background:linear-gradient(90deg,var(--teal),var(--green));}
-.ca-amber{background:linear-gradient(90deg,var(--amber),var(--gold));}
-.ca-green{background:linear-gradient(90deg,var(--green),var(--teal));}
-.ca-sky{background:linear-gradient(90deg,var(--sky),var(--purple));}
-.ca-red{background:linear-gradient(90deg,var(--red),var(--amber));}
-.ca-gold{background:linear-gradient(90deg,var(--gold),var(--amber));}
-.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to right,var(--bg),var(--white));}
-.card-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--charcoal);display:flex;align-items:center;gap:8px;}
-.ct-ico{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;}
-.ct-ico svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;}
-.cti-purple{background:var(--purple-s);color:var(--purple);}
-.cti-teal{background:var(--teal-s);color:var(--teal);}
-.cti-amber{background:var(--amber-s);color:var(--amber);}
-.cti-green{background:var(--green-s);color:var(--green);}
-.cti-sky{background:var(--sky-s);color:var(--sky);}
-.cti-gold{background:var(--gold-s);color:var(--gold);}
-.cti-red{background:var(--red-s);color:var(--red);}
-.card-badge{font-size:.58rem;font-weight:700;padding:3px 8px;border-radius:100px;}
-.cb-purple{background:var(--purple-s);color:var(--purple);}
-.cb-green{background:var(--green-s);color:var(--green);}
-.cb-gold{background:var(--gold-s);color:var(--gold);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── Cards ── */
+.card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  margin-bottom:12px;
+}
+.card-head{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 18px;
+  border-bottom:1px solid var(--border);
+}
+.card-icon{
+  width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.card-icon svg{width:18px;height:18px;fill:none;stroke-width:1.8;}
+.card-title{font-size:15px;font-weight:700;color:var(--text);}
+.card-sub{font-size:12px;color:var(--muted);margin-top:1px;}
 .card-body{padding:16px 18px;}
+.card-ai{
+  font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.8px;
+  color:var(--blue);background:var(--blue-g);
+  padding:2px 8px;border-radius:100px;
+  margin-left:auto;flex-shrink:0;
+}
 
-/* ── FORM ── */
-.fg{margin-bottom:12px;}
-.fl{display:block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);margin-bottom:5px;}
-.fi{width:100%;background:var(--bg);border:1.5px solid var(--border-md);border-radius:var(--r);padding:9px 12px;font-family:'Inter',sans-serif;font-size:.82rem;color:var(--text);font-weight:500;outline:none;transition:all .2s;-webkit-appearance:none;appearance:none;}
-.fi:focus{border-color:var(--teal);background:var(--white);box-shadow:0 0 0 3px var(--teal-s);}
-.fi::placeholder{color:var(--muted2);font-weight:400;}
-.fg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-@media(max-width:540px){.fg-grid{grid-template-columns:1fr;}}
-.fi-ta{resize:none;line-height:1.65;}
+/* ── Run button ── */
+.run-btn{
+  width:100%;padding:13px;
+  border:none;border-radius:var(--r);
+  font-family:var(--font-body);
+  font-size:14px;font-weight:700;
+  color:white;cursor:pointer;
+  transition:all .22s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.run-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.run-btn:active{transform:scale(.98)}
+.run-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.run-btn svg{width:15px;height:15px;stroke:white;fill:none;stroke-width:2;}
 
-/* ── BUTTON ── */
-.btn{width:100%;padding:11px;border:none;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;}
-.btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
-.btn-dark{background:var(--charcoal);color:#fff;}
-.btn-dark:hover{background:#1e2a3a;transform:translateY(-1px);box-shadow:0 6px 20px rgba(44,43,40,.2);}
-.btn-teal{background:var(--teal);color:#fff;}
-.btn-teal:hover{background:#158068;transform:translateY(-1px);}
-.btn-outline{background:none;border:1.5px solid var(--border-md);color:var(--muted);}
-.btn-outline:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-s);}
-.btn-sm{width:auto;padding:8px 16px;font-size:.72rem;}
-.btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
+/* ── Field ── */
+.field{margin-bottom:12px;}
+.field-label{
+  font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.8px;
+  color:var(--muted2);display:block;margin-bottom:5px;
+}
+.field-input{
+  width:100%;padding:11px 14px;
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:var(--r);font-family:var(--font-body);
+  font-size:14px;color:var(--text);outline:none;
+  transition:border-color .2s;
+}
+.field-input:focus{border-color:var(--blue);background:var(--white);}
+.field-select{
+  width:100%;padding:11px 14px;
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:var(--r);font-family:var(--font-body);
+  font-size:14px;color:var(--text);outline:none;cursor:pointer;
+  -webkit-appearance:none;
+}
+textarea.field-input{resize:vertical;min-height:90px;line-height:1.6;}
 
-/* ── SPINNER ── */
-.spinner{display:none;align-items:center;justify-content:center;gap:9px;padding:18px;font-size:.75rem;color:var(--muted);}
-.spinner.show{display:flex;}
-.sp-ring{width:16px;height:16px;border:2px solid var(--purple-m);border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
-@keyframes spin{to{transform:rotate(360deg);}}
+/* ── Spinner ── */
+.spinner{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.3);
+  border-top-color:white;
+  animation:spin .7s linear infinite;
+  flex-shrink:0;
+}
 
-/* ── RESULT ── */
-.result{display:none;animation:fadeUp .35s ease both;}
-.result.show{display:block;}
+/* ── Loading skeleton ── */
+.skel{
+  background:linear-gradient(90deg,var(--bg2) 25%,var(--border) 50%,var(--bg2) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s infinite;
+  border-radius:8px;
+}
 
-/* ── JOURNAL ── */
-.journal-cover{
-  background:linear-gradient(135deg,var(--purple),#6D28D9);
-  border-radius:var(--r-xl);padding:28px;color:#fff;margin-bottom:12px;
+/* ── Result block ── */
+.result-block{
+  background:var(--bg);
+  border-radius:var(--r-lg);
+  padding:16px;margin-top:14px;
+  border:1px solid var(--border);
+  animation:scaleIn .3s ease both;
+  line-height:1.8;font-size:14px;color:var(--text2);
+}
+.result-block p{margin-bottom:8px;}
+.result-block p:last-child{margin-bottom:0;}
+
+/* ── Expense ── */
+.expense-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 0;border-bottom:1px solid var(--border);
+}
+.expense-item:last-child{border-bottom:none}
+.exp-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.exp-info{flex:1;}
+.exp-name{font-size:13px;font-weight:600;color:var(--text);}
+.exp-cat{font-size:11px;color:var(--muted);}
+.exp-amount{font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text);}
+
+/* ── Category pills ── */
+.cat-pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-bottom:14px;}
+.cat-pills::-webkit-scrollbar{display:none}
+.cat-pill{
+  flex-shrink:0;padding:6px 14px;
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:100px;font-size:12px;font-weight:600;
+  color:var(--muted);cursor:pointer;transition:all .2s;
+  white-space:nowrap;
+}
+.cat-pill.active{
+  background:var(--blue);border-color:var(--blue);color:white;
+}
+
+/* ── Add expense btn ── */
+.add-exp-btn{
+  display:flex;align-items:center;gap:8px;
+  width:100%;padding:11px 14px;
+  background:var(--bg);border:1.5px dashed var(--border2);
+  border-radius:var(--r);font-family:var(--font-body);
+  font-size:13px;font-weight:600;color:var(--blue);
+  cursor:pointer;transition:all .2s;margin-top:10px;
+}
+.add-exp-btn:hover{background:var(--blue-g);border-color:var(--blue);}
+.add-exp-btn svg{width:14px;height:14px;stroke:var(--blue);fill:none;stroke-width:2.5;}
+
+/* ── Budget bar ── */
+.budget-compare{margin-top:14px;}
+.bc-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;}
+.bc-track{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;margin-bottom:4px;}
+.bc-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+
+/* ── Bill splitter ── */
+.person-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.person-row:last-child{border-bottom:none}
+.person-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--blue);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+}
+.person-name{flex:1;font-size:13px;font-weight:600;color:var(--text);}
+.person-amount input{
+  width:90px;padding:7px 10px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;font-family:var(--font-mono);
+  font-size:13px;font-weight:600;text-align:right;
+  outline:none;
+}
+
+/* ── Trip card canvas ── */
+.trip-card-wrap{
+  background:linear-gradient(135deg,var(--midnight),#0d1f3c);
+  border-radius:var(--r-xl);
+  padding:24px 20px;
+  text-align:center;
+  margin-bottom:16px;
   position:relative;overflow:hidden;
 }
-.journal-cover::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06);}
-.journal-cover::after{content:'';position:absolute;bottom:-50px;left:-20px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.04);}
-.jc-eyebrow{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:10px;position:relative;z-index:1;}
-.jc-title{font-family:'Syne',sans-serif;font-size:clamp(1.4rem,4vw,2rem);font-weight:800;letter-spacing:-1px;line-height:1.05;margin-bottom:6px;position:relative;z-index:1;}
-.jc-tagline{font-size:.8rem;color:rgba(255,255,255,.65);font-style:italic;margin-bottom:14px;position:relative;z-index:1;}
-.jc-tags{display:flex;gap:6px;flex-wrap:wrap;position:relative;z-index:1;}
-.jc-tag{padding:3px 10px;background:rgba(255,255,255,.12);border-radius:100px;font-size:.65rem;font-weight:600;}
-.jc-rating{font-size:.88rem;margin-top:12px;position:relative;z-index:1;}
+.tc-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(37,99,255,0.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(37,99,255,0.06) 1px,transparent 1px);
+  background-size:24px 24px;pointer-events:none;
+}
+.tc-content{position:relative;z-index:1;}
+.tc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);margin-bottom:12px;}
+.tc-dest{font-family:var(--font-head);font-size:28px;color:white;letter-spacing:-.3px;margin-bottom:4px;}
+.tc-meta{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px;}
+.tc-vibes{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+.tc-vibe-tag{padding:4px 12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:100px;font-size:11px;color:rgba(255,255,255,0.6);}
+.tc-branding{font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:.5px;}
 
-.journal-chapter{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:8px;border-left:3px solid var(--purple);}
-.ch-day{font-size:.58rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--purple);margin-bottom:4px;}
-.ch-title{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:800;margin-bottom:3px;}
-.ch-emotion{font-size:.7rem;color:var(--muted);margin-bottom:8px;}
-.ch-story{font-size:.78rem;color:var(--muted);line-height:1.85;margin-bottom:8px;}
-.ch-highlight{padding:8px 11px;background:var(--purple-s);border-radius:var(--r);font-size:.72rem;font-weight:600;color:var(--purple);}
-
-.journal-ending{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;margin-top:10px;}
-.quote-block{border-left:3px solid var(--purple);padding-left:14px;font-family:'Syne',sans-serif;font-size:.9rem;font-style:italic;color:var(--muted);line-height:1.7;margin:12px 0;}
-
-/* ── EXPENSES ── */
-.exp-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;}
-.exp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.exp-name{flex:1;font-size:.8rem;font-weight:600;}
-.exp-cat{font-size:.65rem;color:var(--muted);}
-.exp-amount{font-size:.85rem;font-weight:700;color:var(--purple);}
-.exp-del{width:22px;height:22px;border-radius:50%;background:none;border:1px solid var(--border-md);cursor:pointer;font-size:.6rem;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.exp-del:hover{background:var(--red);border-color:var(--red);color:#fff;}
-
-.sum-hero{background:linear-gradient(135deg,var(--charcoal),#1e2a3a);border-radius:var(--r-xl);padding:22px;color:#fff;margin-bottom:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-@media(max-width:480px){.sum-hero{grid-template-columns:1fr;}}
-.sh-item{text-align:center;}
-.sh-num{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;}
-.sh-lbl{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.35);margin-top:3px;}
-
-/* Donut */
-.donut-wrap{position:relative;width:130px;height:130px;flex-shrink:0;}
-.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.donut-num{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;}
-.donut-sub{font-size:.6rem;color:var(--muted2);}
-
-/* ── SPLIT BILL ── */
-.person-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;background:var(--teal-s);border:1.5px solid var(--teal-m);border-radius:100px;font-size:.72rem;font-weight:600;color:var(--teal);margin:3px;}
-.pc-rm{cursor:pointer;opacity:.6;font-size:.6rem;}
-.pc-rm:hover{opacity:1;}
-
-.settlement-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;}
-.sa-avatar{width:32px;height:32px;border-radius:50%;background:var(--purple-s);color:var(--purple);font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.sa-amount{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--teal);margin-left:auto;}
-
-/* ── STATS ── */
-.identity-card{background:linear-gradient(135deg,var(--teal),var(--sky));border-radius:var(--r-xl);padding:24px;color:#fff;margin-bottom:12px;text-align:center;position:relative;overflow:hidden;}
-.identity-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.07);}
-.ic-ico{font-size:2.4rem;margin-bottom:8px;position:relative;z-index:1;}
-.ic-type{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:6px;position:relative;z-index:1;}
-.ic-desc{font-size:.75rem;color:rgba(255,255,255,.65);line-height:1.7;max-width:360px;margin:0 auto;position:relative;z-index:1;}
-.ic-score{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:14px;font-size:.78rem;font-weight:600;position:relative;z-index:1;}
-
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
-@media(max-width:520px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
-.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;text-align:center;transition:all .2s;}
-.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
-.sc-ico{font-size:1.4rem;margin-bottom:6px;}
-.sc-val{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:3px;}
-.sc-lbl{font-size:.6rem;color:var(--muted2);font-weight:600;text-transform:uppercase;letter-spacing:.8px;}
-
-.achievement-card{display:flex;align-items:center;gap:12px;padding:11px 13px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;transition:all .2s;}
-.achievement-card:hover{transform:translateX(3px);border-color:var(--purple-m);}
-.ach-ico{width:38px;height:38px;border-radius:10px;background:var(--purple-s);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
-.ach-title{font-size:.8rem;font-weight:700;margin-bottom:2px;}
-.ach-desc{font-size:.68rem;color:var(--muted);}
-.ach-rarity{margin-left:auto;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:100px;flex-shrink:0;}
-.rarity-Common{background:var(--bg2);color:var(--muted);}
-.rarity-Rare{background:var(--sky-s);color:var(--sky);}
-.rarity-Epic{background:var(--purple-s);color:var(--purple);}
-.rarity-Legendary{background:var(--gold-s);color:var(--gold);}
-
-.insta-card{background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border-radius:var(--r-lg);padding:16px 18px;margin-top:10px;}
-.insta-label{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:8px;}
-.insta-text{font-size:.8rem;color:#fff;line-height:1.7;font-weight:500;}
-
-/* ── REVIEW ── */
-.star-row{display:flex;gap:3px;margin-top:5px;}
-.star{font-size:1.3rem;cursor:pointer;transition:transform .1s;opacity:.3;}
-.star.active{opacity:1;}
-.star:hover{transform:scale(1.15);}
-.platform-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
-.ptab{padding:6px 13px;border-radius:100px;border:1.5px solid var(--border-md);background:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.72rem;font-weight:600;color:var(--muted);transition:all .15s;}
-.ptab.active{background:var(--charcoal);border-color:var(--charcoal);color:#fff;}
-
-.review-box{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;}
-.rv-title{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:800;margin-bottom:8px;}
-.rv-body{font-size:.78rem;color:var(--muted);line-height:1.85;margin-bottom:10px;}
-
-/* ── NEXT TRIP ── */
-.dest-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;margin-bottom:10px;transition:all .25s;}
-.dest-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
-.dc-head{padding:16px 18px;background:linear-gradient(135deg,var(--teal),var(--sky));color:#fff;display:flex;align-items:center;justify-content:space-between;}
-.dc-name{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:2px;}
-.dc-vibe{font-size:.68rem;color:rgba(255,255,255,.65);}
-.dc-score{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;}
-.dc-body{padding:14px 18px;}
-.dc-why{font-size:.75rem;color:var(--muted);line-height:1.65;margin-bottom:10px;}
-.dc-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.dcm-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:9px;}
-.dcm-label{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:2px;}
-.dcm-val{font-size:.78rem;font-weight:700;}
-
-/* ── CURRENCY ── */
-.co-card{border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:9px;transition:border-color .2s;}
-.co-card:hover{border-color:var(--teal-m);}
-.co-head{padding:11px 14px;background:var(--bg);display:flex;align-items:center;justify-content:space-between;}
-.co-name{font-size:.82rem;font-weight:700;}
-.co-stars{font-size:.65rem;color:var(--gold);}
-.co-body{padding:12px 14px;}
-.co-desc{font-size:.75rem;color:var(--muted);line-height:1.6;margin-bottom:8px;}
-.co-two{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-
-/* ── INFO ROW ── */
-.info-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.78rem;}
-.info-row:last-child{border-bottom:none;}
-.ir-label{color:var(--muted);}
-.ir-value{font-weight:700;}
-
-/* ── SEC TITLE ── */
-.sec-t{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:8px;display:flex;align-items:center;gap:7px;}
-.sec-t::after{content:'';flex:1;height:1px;background:var(--border);}
-
-/* ── NOTE BOX ── */
-.nb{border-radius:var(--r);padding:10px 12px;font-size:.72rem;line-height:1.65;margin-bottom:10px;}
-.nb-purple{background:var(--purple-s);border:1px solid var(--purple-m);color:var(--purple);}
-.nb-teal{background:var(--teal-s);border:1px solid var(--teal-m);color:var(--teal);}
-.nb-green{background:var(--green-s);border:1px solid var(--green-m);color:var(--green);}
-.nb-red{background:var(--red-s);border:1px solid var(--red-m);color:var(--red);}
-.nb-amber{background:var(--amber-s);border:1px solid var(--amber-m);color:var(--amber);}
-
-/* ── SHARE MODAL ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:300;align-items:center;justify-content:center;padding:24px;}
-.modal-overlay.show{display:flex;}
-.modal-box{background:var(--white);border-radius:var(--r-xl);width:100%;max-width:440px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.25);animation:fadeUp .3s ease;}
-.modal-head{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.modal-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;}
-.modal-close{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.modal-close:hover{background:var(--bg2);}
-.modal-body{padding:16px 18px;}
-
-.share-card{border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow-lg);}
-.sc-hero{padding:22px;background:linear-gradient(135deg,var(--teal),var(--sky));color:#fff;position:relative;overflow:hidden;}
-.sc-hero::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.08);}
-.sc-hero::after{content:'';position:absolute;bottom:-25px;left:-10px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.05);}
-.sc-eyebrow{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:6px;position:relative;z-index:1;}
-.sc-dest{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-1px;line-height:1.05;margin-bottom:4px;position:relative;z-index:1;}
-.sc-meta{font-size:.72rem;color:rgba(255,255,255,.65);margin-bottom:10px;position:relative;z-index:1;}
-.sc-vibes{display:flex;gap:5px;flex-wrap:wrap;position:relative;z-index:1;}
-.sc-vibe{padding:3px 9px;background:rgba(255,255,255,.12);border-radius:100px;font-size:.62rem;font-weight:600;}
-.sc-stats{background:var(--white);padding:14px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.scs-item{text-align:center;}
-.scs-val{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;margin-bottom:2px;}
-.scs-lbl{font-size:.55rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;font-weight:600;}
-.scs-footer{padding:8px 16px;background:var(--bg);text-align:center;font-size:.68rem;color:var(--muted2);}
-
+/* ── Share buttons ── */
 .share-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.sbtn{padding:10px;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;}
-.sbtn-outline{background:var(--bg);border:1.5px solid var(--border-md);color:var(--muted);}
-.sbtn-outline:hover{border-color:var(--teal);color:var(--teal);}
-.sbtn-wa{background:#25D366;color:#fff;}
-.sbtn-tw{background:#000;color:#fff;}
-.sbtn-more{background:linear-gradient(135deg,var(--teal),var(--sky));color:#fff;}
-.modal-tip{text-align:center;font-size:.65rem;color:var(--muted2);}
+.share-btn{
+  padding:12px;border:none;border-radius:var(--r);
+  font-family:var(--font-body);font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.share-btn:hover{filter:brightness(1.05);transform:translateY(-1px)}
+.share-btn svg{width:16px;height:16px;}
+.sb-whatsapp{background:#25D366;color:white;}
+.sb-instagram{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white;}
+.sb-copy{background:var(--bg2);color:var(--text);}
+.sb-save{background:var(--midnight);color:white;}
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--charcoal);color:#fff;padding:9px 18px;border-radius:100px;font-size:.72rem;font-weight:600;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.2);}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* ── Next trip cards ── */
+.next-trip-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--r-xl);padding:14px 16px;
+  display:flex;gap:12px;align-items:center;
+  cursor:pointer;transition:all .2s;
+  margin-bottom:8px;
+}
+.next-trip-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);}
+.ntc-flag{font-size:28px;flex-shrink:0;}
+.ntc-info{flex:1;}
+.ntc-dest{font-size:14px;font-weight:700;color:var(--text);}
+.ntc-why{font-size:12px;color:var(--muted);margin-top:2px;}
+.ntc-meta{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.ntc-tag{padding:3px 8px;background:var(--bg2);border-radius:100px;font-size:10px;font-weight:600;color:var(--muted);}
+.ntc-arrow{color:var(--muted2);}
+.ntc-arrow svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+
+/* ── Review stars ── */
+.star-row{display:flex;gap:6px;margin:10px 0;}
+.star{font-size:24px;cursor:pointer;transition:transform .15s;}
+.star:hover{transform:scale(1.2)}
+
+/* ── Stats grid ── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.stat-card{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:14px;
+  text-align:center;
+}
+.stat-card-val{font-family:var(--font-mono);font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px;}
+.stat-card-lbl{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;}
+.stat-card-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* ── Empty state ── */
+.empty-state{
+  text-align:center;padding:40px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.empty-icon{font-size:48px;}
+.empty-title{font-family:var(--font-head);font-size:20px;color:var(--text);}
+.empty-sub{font-size:14px;color:var(--muted);line-height:1.6;max-width:280px;}
+
+/* ── Bottom CTA ── */
+.bottom-cta{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  padding:16px 18px;
+  background:rgba(247,249,252,0.95);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  z-index:50;
+}
+.bottom-cta-btn{
+  width:100%;padding:14px;
+  background:var(--blue);color:white;
+  border:none;border-radius:var(--r);
+  font-family:var(--font-body);font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 8px 24px rgba(37,99,255,0.3);
+}
+.bottom-cta-btn:hover{background:var(--blue-d);transform:translateY(-1px)}
+.bottom-cta-btn svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2;}
+
+/* ── Modal ── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(11,18,32,0.6);
+  backdrop-filter:blur(12px);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal-sheet{
+  background:var(--white);
+  border-radius:28px 28px 0 0;
+  width:100%;max-width:480px;
+  max-height:85vh;overflow-y:auto;
+  animation:fadeUp .35s cubic-bezier(.34,1.2,.64,1) both;
+  padding-bottom:40px;
+}
+.modal-handle{width:40px;height:4px;background:var(--bg2);border-radius:2px;margin:14px auto 0;}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);}
+.modal-title{font-size:17px;font-weight:700;color:var(--text);}
+.modal-body{padding:16px 20px 0;}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--midnight);color:white;
+  padding:10px 20px;border-radius:100px;
+  font-size:13px;font-weight:600;
+  white-space:nowrap;z-index:999;
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.toast.show{opacity:1;}
 </style>
 </head>
-<body>
 
-<!-- NAV -->
-<nav class="nav">
-  <div class="nav-left">
-    <a href="/plan" class="nav-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Planner</a>
-    <div style="width:1px;height:16px;background:var(--border);margin:0 2px;"></div>
-    <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
-    <div class="nav-logo">Yaply</div>
-  </div>
-  <div class="nav-right">
-    <button class="share-btn" onclick="openShare()">
-      <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      Share Trip
-    </button>
-    <a href="/app" class="nav-link">Dashboard</a>
-  </div>
+<body>
+<div class="page">
+
+<!-- ── TOP NAV ── -->
+<nav class="top-nav">
+  <a href="/app" class="nav-back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Home
+  </a>
+  <div class="nav-title">After Trip</div>
+  <button class="nav-share-btn" onclick="shareTrip()">
+    <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    Share
+  </button>
 </nav>
 
-<!-- HERO -->
-<div class="page-hero">
-  <div class="hero-mesh">
-    <div class="hm-orb hmo1"></div><div class="hm-orb hmo2"></div><div class="hm-orb hmo3"></div>
-  </div>
-  <div class="hero-grid-bg"></div>
-  <div class="hero-float-svg hfs1"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".7"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-  <div class="hero-float-svg hfs2"><svg width="66" height="66" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".7"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-  <div class="hero-float-svg hfs3"><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".7"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-  <div class="hero-content">
-    <div>
-      <div class="hero-badge"><div class="hb-dot"></div>Trip Complete · Memories Last Forever</div>
-      <div class="hero-h1">Your adventure<br/>lives <em>forever.</em></div>
-      <div class="hero-sub">Relive every moment, settle group bills, discover your next destination, and turn your memories into something beautiful.</div>
-    </div>
-    <div class="hero-stats-grid">
-      <div class="hstat"><div class="hstat-num" id="totalTrips">0</div><div class="hstat-lbl">Trips Saved</div></div>
-      <div class="hstat"><div class="hstat-num" id="totalDays">0</div><div class="hstat-lbl">Days Travelled</div></div>
-      <div class="hstat"><div class="hstat-num" id="totalSpent">₹0</div><div class="hstat-lbl">Total Spent</div></div>
-      <div class="hstat"><div class="hstat-num" id="totalPlaces">0</div><div class="hstat-lbl">Places Visited</div></div>
-    </div>
+<!-- ── MAIN CONTENT ── -->
+<div id="loadingState" class="p18 pt20">
+  <div class="skel" style="height:24px;width:60%;margin-bottom:16px;"></div>
+  <div style="display:flex;gap:10px;overflow:hidden;">
+    <div class="skel" style="height:110px;width:160px;flex-shrink:0;border-radius:20px;"></div>
+    <div class="skel" style="height:110px;width:160px;flex-shrink:0;border-radius:20px;"></div>
   </div>
 </div>
 
-<!-- PLAN CONTEXT BANNER -->
-<div id="planCtx" style="display:none;max-width:980px;margin:0 auto;padding:0 24px 0;">
-  <div id="planCtxInner" style="background:linear-gradient(135deg,var(--charcoal),#1e2a3a);border-radius:var(--r-xl);padding:16px 20px;margin-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div style="width:38px;height:38px;border-radius:10px;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+<!-- Trip selector (shown when trips exist) -->
+<div id="tripSelectorSection" style="display:none;" class="au">
+  <div class="p18 pt20" style="margin-bottom:10px;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);">Your Trips</div>
+  </div>
+  <div class="trip-selector-scroll" id="tripSelectorScroll"></div>
+</div>
+
+<!-- Manual entry form (shown when no trips) -->
+<div id="manualFormSection" style="display:none;" class="au">
+  <div class="manual-form-card">
+    <div class="mf-title">Where did you travel?</div>
+    <div class="mf-sub">Tell us about your trip and we'll unlock all the after trip tools for you.</div>
+    <div class="mf-grid">
+      <div class="mf-field full">
+        <label class="mf-label">Destination</label>
+        <input class="mf-input" id="mf-dest" type="text" placeholder="e.g. Tokyo, Japan"/>
       </div>
-      <div>
-        <div style="font-family:'Syne',sans-serif;font-size:.92rem;font-weight:800;color:#fff;" id="pcDest">—</div>
-        <div style="font-size:.65rem;color:rgba(255,255,255,.5);margin-top:1px;" id="pcMeta">—</div>
+      <div class="mf-field">
+        <label class="mf-label">Days</label>
+        <input class="mf-input" id="mf-days" type="number" placeholder="6" value="5"/>
+      </div>
+      <div class="mf-field">
+        <label class="mf-label">Currency</label>
+        <select class="mf-input" id="mf-currency">
+          <option value="INR">INR ₹</option>
+          <option value="USD">USD $</option>
+          <option value="EUR">EUR €</option>
+          <option value="GBP">GBP £</option>
+          <option value="AED">AED د.إ</option>
+        </select>
+      </div>
+      <div class="mf-field">
+        <label class="mf-label">Budget</label>
+        <input class="mf-input" id="mf-budget" type="text" placeholder="80,000"/>
+      </div>
+      <div class="mf-field full">
+        <label class="mf-label">Travel Style</label>
+        <input class="mf-input" id="mf-vibe" type="text" placeholder="e.g. Adventure, Foodie, Cultural"/>
       </div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;" id="pcTags"></div>
-  </div>
-</div>
-<div id="noPlanBanner" style="display:none;max-width:980px;margin:0 auto;padding:0 24px;">
-  <div style="background:var(--amber-s);border:1.5px solid var(--amber-m);border-radius:var(--r-xl);padding:16px 20px;margin-top:16px;display:flex;align-items:center;gap:12px;">
-    <span style="font-size:1.2rem;">✈️</span>
-    <div style="flex:1;font-size:.78rem;color:var(--amber);">No saved trip found. <a href="/plan" style="font-weight:700;color:var(--amber);text-decoration:underline;">Plan a trip first</a> — then come back to relive it.</div>
+    <button class="mf-btn" onclick="loadManualTrip()">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
+      Unlock After Trip
+    </button>
   </div>
 </div>
 
-<!-- TABS -->
-<div class="tabs-wrap">
-  <div class="tabs-scroll">
-    <button class="tab active" onclick="switchTab('journal',event)">Trip Journal</button>
-    <button class="tab" onclick="switchTab('expenses',event)">Expenses</button>
-    <button class="tab" onclick="switchTab('split',event)">Split Bill</button>
-    <button class="tab" onclick="switchTab('stats',event)">Trip Stats</button>
-    <button class="tab" onclick="switchTab('review',event)">Write Review</button>
-    <button class="tab" onclick="switchTab('next',event)">Next Trip</button>
-    <button class="tab" onclick="switchTab('currency',event)">Leftover Money</button>
+<!-- Trip data section (shown after trip selected/entered) -->
+<div id="tripDataSection" style="display:none;">
+
+  <!-- Hero -->
+  <div class="trip-hero au" id="tripHero">
+    <div class="th-grid"></div>
+    <div class="th-orb1"></div>
+    <div class="th-orb2"></div>
+    <div class="th-badge">✈️ Trip Complete</div>
+    <div class="th-dest" id="heroDestination">—</div>
+    <div class="th-meta" id="heroMeta">—</div>
+    <div class="th-stats">
+      <div class="th-stat">
+        <div class="th-stat-val" id="heroDays">0</div>
+        <div class="th-stat-lbl">Days</div>
+      </div>
+      <div class="th-stat">
+        <div class="th-stat-val" id="heroPeople">0</div>
+        <div class="th-stat-lbl">People</div>
+      </div>
+      <div class="th-stat">
+        <div class="th-stat-val" id="heroSpent">₹0</div>
+        <div class="th-stat-lbl">Budget</div>
+      </div>
+      <div class="th-stat">
+        <div class="th-stat-val" id="heroPlaces">0</div>
+        <div class="th-stat-lbl">Places</div>
+      </div>
+    </div>
   </div>
-</div>
 
-<!-- MAIN -->
-<div class="main">
+  <!-- Tabs -->
+  <div class="tabs-row au d2">
+    <button class="tab-btn active" onclick="switchTab('stats',this)"><span>📊</span> Stats</button>
+    <button class="tab-btn" onclick="switchTab('money',this)"><span>💰</span> Money</button>
+    <button class="tab-btn" onclick="switchTab('share',this)"><span>🔗</span> Share</button>
+  </div>
 
-  <!-- ── JOURNAL ── -->
-  <div class="panel active" id="panel-journal">
-    <div class="card">
-      <div class="card-accent ca-purple"></div>
-      <div class="card-header">
-        <div class="card-title"><div class="ct-ico cti-purple"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>AI Trip Journal Writer</div>
-        <div class="card-badge cb-purple">AI Powered</div>
+  <!-- ══════════ TAB: STATS ══════════ -->
+  <div class="tab-panel active p18" id="tab-stats">
+
+    <!-- AI Trip Journal -->
+    <div class="card au d1">
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(37,99,255,0.09);">
+          <svg viewBox="0 0 24 24" stroke="var(--blue)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="card-title">AI Trip Journal</div>
+          <div class="card-sub">Your story, beautifully written</div>
+        </div>
+        <div class="card-ai">AI</div>
       </div>
       <div class="card-body">
-        <div class="fg-grid">
-          <div class="fg"><label class="fl">Destination</label><input class="fi" type="text" id="jDest" placeholder="e.g. Tokyo, Japan"/></div>
-          <div class="fg"><label class="fl">How Many Days</label><input class="fi" type="number" id="jDays" value="5" min="1" max="30"/></div>
-          <div class="fg"><label class="fl">Travel Vibe</label><input class="fi" type="text" id="jVibe" placeholder="e.g. Adventure + Foodie"/></div>
-          <div class="fg"><label class="fl">Travelled With</label><select class="fi" id="jWith"><option value="solo">Solo</option><option value="partner">Partner</option><option value="friends">Friends</option><option value="family">Family</option></select></div>
+        <div class="field">
+          <label class="field-label">Your highlights & memories</label>
+          <textarea class="field-input" id="journal-memories" placeholder="What moved you? Your best moments, surprises, food you loved, people you met..."></textarea>
         </div>
-        <div class="fg"><label class="fl">Your Highlights & Memories</label><textarea class="fi fi-ta" id="jHighlights" rows="3" placeholder="Your best moments, surprises, what moved you, what you'll never forget..."></textarea></div>
-        <button class="btn btn-dark" onclick="generateJournal()"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/></svg>Write My Journey</button>
-        <div class="spinner" id="journal-spinner"><div class="sp-ring" style="border-top-color:var(--purple);border-color:var(--purple-m);"></div>Writing your story...</div>
-      </div>
-    </div>
-    <div class="result" id="journal-result"></div>
-  </div>
-
-  <!-- ── EXPENSES ── -->
-  <div class="panel" id="panel-expenses">
-    <div class="card">
-      <div class="card-accent ca-teal"></div>
-      <div class="card-header">
-        <div class="card-title"><div class="ct-ico cti-teal"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>Trip Expense Tracker</div>
-      </div>
-      <div class="card-body">
-        <div class="fg-grid" style="margin-bottom:14px;">
-          <div class="fg"><label class="fl">Destination</label><input class="fi" type="text" id="eDest" placeholder="e.g. Bali"/></div>
-          <div class="fg"><label class="fl">Total Budget</label><div style="display:grid;grid-template-columns:70px 1fr;gap:6px;"><select class="fi" id="eCurr"><option value="INR">INR</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select><input class="fi" type="text" id="eBudget" placeholder="80,000"/></div></div>
-          <div class="fg"><label class="fl">People</label><input class="fi" type="number" id="ePeople" value="2" min="1"/></div>
-        </div>
-        <div style="background:var(--bg);border-radius:var(--r);padding:12px;margin-bottom:14px;border:1px solid var(--border);">
-          <div class="sec-t">Add Expense</div>
-          <div style="display:grid;grid-template-columns:1fr 90px 110px auto;gap:7px;align-items:end;">
-            <input class="fi" type="text" id="expName" placeholder="What did you spend on?"/>
-            <input class="fi" type="number" id="expAmount" placeholder="Amount"/>
-            <select class="fi" id="expCat"><option value="Food">Food</option><option value="Transport">Transport</option><option value="Accommodation">Stay</option><option value="Activities">Activities</option><option value="Shopping">Shopping</option><option value="Other">Other</option></select>
-            <button class="btn btn-teal btn-sm" onclick="addExpense()">Add</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div>
+            <label class="field-label">Travelled with</label>
+            <select class="field-select field-input" id="journal-with" style="padding:10px 12px;">
+              <option value="Solo">Solo</option>
+              <option value="Partner">Partner</option>
+              <option value="Friends">Friends</option>
+              <option value="Family">Family</option>
+              <option value="Group">Group</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Story style</label>
+            <select class="field-select field-input" id="journal-style" style="padding:10px 12px;">
+              <option value="poetic">Poetic</option>
+              <option value="casual">Casual</option>
+              <option value="detailed">Detailed</option>
+              <option value="funny">Funny</option>
+            </select>
           </div>
         </div>
-        <div id="expenseList"></div>
-        <div id="expTotalsWrap" style="display:none;margin-bottom:10px;padding:10px 13px;background:var(--purple-s);border:1px solid var(--purple-m);border-radius:var(--r);display:none;">
-          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:.78rem;font-weight:600;">Total</span><span style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--purple);" id="expTotalNum">₹0</span></div>
+        <button class="run-btn" style="background:var(--blue);" onclick="runJournal()" id="journalBtn">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>
+          Write My Journey
+        </button>
+        <div id="journalLoading" style="display:none;text-align:center;padding:24px;">
+          <div style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--blue);animation:spin .7s linear infinite;margin:0 auto 10px;"></div>
+          <div style="font-size:13px;color:var(--muted);">Writing your story...</div>
         </div>
-        <button class="btn btn-dark" onclick="analyzeExpenses()" id="analyzeBtn" style="display:none;"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analyze My Spending</button>
-        <div class="spinner" id="expense-spinner"><div class="sp-ring" style="border-top-color:var(--teal);border-color:var(--teal-m);"></div>Analyzing expenses...</div>
+        <div id="journalResult" style="display:none;"></div>
       </div>
     </div>
-    <div class="result" id="expense-result"></div>
-  </div>
 
-  <!-- ── SPLIT BILL ── -->
-  <div class="panel" id="panel-split">
-    <div class="card">
-      <div class="card-accent ca-green"></div>
-      <div class="card-header">
-        <div class="card-title"><div class="ct-ico cti-green"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>Group Bill Splitter</div>
-        <div class="card-badge cb-green">Real-time</div>
+    <!-- Trip Stats -->
+    <div class="card au d2">
+      <div class="card-head">
+        <div class="card-icon" style="background:var(--amber-g);">
+          <svg viewBox="0 0 24 24" stroke="var(--amber)"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>
+        </div>
+        <div>
+          <div class="card-title">Trip Stats</div>
+          <div class="card-sub">Fun facts about your trip</div>
+        </div>
+        <div class="card-ai">AI</div>
       </div>
       <div class="card-body">
-        <div class="fg-grid" style="margin-bottom:12px;">
-          <div class="fg"><label class="fl">Currency</label><select class="fi" id="splitCurr"><option value="INR">INR</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select></div>
-          <div class="fg"><label class="fl">Add People</label><div style="display:flex;gap:6px;"><input class="fi" type="text" id="personName" placeholder="Name" style="flex:1;" onkeydown="if(event.key==='Enter')addPerson()"/><button class="btn btn-teal btn-sm" onclick="addPerson()">Add</button></div></div>
+        <button class="run-btn" style="background:var(--amber);" onclick="runTripStats()" id="statsBtn">
+          <svg viewBox="0 0 24 24"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/></svg>
+          Generate My Stats
+        </button>
+        <div id="statsLoading" style="display:none;text-align:center;padding:24px;">
+          <div style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--amber);animation:spin .7s linear infinite;margin:0 auto 10px;"></div>
+          <div style="font-size:13px;color:var(--muted);">Analysing your trip...</div>
         </div>
-        <div id="peopleChips" style="margin-bottom:12px;"></div>
-        <div style="background:var(--bg);border-radius:var(--r);padding:12px;margin-bottom:12px;border:1px solid var(--border);">
-          <div class="sec-t">Add Shared Expense</div>
-          <div class="fg-grid">
-            <div class="fg"><label class="fl">Expense</label><input class="fi" type="text" id="splitExpName" placeholder="e.g. Hotel, Dinner"/></div>
-            <div class="fg"><label class="fl">Amount</label><input class="fi" type="number" id="splitExpAmount" placeholder="Amount"/></div>
-            <div class="fg"><label class="fl">Paid By</label><select class="fi" id="splitPaidBy"></select></div>
-            <div class="fg"><label class="fl">Split Between</label><div id="splitBetween" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;"></div></div>
-          </div>
-          <button class="btn btn-teal btn-sm" style="margin-top:8px;" onclick="addSplitExpense()">Add Expense</button>
-        </div>
-        <div id="splitExpenseList"></div>
-        <button class="btn btn-dark" onclick="calculateSplit()" id="splitBtn" style="display:none;"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg>Calculate Who Owes What</button>
+        <div id="statsResult" style="display:none;"></div>
       </div>
     </div>
-    <div class="result" id="split-result"></div>
-  </div>
 
-  <!-- ── STATS ── -->
-  <div class="panel" id="panel-stats">
-    <div class="card">
-      <div class="card-accent ca-gold"></div>
-      <div class="card-header">
-        <div class="card-title"><div class="ct-ico cti-gold"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg></div>Trip Stats & Achievements</div>
-        <div class="card-badge cb-gold">Viral</div>
-      </div>
-      <div class="card-body">
-        <div class="fg-grid">
-          <div class="fg"><label class="fl">Destination</label><input class="fi" type="text" id="stDest" placeholder="e.g. Santorini, Greece"/></div>
-          <div class="fg"><label class="fl">Days</label><input class="fi" type="number" id="stDays" value="7" min="1"/></div>
-          <div class="fg"><label class="fl">Travelled With</label><select class="fi" id="stWith"><option value="solo">Solo</option><option value="partner">Partner</option><option value="friends">Friends</option><option value="family">Family</option></select></div>
-          <div class="fg"><label class="fl">Vibes</label><input class="fi" type="text" id="stVibes" placeholder="e.g. Adventure, Foodie"/></div>
+    <!-- Write Review -->
+    <div class="card au d3">
+      <div class="card-head">
+        <div class="card-icon" style="background:var(--coral-g);">
+          <svg viewBox="0 0 24 24" stroke="var(--coral)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </div>
-        <div class="fg"><label class="fl">Top Activities Done</label><input class="fi" type="text" id="stActivities" placeholder="e.g. Snorkeling, street food tour, temple visits"/></div>
-        <button class="btn btn-dark" onclick="generateStats()"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/></svg>Generate My Stats</button>
-        <div class="spinner" id="stats-spinner"><div class="sp-ring" style="border-top-color:var(--gold);border-color:var(--gold-s);"></div>Calculating your trip stats...</div>
-      </div>
-    </div>
-    <div class="result" id="stats-result"></div>
-  </div>
-
-  <!-- ── REVIEW ── -->
-  <div class="panel" id="panel-review">
-    <div class="card">
-      <div class="card-accent ca-amber"></div>
-      <div class="card-header">
-        <div class="card-title"><div class="ct-ico cti-amber"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>AI Review Generator</div>
+        <div>
+          <div class="card-title">Write a Review</div>
+          <div class="card-sub">AI writes it, you post it</div>
+        </div>
+        <div class="card-ai">AI</div>
       </div>
       <div class="card-body">
-        <div class="fg"><label class="fl">Place to Review</label><input class="fi" type="text" id="revPlace" placeholder="e.g. Asakusa Temple, Tokyo OR Hotel Mercure Paris"/></div>
-        <div class="fg"><label class="fl">Your Rating</label><div class="star-row" id="starRow"><span class="star active" onclick="setRating(1)">★</span><span class="star active" onclick="setRating(2)">★</span><span class="star active" onclick="setRating(3)">★</span><span class="star active" onclick="setRating(4)">★</span><span class="star active" onclick="setRating(5)">★</span></div></div>
-        <div class="fg"><label class="fl">Your Experience</label><textarea class="fi fi-ta" id="revExp" rows="3" placeholder="What you loved, what surprised you, what could be better..."></textarea></div>
-        <div class="fg">
-          <label class="fl">Platform</label>
-          <div class="platform-tabs">
-            <button class="ptab active" onclick="setPlatform(this,'Google')">Google</button>
-            <button class="ptab" onclick="setPlatform(this,'TripAdvisor')">TripAdvisor</button>
-            <button class="ptab" onclick="setPlatform(this,'Booking.com')">Booking.com</button>
-            <button class="ptab" onclick="setPlatform(this,'Instagram')">Instagram</button>
+        <div style="margin-bottom:12px;">
+          <label class="field-label">Your rating</label>
+          <div class="star-row" id="starRow">
+            <span class="star" onclick="setRating(1)">⭐</span>
+            <span class="star" onclick="setRating(2)">⭐</span>
+            <span class="star" onclick="setRating(3)">⭐</span>
+            <span class="star" onclick="setRating(4)">⭐</span>
+            <span class="star" onclick="setRating(5)">⭐</span>
           </div>
         </div>
-        <button class="btn btn-dark" onclick="generateReview()"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Generate Review</button>
-        <div class="spinner" id="review-spinner"><div class="sp-ring" style="border-top-color:var(--amber);border-color:var(--amber-m);"></div>Writing your review...</div>
+        <div class="field">
+          <label class="field-label">What did you love most?</label>
+          <input class="field-input" id="review-highlight" type="text" placeholder="e.g. The street food, sunsets, local people"/>
+        </div>
+        <button class="run-btn" style="background:var(--coral);" onclick="runReview()" id="reviewBtn">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Generate Review
+        </button>
+        <div id="reviewLoading" style="display:none;text-align:center;padding:24px;">
+          <div style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--coral);animation:spin .7s linear infinite;margin:0 auto 10px;"></div>
+          <div style="font-size:13px;color:var(--muted);">Writing your review...</div>
+        </div>
+        <div id="reviewResult" style="display:none;"></div>
       </div>
     </div>
-    <div class="result" id="review-result"></div>
-  </div>
 
-  <!-- ── NEXT TRIP ── -->
-  <div class="panel" id="panel-next">
-    <div class="card">
-      <div class="card-accent ca-sky"></div>
-      <div class="card-header">
-        <div class="card-title"><div class="ct-ico cti-sky"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>What's Your Next Adventure?</div>
+    <!-- Next Trip -->
+    <div class="card au d4">
+      <div class="card-head">
+        <div class="card-icon" style="background:var(--green-g);">
+          <svg viewBox="0 0 24 24" stroke="var(--green)"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        </div>
+        <div>
+          <div class="card-title">Next Trip Ideas</div>
+          <div class="card-sub">Based on where you went</div>
+        </div>
+        <div class="card-ai">AI</div>
       </div>
       <div class="card-body">
-        <div class="fg-grid">
-          <div class="fg"><label class="fl">Your Last Trip</label><input class="fi" type="text" id="ntPast" placeholder="e.g. Bali, Indonesia"/></div>
-          <div class="fg"><label class="fl">Your Passport</label><select class="fi" id="ntPassport"><option value="India">India</option><option value="USA">USA</option><option value="UK">UK</option><option value="UAE">UAE</option></select></div>
-          <div class="fg"><label class="fl">Budget Range</label><select class="fi" id="ntBudget"><option value="Budget under $500">Budget under $500</option><option value="Mid-range $500-$1500">Mid-range $500–$1500</option><option value="Comfortable $1500-$3000">Comfortable $1500–$3000</option><option value="Luxury $3000+">Luxury $3000+</option></select></div>
-          <div class="fg"><label class="fl">When to Travel</label><input class="fi" type="text" id="ntMonth" placeholder="e.g. December, March"/></div>
+        <button class="run-btn" style="background:var(--green);" onclick="runNextTrip()" id="nextTripBtn">
+          <svg viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4"/></svg>
+          Suggest My Next Trip
+        </button>
+        <div id="nextTripLoading" style="display:none;text-align:center;padding:24px;">
+          <div style="width:28px;height:28px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--green);animation:spin .7s linear infinite;margin:0 auto 10px;"></div>
+          <div style="font-size:13px;color:var(--muted);">Finding perfect destinations...</div>
         </div>
-        <div class="fg"><label class="fl">What Did You Love About Your Last Trip?</label><textarea class="fi fi-ta" id="ntLoved" rows="2" placeholder="e.g. The food was incredible, loved the temples and history, beaches were stunning..."></textarea></div>
-        <button class="btn btn-dark" onclick="getNextTrip()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>Find My Next Adventure</button>
-        <div class="spinner" id="next-spinner"><div class="sp-ring" style="border-top-color:var(--sky);border-color:var(--sky-m);"></div>Finding perfect destinations...</div>
+        <div id="nextTripResult" style="display:none;margin-top:14px;"></div>
       </div>
     </div>
-    <div class="result" id="next-result"></div>
-  </div>
 
-  <!-- ── CURRENCY ── -->
-  <div class="panel" id="panel-currency">
-    <div class="card">
-      <div class="card-accent ca-teal"></div>
-      <div class="card-header">
-        <div class="card-title"><div class="ct-ico cti-teal"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>What To Do With Leftover Money</div>
+  </div><!-- /tab-stats -->
+
+  <!-- ══════════ TAB: MONEY ══════════ -->
+  <div class="tab-panel p18" id="tab-money">
+
+    <!-- Expense Tracker -->
+    <div class="card au d1">
+      <div class="card-head">
+        <div class="card-icon" style="background:var(--amber-g);">
+          <svg viewBox="0 0 24 24" stroke="var(--amber)"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div style="flex:1;">
+          <div class="card-title">Expense Tracker</div>
+          <div class="card-sub" id="expenseTotal">Loading...</div>
+        </div>
+        <button onclick="openAddExpense()" style="padding:7px 14px;background:var(--blue);color:white;border:none;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;">+ Add</button>
       </div>
       <div class="card-body">
-        <div class="fg-grid">
-          <div class="fg"><label class="fl">Leftover Currency</label><input class="fi" type="text" id="lcCurr" placeholder="e.g. JPY, THB, EUR"/></div>
-          <div class="fg"><label class="fl">Amount</label><input class="fi" type="number" id="lcAmount" placeholder="e.g. 5000"/></div>
-          <div class="fg"><label class="fl">Your Home Currency</label><select class="fi" id="lcHome"><option value="INR">INR</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select></div>
+        <div class="cat-pills" id="catPills">
+          <div class="cat-pill active" onclick="filterExpenses('all',this)">All</div>
+          <div class="cat-pill" onclick="filterExpenses('food',this)">🍜 Food</div>
+          <div class="cat-pill" onclick="filterExpenses('transport',this)">🚌 Transport</div>
+          <div class="cat-pill" onclick="filterExpenses('stay',this)">🏨 Stay</div>
+          <div class="cat-pill" onclick="filterExpenses('activities',this)">🎭 Activities</div>
+          <div class="cat-pill" onclick="filterExpenses('shopping',this)">🛍️ Shopping</div>
+          <div class="cat-pill" onclick="filterExpenses('other',this)">📦 Other</div>
         </div>
-        <button class="btn btn-dark" onclick="getCurrencyAdvice()"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Get Best Options</button>
-        <div class="spinner" id="currency-spinner"><div class="sp-ring" style="border-top-color:var(--teal);border-color:var(--teal-m);"></div>Analyzing best options...</div>
+        <div id="expenseList">
+          <div style="text-align:center;padding:20px;">
+            <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:var(--amber);animation:spin .7s linear infinite;margin:0 auto;"></div>
+          </div>
+        </div>
+        <!-- Budget comparison -->
+        <div class="budget-compare" id="budgetCompare" style="display:none;">
+          <div class="bc-label">
+            <span>Budget vs Spent</span>
+            <span id="bc-pct">0%</span>
+          </div>
+          <div class="bc-track">
+            <div class="bc-fill" id="bc-fill" style="width:0%;background:var(--green);"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);">
+            <span id="bc-spent">Spent: ₹0</span>
+            <span id="bc-budget">Budget: ₹0</span>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="result" id="currency-result"></div>
-  </div>
 
-</div><!-- /main -->
+    <!-- Bill Splitter -->
+    <div class="card au d2">
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(139,92,246,0.09);">
+          <svg viewBox="0 0 24 24" stroke="#8B5CF6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div>
+          <div class="card-title">Bill Splitter</div>
+          <div class="card-sub">Who owes whom — settled instantly</div>
+        </div>
+        <div class="card-ai">AI</div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label class="field-label">Total Bill</label>
+          <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;">
+            <select class="field-select field-input" id="split-currency" style="padding:10px 12px;">
+              <option value="INR">INR</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+            <input class="field-input" id="split-total" type="number" placeholder="Total amount"/>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">People (names, one per line)</label>
+          <textarea class="field-input" id="split-people" placeholder="Rahul&#10;Priya&#10;Amit&#10;Sara" style="min-height:80px;"></textarea>
+        </div>
+        <button class="run-btn" style="background:#8B5CF6;" onclick="runSplitBill()" id="splitBtn">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg>
+          Calculate Split
+        </button>
+        <div id="splitLoading" style="display:none;text-align:center;padding:20px;">
+          <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:#8B5CF6;animation:spin .7s linear infinite;margin:0 auto 8px;"></div>
+          <div style="font-size:13px;color:var(--muted);">Calculating...</div>
+        </div>
+        <div id="splitResult" style="display:none;"></div>
+      </div>
+    </div>
 
-<!-- SHARE MODAL -->
-<div class="modal-overlay" id="shareModal" onclick="closeShare(event)">
-  <div class="modal-box">
+    <!-- Leftover Money -->
+    <div class="card au d3">
+      <div class="card-head">
+        <div class="card-icon" style="background:var(--green-g);">
+          <svg viewBox="0 0 24 24" stroke="var(--green)"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <div>
+          <div class="card-title">Leftover Money</div>
+          <div class="card-sub">Convert your remaining foreign currency</div>
+        </div>
+        <div class="card-ai">AI</div>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div>
+            <label class="field-label">Amount left</label>
+            <input class="field-input" id="leftover-amount" type="number" placeholder="e.g. 5000"/>
+          </div>
+          <div>
+            <label class="field-label">Currency</label>
+            <select class="field-select field-input" id="leftover-currency" style="padding:10px 12px;">
+              <option value="JPY">JPY ¥</option>
+              <option value="THB">THB ฿</option>
+              <option value="USD">USD $</option>
+              <option value="EUR">EUR €</option>
+              <option value="AED">AED د.إ</option>
+              <option value="GBP">GBP £</option>
+              <option value="SGD">SGD $</option>
+            </select>
+          </div>
+        </div>
+        <button class="run-btn" style="background:var(--green);" onclick="runLeftoverMoney()" id="leftoverBtn">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          What Can I Do With This?
+        </button>
+        <div id="leftoverLoading" style="display:none;text-align:center;padding:20px;">
+          <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:var(--green);animation:spin .7s linear infinite;margin:0 auto 8px;"></div>
+          <div style="font-size:13px;color:var(--muted);">Checking rates...</div>
+        </div>
+        <div id="leftoverResult" style="display:none;"></div>
+      </div>
+    </div>
+
+  </div><!-- /tab-money -->
+
+  <!-- ══════════ TAB: SHARE ══════════ -->
+  <div class="tab-panel p18" id="tab-share">
+
+    <!-- Trip Card -->
+    <div class="card au d1">
+      <div class="card-head">
+        <div class="card-icon" style="background:var(--midnight);justify-content:center;">
+          <svg viewBox="0 0 24 24" stroke="white"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div>
+          <div class="card-title">Trip Card</div>
+          <div class="card-sub">Beautiful shareable memory</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Generated card -->
+        <div class="trip-card-wrap" id="shareCard">
+          <div class="tc-grid"></div>
+          <div class="tc-content">
+            <div class="tc-label">✈️ Yaply Travel</div>
+            <div class="tc-dest" id="sc-dest">—</div>
+            <div class="tc-meta" id="sc-meta">—</div>
+            <div class="tc-vibes" id="sc-vibes"></div>
+            <div class="tc-branding">yaply.live</div>
+          </div>
+        </div>
+        <!-- Share buttons -->
+        <div class="share-btns">
+          <button class="share-btn sb-whatsapp" onclick="shareWhatsApp()">
+            <svg viewBox="0 0 24 24" fill="white" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.5 2C6.253 2 2 6.253 2 11.5c0 1.938.563 3.744 1.537 5.272L2 22l5.385-1.512A9.452 9.452 0 0 0 11.5 21C16.747 21 21 16.747 21 11.5S16.747 2 11.5 2z"/></svg>
+            WhatsApp
+          </button>
+          <button class="share-btn sb-instagram" onclick="shareInstagram()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            Instagram
+          </button>
+        </div>
+        <div class="share-btns">
+          <button class="share-btn sb-save" onclick="saveCard()">
+            <svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Save Image
+          </button>
+          <button class="share-btn sb-copy" onclick="copyLink()">
+            <svg viewBox="0 0 24 24" stroke="var(--text)" fill="none" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Copy Link
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Summary -->
+    <div class="card au d2">
+      <div class="card-head">
+        <div class="card-icon" style="background:var(--blue-g);">
+          <svg viewBox="0 0 24 24" stroke="var(--blue)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div>
+          <div class="card-title">Trip Summary</div>
+          <div class="card-sub">One-liner to share anywhere</div>
+        </div>
+        <div class="card-ai">AI</div>
+      </div>
+      <div class="card-body">
+        <button class="run-btn" style="background:var(--blue);" onclick="runSummary()" id="summaryBtn">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Generate Summary
+        </button>
+        <div id="summaryLoading" style="display:none;text-align:center;padding:20px;">
+          <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);border-top-color:var(--blue);animation:spin .7s linear infinite;margin:0 auto 8px;"></div>
+          <div style="font-size:13px;color:var(--muted);">Crafting your summary...</div>
+        </div>
+        <div id="summaryResult" style="display:none;"></div>
+      </div>
+    </div>
+
+  </div><!-- /tab-share -->
+
+</div><!-- /tripDataSection -->
+
+<!-- ── BOTTOM CTA ── -->
+<div class="bottom-cta" id="bottomCta" style="display:none;">
+  <button class="bottom-cta-btn" onclick="window.location.href='/plan'">
+    <svg viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+    Plan Your Next Trip
+  </button>
+</div>
+
+</div><!-- /page -->
+
+<!-- ── ADD EXPENSE MODAL ── -->
+<div class="modal-overlay" id="addExpenseModal" onclick="if(event.target===this)closeAddExpense()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
     <div class="modal-head">
-      <div class="modal-title">Share Your Trip</div>
-      <button class="modal-close" onclick="closeShareBtn()">✕</button>
+      <div class="modal-title">Add Expense</div>
     </div>
     <div class="modal-body">
-      <div class="share-card">
-        <div class="sc-hero">
-          <div class="sc-eyebrow">✈️ My Trip · Yaply</div>
-          <div class="sc-dest" id="scDest">Your Destination</div>
-          <div class="sc-meta" id="scMeta">5 Days · Solo</div>
-          <div class="sc-vibes" id="scVibes"></div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:20px;">
+        <div>
+          <label class="field-label">What did you spend on?</label>
+          <input class="field-input" id="exp-name" type="text" placeholder="e.g. Dinner at Ramen place"/>
         </div>
-        <div class="sc-stats" id="scStats"></div>
-        <div class="scs-footer">Planned with <strong>yaply.live</strong> · AI Travel Companion</div>
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;">
+          <div>
+            <label class="field-label">Currency</label>
+            <select class="field-select field-input" id="exp-currency" style="padding:10px 12px;">
+              <option value="INR">INR</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="JPY">JPY</option>
+              <option value="THB">THB</option>
+              <option value="AED">AED</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Amount</label>
+            <input class="field-input" id="exp-amount" type="number" placeholder="0"/>
+          </div>
+        </div>
+        <div>
+          <label class="field-label">Category</label>
+          <select class="field-select field-input" id="exp-category" style="padding:10px 12px;">
+            <option value="food">🍜 Food</option>
+            <option value="transport">🚌 Transport</option>
+            <option value="stay">🏨 Stay</option>
+            <option value="activities">🎭 Activities</option>
+            <option value="shopping">🛍️ Shopping</option>
+            <option value="other">📦 Other</option>
+          </select>
+        </div>
+        <button class="run-btn" style="background:var(--amber);" onclick="saveExpense()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Expense
+        </button>
       </div>
-      <div class="share-btns">
-        <button class="sbtn sbtn-outline" onclick="copyShareLink()">🔗 Copy Link</button>
-        <button class="sbtn sbtn-wa" onclick="shareWA()">💬 WhatsApp</button>
-        <button class="sbtn sbtn-tw" onclick="shareTW()">𝕏 Twitter</button>
-        <button class="sbtn sbtn-more" onclick="shareNative()">↗️ More</button>
-      </div>
-      <div class="modal-tip">📸 Screenshot the card above to share on Instagram Stories</div>
     </div>
   </div>
 </div>
 
+<!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
-<script src="/static/yaply-nav.js"></script>
+
 <script>
-// ── STATE ──
-let expenses = [];
-let splitPeople = [];
-let splitExpenses = [];
-let selectedRating = 5;
-let selectedPlatform = 'Google';
-let _shareData = {};
+// ════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════
+var _currentTrip   = null;
+var _allExpenses   = [];
+var _starRating    = 5;
+var _token         = localStorage.getItem('yaply_token') || '';
+var _headers       = { 'Content-Type':'application/json', 'Authorization':'Bearer ' + _token };
 
-const catColors = { Food:'#E8823A', Transport:'#3A6BC8', Accommodation:'#8B5CF6', Activities:'#28B06A', Shopping:'#F0B429', Other:'#9B9890' };
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  // Capture token from URL if Google OAuth
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('token')) {
+    localStorage.setItem('yaply_token', params.get('token'));
+    _token = params.get('token');
+    _headers['Authorization'] = 'Bearer ' + _token;
+    window.history.replaceState({}, '', '/after');
+  }
+  if (!_token) { window.location.href = '/login'; return; }
+  initAfterTrip();
+});
 
-// ── INIT ──
-function init() {
-  const trips = JSON.parse(localStorage.getItem('yaply_trips') || '[]');
-  document.getElementById('totalTrips').textContent = trips.length;
-  document.getElementById('totalDays').textContent = trips.reduce((s,t) => s + (parseInt(t.days)||0), 0);
-  document.getElementById('totalPlaces').textContent = trips.length;
-  document.getElementById('totalSpent').textContent = '₹' + (trips.length * 42000).toLocaleString();
+async function initAfterTrip() {
+  try {
+    var res  = await fetch('/api/trips', { headers: _headers });
+    var data = await res.json();
+
+    document.getElementById('loadingState').style.display = 'none';
+
+    if (data.success && data.trips && data.trips.length) {
+      // Show trip selector
+      renderTripSelector(data.trips);
+      // Auto-select most recent
+      selectTrip(data.trips[0]);
+    } else {
+      // No trips — show manual form
+      document.getElementById('manualFormSection').style.display = 'block';
+    }
+  } catch(e) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('manualFormSection').style.display = 'block';
+  }
 }
 
-function switchTab(tab, e) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + tab).classList.add('active');
-  if (e?.currentTarget) e.currentTarget.classList.add('active');
-  window.scrollTo({ top:0, behavior:'smooth' });
+// ════════════════════════════════════════════════════════
+//  TRIP SELECTOR
+// ════════════════════════════════════════════════════════
+var COUNTRY_FLAGS = {
+  'japan':'🇯🇵','tokyo':'🇯🇵','thailand':'🇹🇭','bangkok':'🇹🇭',
+  'france':'🇫🇷','paris':'🇫🇷','bali':'🇮🇩','indonesia':'🇮🇩',
+  'dubai':'🇦🇪','uae':'🇦🇪','uk':'🇬🇧','london':'🇬🇧',
+  'singapore':'🇸🇬','usa':'🇺🇸','new york':'🇺🇸','india':'🇮🇳',
+  'goa':'🇮🇳','delhi':'🇮🇳','mumbai':'🇮🇳','nepal':'🇳🇵',
+  'sri lanka':'🇱🇰','malaysia':'🇲🇾','vietnam':'🇻🇳',
+  'italy':'🇮🇹','rome':'🇮🇹','spain':'🇪🇸','barcelona':'🇪🇸',
+  'germany':'🇩🇪','greece':'🇬🇷','turkey':'🇹🇷','australia':'🇦🇺',
+  'canada':'🇨🇦','south korea':'🇰🇷','seoul':'🇰🇷','maldives':'🇲🇻',
+  'morocco':'🇲🇦','egypt':'🇪🇬','switzerland':'🇨🇭','portugal':'🇵🇹',
+};
+
+function getFlag(dest) {
+  if (!dest) return '🌍';
+  var d = dest.toLowerCase();
+  for (var key in COUNTRY_FLAGS) {
+    if (d.includes(key)) return COUNTRY_FLAGS[key];
+  }
+  return '🌍';
+}
+
+function renderTripSelector(trips) {
+  var section = document.getElementById('tripSelectorSection');
+  var scroll  = document.getElementById('tripSelectorScroll');
+  section.style.display = 'block';
+
+  scroll.innerHTML = trips.map(function(t, i) {
+    var flag = getFlag(t.destination);
+    var date = t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN',{month:'short',year:'numeric'}) : '';
+    return '<div class="trip-sel-card' + (i===0?' active':'') + '" onclick="selectTrip(' + JSON.stringify(t).replace(/"/g,'&quot;') + ',this)" data-id="' + t.id + '">' +
+      '<div class="tsc-flag">' + flag + '</div>' +
+      '<div class="tsc-dest">' + (t.destination || 'Trip') + '</div>' +
+      '<div class="tsc-meta">' + date + '</div>' +
+      '<div class="tsc-days">' + (t.days || 0) + ' days</div>' +
+    '</div>';
+  }).join('');
+}
+
+function selectTrip(trip, cardEl) {
+  _currentTrip = trip;
+
+  // Update active card
+  document.querySelectorAll('.trip-sel-card').forEach(function(c) { c.classList.remove('active'); });
+  if (cardEl) cardEl.classList.add('active');
+
+  // Update hero
+  var flag = getFlag(trip.destination);
+  document.getElementById('heroDestination').textContent = flag + ' ' + (trip.destination || 'Your Trip');
+  var date = trip.created_at ? new Date(trip.created_at).toLocaleDateString('en-IN',{month:'long',year:'numeric'}) : '';
+  document.getElementById('heroMeta').textContent = (trip.days || 0) + ' days' + (date ? ' · ' + date : '');
+  document.getElementById('heroDays').textContent    = trip.days || 0;
+  document.getElementById('heroPeople').textContent  = trip.people || 1;
+  document.getElementById('heroSpent').textContent   = (trip.currency||'₹') + ' ' + (parseInt(trip.budget)||0).toLocaleString();
+
+  // Count places from plan_data
+  var places = 0;
+  try {
+    var plan = typeof trip.plan_data === 'string' ? JSON.parse(trip.plan_data) : trip.plan_data;
+    if (plan && plan.itinerary) places = plan.itinerary.length * 2;
+  } catch(e) {}
+  document.getElementById('heroPlaces').textContent = places || (trip.days * 2) || 0;
+
+  // Update share card
+  document.getElementById('sc-dest').textContent = flag + ' ' + (trip.destination || 'Your Trip');
+  document.getElementById('sc-meta').textContent = (trip.days||0) + ' Days · ' + date;
+  var vibes = (trip.vibes || 'Adventure').split('+').map(function(v) { return v.trim(); });
+  document.getElementById('sc-vibes').innerHTML = vibes.map(function(v) {
+    return '<span class="tc-vibe-tag">' + v + '</span>';
+  }).join('');
+
+  // Pre-fill journal fields
+  var destEl = document.getElementById('journal-memories');
+  if (destEl && !destEl.value) destEl.placeholder = 'What did you love about ' + (trip.destination || 'your trip') + '? Your best moments, food, people...';
+
+  // Show everything
+  document.getElementById('tripDataSection').style.display = 'block';
+  document.getElementById('bottomCta').style.display = 'block';
+
+  // Load expenses
+  loadExpenses();
+}
+
+// ════════════════════════════════════════════════════════
+//  MANUAL TRIP ENTRY
+// ════════════════════════════════════════════════════════
+function loadManualTrip() {
+  var dest = document.getElementById('mf-dest').value.trim();
+  if (!dest) { showToast('Enter your destination'); return; }
+
+  var trip = {
+    id:          null,
+    destination: dest,
+    days:        parseInt(document.getElementById('mf-days').value) || 5,
+    currency:    document.getElementById('mf-currency').value || 'INR',
+    budget:      document.getElementById('mf-budget').value || '0',
+    vibes:       document.getElementById('mf-vibe').value || 'Adventure',
+    people:      1,
+    created_at:  new Date().toISOString(),
+  };
+
+  document.getElementById('manualFormSection').style.display = 'none';
+  selectTrip(trip, null);
+  showToast('Trip loaded ✅');
+}
+
+// ════════════════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════════════════
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════
+//  JOURNAL
+// ════════════════════════════════════════════════════════
+async function runJournal() {
+  var memories = document.getElementById('journal-memories').value.trim();
+  var btn      = document.getElementById('journalBtn');
+  var loading  = document.getElementById('journalLoading');
+  var result   = document.getElementById('journalResult');
+
+  setToolState(btn, loading, true);
+  result.style.display = 'none';
+
+  try {
+    var res  = await fetch('/api/trip-journal', {
+      method:'POST', headers:_headers,
+      body: JSON.stringify({
+        destination:  _currentTrip.destination,
+        days:         _currentTrip.days,
+        vibe:         _currentTrip.vibes || 'adventure',
+        memories:     memories || 'amazing trip with great food and sights',
+        travelled_with: document.getElementById('journal-with').value,
+        style:        document.getElementById('journal-style').value,
+      })
+    });
+    var data = await res.json();
+    setToolState(btn, loading, false);
+
+    if (data.success) {
+      var story = data.journal || data.story || data.data || '';
+      result.innerHTML =
+        '<div class="result-block" style="font-style:italic;line-height:1.9;white-space:pre-line;">' + story + '</div>' +
+        '<button onclick="copyText(\'' + story.replace(/'/g,"\\'").replace(/\n/g,'\\n') + '\')" ' +
+        'style="margin-top:10px;width:100%;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">' +
+        '📋 Copy Story</button>';
+      result.style.display = 'block';
+    } else { showToast(data.error || 'Could not write journal'); }
+  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
+}
+
+// ════════════════════════════════════════════════════════
+//  TRIP STATS
+// ════════════════════════════════════════════════════════
+async function runTripStats() {
+  var btn     = document.getElementById('statsBtn');
+  var loading = document.getElementById('statsLoading');
+  var result  = document.getElementById('statsResult');
+  setToolState(btn, loading, true);
+  result.style.display = 'none';
+
+  try {
+    var res  = await fetch('/api/trip-stats', {
+      method:'POST', headers:_headers,
+      body: JSON.stringify({
+        destination: _currentTrip.destination,
+        days:        _currentTrip.days,
+        budget:      _currentTrip.budget,
+        currency:    _currentTrip.currency,
+        vibe:        _currentTrip.vibes,
+        people:      _currentTrip.people,
+      })
+    });
+    var data = await res.json();
+    setToolState(btn, loading, false);
+
+    if (data.success) {
+      var d = data.stats || data.data || {};
+      var funFacts = d.fun_facts || d.highlights || [];
+      var statsItems = d.stats || [];
+
+      result.innerHTML = '<div style="margin-top:14px;">';
+
+      // Traveller type
+      if (d.traveller_type) {
+        result.innerHTML +=
+          '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:16px;padding:16px;margin-bottom:12px;text-align:center;">' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Your Traveller Type</div>' +
+          '<div style="font-family:var(--font-head);font-size:20px;color:white;">' + d.traveller_type + '</div>' +
+          (d.traveller_desc ? '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:6px;">' + d.traveller_desc + '</div>' : '') +
+          '</div>';
+      }
+
+      // Stats grid
+      if (statsItems.length) {
+        result.innerHTML += '<div class="stats-grid">';
+        statsItems.slice(0,6).forEach(function(s) {
+          var val   = typeof s === 'object' ? (s.value||s.val||'—') : s;
+          var label = typeof s === 'object' ? (s.label||s.name||'') : '';
+          var sub   = typeof s === 'object' ? (s.sub||s.description||'') : '';
+          result.innerHTML +=
+            '<div class="stat-card">' +
+            '<div class="stat-card-val">' + val + '</div>' +
+            (label ? '<div class="stat-card-lbl">' + label + '</div>' : '') +
+            (sub   ? '<div class="stat-card-sub">' + sub + '</div>' : '') +
+            '</div>';
+        });
+        result.innerHTML += '</div>';
+      }
+
+      // Fun facts
+      if (funFacts.length) {
+        result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:10px;">';
+        result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Fun Facts</div>';
+        funFacts.forEach(function(f) {
+          result.innerHTML += '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);"><span>🎯</span>' + f + '</div>';
+        });
+        result.innerHTML += '</div>';
+      }
+
+      result.innerHTML += '</div>';
+      result.style.display = 'block';
+    } else { showToast(data.error || 'Could not get stats'); }
+  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
+}
+
+// ════════════════════════════════════════════════════════
+//  REVIEW
+// ════════════════════════════════════════════════════════
+var _starRating = 5;
+function setRating(n) {
+  _starRating = n;
+  var stars = document.querySelectorAll('#starRow .star');
+  stars.forEach(function(s,i) { s.textContent = i < n ? '⭐' : '☆'; });
+}
+
+async function runReview() {
+  var highlight = document.getElementById('review-highlight').value.trim();
+  var btn       = document.getElementById('reviewBtn');
+  var loading   = document.getElementById('reviewLoading');
+  var result    = document.getElementById('reviewResult');
+  setToolState(btn, loading, true);
+  result.style.display = 'none';
+
+  try {
+    var res  = await fetch('/api/review-generator', {
+      method:'POST', headers:_headers,
+      body: JSON.stringify({
+        destination: _currentTrip.destination,
+        days:        _currentTrip.days,
+        rating:      _starRating,
+        highlight:   highlight || 'amazing experience',
+        vibe:        _currentTrip.vibes,
+      })
+    });
+    var data = await res.json();
+    setToolState(btn, loading, false);
+
+    if (data.success) {
+      var review = data.review || data.data || '';
+      result.innerHTML =
+        '<div class="result-block">' +
+          '<div style="font-size:16px;margin-bottom:8px;">'+('⭐'.repeat(_starRating))+'</div>' +
+          '<div style="line-height:1.8;">' + review + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;margin-top:10px;">' +
+          '<button onclick="copyText(\'' + review.replace(/'/g,"\\'") + '\')" ' +
+          'style="flex:1;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy</button>' +
+          '<button onclick="shareReviewWhatsApp(\'' + review.replace(/'/g,"\\'").replace(/\n/g,' ') + '\')" ' +
+          'style="flex:1;padding:11px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">💚 Share</button>' +
+        '</div>';
+      result.style.display = 'block';
+    } else { showToast(data.error || 'Could not generate review'); }
+  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
+}
+
+// ════════════════════════════════════════════════════════
+//  NEXT TRIP
+// ════════════════════════════════════════════════════════
+async function runNextTrip() {
+  var btn     = document.getElementById('nextTripBtn');
+  var loading = document.getElementById('nextTripLoading');
+  var result  = document.getElementById('nextTripResult');
+  setToolState(btn, loading, true);
+  result.style.display = 'none';
+
+  try {
+    var res  = await fetch('/api/next-trip', {
+      method:'POST', headers:_headers,
+      body: JSON.stringify({
+        last_destination: _currentTrip.destination,
+        vibe:             _currentTrip.vibes,
+        budget:           _currentTrip.budget,
+        currency:         _currentTrip.currency,
+        passport:         _currentTrip.passport || 'India',
+      })
+    });
+    var data = await res.json();
+    setToolState(btn, loading, false);
+
+    if (data.success) {
+      var suggestions = data.suggestions || data.destinations || data.data || [];
+      if (!Array.isArray(suggestions)) suggestions = [suggestions];
+
+      result.innerHTML = suggestions.slice(0,3).map(function(s) {
+        var flag  = getFlag(s.destination || s.name || '');
+        var name  = s.destination || s.name || 'Destination';
+        var why   = s.why || s.reason || '';
+        var budget = s.budget || s.estimated_budget || '';
+        var best  = s.best_time || s.best_month || '';
+
+        return '<div class="next-trip-card" onclick="planThisTrip(\'' + name.replace(/'/g,"\\'") + '\')">' +
+          '<div class="ntc-flag">' + flag + '</div>' +
+          '<div class="ntc-info">' +
+            '<div class="ntc-dest">' + name + '</div>' +
+            (why ? '<div class="ntc-why">' + why + '</div>' : '') +
+            '<div class="ntc-meta">' +
+              (budget ? '<span class="ntc-tag">💰 ' + budget + '</span>' : '') +
+              (best   ? '<span class="ntc-tag">📅 ' + best + '</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="ntc-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>' +
+        '</div>';
+      }).join('');
+      result.style.display = 'block';
+    } else { showToast(data.error || 'Could not get suggestions'); }
+  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
+}
+
+function planThisTrip(dest) {
+  window.location.href = '/plan?dest=' + encodeURIComponent(dest);
+}
+
+// ════════════════════════════════════════════════════════
+//  EXPENSES
+// ════════════════════════════════════════════════════════
+var CAT_ICONS = {food:'🍜',transport:'🚌',stay:'🏨',activities:'🎭',shopping:'🛍️',other:'📦'};
+var CAT_COLORS = {food:'var(--coral-g)',transport:'var(--blue-g)',stay:'var(--amber-g)',activities:'rgba(139,92,246,0.08)',shopping:'var(--green-g)',other:'var(--bg2)'};
+
+async function loadExpenses() {
+  if (!_currentTrip || !_currentTrip.id) {
+    document.getElementById('expenseList').innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--muted);">No expenses yet<br><span style="font-size:11px;">Add your first expense above</span></div>';
+    document.getElementById('expenseTotal').textContent = 'Track your spending';
+    return;
+  }
+
+  try {
+    var res  = await fetch('/api/trips/' + _currentTrip.id + '/expenses', { headers:_headers });
+    var data = await res.json();
+    if (data.success) {
+      _allExpenses = data.expenses || [];
+      renderExpenses('all');
+      updateBudgetBar();
+    }
+  } catch(e) {
+    document.getElementById('expenseList').innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--muted);">Add your first expense</div>';
+  }
+}
+
+function renderExpenses(filter) {
+  var expenses = filter === 'all' ? _allExpenses : _allExpenses.filter(function(e) { return e.category === filter; });
+  var listEl   = document.getElementById('expenseList');
+  var total    = expenses.reduce(function(s,e) { return s + (parseFloat(e.amount)||0); }, 0);
+
+  document.getElementById('expenseTotal').textContent = 'Total: ' + (_currentTrip.currency||'₹') + ' ' + total.toLocaleString();
+
+  if (!expenses.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--muted);">' + (filter==='all'?'No expenses yet':'No '+filter+' expenses') + '</div>';
+    return;
+  }
+
+  listEl.innerHTML = expenses.map(function(e) {
+    var icon = CAT_ICONS[e.category] || '📦';
+    var bg   = CAT_COLORS[e.category] || 'var(--bg2)';
+    return '<div class="expense-item">' +
+      '<div class="exp-icon" style="background:' + bg + ';">' + icon + '</div>' +
+      '<div class="exp-info">' +
+        '<div class="exp-name">' + (e.name||e.description||'Expense') + '</div>' +
+        '<div class="exp-cat">' + (e.category||'other') + (e.date?' · '+new Date(e.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'') + '</div>' +
+      '</div>' +
+      '<div class="exp-amount">' + (e.currency||_currentTrip.currency||'₹') + ' ' + parseFloat(e.amount||0).toLocaleString() + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function filterExpenses(cat, btn) {
+  document.querySelectorAll('.cat-pill').forEach(function(p) { p.classList.remove('active'); });
+  btn.classList.add('active');
+  renderExpenses(cat);
+}
+
+function updateBudgetBar() {
+  var total   = _allExpenses.reduce(function(s,e) { return s + (parseFloat(e.amount)||0); }, 0);
+  var budget  = parseFloat(_currentTrip.budget) || 0;
+  if (!budget) return;
+
+  var pct     = Math.min(Math.round(total/budget*100), 100);
+  var color   = pct > 90 ? 'var(--red)' : pct > 70 ? 'var(--amber)' : 'var(--green)';
+  var cur     = _currentTrip.currency || '₹';
+
+  document.getElementById('bc-fill').style.width    = pct + '%';
+  document.getElementById('bc-fill').style.background = color;
+  document.getElementById('bc-pct').textContent     = pct + '%';
+  document.getElementById('bc-spent').textContent   = 'Spent: ' + cur + ' ' + total.toLocaleString();
+  document.getElementById('bc-budget').textContent  = 'Budget: ' + cur + ' ' + budget.toLocaleString();
+  document.getElementById('budgetCompare').style.display = 'block';
+}
+
+function openAddExpense() {
+  if (_currentTrip && _currentTrip.currency) {
+    document.getElementById('exp-currency').value = _currentTrip.currency;
+  }
+  document.getElementById('addExpenseModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAddExpense() {
+  document.getElementById('addExpenseModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function saveExpense() {
+  var name   = document.getElementById('exp-name').value.trim();
+  var amount = document.getElementById('exp-amount').value;
+  if (!name || !amount) { showToast('Fill in name and amount'); return; }
+
+  if (!_currentTrip || !_currentTrip.id) {
+    // Store locally if no trip ID
+    _allExpenses.push({
+      name:     name,
+      amount:   parseFloat(amount),
+      category: document.getElementById('exp-category').value,
+      currency: document.getElementById('exp-currency').value,
+      date:     new Date().toISOString(),
+    });
+    renderExpenses('all');
+    updateBudgetBar();
+    closeAddExpense();
+    document.getElementById('exp-name').value = '';
+    document.getElementById('exp-amount').value = '';
+    showToast('Expense added ✅');
+    return;
+  }
+
+  try {
+    var res  = await fetch('/api/trips/' + _currentTrip.id + '/expenses', {
+      method:'POST', headers:_headers,
+      body: JSON.stringify({
+        name:     name,
+        amount:   parseFloat(amount),
+        category: document.getElementById('exp-category').value,
+        currency: document.getElementById('exp-currency').value,
+      })
+    });
+    var data = await res.json();
+    if (data.success) {
+      closeAddExpense();
+      document.getElementById('exp-name').value = '';
+      document.getElementById('exp-amount').value = '';
+      loadExpenses();
+      showToast('Expense added ✅');
+    } else { showToast(data.error || 'Could not save'); }
+  } catch(e) { showToast('Connection error'); }
+}
+
+// ════════════════════════════════════════════════════════
+//  SPLIT BILL
+// ════════════════════════════════════════════════════════
+async function runSplitBill() {
+  var total  = document.getElementById('split-total').value;
+  var people = document.getElementById('split-people').value.trim();
+  var btn    = document.getElementById('splitBtn');
+  var loading= document.getElementById('splitLoading');
+  var result = document.getElementById('splitResult');
+
+  if (!total || !people) { showToast('Fill in total and people'); return; }
+  setToolState(btn, loading, true);
+  result.style.display = 'none';
+
+  try {
+    var peopleArr = people.split('\n').map(function(p) { return p.trim(); }).filter(Boolean);
+    var res  = await fetch('/api/split-bill', {
+      method:'POST', headers:_headers,
+      body: JSON.stringify({
+        total:    parseFloat(total),
+        currency: document.getElementById('split-currency').value,
+        people:   peopleArr,
+        expenses: _allExpenses,
+      })
+    });
+    var data = await res.json();
+    setToolState(btn, loading, false);
+
+    if (data.success) {
+      var d        = data.split || data.data || {};
+      var perPerson = d.per_person || (total / peopleArr.length).toFixed(2);
+      var cur      = document.getElementById('split-currency').value;
+
+      result.innerHTML =
+        '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:14px;padding:16px;margin-top:14px;text-align:center;margin-bottom:12px;">' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Per Person</div>' +
+          '<div style="font-family:var(--font-mono);font-size:28px;font-weight:800;color:white;">' + cur + ' ' + perPerson + '</div>' +
+        '</div>';
+
+      // Who owes whom
+      var owes = d.settlements || d.owes || [];
+      if (owes.length) {
+        result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">';
+        result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">Settlements</div>';
+        owes.forEach(function(o) {
+          var text = typeof o === 'string' ? o : (o.from + ' → ' + o.to + ': ' + cur + ' ' + o.amount);
+          result.innerHTML += '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);">💸 ' + text + '</div>';
+        });
+        result.innerHTML += '</div>';
+      }
+
+      // WhatsApp share
+      var msg = '💰 Bill Split — ' + (d.trip_name||_currentTrip.destination||'Trip') + '\n' +
+        'Total: ' + cur + ' ' + total + '\n' +
+        'Per person: ' + cur + ' ' + perPerson + '\n' +
+        (owes.length ? '\nSettlements:\n' + owes.map(function(o) { return typeof o==='string'?o:(o.from+' → '+o.to+': '+cur+' '+o.amount); }).join('\n') : '') +
+        '\n\nSplit via yaply.live';
+
+      result.innerHTML +=
+        '<button onclick="window.open(\'https://wa.me/?text=\' + encodeURIComponent(\'' + msg.replace(/'/g,"\\'") + '\'))"' +
+        'style="width:100%;padding:12px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:14px;font-weight:700;color:white;cursor:pointer;">💚 Send on WhatsApp</button>';
+
+      result.style.display = 'block';
+    } else { showToast(data.error || 'Could not calculate'); }
+  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
+}
+
+// ════════════════════════════════════════════════════════
+//  LEFTOVER MONEY
+// ════════════════════════════════════════════════════════
+async function runLeftoverMoney() {
+  var amount  = document.getElementById('leftover-amount').value;
+  var currency= document.getElementById('leftover-currency').value;
+  var btn     = document.getElementById('leftoverBtn');
+  var loading = document.getElementById('leftoverLoading');
+  var result  = document.getElementById('leftoverResult');
+
+  if (!amount) { showToast('Enter an amount'); return; }
+  setToolState(btn, loading, true);
+  result.style.display = 'none';
+
+  try {
+    var res  = await fetch('/api/leftover-money', {
+      method:'POST', headers:_headers,
+      body: JSON.stringify({
+        amount:   parseFloat(amount),
+        currency: currency,
+        home_currency: _currentTrip.currency || 'INR',
+      })
+    });
+    var data = await res.json();
+    setToolState(btn, loading, false);
+
+    if (data.success) {
+      var d = data.guide || data.data || {};
+      result.innerHTML = '<div style="margin-top:14px;">';
+
+      // Conversion
+      if (d.converted_amount) {
+        result.innerHTML +=
+          '<div style="background:linear-gradient(135deg,var(--midnight),#1a2a4a);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;">' +
+          '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:4px;">' + amount + ' ' + currency + ' =</div>' +
+          '<div style="font-family:var(--font-mono);font-size:26px;font-weight:800;color:white;">' + d.converted_amount + '</div>' +
+          '<div style="font-size:12px;color:rgba(255,255,255,0.25);margin-top:4px;">Today\'s rate: ' + (d.exchange_rate||'—') + '</div>' +
+          '</div>';
+      }
+
+      var options = d.options || d.what_to_do || [];
+      if (options.length) {
+        result.innerHTML += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px;">';
+        result.innerHTML += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;">What to do with it</div>';
+        options.forEach(function(o) {
+          result.innerHTML += '<div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);"><span>💡</span>' + o + '</div>';
+        });
+        result.innerHTML += '</div>';
+      }
+
+      result.innerHTML += '</div>';
+      result.style.display = 'block';
+    } else { showToast(data.error || 'Could not check rates'); }
+  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
+}
+
+// ════════════════════════════════════════════════════════
+//  SUMMARY
+// ════════════════════════════════════════════════════════
+async function runSummary() {
+  var btn     = document.getElementById('summaryBtn');
+  var loading = document.getElementById('summaryLoading');
+  var result  = document.getElementById('summaryResult');
+  setToolState(btn, loading, true);
+  result.style.display = 'none';
+
+  try {
+    var res  = await fetch('/api/trip-stats', {
+      method:'POST', headers:_headers,
+      body: JSON.stringify({
+        destination: _currentTrip.destination,
+        days:        _currentTrip.days,
+        vibe:        _currentTrip.vibes,
+        summary_only: true,
+      })
+    });
+    var data = await res.json();
+    setToolState(btn, loading, false);
+
+    if (data.success) {
+      var summary = data.one_liner || data.summary || data.stats?.summary || ('Just got back from an amazing ' + _currentTrip.days + '-day trip to ' + _currentTrip.destination + '! 🌍✈️ #yaply');
+      result.innerHTML =
+        '<div class="result-block" style="font-size:15px;font-weight:500;line-height:1.7;text-align:center;">' + summary + '</div>' +
+        '<div style="display:flex;gap:8px;margin-top:10px;">' +
+          '<button onclick="copyText(\'' + summary.replace(/'/g,"\\'") + '\')" ' +
+          'style="flex:1;padding:11px;background:var(--bg2);border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text);cursor:pointer;">📋 Copy</button>' +
+          '<button onclick="shareWhatsAppText(\'' + summary.replace(/'/g,"\\'") + '\')" ' +
+          'style="flex:1;padding:11px;background:#25D366;border:none;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:700;color:white;cursor:pointer;">💚 Share</button>' +
+        '</div>';
+      result.style.display = 'block';
+    } else { showToast(data.error || 'Could not generate summary'); }
+  } catch(e) { setToolState(btn,loading,false); showToast('Connection error'); }
+}
+
+// ════════════════════════════════════════════════════════
+//  SHARE
+// ════════════════════════════════════════════════════════
+function shareTrip() {
+  switchTab('share', document.querySelectorAll('.tab-btn')[2]);
+  document.querySelector('.tab-btn:nth-child(3)').click();
+}
+
+function shareWhatsApp() {
+  var dest = _currentTrip ? _currentTrip.destination : 'my trip';
+  var days = _currentTrip ? _currentTrip.days : '';
+  var msg  = '✈️ Just got back from ' + dest + '! ' + days + ' days of pure adventure. Check out Yaply — the app I used to plan everything: yaply.live 🌍';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg));
+}
+
+function shareWhatsAppText(text) {
+  window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n\nPlanned with yaply.live ✈️'));
+}
+
+function shareReviewWhatsApp(review) {
+  window.open('https://wa.me/?text=' + encodeURIComponent(review));
+}
+
+function shareInstagram() {
+  copyText('Planned with @yaply.live ✈️ ' + (_currentTrip ? _currentTrip.destination : 'my trip') + ' #travel #yaply');
+  showToast('Caption copied! Open Instagram to post 📸');
+}
+
+function saveCard() {
+  showToast('Screenshot your screen to save the card 📸');
+}
+
+function copyLink() {
+  navigator.clipboard.writeText('https://yaply.live').then(function() {
+    showToast('Link copied! ✅');
+  }).catch(function() {
+    showToast('yaply.live — copied!');
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════
+function setToolState(btn, loading, isLoading) {
+  if (btn) btn.disabled = isLoading;
+  if (loading) { loading.style.display = isLoading ? 'block' : 'none'; }
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Copied to clipboard ✅');
+  }).catch(function() {
+    showToast('Copy failed — please select manually');
+  });
 }
 
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-const showSpin = id => document.getElementById(id+'-spinner').classList.add('show');
-const hideSpin = id => document.getElementById(id+'-spinner').classList.remove('show');
-const showRes  = id => document.getElementById(id+'-result').classList.add('show');
-const hideRes  = id => document.getElementById(id+'-result').classList.remove('show');
-
-function secT(label) { return `<div class="sec-t">${label}</div>`; }
-
-// ── JOURNAL ──
-async function generateJournal() {
-  const dest = document.getElementById('jDest').value.trim();
-  if (!dest) { showToast('Please enter a destination'); return; }
-  showSpin('journal'); hideRes('journal');
-  try {
-    const d = await apiFetch('/api/trip-journal', { method:'POST', body: JSON.stringify({ destination:dest, days:document.getElementById('jDays').value, highlights:document.getElementById('jHighlights').value, vibe:document.getElementById('jVibe').value, travel_with:document.getElementById('jWith').value }) });
-    if (d.success) renderJournal(d.data);
-    else showToast(d.error || 'Something went wrong');
-  } catch(e) { showToast('Please check your connection'); }
-  hideSpin('journal');
-}
-
-function renderJournal(d) {
-  const rawR = Math.min(Math.max(parseInt(d.rating)||5,1),10);
-  const stars5 = Math.round(rawR/2);
-  const stars = '★'.repeat(stars5) + '☆'.repeat(5-stars5);
-  const el = document.getElementById('journal-result');
-  el.innerHTML = `
-    <div class="journal-cover">
-      <div class="jc-eyebrow">My Travel Journal</div>
-      <div class="jc-title">${d.title||'My Journey'}</div>
-      <div class="jc-tagline">"${d.tagline||''}"</div>
-      <div class="jc-tags">${(d.tags||[]).map(t=>`<span class="jc-tag">#${t}</span>`).join('')}</div>
-      <div class="jc-rating">${stars} ${rawR}/10</div>
-    </div>
-    <div class="card" style="margin-bottom:10px;">
-      <div class="card-body"><div class="sec-t">Opening</div><p style="font-family:'Syne',sans-serif;font-size:.88rem;line-height:1.85;color:var(--muted);">${d.opening}</p></div>
-    </div>
-    ${(d.chapters||[]).map(ch=>`
-      <div class="journal-chapter">
-        <div class="ch-day">Day ${ch.day}</div>
-        <div class="ch-title">${ch.title}</div>
-        <div class="ch-emotion">${ch.emoji||'✨'} ${ch.emotion}</div>
-        <div class="ch-story">${ch.story}</div>
-        <div class="ch-highlight">✨ ${ch.highlight}</div>
-      </div>`).join('')}
-    <div class="journal-ending">
-      <div class="sec-t">Closing Thoughts</div>
-      <p style="font-size:.78rem;line-height:1.85;color:var(--muted);">${d.closing}</p>
-      <div class="quote-block">"${d.quote}"</div>
-      <div class="info-row"><span class="ir-label">Best Memory</span><span class="ir-value">✨ ${d.best_memory||'—'}</span></div>
-      <div class="info-row"><span class="ir-label">Lesson Learned</span><span class="ir-value">💡 ${d.lesson_learned||'—'}</span></div>
-      <div class="info-row"><span class="ir-label">Would Return?</span><span class="ir-value">${d.would_return?'❤️ Absolutely':' 🤔 Maybe someday'}</span></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:10px;">
-      <button class="btn btn-outline" onclick="copyJournal()" style="flex:1;">Copy Journal</button>
-      <button class="btn btn-teal" onclick="showToast('Journal saved!')" style="flex:1;">Save Journal</button>
-    </div>`;
-  window._journalData = d;
-  showRes('journal');
-}
-
-function copyJournal() {
-  if (!window._journalData) return;
-  const d = window._journalData;
-  const text = `${d.title}\n"${d.tagline}"\n\n${d.opening}\n\n${(d.chapters||[]).map(c=>`Day ${c.day} — ${c.title}\n${c.story}`).join('\n\n')}\n\n${d.closing}\n\n"${d.quote}"`;
-  navigator.clipboard?.writeText(text);
-  showToast('Journal copied');
-}
-
-// ── EXPENSES ──
-function addExpense() {
-  const name = document.getElementById('expName').value.trim();
-  const amount = parseFloat(document.getElementById('expAmount').value);
-  const cat = document.getElementById('expCat').value;
-  const curr = document.getElementById('eCurr').value;
-  if (!name || !amount) { showToast('Enter name and amount'); return; }
-  expenses.push({ name, amount, category:cat, currency:curr });
-  document.getElementById('expName').value = '';
-  document.getElementById('expAmount').value = '';
-  renderExpList();
-}
-
-function renderExpList() {
-  const el = document.getElementById('expenseList');
-  const tw = document.getElementById('expTotalsWrap');
-  const ab = document.getElementById('analyzeBtn');
-  if (!expenses.length) { el.innerHTML=''; tw.style.display='none'; ab.style.display='none'; return; }
-  const total = expenses.reduce((s,e)=>s+e.amount,0);
-  tw.style.display='block'; ab.style.display='flex';
-  document.getElementById('expTotalNum').textContent = (expenses[0]?.currency||'INR') + ' ' + total.toLocaleString();
-  el.innerHTML = expenses.map((e,i)=>`
-    <div class="exp-item">
-      <div class="exp-dot" style="background:${catColors[e.category]||'#9B9890'};"></div>
-      <div style="flex:1;"><div class="exp-name">${e.name}</div><div class="exp-cat">${e.category}</div></div>
-      <div class="exp-amount">${e.currency} ${e.amount.toLocaleString()}</div>
-      <button class="exp-del" onclick="expenses.splice(${i},1);renderExpList()">✕</button>
-    </div>`).join('');
-}
-
-async function analyzeExpenses() {
-  if (!expenses.length) { showToast('Add some expenses first'); return; }
-  showSpin('expense'); hideRes('expense');
-  try {
-    const d = await apiFetch('/api/expense-summary', { method:'POST', body: JSON.stringify({ destination:document.getElementById('eDest').value, expenses, budget:document.getElementById('eBudget').value, currency:document.getElementById('eCurr').value, people:parseInt(document.getElementById('ePeople').value) }) });
-    if (d.success) renderExpenseSummary(d.data);
-    else showToast(d.error || 'Something went wrong');
-  } catch(e) { showToast('Please check your connection'); }
-  hideSpin('expense');
-}
-
-function renderExpenseSummary(d) {
-  const curr = d.expenses?.[0]?.currency || document.getElementById('eCurr').value;
-  const statusCol = d.status==='Under Budget'?'var(--green)':d.status==='On Budget'?'var(--sky)':'var(--red)';
-  const cats = d.by_category || {};
-  const total = Object.values(cats).reduce((s,v)=>s+v,0)||1;
-  const colors = ['#1A8A72','#3A6BC8','#E8823A','#28B06A','#8B5CF6','#F0B429'];
-  const circ = 2*Math.PI*50;
-  let off = 0;
-  const segs = Object.entries(cats).map(([cat,amt],i)=>{
-    const dash = (amt/total)*circ;
-    const seg = `<circle cx="55" cy="55" r="50" fill="none" stroke="${colors[i%colors.length]}" stroke-width="10" stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${-off}" stroke-linecap="round"/>`;
-    off += dash;
-    return { seg, cat, amt, color:colors[i%colors.length], pct:Math.round((amt/total)*100) };
-  });
-  const el = document.getElementById('expense-result');
-  el.innerHTML = `
-    <div class="sum-hero">
-      <div class="sh-item"><div class="sh-num">${curr} ${Number(d.total_spent||0).toLocaleString()}</div><div class="sh-lbl">Total Spent</div></div>
-      <div class="sh-item"><div class="sh-num">${curr} ${Number(d.per_person||0).toLocaleString()}</div><div class="sh-lbl">Per Person</div></div>
-      <div class="sh-item"><div class="sh-num" style="color:${statusCol};">${d.status}</div><div class="sh-lbl">Budget Status</div></div>
-    </div>
-    <div class="nb ${d.status==='Under Budget'?'nb-green':d.status==='On Budget'?'nb-teal':'nb-red'}">${d.verdict} · ${d.comparison||''}</div>
-    <div class="card" style="margin-bottom:10px;">
-      <div class="card-body">
-        ${secT('Spending Breakdown')}
-        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
-          <div class="donut-wrap">
-            <svg width="110" height="110" viewBox="0 0 110 110" style="transform:rotate(-90deg)">
-              <circle cx="55" cy="55" r="50" fill="none" stroke="var(--bg2)" stroke-width="10"/>
-              ${segs.map(s=>s.seg).join('')}
-            </svg>
-            <div class="donut-center"><div class="donut-num">${curr}</div><div class="donut-sub">${Number(d.total_spent||0).toLocaleString()}</div></div>
-          </div>
-          <div style="flex:1;">
-            ${segs.map(s=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;"><div style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0;"></div><div style="flex:1;font-size:.75rem;">${s.cat}</div><div style="font-size:.72rem;font-weight:700;">${s.pct}%</div><div style="font-size:.7rem;color:var(--muted);">${curr} ${Number(s.amt).toLocaleString()}</div></div>`).join('')}
-          </div>
-        </div>
-      </div>
-    </div>
-    ${d.insights?.length ? secT('Spending Insights') + d.insights.map(ins=>`<div style="padding:7px 10px;background:var(--purple-s);border-radius:var(--r);font-size:.72rem;margin-bottom:5px;color:var(--purple);">→ ${ins}</div>`).join('') : ''}
-    ${d.money_tips_next_trip?.length ? secT('Save More Next Time') + d.money_tips_next_trip.map((t,i)=>`<div style="padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-size:.72rem;margin-bottom:5px;display:flex;gap:7px;"><span style="color:var(--teal);font-weight:700;">${i+1}.</span>${t}</div>`).join('') : ''}`;
-  showRes('expense');
-}
-
-// ── SPLIT BILL ──
-function addPerson() {
-  const name = document.getElementById('personName').value.trim();
-  if (!name || splitPeople.includes(name)) return;
-  splitPeople.push(name);
-  document.getElementById('personName').value = '';
-  renderPeople(); updateSplitSelectors();
-}
-function removePerson(n) { splitPeople = splitPeople.filter(p=>p!==n); renderPeople(); updateSplitSelectors(); }
-function renderPeople() {
-  document.getElementById('peopleChips').innerHTML = splitPeople.map(p=>`<span class="person-chip">${p}<span class="pc-rm" onclick="removePerson('${p}')">✕</span></span>`).join('');
-}
-function updateSplitSelectors() {
-  const pb = document.getElementById('splitPaidBy');
-  if (pb) pb.innerHTML = splitPeople.map(p=>`<option value="${p}">${p}</option>`).join('');
-  const sb = document.getElementById('splitBetween');
-  if (sb) sb.innerHTML = splitPeople.map(p=>`<label style="display:flex;align-items:center;gap:5px;font-size:.72rem;cursor:pointer;"><input type="checkbox" value="${p}" checked style="accent-color:var(--teal);"/> ${p}</label>`).join('');
-}
-function addSplitExpense() {
-  const name = document.getElementById('splitExpName').value.trim();
-  const amount = parseFloat(document.getElementById('splitExpAmount').value);
-  const paidBy = document.getElementById('splitPaidBy').value;
-  const between = Array.from(document.querySelectorAll('#splitBetween input:checked')).map(c=>c.value);
-  if (!name||!amount) { showToast('Enter expense name and amount'); return; }
-  if (!between.length) { showToast('Select who to split between'); return; }
-  splitExpenses.push({ name, amount, paid_by:paidBy, split_between:between });
-  document.getElementById('splitExpName').value = '';
-  document.getElementById('splitExpAmount').value = '';
-  renderSplitExps();
-}
-function renderSplitExps() {
-  const el = document.getElementById('splitExpenseList');
-  document.getElementById('splitBtn').style.display = splitExpenses.length ? 'flex' : 'none';
-  el.innerHTML = splitExpenses.map((e,i)=>`
-    <div class="exp-item">
-      <div class="exp-dot" style="background:var(--teal);"></div>
-      <div style="flex:1;"><div class="exp-name">${e.name}</div><div class="exp-cat">Paid by ${e.paid_by} · ${e.split_between.length} ways</div></div>
-      <div class="exp-amount">${document.getElementById('splitCurr').value} ${e.amount.toLocaleString()}</div>
-      <button class="exp-del" onclick="splitExpenses.splice(${i},1);renderSplitExps()">✕</button>
-    </div>`).join('');
-}
-async function calculateSplit() {
-  if (!splitExpenses.length) { showToast('Add some expenses first'); return; }
-  try {
-    const d = await apiFetch('/api/split-bill', { method:'POST', body: JSON.stringify({ people:splitPeople, expenses:splitExpenses, currency:document.getElementById('splitCurr').value }) });
-    if (d.success) renderSplitResult(d.data);
-    else showToast(d.error || 'Something went wrong');
-  } catch(e) { showToast('Please check your connection'); }
-}
-function renderSplitResult(d) {
-  const el = document.getElementById('split-result');
-  el.innerHTML = `
-    <div style="background:linear-gradient(135deg,var(--green),#059669);border-radius:var(--r-xl);padding:18px;color:#fff;margin-bottom:10px;text-align:center;">
-      <div style="font-size:1.3rem;margin-bottom:6px;">${d.all_settled?'🎉':'💸'}</div>
-      <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin-bottom:3px;">${d.all_settled?'All Settled!':'Who Owes What'}</div>
-      <div style="font-size:.72rem;opacity:.75;">Total: ${d.currency} ${Number(d.total||0).toLocaleString()} · Per Person: ${d.currency} ${Number(d.per_person||0).toLocaleString()}</div>
-    </div>
-    ${d.settlements?.length ? secT('Payments to Make') + d.settlements.map(s=>`
-      <div class="settlement-card">
-        <div class="sa-avatar">${s.from.charAt(0).toUpperCase()}</div>
-        <div><div style="font-size:.8rem;font-weight:700;">${s.from}</div><div style="font-size:.62rem;color:var(--muted);">pays</div></div>
-        <div style="font-size:.9rem;color:var(--muted);">→</div>
-        <div class="sa-avatar" style="background:var(--green-s);color:var(--green);">${s.to.charAt(0).toUpperCase()}</div>
-        <div style="flex:1;"><div style="font-size:.8rem;font-weight:700;">${s.to}</div></div>
-        <div class="sa-amount">${s.currency} ${Number(s.amount).toLocaleString()}</div>
-      </div>`).join('') : `<div class="nb nb-green">✅ Everyone is already settled up!</div>`}
-    ${secT('Individual Balances')}
-    ${Object.entries(d.balances||{}).map(([p,bal])=>`<div class="info-row"><span class="ir-label">${p}</span><span class="ir-value" style="color:${bal>0?'var(--green)':bal<0?'var(--red)':'var(--muted)'};">${bal>0?'Gets back':'Owes'} ${d.currency} ${Math.abs(bal).toLocaleString()}</span></div>`).join('')}`;
+  var el = document.getElementById('toast');
+  el.textContent = msg;
   el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2800);
 }
-
-// ── STATS ──
-async function generateStats() {
-  const dest = document.getElementById('stDest').value.trim();
-  if (!dest) { showToast('Please enter a destination'); return; }
-  showSpin('stats'); hideRes('stats');
-  try {
-    const d = await apiFetch('/api/trip-stats', { method:'POST', body: JSON.stringify({ destination:dest, days:document.getElementById('stDays').value, travel_with:document.getElementById('stWith').value, vibes:document.getElementById('stVibes').value.split(',').map(s=>s.trim()), activities:document.getElementById('stActivities').value.split(',').map(s=>s.trim()), expenses }) });
-    if (d.success) renderStats(d.data);
-    else showToast(d.error || 'Something went wrong');
-  } catch(e) { showToast('Please check your connection'); }
-  hideSpin('stats');
-}
-function renderStats(d) {
-  const score = d.travel_score || 80;
-  const filled = Math.round(score/20);
-  const dots = '●'.repeat(filled) + '○'.repeat(5-filled);
-  const el = document.getElementById('stats-result');
-  el.innerHTML = `
-    <div class="identity-card">
-      <div class="ic-ico">🌍</div>
-      <div class="ic-type">${d.traveller_type}</div>
-      <div class="ic-desc">${d.traveller_description}</div>
-      <div class="ic-score"><span>Travel Score:</span><span>${dots}</span><span>${score}/100</span></div>
-    </div>
-    <div class="stats-grid">
-      ${(d.fun_stats||[]).map(s=>`<div class="stat-card"><div class="sc-ico">${s.icon}</div><div class="sc-val">${s.value}</div><div class="sc-lbl">${s.label}</div></div>`).join('')}
-    </div>
-    ${d.achievements?.length ? secT('Achievements Unlocked') + d.achievements.map(a=>`
-      <div class="achievement-card">
-        <div class="ach-ico">${a.icon}</div>
-        <div><div class="ach-title">${a.title}</div><div class="ach-desc">${a.description}</div></div>
-        <div class="ach-rarity rarity-${a.rarity}">${a.rarity}</div>
-      </div>`).join('') : ''}
-    <div class="fg-grid" style="margin-bottom:10px;">
-      <div class="mini-val-card" style="padding:12px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);">
-        <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:4px;">Next Destination</div>
-        <div style="font-size:.85rem;font-weight:700;">🗺️ ${d.next_destination_prediction||'—'}</div>
-      </div>
-      <div style="padding:12px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);">
-        <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:4px;">You Travel Like</div>
-        <div style="font-size:.85rem;font-weight:700;">✨ ${d.personality_match||'—'}</div>
-      </div>
-    </div>
-    ${d.instagram_caption ? `
-      <div class="insta-card">
-        <div class="insta-label">Perfect Instagram Caption</div>
-        <div class="insta-text">${d.instagram_caption}</div>
-        <button onclick="navigator.clipboard?.writeText('${(d.instagram_caption||'').replace(/'/g,"\\'")}');showToast('Caption copied')" style="margin-top:10px;padding:6px 14px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:100px;color:#fff;font-family:'Inter',sans-serif;font-size:.68rem;font-weight:700;cursor:pointer;">Copy Caption</button>
-      </div>` : ''}`;
-  showRes('stats');
-}
-
-// ── REVIEW ──
-function setRating(r) {
-  selectedRating = r;
-  document.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('active', i<r));
-}
-function setPlatform(el, p) {
-  selectedPlatform = p;
-  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-}
-async function generateReview() {
-  const place = document.getElementById('revPlace').value.trim();
-  if (!place) { showToast('Please enter a place name'); return; }
-  showSpin('review'); hideRes('review');
-  try {
-    const d = await apiFetch('/api/review-generator', { method:'POST', body: JSON.stringify({ place, rating:selectedRating, experience:document.getElementById('revExp').value, platform:selectedPlatform }) });
-    if (d.success) renderReview(d.data);
-    else showToast(d.error || 'Something went wrong');
-  } catch(e) { showToast('Please check your connection'); }
-  hideSpin('review');
-}
-function renderReview(d) {
-  const stars = '★'.repeat(selectedRating) + '☆'.repeat(5-selectedRating);
-  const el = document.getElementById('review-result');
-  el.innerHTML = `
-    <div class="review-box">
-      <div style="font-size:1.1rem;margin-bottom:6px;">${stars}</div>
-      <div class="rv-title">"${d.review_title}"</div>
-      <div class="rv-body">${d.review_body}</div>
-      <div class="fg-grid" style="margin-bottom:10px;">
-        <div><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--green);margin-bottom:5px;">Pros</div>${(d.pros||[]).map(p=>`<div style="font-size:.72rem;padding:3px 0;border-bottom:1px solid var(--border);">✓ ${p}</div>`).join('')}</div>
-        <div><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--red);margin-bottom:5px;">Cons</div>${(d.cons||[]).map(c=>`<div style="font-size:.72rem;padding:3px 0;border-bottom:1px solid var(--border);">✗ ${c}</div>`).join('')}</div>
-      </div>
-      ${d.tip ? `<div class="nb nb-teal">💡 ${d.tip}</div>` : ''}
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">${(d.hashtags||[]).map(h=>`<span style="padding:3px 9px;background:var(--bg);border:1px solid var(--border);border-radius:100px;font-size:.65rem;font-weight:600;">${h}</span>`).join('')}</div>
-      <button class="btn btn-outline" onclick="navigator.clipboard?.writeText(document.getElementById('rvFullText').textContent);showToast('Review copied')">Copy Full Review</button>
-      <div id="rvFullText" style="display:none;">${d.review_title}\n\n${d.review_body}${d.tip?'\n\nTip: '+d.tip:''}</div>
-    </div>`;
-  showRes('review');
-}
-
-// ── NEXT TRIP ──
-async function getNextTrip() {
-  const past = document.getElementById('ntPast').value.trim();
-  if (!past) { showToast('Please enter your last destination'); return; }
-  showSpin('next'); hideRes('next');
-  try {
-    const d = await apiFetch('/api/next-trip', { method:'POST', body: JSON.stringify({ past_destination:past, loved:document.getElementById('ntLoved').value, budget:document.getElementById('ntBudget').value, travel_month:document.getElementById('ntMonth').value, passport:document.getElementById('ntPassport').value }) });
-    if (d.success) renderNextTrip(d.data);
-    else showToast(d.error || 'Something went wrong');
-  } catch(e) { showToast('Please check your connection'); }
-  hideSpin('next');
-}
-function renderNextTrip(d) {
-  const el = document.getElementById('next-result');
-  el.innerHTML = `
-    ${d.travel_pattern ? `<div class="nb nb-teal" style="margin-bottom:10px;"><strong>Your Travel DNA:</strong> ${d.travel_pattern}</div>` : ''}
-    ${(d.recommendations||[]).map(r=>`
-      <div class="dest-card">
-        <div class="dc-head">
-          <div><div class="dc-name">${r.destination}</div><div class="dc-vibe">${r.vibe}</div></div>
-          <div style="text-align:right;"><div style="font-size:1.6rem;">${r.emoji||'🌍'}</div><div class="dc-score">${r.similarity_score}% match</div></div>
-        </div>
-        <div class="dc-body">
-          <div class="dc-why">${r.why_perfect}</div>
-          <div class="nb nb-teal" style="margin-bottom:10px;">✨ ${r.unique_experience}</div>
-          <div class="dc-meta">
-            <div class="dcm-item"><div class="dcm-label">Best Time</div><div class="dcm-val">${r.best_time}</div></div>
-            <div class="dcm-item"><div class="dcm-label">Budget</div><div class="dcm-val">${r.budget_level}</div></div>
-            <div class="dcm-item"><div class="dcm-label">Est. Cost</div><div class="dcm-val">${r.estimated_cost}</div></div>
-            <div class="dcm-item"><div class="dcm-label">Visa</div><div class="dcm-val">${r.visa_for_india||r.visa||'Check'}</div></div>
-          </div>
-          <button class="btn btn-teal" style="margin-top:10px;" onclick="window.location.href='/plan?dest=${encodeURIComponent(r.destination)}'">Plan This Trip →</button>
-        </div>
-      </div>`).join('')}
-    ${d.bucket_list_suggestion ? `<div style="padding:18px;background:linear-gradient(135deg,var(--charcoal),#1e2a3a);border-radius:var(--r-xl);color:#fff;text-align:center;margin-top:6px;"><div style="font-size:.58rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:6px;">Dream Destination</div><div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;">🌟 ${d.bucket_list_suggestion}</div><div style="font-size:.68rem;color:rgba(255,255,255,.4);margin-top:4px;">Start saving for this one</div></div>` : ''}`;
-  showRes('next');
-}
-
-// ── CURRENCY ──
-async function getCurrencyAdvice() {
-  const curr = document.getElementById('lcCurr').value.trim();
-  const amount = document.getElementById('lcAmount').value;
-  if (!curr||!amount) { showToast('Enter currency and amount'); return; }
-  showSpin('currency'); hideRes('currency');
-  try {
-    const d = await apiFetch('/api/currency-leftover', { method:'POST', body: JSON.stringify({ currency:curr, amount, home_currency:document.getElementById('lcHome').value }) });
-    if (d.success) renderCurrencyAdvice(d.data);
-    else showToast(d.error || 'Something went wrong');
-  } catch(e) { showToast('Please check your connection'); }
-  hideSpin('currency');
-}
-function renderCurrencyAdvice(d) {
-  const el = document.getElementById('currency-result');
-  el.innerHTML = `
-    ${d.best_option ? `<div class="nb nb-green"><strong>Best Option:</strong> ${d.best_option}</div>` : ''}
-    ${(d.options||[]).map(opt=>`
-      <div class="co-card">
-        <div class="co-head">
-          <div class="co-name">${opt.option}</div>
-          <div class="co-stars">${'★'.repeat(opt.rating||3)}${'☆'.repeat(5-(opt.rating||3))}</div>
-        </div>
-        <div class="co-body">
-          <div class="co-desc">${opt.description}</div>
-          ${opt.estimated_value ? `<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin-bottom:8px;">Est. Value: ${opt.estimated_value}</div>` : ''}
-          <div class="co-two">
-            <div>${(opt.pros||[]).map(p=>`<div style="font-size:.7rem;color:var(--green);padding:2px 0;">✓ ${p}</div>`).join('')}</div>
-            <div>${(opt.cons||[]).map(c=>`<div style="font-size:.7rem;color:var(--red);padding:2px 0;">✗ ${c}</div>`).join('')}</div>
-          </div>
-        </div>
-      </div>`).join('')}
-    ${d.avoid ? `<div class="nb nb-red"><strong>Avoid:</strong> ${d.avoid}</div>` : ''}`;
-  showRes('currency');
-}
-
-// ── SHARE ──
-function openShare() {
-  const dest = document.getElementById('jDest')?.value || document.getElementById('stDest')?.value || 'My Trip';
-  const days = document.getElementById('jDays')?.value || document.getElementById('stDays')?.value || '5';
-  const withs = document.getElementById('jWith')?.value || 'solo';
-  const vibe = (document.getElementById('jVibe')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
-  const total = expenses.reduce((s,e)=>s+e.amount,0);
-  _shareData = { dest, days, withs, vibe };
-
-  document.getElementById('scDest').textContent = dest;
-  document.getElementById('scMeta').textContent = `${days} Days · ${withs.charAt(0).toUpperCase()+withs.slice(1)}`;
-  document.getElementById('scVibes').innerHTML = vibe.slice(0,3).map(v=>`<span class="sc-vibe">${v}</span>`).join('');
-  document.getElementById('scStats').innerHTML = [
-    { ico:'📅', val:days+' Days', lbl:'Duration' },
-    { ico:'💰', val:total>0?'₹'+Math.round(total).toLocaleString():'Tracked', lbl:'Spent' },
-    { ico:'🌍', val:(dest.split(',')[1]||'World').trim(), lbl:'Country' }
-  ].map(s=>`<div class="scs-item"><div style="font-size:1.1rem;margin-bottom:3px;">${s.ico}</div><div class="scs-val">${s.val}</div><div class="scs-lbl">${s.lbl}</div></div>`).join('');
-
-  document.getElementById('shareModal').classList.add('show');
-  document.body.style.overflow = 'hidden';
-}
-function closeShare(e) { if (e.target === document.getElementById('shareModal')) closeShareBtn(); }
-function closeShareBtn() { document.getElementById('shareModal').classList.remove('show'); document.body.style.overflow = ''; }
-function copyShareLink() { navigator.clipboard?.writeText(`https://yaply.live/?dest=${encodeURIComponent(_shareData.dest)}`); showToast('Link copied'); }
-function shareWA() { const t = `🌍 Just planned my ${_shareData.days}-day trip to ${_shareData.dest} with Yaply AI! 👉 https://yaply.live`; window.open(`https://wa.me/?text=${encodeURIComponent(t)}`,'_blank'); }
-function shareTW() { const t = `Just planned my ${_shareData.days}-day trip to ${_shareData.dest} using AI! 🌍✈️\n\nhttps://yaply.live`; window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(t)}`,'_blank'); }
-function shareNative() { if(navigator.share){navigator.share({title:`My trip to ${_shareData.dest}`,text:'Check out my AI-planned trip!',url:'https://yaply.live'});}else{copyShareLink();} }
-
-init();
-
-// Instead of repeating auth code everywhere
-// Just call:
-YaplyCore.requireAuth();   // redirect if not logged in
-YaplyCore.getUser();       // get current user
-YaplyCore.logout();        // logout from anywhere
-
 </script>
+
 </body>
 </html>
