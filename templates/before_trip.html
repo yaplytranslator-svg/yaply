@@ -5699,61 +5699,270 @@
     }
     async function generateMultiCity() {
       var origin = document.getElementById('mcOrigin').value.trim();
-      if (!origin) { showToast('Enter origin city'); return; }
+      if (!origin) { showToast('Enter your origin city'); return; }
 
+      // Collect cities
       var cities = [];
-      document.querySelectorAll('.mc-city').forEach(function (inp, i) {
-        var days = parseInt(document.querySelectorAll('.mc-days')[i].value) || 3;
-        if (inp.value.trim()) cities.push({ name: inp.value.trim(), days: days });
+      var cityInputs = document.querySelectorAll('.mc-city');
+      var daysInputs = document.querySelectorAll('.mc-days');
+
+      cityInputs.forEach(function (inp, i) {
+        var name = inp.value.trim();
+        var days = parseInt(daysInputs[i] ? daysInputs[i].value : 3) || 3;
+        if (name) cities.push({ name: name, days: days });
       });
-      if (cities.length < 2) { showToast('Add at least 2 cities'); return; }
+
+      if (cities.length < 2) {
+        showToast('Add at least 2 cities');
+        return;
+      }
 
       var currency = document.getElementById('mcCurrency').value || 'INR';
+      var people = parseInt(document.getElementById('mcPeople').value) || 2;
+      var passport = document.getElementById('mcPassport').value || 'India';
+      var totalBudget = document.getElementById('mcBudget').value.trim() || '200000';
+      var totalDays = cities.reduce(function (sum, c) { return sum + c.days; }, 0);
 
       // Show loading
       setLoading(true);
-      document.getElementById('results').classList.remove('show');
+      var titleEl = document.getElementById('loadingTitle');
+      if (titleEl) titleEl.textContent = 'Planning your multi-city adventure...';
+
+      // Animate steps
+      var steps = [
+        'Building route: ' + cities.map(function (c) { return c.name.split(',')[0]; }).join(' → ') + '...',
+        'Planning day-by-day itineraries...',
+        'Calculating transit between cities...',
+        'Splitting budget across ' + cities.length + ' cities...',
+        'Finding hidden gems...'
+      ];
+      var si = 0;
+      var stepInt = setInterval(function () {
+        document.querySelectorAll('.ls-item').forEach(function (el, i) {
+          el.classList.toggle('done', i < si);
+          el.classList.toggle('active', i === si);
+        });
+        if (titleEl) titleEl.textContent = steps[si] || 'Almost done...';
+        si = (si + 1) % steps.length;
+      }, 2500);
+
+      var resultsEl = document.getElementById('results');
+      if (resultsEl) resultsEl.classList.remove('show');
 
       try {
         var token = localStorage.getItem('yaply_token') || '';
         var res = await fetch('/api/multi-city-plan', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
           body: JSON.stringify({
             origin: origin,
             cities: cities,
-            total_budget: document.getElementById('mcBudget').value || '200000',
+            total_budget: totalBudget,
             currency: currency,
-            people: document.getElementById('mcPeople').value || 2,
-            passport: document.getElementById('mcPassport').value || 'India',
-            vibe: 'adventure'
+            people: people,
+            passport: passport,
+            vibe: Array.from(selectedVibes || []).join(' + ') || 'adventure',
           })
         });
+
         var data = await res.json();
+        clearInterval(stepInt);
+        setLoading(false);
 
-        if (data.success) {
-          currentPlan = data.plan;
-          currentPlan._meta = { origin: origin, cities: cities, currency: currency };
-
-          // ← THIS was missing — render the plan
-          renderPlan(data.plan, currency);
-
-          document.getElementById('results').classList.add('show');
-          document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-
-          var gp = document.getElementById('groupPrompt');
-          if (gp) gp.style.display = 'flex';
-
-        } else {
-          showToast(data.error || 'Could not plan trip');
+        if (!data.success) {
+          showToast(data.error || 'Could not plan trip. Try again.');
+          return;
         }
 
-      } catch (e) {
-        console.error('[generateMultiCity]', e);
-        showToast('Connection error');
-      }
+        var plan = data.plan;
 
-      setLoading(false);
+        // ── Normalize fields so renderPlan never gets undefined ──
+
+        // days
+        if (!plan.days || isNaN(plan.days)) {
+          plan.days = plan.total_days || totalDays;
+        }
+        plan.days = parseInt(plan.days) || totalDays;
+
+        // destination
+        if (!plan.destination) {
+          plan.destination = plan.trip_title ||
+            cities.map(function (c) { return c.name.split(',')[0]; }).join(' → ');
+        }
+
+        // currency
+        plan.currency = plan.currency || currency;
+
+        // standard fields renderPlan expects
+        if (!plan.language) plan.language = 'Multiple';
+        if (!plan.timezone) plan.timezone = 'Multiple zones';
+        if (!plan.best_time_to_visit) plan.best_time_to_visit = 'Flexible';
+
+        // visa
+        if (!plan.visa_info) {
+          plan.visa_info = { required: false, type: 'Check per country' };
+        }
+
+        // budget_breakdown — build from budget_split if missing
+        if (!plan.budget_breakdown) {
+          var bs = plan.budget_split || {};
+          plan.budget_breakdown = {};
+
+          // Map budget_split fields to budget_breakdown
+          var bsKeys = Object.keys(bs);
+          if (bsKeys.length) {
+            bsKeys.forEach(function (k) {
+              plan.budget_breakdown[k] = bs[k];
+            });
+          } else {
+            // Fallback — estimate from total
+            var total = parseInt(totalBudget) || 100000;
+            var perDay = Math.round(total / plan.days);
+            plan.budget_breakdown = {
+              flights: currency + ' ' + Math.round(total * 0.30).toLocaleString(),
+              accommodation: currency + ' ' + Math.round(total * 0.30).toLocaleString(),
+              food: currency + ' ' + Math.round(total * 0.20).toLocaleString(),
+              transport: currency + ' ' + Math.round(total * 0.10).toLocaleString(),
+              activities: currency + ' ' + Math.round(total * 0.07).toLocaleString(),
+              miscellaneous: currency + ' ' + Math.round(total * 0.03).toLocaleString(),
+            };
+          }
+        }
+
+        // itinerary — build from cities array if missing
+        if (!plan.itinerary || !plan.itinerary.length) {
+          plan.itinerary = [];
+          var dayCounter = 1;
+
+          cities.forEach(function (city, ci) {
+            var cityData = (plan.cities && plan.cities[ci]) || {};
+            var cityItinerary = cityData.itinerary || cityData.days || [];
+
+            if (cityItinerary.length) {
+              cityItinerary.forEach(function (day) {
+                day.day = dayCounter++;
+                plan.itinerary.push(day);
+              });
+            } else {
+              // Generate placeholder days for this city
+              for (var d = 0; d < city.days; d++) {
+                plan.itinerary.push({
+                  day: dayCounter++,
+                  title: 'Day in ' + city.name.split(',')[0],
+                  morning: { activity: 'Explore ' + city.name.split(',')[0], location: city.name, duration: '3h', cost: currency + ' 500', tip: 'Go early to avoid crowds' },
+                  afternoon: { activity: 'Local cuisine & sightseeing', location: city.name, duration: '3h', cost: currency + ' 800', tip: 'Ask locals for recommendations' },
+                  evening: { activity: 'Sunset & local market', location: city.name, duration: '2h', cost: currency + ' 300', tip: 'Perfect time for photos' },
+                  lunch: { restaurant: 'Local restaurant', cuisine: 'Local', cost: currency + ' 400' },
+                  dinner: { restaurant: 'Street food market', cuisine: 'Local', cost: currency + ' 300' },
+                  accommodation: { name: 'Hotel in ' + city.name.split(',')[0], area: city.name.split(',')[0], cost: currency + ' 2000/night' }
+                });
+              }
+            }
+          });
+        }
+
+        // hidden_gems
+        if (!plan.hidden_gems) {
+          plan.hidden_gems = cities.map(function (c) {
+            return {
+              name: 'Hidden gem in ' + c.name.split(',')[0],
+              description: 'A lesser-known spot worth visiting',
+              location: c.name.split(',')[0],
+              best_time: 'Morning',
+              cost: currency + ' 200'
+            };
+          });
+        }
+
+        // Store and render
+        currentPlan = plan;
+        currentPlan._meta = {
+          origin: origin,
+          destination: plan.destination,
+          days: plan.days,
+          budget: totalBudget,
+          currency: currency,
+          people: people,
+          passport: passport,
+          cities: cities,
+          is_multi: true,
+        };
+
+        // Render using existing renderPlan
+        renderPlan(plan, currency);
+
+        // Show multi-city route banner above results
+        _showMultiCityBanner(plan, cities, currency);
+
+        if (resultsEl) {
+          resultsEl.classList.add('show');
+          setTimeout(function () {
+            resultsEl.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }
+
+        var gp = document.getElementById('groupPrompt');
+        if (gp) gp.style.display = 'flex';
+
+      } catch (e) {
+        clearInterval(stepInt);
+        setLoading(false);
+        console.error('[generateMultiCity]', e);
+        showToast('Connection error — please try again');
+      }
+    }
+
+    // ── Multi city route banner ──
+    function _showMultiCityBanner(plan, cities, currency) {
+      // Remove existing
+      var existing = document.getElementById('multiCityBanner');
+      if (existing) existing.remove();
+
+      var banner = document.createElement('div');
+      banner.id = 'multiCityBanner';
+      banner.style.cssText = 'margin:16px 18px 0;padding:16px;background:var(--midnight);border-radius:18px;';
+
+      // Route pills
+      var routeHtml = cities.map(function (c, i) {
+        var name = c.name.split(',')[0];
+        return (i > 0 ? '<span style="color:rgba(255,255,255,0.25);margin:0 4px;">→</span>' : '') +
+          '<span style="background:rgba(37,99,255,0.2);border:1px solid rgba(37,99,255,0.3);' +
+          'border-radius:100px;padding:4px 12px;font-size:11px;font-weight:600;color:white;white-space:nowrap;">' +
+          name + ' <span style="color:rgba(255,255,255,0.35);">(' + c.days + 'd)</span></span>';
+      }).join('');
+
+      banner.innerHTML =
+        '<div style="font-size:10px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Multi-City Route</div>' +
+        '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:12px;">' + routeHtml + '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">' +
+        '<div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:10px;text-align:center;">' +
+        '<div style="font-family:var(--font-mono);font-size:16px;font-weight:800;color:white;">' + plan.days + '</div>' +
+        '<div style="font-size:9px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">Days</div>' +
+        '</div>' +
+        '<div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:10px;text-align:center;">' +
+        '<div style="font-family:var(--font-mono);font-size:16px;font-weight:800;color:white;">' + cities.length + '</div>' +
+        '<div style="font-size:9px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">Cities</div>' +
+        '</div>' +
+        '<div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:10px;text-align:center;">' +
+        '<div style="font-family:var(--font-mono);font-size:14px;font-weight:800;color:var(--green);">' + currency + ' ' + parseInt(plan.total_budget || 0).toLocaleString() + '</div>' +
+        '<div style="font-size:9px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">Budget</div>' +
+        '</div>' +
+        '</div>' +
+        (plan.route_overview ? '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:10px;line-height:1.6;">' + plan.route_overview + '</div>' : '') +
+        (plan.smart_suggestions && plan.smart_suggestions.length
+          ? '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);">' +
+          '<div style="font-size:10px;color:rgba(37,99,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💡 Smart Tips</div>' +
+          plan.smart_suggestions.slice(0, 2).map(function (s) {
+            return '<div style="font-size:12px;color:rgba(255,255,255,0.35);padding:3px 0;">• ' + s + '</div>';
+          }).join('') +
+          '</div>'
+          : '');
+
+      var resultsEl = document.getElementById('results');
+      if (resultsEl) resultsEl.prepend(banner);
     }
 
     // ── JOURNEY ────────────────────────────────────
