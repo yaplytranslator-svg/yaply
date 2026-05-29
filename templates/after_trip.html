@@ -1685,7 +1685,7 @@ async function runLeftoverMoney() {
   result.style.display = 'none';
 
   try {
-    var res  = await fetch('/api/leftover-money', {
+    var res  = await fetch('/api/currency-leftover', {
       method:'POST', headers:_headers,
       body: JSON.stringify({
         amount:   parseFloat(amount),
