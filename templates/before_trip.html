@@ -5700,31 +5700,60 @@
     async function generateMultiCity() {
       var origin = document.getElementById('mcOrigin').value.trim();
       if (!origin) { showToast('Enter origin city'); return; }
+
       var cities = [];
       document.querySelectorAll('.mc-city').forEach(function (inp, i) {
         var days = parseInt(document.querySelectorAll('.mc-days')[i].value) || 3;
         if (inp.value.trim()) cities.push({ name: inp.value.trim(), days: days });
       });
       if (cities.length < 2) { showToast('Add at least 2 cities'); return; }
-      showToast('Planning multi-city trip...');
+
+      var currency = document.getElementById('mcCurrency').value || 'INR';
+
+      // Show loading
+      setLoading(true);
+      document.getElementById('results').classList.remove('show');
+
       try {
         var token = localStorage.getItem('yaply_token') || '';
         var res = await fetch('/api/multi-city-plan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify({
-            origin, cities,
+            origin: origin,
+            cities: cities,
             total_budget: document.getElementById('mcBudget').value || '200000',
-            currency: document.getElementById('mcCurrency').value,
-            people: document.getElementById('mcPeople').value,
-            passport: document.getElementById('mcPassport').value,
+            currency: currency,
+            people: document.getElementById('mcPeople').value || 2,
+            passport: document.getElementById('mcPassport').value || 'India',
             vibe: 'adventure'
           })
         });
         var data = await res.json();
-        if (data.success) { showToast('Multi-city plan ready!'); }
-        else { showToast(data.error || 'Could not plan trip'); }
-      } catch (e) { showToast('Connection error'); }
+
+        if (data.success) {
+          currentPlan = data.plan;
+          currentPlan._meta = { origin: origin, cities: cities, currency: currency };
+
+          // ← THIS was missing — render the plan
+          renderPlan(data.plan, currency);
+
+          document.getElementById('results').classList.add('show');
+          document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+          var gp = document.getElementById('groupPrompt');
+          if (gp) gp.style.display = 'flex';
+
+        } else {
+          showToast(data.error || 'Could not plan trip');
+        }
+
+      } catch (e) {
+        console.error('[generateMultiCity]', e);
+        showToast('Connection error');
+      }
+
+      setLoading(false);
     }
 
     // ── JOURNEY ────────────────────────────────────
@@ -7665,10 +7694,10 @@
     });
 
     // Instead of repeating auth code everywhere
-// Just call:
-YaplyCore.requireAuth();   // redirect if not logged in
-YaplyCore.getUser();       // get current user
-YaplyCore.logout();        // logout from anywhere
+    // Just call:
+    YaplyCore.requireAuth();   // redirect if not logged in
+    YaplyCore.getUser();       // get current user
+    YaplyCore.logout();        // logout from anywhere
 
   </script>
 </body>
