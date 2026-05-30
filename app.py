@@ -2466,7 +2466,159 @@ def assetlinks():
         }
     }])
 
+# ══════════════════════════════════════════════════════════
+# ADD THESE ROUTES TO YOUR app.py
+# ══════════════════════════════════════════════════════════
 
+ADMIN_EMAIL = 'yaplytranslator@gmail.com'
+
+def require_admin(f):
+    """Decorator — only allow admin email"""
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        if not token:
+            return jsonify({'success': False, 'error': 'No token'}), 401
+        payload = verify_token(token)
+        if not payload:
+            return jsonify({'success': False, 'error': 'Invalid token'}), 401
+        user = get_user_by_id(payload['user_id'])
+        if not user or user['email'].lower() != ADMIN_EMAIL.lower():
+            return jsonify({'success': False, 'error': 'Admin only'}), 403
+        g.user_id = payload['user_id']
+        g.user    = user
+        return f(*args, **kwargs)
+    return decorated
+
+# ── Admin page ──
+@app.route('/admin')
+def admin_page():
+    return render_template('yaply_admin.html')
+
+# ── Admin stats ──
+@app.route('/api/admin/stats')
+@require_admin
+def admin_stats():
+    try:
+        conn = get_db()
+        from datetime import date
+
+        today = date.today().isoformat()
+
+        total_users    = conn.execute('SELECT COUNT(*) FROM users').fetchone()[0]
+        total_trips    = conn.execute('SELECT COUNT(*) FROM trips').fetchone()[0]
+        total_places   = conn.execute('SELECT COUNT(*) FROM saved_places').fetchone()[0]
+        total_expenses = conn.execute('SELECT COUNT(*) FROM expenses').fetchone()[0]
+        total_journals = conn.execute('SELECT COUNT(*) FROM journals').fetchone()[0]
+        pro_users      = conn.execute('SELECT COUNT(*) FROM users WHERE is_pro=1').fetchone()[0]
+
+        new_users_today = conn.execute(
+            "SELECT COUNT(*) FROM users WHERE date(created_at)=?", (today,)
+        ).fetchone()[0]
+
+        trips_today = conn.execute(
+            "SELECT COUNT(*) FROM trips WHERE date(created_at)=?", (today,)
+        ).fetchone()[0]
+
+        actions_today = conn.execute(
+            "SELECT COUNT(*) FROM usage_logs WHERE date(created_at)=?", (today,)
+        ).fetchone()[0]
+
+        # Top destinations
+        top_dests = conn.execute(
+            "SELECT destination, COUNT(*) as count FROM trips GROUP BY destination ORDER BY count DESC LIMIT 10"
+        ).fetchall()
+
+        # Feature usage (from logs)
+        feature_rows = conn.execute(
+            "SELECT action, COUNT(*) as count FROM usage_logs GROUP BY action ORDER BY count DESC LIMIT 20"
+        ).fetchall()
+
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'stats': {
+                'total_users':    total_users,
+                'total_trips':    total_trips,
+                'total_places':   total_places,
+                'total_expenses': total_expenses,
+                'total_journals': total_journals,
+                'pro_users':      pro_users,
+                'new_users_today': new_users_today,
+                'trips_today':    trips_today,
+                'actions_today':  actions_today,
+                'top_destinations': [{'destination': r[0], 'count': r[1]} for r in top_dests],
+                'feature_usage':  {r[0]: r[1] for r in feature_rows},
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Admin users ──
+@app.route('/api/admin/users')
+@require_admin
+def admin_users():
+    try:
+        conn = get_db()
+        rows = conn.execute('''
+            SELECT u.*, COUNT(t.id) as trip_count
+            FROM users u
+            LEFT JOIN trips t ON t.user_id = u.id
+            GROUP BY u.id
+            ORDER BY u.created_at DESC
+        ''').fetchall()
+        conn.close()
+        users = []
+        for r in rows:
+            u = dict(r)
+            u.pop('password', None)  # Never expose password
+            users.append(u)
+        return jsonify({'success': True, 'users': users})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Admin trips ──
+@app.route('/api/admin/trips')
+@require_admin
+def admin_trips():
+    try:
+        conn = get_db()
+        rows = conn.execute('''
+            SELECT t.*, u.name as user_name, u.email as user_email
+            FROM trips t
+            LEFT JOIN users u ON u.id = t.user_id
+            ORDER BY t.created_at DESC
+            LIMIT 200
+        ''').fetchall()
+        conn.close()
+        trips = []
+        for r in rows:
+            t = dict(r)
+            t.pop('plan_data', None)  # Too large to send
+            trips.append(t)
+        return jsonify({'success': True, 'trips': trips})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Admin activity ──
+@app.route('/api/admin/activity')
+@require_admin
+def admin_activity():
+    try:
+        conn = get_db()
+        rows = conn.execute('''
+            SELECT l.*, u.name as user_name, u.email as user_email
+            FROM usage_logs l
+            LEFT JOIN users u ON u.id = l.user_id
+            ORDER BY l.created_at DESC
+            LIMIT 200
+        ''').fetchall()
+        conn.close()
+        return jsonify({'success': True, 'logs': [dict(r) for r in rows]})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 # ════════════════════════════════════════════════════════════════
 #  ERROR HANDLERS

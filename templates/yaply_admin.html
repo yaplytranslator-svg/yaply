@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Yaply Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#060d1a;color:#e2e8f0;min-height:100vh;}
+:root{
+  --blue:#2563FF;--green:#18C29C;--coral:#FF7A59;--amber:#F5B942;
+  --red:#EF4444;--purple:#8B5CF6;
+  --bg:#060d1a;--card:#0d1f3c;--border:rgba(255,255,255,0.07);
+  --muted:rgba(255,255,255,0.35);--text:rgba(255,255,255,0.9);
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Layout */
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:220px;background:#080f1e;border-right:1px solid var(--border);padding:24px 0;position:fixed;height:100vh;z-index:50;display:flex;flex-direction:column;}
+.main{margin-left:220px;flex:1;padding:28px;max-width:calc(100vw - 220px);}
+
+/* Sidebar */
+.sb-logo{padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.sb-logo-text{font-size:20px;font-weight:800;color:white;letter-spacing:-.5px;}
+.sb-logo-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.sb-nav{display:flex;flex-direction:column;gap:2px;padding:0 10px;flex:1;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all .2s;font-size:13px;font-weight:500;color:var(--muted);}
+.sb-item:hover{background:rgba(255,255,255,0.05);color:white;}
+.sb-item.active{background:rgba(37,99,255,0.15);color:var(--blue);}
+.sb-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+.sb-section{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.2);padding:12px 12px 4px;}
+.sb-footer{padding:16px 20px;border-top:1px solid var(--border);}
+.sb-live{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);}
+.sb-live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+
+/* Header */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.page-title{font-size:22px;font-weight:800;color:white;letter-spacing:-.3px;}
+.page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.refresh-btn{padding:8px 16px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.refresh-btn:hover{background:rgba(255,255,255,0.1);}
+.refresh-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px;position:relative;overflow:hidden;animation:fadeUp .4s ease both;}
+.stat-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.08;}
+.stat-card.blue::before{background:var(--blue);}
+.stat-card.green::before{background:var(--green);}
+.stat-card.coral::before{background:var(--coral);}
+.stat-card.amber::before{background:var(--amber);}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px;}
+.stat-value{font-family:'DM Mono',monospace;font-size:28px;font-weight:800;color:white;margin-bottom:4px;}
+.stat-change{font-size:12px;display:flex;align-items:center;gap:4px;}
+.stat-change.up{color:var(--green);}
+.stat-change.down{color:var(--red);}
+.stat-icon{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.stat-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+.stat-icon.blue{background:rgba(37,99,255,0.15);color:var(--blue);}
+.stat-icon.green{background:rgba(24,194,156,0.15);color:var(--green);}
+.stat-icon.coral{background:rgba(255,122,89,0.15);color:var(--coral);}
+.stat-icon.amber{background:rgba(245,185,66,0.15);color:var(--amber);}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px;animation:fadeUp .4s ease both;}
+.card-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:14px;font-weight:700;color:white;}
+.card-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.card-body{padding:0;}
+
+/* Table */
+.table{width:100%;border-collapse:collapse;}
+.table th{padding:10px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border);}
+.table td{padding:12px 16px;font-size:13px;color:rgba(255,255,255,0.75);border-bottom:1px solid rgba(255,255,255,0.04);}
+.table tr:last-child td{border-bottom:none;}
+.table tr:hover td{background:rgba(255,255,255,0.02);}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:100px;font-size:10px;font-weight:700;}
+.badge.pro{background:rgba(245,185,66,0.15);color:var(--amber);}
+.badge.free{background:rgba(255,255,255,0.07);color:var(--muted);}
+.badge.google{background:rgba(37,99,255,0.15);color:var(--blue);}
+.badge.email{background:rgba(139,92,246,0.15);color:var(--purple);}
+.badge.active{background:rgba(24,194,156,0.15);color:var(--green);}
+.badge.inactive{background:rgba(255,255,255,0.07);color:var(--muted);}
+
+/* Chart bars */
+.bar-chart{padding:16px 20px;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.bar-label{font-size:12px;color:var(--muted);width:80px;flex-shrink:0;text-align:right;}
+.bar-track{flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+.bar-val{font-family:'DM Mono',monospace;font-size:12px;color:white;width:30px;text-align:right;}
+
+/* Activity feed */
+.activity-item{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.activity-item:last-child{border-bottom:none;}
+.activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.activity-text{flex:1;font-size:13px;color:rgba(255,255,255,0.7);}
+.activity-time{font-size:11px;color:var(--muted);}
+
+/* 2-col grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+/* Section */
+.section{display:none;}
+.section.active{display:block;}
+
+/* Loading */
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--muted);}
+.spinner{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);border-top-color:var(--blue);animation:spin .7s linear infinite;}
+
+/* Search */
+.search-bar{padding:8px 14px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;color:white;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:220px;}
+.search-bar::placeholder{color:var(--muted);}
+
+/* User detail */
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;}
+
+/* Mini stat */
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.mini-stat{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+.mini-stat-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:white;}
+.mini-stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:3px;}
+
+/* Top destinations */
+.dest-item{display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.dest-rank{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);width:20px;}
+.dest-name{flex:1;font-size:13px;color:white;}
+.dest-count{font-family:'DM Mono',monospace;font-size:12px;color:var(--blue);}
+
+/* Scrollable table */
+.table-wrap{overflow-x:auto;max-height:400px;overflow-y:auto;}
+.table-wrap::-webkit-scrollbar{width:4px;height:4px;}
+.table-wrap::-webkit-scrollbar-track{background:transparent;}
+.table-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+
+/* Feature usage */
+.feature-bar{display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.feature-name{font-size:13px;color:white;width:140px;}
+.feature-track{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;}
+.feature-fill{height:100%;border-radius:3px;}
+.feature-count{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);width:40px;text-align:right;}
+</style>
+</head>
+<body>
+
+<div class="layout">
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-text">⚡ Yaply</div>
+    <div class="sb-logo-sub">Admin Dashboard</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-section">Overview</div>
+    <div class="sb-item active" onclick="showSection('overview',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="sb-section">Data</div>
+    <div class="sb-item" onclick="showSection('users',this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Users
+    </div>
+    <div class="sb-item" onclick="showSection('trips',this)">
+      <svg viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+      Trips
+    </div>
+    <div class="sb-item" onclick="showSection('activity',this)">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Activity
+    </div>
+    <div class="sb-item" onclick="showSection('features',this)">
+      <svg viewBox="0 0 24 24"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>
+      Features
+    </div>
+  </div>
+  <div class="sb-footer">
+    <div class="sb-live">
+      <div class="sb-live-dot"></div>
+      Live data
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ══ OVERVIEW ══ -->
+<div class="section active" id="section-overview">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub" id="lastUpdated">Loading...</div>
+    </div>
+    <div class="header-right">
+      <button class="refresh-btn" onclick="loadAll()">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card blue" style="animation-delay:.05s">
+      <div class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value" id="statUsers">—</div>
+      <div class="stat-change up" id="statUsersToday">↑ 0 today</div>
+    </div>
+    <div class="stat-card green" style="animation-delay:.1s">
+      <div class="stat-icon green"><svg viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4"/></svg></div>
+      <div class="stat-label">Trips Planned</div>
+      <div class="stat-value" id="statTrips">—</div>
+      <div class="stat-change up" id="statTripsToday">↑ 0 today</div>
+    </div>
+    <div class="stat-card coral" style="animation-delay:.15s">
+      <div class="stat-icon coral"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div class="stat-label">API Calls Today</div>
+      <div class="stat-value" id="statActions">—</div>
+      <div class="stat-change up">↑ Active users</div>
+    </div>
+    <div class="stat-card amber" style="animation-delay:.2s">
+      <div class="stat-icon amber"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      <div class="stat-label">Pro Users</div>
+      <div class="stat-value" id="statPro">—</div>
+      <div class="stat-change up">Premium subscribers</div>
+    </div>
+  </div>
+
+  <!-- Mini stats row -->
+  <div class="mini-stats" id="miniStats">
+    <div class="mini-stat">
+      <div class="mini-stat-val" id="statPlaces">—</div>
+      <div class="mini-stat-lbl">Places Saved</div>
+    </div>
+    <div class="mini-stat">
+      <div class="mini-stat-val" id="statExpenses">—</div>
+      <div class="mini-stat-lbl">Expenses Logged</div>
+    </div>
+    <div class="mini-stat">
+      <div class="mini-stat-val" id="statJournals">—</div>
+      <div class="mini-stat-lbl">Journals Written</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Recent signups -->
+    <div class="card" style="animation-delay:.25s">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Recent Signups</div>
+          <div class="card-sub">Latest users who joined</div>
+        </div>
+      </div>
+      <div id="recentSignups"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+    </div>
+
+    <!-- Top destinations -->
+    <div class="card" style="animation-delay:.3s">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Top Destinations</div>
+          <div class="card-sub">Most planned by users</div>
+        </div>
+      </div>
+      <div id="topDestinations"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- Feature usage -->
+  <div class="card" style="animation-delay:.35s">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Feature Usage</div>
+        <div class="card-sub">What users use most</div>
+      </div>
+    </div>
+    <div id="featureUsage"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+  </div>
+
+  <!-- Recent activity -->
+  <div class="card" style="animation-delay:.4s">
+    <div class="card-head">
+      <div class="card-title">Live Activity Feed</div>
+      <div class="card-sub">Real-time user actions</div>
+    </div>
+    <div id="activityFeed"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+  </div>
+</div>
+
+<!-- ══ USERS ══ -->
+<div class="section" id="section-users">
+  <div class="page-header">
+    <div>
+      <div class="page-title">All Users</div>
+      <div class="page-sub">Every person who signed up for Yaply</div>
+    </div>
+    <div class="header-right">
+      <input class="search-bar" id="userSearch" placeholder="Search by name or email..." oninput="filterUsers()"/>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table class="table" id="usersTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>User</th>
+            <th>Email</th>
+            <th>Joined</th>
+            <th>Last Login</th>
+            <th>Auth</th>
+            <th>Plan</th>
+            <th>Trips</th>
+            <th>Passport</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody">
+          <tr><td colspan="9"><div class="loading"><div class="spinner"></div> Loading users...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TRIPS ══ -->
+<div class="section" id="section-trips">
+  <div class="page-header">
+    <div>
+      <div class="page-title">All Trips</div>
+      <div class="page-sub">Every trip planned on Yaply</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table class="table" id="tripsTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Destination</th>
+            <th>User</th>
+            <th>Days</th>
+            <th>Budget</th>
+            <th>Vibe</th>
+            <th>Planned On</th>
+            <th>Start Date</th>
+          </tr>
+        </thead>
+        <tbody id="tripsBody">
+          <tr><td colspan="8"><div class="loading"><div class="spinner"></div> Loading trips...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ACTIVITY ══ -->
+<div class="section" id="section-activity">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Activity Log</div>
+      <div class="page-sub">All user actions on Yaply</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>User ID</th>
+            <th>Action</th>
+            <th>IP</th>
+          </tr>
+        </thead>
+        <tbody id="activityBody">
+          <tr><td colspan="4"><div class="loading"><div class="spinner"></div> Loading...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FEATURES ══ -->
+<div class="section" id="section-features">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Feature Analytics</div>
+      <div class="page-sub">Which tools users love most</div>
+    </div>
+  </div>
+  <div class="card">
+    <div id="featuresDetail"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+var _token = localStorage.getItem('yaply_token') || '';
+var _headers = { 'Content-Type':'application/json', 'Authorization':'Bearer ' + _token };
+var _allUsers = [];
+var _allTrips = [];
+
+// ══ NAVIGATION ══
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.sb-item').forEach(function(i) { i.classList.remove('active'); });
+  document.getElementById('section-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ══ LOAD ALL ══
+async function loadAll() {
+  document.getElementById('lastUpdated').textContent = 'Refreshing...';
+  await Promise.all([loadStats(), loadUsers(), loadTrips(), loadActivity()]);
+  document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString('en-IN');
+}
+
+// ══ STATS ══
+async function loadStats() {
+  try {
+    var res  = await fetch('/api/admin/stats', { headers: _headers });
+    var data = await res.json();
+    if (!data.success) return;
+    var d = data.stats;
+
+    document.getElementById('statUsers').textContent   = d.total_users || 0;
+    document.getElementById('statTrips').textContent   = d.total_trips || 0;
+    document.getElementById('statActions').textContent = d.actions_today || 0;
+    document.getElementById('statPro').textContent     = d.pro_users || 0;
+    document.getElementById('statPlaces').textContent  = d.total_places || 0;
+    document.getElementById('statExpenses').textContent= d.total_expenses || 0;
+    document.getElementById('statJournals').textContent= d.total_journals || 0;
+
+    var newToday = d.new_users_today || 0;
+    document.getElementById('statUsersToday').textContent = (newToday > 0 ? '↑ ' : '') + newToday + ' today';
+    document.getElementById('statTripsToday').textContent = '↑ ' + (d.trips_today || 0) + ' today';
+
+    // Top destinations
+    renderTopDestinations(d.top_destinations || []);
+    renderFeatureUsage(d.feature_usage || {});
+
+  } catch(e) { console.error('[Admin] Stats error:', e); }
+}
+
+function renderTopDestinations(dests) {
+  var el = document.getElementById('topDestinations');
+  if (!dests.length) { el.innerHTML = '<div class="loading" style="color:rgba(255,255,255,0.2);">No trips yet</div>'; return; }
+  el.innerHTML = dests.slice(0,8).map(function(d, i) {
+    var flags = {'japan':'🇯🇵','tokyo':'🇯🇵','thailand':'🇹🇭','bangkok':'🇹🇭','bali':'🇮🇩','france':'🇫🇷','paris':'🇫🇷','dubai':'🇦🇪','singapore':'🇸🇬','india':'🇮🇳','goa':'🇮🇳','london':'🇬🇧','usa':'🇺🇸','italy':'🇮🇹','spain':'🇪🇸'};
+    var dest = (d.destination || '').toLowerCase();
+    var flag = '🌍';
+    for (var k in flags) { if (dest.includes(k)) { flag = flags[k]; break; } }
+    return '<div class="dest-item"><div class="dest-rank">' + (i+1) + '</div><div style="font-size:16px;flex-shrink:0;">' + flag + '</div><div class="dest-name">' + (d.destination || 'Unknown') + '</div><div class="dest-count">' + d.count + ' trips</div></div>';
+  }).join('');
+}
+
+function renderFeatureUsage(usage) {
+  var el = document.getElementById('featureUsage');
+  var items = Object.entries(usage).sort(function(a,b) { return b[1]-a[1]; });
+  if (!items.length) { el.innerHTML = '<div class="loading" style="color:rgba(255,255,255,0.2);">No activity yet</div>'; return; }
+  var max = items[0][1] || 1;
+  var colors = ['#2563FF','#18C29C','#FF7A59','#F5B942','#8B5CF6','#0EA5E9','#EC4899','#14B8A6'];
+  el.innerHTML = items.slice(0,10).map(function(item, i) {
+    var pct = Math.round(item[1]/max*100);
+    var label = item[0].replace(/_/g,' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); });
+    return '<div class="feature-bar"><div class="feature-name">' + label + '</div><div class="feature-track"><div class="feature-fill" style="width:' + pct + '%;background:' + (colors[i%colors.length]) + ';"></div></div><div class="feature-count">' + item[1] + '</div></div>';
+  }).join('');
+
+  // Also update features section
+  document.getElementById('featuresDetail').innerHTML = el.innerHTML;
+}
+
+// ══ USERS ══
+async function loadUsers() {
+  try {
+    var res  = await fetch('/api/admin/users', { headers: _headers });
+    var data = await res.json();
+    if (!data.success) return;
+    _allUsers = data.users || [];
+    renderUsers(_allUsers);
+    renderRecentSignups(_allUsers.slice(0, 5));
+  } catch(e) { console.error('[Admin] Users error:', e); }
+}
+
+function renderUsers(users) {
+  var body = document.getElementById('usersBody');
+  if (!users.length) {
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:rgba(255,255,255,0.2);">No users yet</td></tr>';
+    return;
+  }
+  body.innerHTML = users.map(function(u, i) {
+    var initials = (u.name || 'U').charAt(0).toUpperCase();
+    var joined   = u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    var lastLogin= u.last_login  ? new Date(u.last_login).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—';
+    var authBadge= u.google_id   ? '<span class="badge google">Google</span>' : '<span class="badge email">Email</span>';
+    var planBadge= u.is_pro      ? '<span class="badge pro">⭐ Pro</span>' : '<span class="badge free">Free</span>';
+    return '<tr>' +
+      '<td style="color:rgba(255,255,255,0.3);font-family:DM Mono,monospace;">' + (i+1) + '</td>' +
+      '<td><div style="display:flex;align-items:center;gap:8px;"><div class="user-avatar">' + initials + '</div><span>' + (u.name || '—') + '</span></div></td>' +
+      '<td style="color:rgba(255,255,255,0.5);font-size:12px;">' + (u.email || '—') + '</td>' +
+      '<td>' + joined + '</td>' +
+      '<td>' + lastLogin + '</td>' +
+      '<td>' + authBadge + '</td>' +
+      '<td>' + planBadge + '</td>' +
+      '<td style="font-family:DM Mono,monospace;color:#2563FF;">' + (u.trip_count || 0) + '</td>' +
+      '<td style="color:rgba(255,255,255,0.4);">' + (u.passport || 'India') + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderRecentSignups(users) {
+  var el = document.getElementById('recentSignups');
+  if (!users.length) { el.innerHTML = '<div class="loading" style="color:rgba(255,255,255,0.2);">No users yet</div>'; return; }
+  el.innerHTML = users.map(function(u) {
+    var initials = (u.name || 'U').charAt(0).toUpperCase();
+    var joined   = u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—';
+    var planBadge= u.is_pro ? '<span class="badge pro">Pro</span>' : '<span class="badge free">Free</span>';
+    var authBadge= u.google_id ? '<span class="badge google">G</span>' : '<span class="badge email">E</span>';
+    return '<div class="activity-item">' +
+      '<div class="user-avatar">' + initials + '</div>' +
+      '<div class="activity-text"><b>' + (u.name||'User') + '</b><br><span style="font-size:11px;color:rgba(255,255,255,0.35);">' + (u.email||'') + '</span></div>' +
+      '<div style="display:flex;gap:4px;align-items:center;">' + authBadge + planBadge + '</div>' +
+      '<div class="activity-time">' + joined + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function filterUsers() {
+  var q = document.getElementById('userSearch').value.toLowerCase();
+  var filtered = _allUsers.filter(function(u) {
+    return (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q);
+  });
+  renderUsers(filtered);
+}
+
+// ══ TRIPS ══
+async function loadTrips() {
+  try {
+    var res  = await fetch('/api/admin/trips', { headers: _headers });
+    var data = await res.json();
+    if (!data.success) return;
+    _allTrips = data.trips || [];
+    renderTrips(_allTrips);
+  } catch(e) { console.error('[Admin] Trips error:', e); }
+}
+
+function renderTrips(trips) {
+  var body = document.getElementById('tripsBody');
+  if (!trips.length) {
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:rgba(255,255,255,0.2);">No trips yet</td></tr>';
+    return;
+  }
+  body.innerHTML = trips.map(function(t, i) {
+    var flags = {'japan':'🇯🇵','tokyo':'🇯🇵','thailand':'🇹🇭','bangkok':'🇹🇭','bali':'🇮🇩','france':'🇫🇷','paris':'🇫🇷','dubai':'🇦🇪','singapore':'🇸🇬','india':'🇮🇳','goa':'🇮🇳','london':'🇬🇧','usa':'🇺🇸'};
+    var dest = (t.destination || '').toLowerCase();
+    var flag = '🌍';
+    for (var k in flags) { if (dest.includes(k)) { flag = flags[k]; break; } }
+    var planned = t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    var startDate = t.start_date || '—';
+    var vibes = (t.vibes || 'Adventure').split('+').slice(0,2).join(' + ');
+    return '<tr>' +
+      '<td style="color:rgba(255,255,255,0.3);font-family:DM Mono,monospace;">' + (i+1) + '</td>' +
+      '<td><span style="margin-right:6px;">' + flag + '</span>' + (t.destination || '—') + '</td>' +
+      '<td style="font-size:12px;color:rgba(255,255,255,0.5);">' + (t.user_name || 'User #' + t.user_id) + '</td>' +
+      '<td style="font-family:DM Mono,monospace;">' + (t.days || 0) + 'd</td>' +
+      '<td>' + (t.currency||'INR') + ' ' + parseInt(t.budget||0).toLocaleString() + '</td>' +
+      '<td style="font-size:11px;color:rgba(255,255,255,0.4);">' + vibes + '</td>' +
+      '<td>' + planned + '</td>' +
+      '<td style="color:rgba(37,99,255,0.8);">' + startDate + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ══ ACTIVITY ══
+async function loadActivity() {
+  try {
+    var res  = await fetch('/api/admin/activity', { headers: _headers });
+    var data = await res.json();
+    if (!data.success) return;
+    var logs = data.logs || [];
+
+    // Activity feed on overview
+    var feedEl = document.getElementById('activityFeed');
+    var ACTION_COLORS = {
+      'plan_trip':'#2563FF','identify_place':'#18C29C','trip_journal':'#FF7A59',
+      'multi_city_plan':'#8B5CF6','visa_check':'#F5B942','weather_check':'#0EA5E9',
+      'scam_alerts':'#EF4444','login':'#18C29C','register':'#F5B942',
+    };
+    feedEl.innerHTML = logs.slice(0,15).map(function(l) {
+      var color = ACTION_COLORS[l.action] || 'rgba(255,255,255,0.2)';
+      var label = (l.action||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+      var time  = l.created_at ? new Date(l.created_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : '';
+      return '<div class="activity-item">' +
+        '<div class="activity-dot" style="background:' + color + ';"></div>' +
+        '<div class="activity-text"><b>' + label + '</b> <span style="color:rgba(255,255,255,0.3);">· User #' + (l.user_id||'?') + '</span></div>' +
+        '<div class="activity-time">' + time + '</div>' +
+      '</div>';
+    }).join('') || '<div class="loading" style="color:rgba(255,255,255,0.2);">No activity yet</div>';
+
+    // Full activity table
+    var body = document.getElementById('activityBody');
+    body.innerHTML = logs.map(function(l) {
+      var time = l.created_at ? new Date(l.created_at).toLocaleString('en-IN') : '—';
+      var label = (l.action||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+      return '<tr><td style="font-size:11px;color:rgba(255,255,255,0.4);">' + time + '</td><td style="font-family:DM Mono,monospace;">#' + (l.user_id||'?') + '</td><td>' + label + '</td><td style="font-size:11px;color:rgba(255,255,255,0.3);">' + (l.ip||'—') + '</td></tr>';
+    }).join('') || '<tr><td colspan="4" style="text-align:center;padding:20px;color:rgba(255,255,255,0.2);">No activity yet</td></tr>';
+
+  } catch(e) { console.error('[Admin] Activity error:', e); }
+}
+
+// ══ INIT ══
+document.addEventListener('DOMContentLoaded', function() {
+  if (!_token) { window.location.href = '/login'; return; }
+  loadAll();
+  // Auto refresh every 60 seconds
+  setInterval(loadAll, 60000);
+});
+</script>
+</body>
+</html>
