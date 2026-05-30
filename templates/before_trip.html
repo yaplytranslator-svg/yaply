@@ -3587,7 +3587,7 @@
                 <div class="sec-div-label">Details</div>
                 <div class="sec-div-line"></div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
                 <div>
                   <label class="field-label">Days</label>
                   <input class="field-input no-icon" type="number" id="days" value="5" min="1" max="60" />
@@ -3596,7 +3596,8 @@
                   <label class="field-label">People</label>
                   <input class="field-input no-icon" type="number" id="people" value="2" min="1" />
                 </div>
-                <div>
+                <div style="margin-bottom:14px;">
+
                   <label class="field-label">Passport</label>
                   <select class="field-input no-icon" id="passport">
                     <option value="India">India</option>
@@ -4435,7 +4436,7 @@
   <div class="toast" id="toast"></div>
 
 
-  !-- MASTER OVERLAY — one overlay for all tools -->
+  !-- MASTER OVERLAY — one overlay for all tools --!
   <div class="tool-overlay" id="toolOverlay" onclick="if(event.target===this)closeTool()">
 
     <!-- ── VISA CHECKER ── -->
@@ -5893,31 +5894,114 @@
           plan.itinerary = [];
           var dayCounter = 1;
 
-          cities.forEach(function (city, ci) {
-            var cityData = (plan.cities && plan.cities[ci]) || {};
-            var cityItinerary = cityData.itinerary || cityData.days || [];
+          // Try to get itinerary from cities array
+          var planCities = plan.cities || [];
 
-            if (cityItinerary.length) {
-              cityItinerary.forEach(function (day) {
-                day.day = dayCounter++;
-                plan.itinerary.push(day);
-              });
-            } else {
-              // Generate placeholder days for this city
+          if (planCities.length) {
+            planCities.forEach(function (cityData) {
+              // cityData could be object with itinerary or days array
+              var cityDays = cityData.itinerary || cityData.days || [];
+
+              if (cityDays.length) {
+                cityDays.forEach(function (day) {
+                  day.day = dayCounter++;
+                  day.title = day.title || ('Day in ' + (cityData.city || cityData.name || ''));
+                  plan.itinerary.push(day);
+                });
+              } else {
+                // No days data — create placeholder
+                var numDays = cityData.days_count || cityData.duration || 3;
+                for (var d = 0; d < numDays; d++) {
+                  plan.itinerary.push({
+                    day: dayCounter++,
+                    title: 'Day ' + dayCounter + ' in ' + (cityData.city || cityData.name || 'City'),
+                    morning: {
+                      activity: 'Explore ' + (cityData.city || cityData.name || 'the city'),
+                      location: cityData.city || cityData.name || '',
+                      duration: '3h',
+                      cost: plan.currency + ' 500',
+                      tip: 'Go early to avoid crowds'
+                    },
+                    afternoon: {
+                      activity: 'Local food and sightseeing',
+                      location: cityData.city || cityData.name || '',
+                      duration: '3h',
+                      cost: plan.currency + ' 800',
+                      tip: 'Ask locals for recommendations'
+                    },
+                    evening: {
+                      activity: 'Sunset and local market',
+                      location: cityData.city || cityData.name || '',
+                      duration: '2h',
+                      cost: plan.currency + ' 300',
+                      tip: 'Best time for photos'
+                    },
+                    lunch: {
+                      restaurant: 'Local restaurant',
+                      cuisine: 'Local',
+                      cost: plan.currency + ' 400'
+                    },
+                    dinner: {
+                      restaurant: 'Street food market',
+                      cuisine: 'Local',
+                      cost: plan.currency + ' 300'
+                    },
+                    accommodation: {
+                      name: 'Hotel in ' + (cityData.city || cityData.name || 'City'),
+                      area: cityData.city || cityData.name || '',
+                      cost: plan.currency + ' 2000/night'
+                    }
+                  });
+                }
+              }
+            });
+          } else {
+            // No cities data at all — build from input cities
+            cities.forEach(function (city) {
               for (var d = 0; d < city.days; d++) {
                 plan.itinerary.push({
                   day: dayCounter++,
                   title: 'Day in ' + city.name.split(',')[0],
-                  morning: { activity: 'Explore ' + city.name.split(',')[0], location: city.name, duration: '3h', cost: currency + ' 500', tip: 'Go early to avoid crowds' },
-                  afternoon: { activity: 'Local cuisine & sightseeing', location: city.name, duration: '3h', cost: currency + ' 800', tip: 'Ask locals for recommendations' },
-                  evening: { activity: 'Sunset & local market', location: city.name, duration: '2h', cost: currency + ' 300', tip: 'Perfect time for photos' },
-                  lunch: { restaurant: 'Local restaurant', cuisine: 'Local', cost: currency + ' 400' },
-                  dinner: { restaurant: 'Street food market', cuisine: 'Local', cost: currency + ' 300' },
-                  accommodation: { name: 'Hotel in ' + city.name.split(',')[0], area: city.name.split(',')[0], cost: currency + ' 2000/night' }
+                  morning: {
+                    activity: 'Explore ' + city.name.split(',')[0],
+                    location: city.name,
+                    duration: '3h',
+                    cost: (plan.currency || 'INR') + ' 500',
+                    tip: 'Go early to avoid crowds'
+                  },
+                  afternoon: {
+                    activity: 'Local food and sightseeing',
+                    location: city.name,
+                    duration: '3h',
+                    cost: (plan.currency || 'INR') + ' 800',
+                    tip: 'Ask locals for recommendations'
+                  },
+                  evening: {
+                    activity: 'Sunset and local market',
+                    location: city.name,
+                    duration: '2h',
+                    cost: (plan.currency || 'INR') + ' 300',
+                    tip: 'Best time for photos'
+                  },
+                  lunch: {
+                    restaurant: 'Local restaurant',
+                    cuisine: 'Local',
+                    cost: (plan.currency || 'INR') + ' 400'
+                  },
+                  dinner: {
+                    restaurant: 'Street food',
+                    cuisine: 'Local',
+                    cost: (plan.currency || 'INR') + ' 300'
+                  },
+                  accommodation: {
+                    name: 'Hotel in ' + city.name.split(',')[0],
+                    area: city.name.split(',')[0],
+                    cost: (plan.currency || 'INR') + ' 2000/night'
+                  }
                 });
               }
-            }
-          });
+            });
+          }
         }
 
         // hidden_gems
