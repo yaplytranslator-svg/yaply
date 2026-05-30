@@ -65,13 +65,13 @@ limiter = Limiter(
 
 # ── DATABASE + AUTH ───────────────────────────────────────────
 from database import (
-    init_db, migrate_db, log_action,
+    init_db, migrate_db, log_action, get_db,
     save_trip, get_trips, get_trip, update_trip, delete_trip,
     save_place, get_places, delete_place,
     add_expense, get_expenses, delete_expense,
-    save_journal, get_journal, get_user_stats
+    save_journal, get_journal, get_user_stats, get_user_by_id
 )
-from auth import register_auth_routes, require_auth, optional_auth, safe_user
+from auth import register_auth_routes, require_auth, decode_token, get_token_from_request, optional_auth, safe_user
 
 init_db()
 migrate_db()
