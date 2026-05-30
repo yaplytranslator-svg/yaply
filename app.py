@@ -2473,20 +2473,19 @@ def assetlinks():
 ADMIN_EMAIL = 'yaplytranslator@gmail.com'
 
 def require_admin(f):
-    """Decorator — only allow admin email"""
     from functools import wraps
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        token = get_token_from_request()
         if not token:
             return jsonify({'success': False, 'error': 'No token'}), 401
-        payload = verify_token(token)
+        payload = decode_token(token)
         if not payload:
             return jsonify({'success': False, 'error': 'Invalid token'}), 401
-        user = get_user_by_id(payload['user_id'])
+        user = get_user_by_id(payload.get('user_id'))
         if not user or user['email'].lower() != ADMIN_EMAIL.lower():
             return jsonify({'success': False, 'error': 'Admin only'}), 403
-        g.user_id = payload['user_id']
+        g.user_id = user['id']
         g.user    = user
         return f(*args, **kwargs)
     return decorated
