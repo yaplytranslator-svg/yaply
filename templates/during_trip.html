@@ -3274,7 +3274,6 @@
     });
 
     async function initDuringTrip() {
-      // 1. Try to load active trip
       var token = localStorage.getItem('yaply_token') || '';
       if (!token) return showCountrySelector();
 
@@ -3285,35 +3284,104 @@
         var data = await res.json();
 
         if (data.success && data.trips && data.trips.length) {
-          // Find active trip
-          var active = data.trips.find(function (t) {
-            return t.status === 'active';
-          }) || data.trips[0];
+          var today = new Date();
+          today.setHours(0, 0, 0, 0);
 
-          if (active) {
-            // Calculate day number
-            var startDate = active.start_date ? new Date(active.start_date) : new Date(active.created_at);
-            var today = new Date();
-            var dayNum = Math.max(1, Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1);
-            dayNum = Math.min(dayNum, active.days || 1);
+          // Find LIVE trip — today is between start and end date
+          var liveTrip = null;
+          var upcomingTrip = null;
 
-            var tripName = active.destination || 'Your Trip';
-            document.getElementById('navTripText').textContent = tripName + ' · Day ' + dayNum;
+          data.trips.forEach(function (trip) {
+            if (!trip.start_date) return;
 
-            // Extract country from destination
-            var country = extractCountry(tripName);
-            if (country) {
-              applyCountry(country);
-              return;
+            var start = new Date(trip.start_date);
+            start.setHours(0, 0, 0, 0);
+            var end = new Date(start);
+            end.setDate(end.getDate() + (parseInt(trip.days) || 1) - 1);
+            end.setHours(23, 59, 59, 999);
+
+            if (today >= start && today <= end) {
+              // Trip is LIVE right now
+              if (!liveTrip) liveTrip = { trip: trip, start: start };
+            } else if (start > today) {
+              // Upcoming trip
+              if (!upcomingTrip || start < new Date(upcomingTrip.trip.start_date)) {
+                upcomingTrip = { trip: trip, start: start };
+              }
             }
+          });
+
+          if (liveTrip) {
+            // Calculate day number
+            var diffMs = today - liveTrip.start;
+            var dayNum = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+            dayNum = Math.max(1, Math.min(dayNum, liveTrip.trip.days || 1));
+
+            var tripName = liveTrip.trip.destination || 'Your Trip';
+            document.getElementById('navTripText').textContent =
+              tripName + ' · Day ' + dayNum;
+
+            // Show live badge green
+            var badge = document.querySelector('.nav-live-badge');
+            if (badge) badge.style.background = 'rgba(24,194,156,0.2)';
+
+            // Auto-load emergency numbers
+            var country = extractCountry(tripName);
+            if (country) applyCountry(country);
+            else showCountrySelector();
+
+            return;
+          }
+
+          if (upcomingTrip) {
+            // Show upcoming trip countdown
+            var daysUntil = Math.ceil((upcomingTrip.start - today) / (1000 * 60 * 60 * 24));
+            document.getElementById('navTripText').textContent =
+              upcomingTrip.trip.destination + ' in ' + daysUntil + ' days ⏳';
+
+            // Show upcoming banner
+            _showUpcomingBanner(upcomingTrip.trip, daysUntil);
+            showCountrySelector();
+            return;
           }
         }
       } catch (e) {
         console.log('[DuringTrip] Could not load trips:', e);
       }
 
-      // No active trip — show country selector
+      // No live or upcoming trips
       showCountrySelector();
+    }
+
+    function _showUpcomingBanner(trip, daysUntil) {
+      // Insert a banner below the emergency strip
+      var existing = document.getElementById('upcomingBanner');
+      if (existing) existing.remove();
+
+      var banner = document.createElement('div');
+      banner.id = 'upcomingBanner';
+      banner.style.cssText =
+        'margin:10px 18px;padding:12px 16px;' +
+        'background:linear-gradient(135deg,rgba(37,99,255,0.08),rgba(37,99,255,0.03));' +
+        'border:1px solid rgba(37,99,255,0.15);border-radius:14px;' +
+        'display:flex;align-items:center;gap:12px;';
+
+      banner.innerHTML =
+        '<div style="font-size:28px;">✈️</div>' +
+        '<div style="flex:1;">' +
+        '<div style="font-size:13px;font-weight:700;color:var(--text);">' +
+        trip.destination + ' coming up!</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' +
+        'Trip starts in <b style="color:var(--blue);">' + daysUntil + ' days</b> · ' +
+        new Date(trip.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long' }) +
+        '</div>' +
+        '</div>' +
+        '<div style="font-family:var(--font-mono);font-size:20px;font-weight:800;color:var(--blue);">' +
+        daysUntil + 'd' +
+        '</div>';
+
+      var strip = document.querySelector('.emergency-strip');
+      if (strip) strip.after(banner);
     }
 
     function extractCountry(destination) {

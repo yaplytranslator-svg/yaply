@@ -189,17 +189,26 @@ def get_user_stats(user_id):
     finally: conn.close()
 
 # ── TRIPS ──
-def save_trip(user_id, destination, origin, days, people, budget, currency, vibes, passport, plan_data=None):
+def save_trip(user_id, destination, origin, days, people,
+              budget, currency, vibes, passport,
+              plan_data=None, start_date=None):
     conn = get_db()
     try:
         vibes_str = vibes if isinstance(vibes, str) else '+'.join(vibes)
         c = conn.execute(
-            'INSERT INTO trips (user_id,destination,origin,days,people,budget,currency,vibes,passport,plan_data) VALUES (?,?,?,?,?,?,?,?,?,?)',
-            (user_id, destination, origin, int(days), int(people), str(budget), currency, vibes_str, passport,
-             json.dumps(plan_data) if plan_data else None)
+            '''INSERT INTO trips
+               (user_id,destination,origin,days,people,
+                budget,currency,vibes,passport,plan_data,start_date)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
+            (user_id, destination, origin, int(days), int(people),
+             str(budget), currency, vibes_str, passport,
+             json.dumps(plan_data) if plan_data else None,
+             start_date)
         )
-        conn.commit(); return c.lastrowid
-    finally: conn.close()
+        conn.commit()
+        return c.lastrowid
+    finally:
+        conn.close()
 
 def get_trips(user_id):
     conn = get_db()
@@ -330,6 +339,18 @@ def get_journal(trip_id, user_id):
         except: pass
         return j
     finally: conn.close()
+
+def migrate_db():
+    conn = get_db()
+    try:
+        # Add start_date to trips if not exists
+        conn.execute('ALTER TABLE trips ADD COLUMN start_date TEXT')
+        conn.commit()
+        print('[DB] start_date column added to trips')
+    except Exception as e:
+        pass  # Column already exists
+    finally:
+        conn.close()
 
 # ── LOGGING ──
 def log_action(user_id, action, ip=''):

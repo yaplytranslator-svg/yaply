@@ -65,7 +65,7 @@ limiter = Limiter(
 
 # ── DATABASE + AUTH ───────────────────────────────────────────
 from database import (
-    init_db, log_action,
+    init_db, migrate_db, log_action,
     save_trip, get_trips, get_trip, update_trip, delete_trip,
     save_place, get_places, delete_place,
     add_expense, get_expenses, delete_expense,
@@ -74,6 +74,7 @@ from database import (
 from auth import register_auth_routes, require_auth, optional_auth, safe_user
 
 init_db()
+migrate_db()
 register_auth_routes(app)
 init_groups_db()
 init_diary_db()
@@ -465,7 +466,8 @@ def api_save_trip():
             currency    = clean(data.get('currency', 'INR'), 3),
             vibes       = clean(data.get('vibes', 'Adventure')),
             passport    = clean(data.get('passport', 'India')),
-            plan_data   = data.get('plan_data')
+            plan_data   = data.get('plan_data'),
+            start_date   = clean(data.get('start_date', ''))
         )
         log_action(g.user_id, 'save_trip', request.remote_addr)
         return jsonify({'success': True, 'trip_id': trip_id})

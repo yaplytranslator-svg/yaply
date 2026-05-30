@@ -3608,6 +3608,24 @@
                     <option value="Singapore">Singapore</option>
                   </select>
                 </div>
+
+                <div style="margin-bottom:14px;">
+                  <label class="field-label">Trip Start Date</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    <div>
+                      <label class="field-label" style="font-size:10px;">Start Date</label>
+                      <input class="field-input no-icon" type="date" id="startDate" style="padding:10px 12px;" />
+                    </div>
+                    <div>
+                      <label class="field-label" style="font-size:10px;">End Date</label>
+                      <input class="field-input no-icon" type="date" id="endDate" style="padding:10px 12px;" readonly
+                        style="background:var(--bg2);color:var(--muted);" />
+                    </div>
+                  </div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:5px;">
+                    📅 During Trip page will go live automatically on start date
+                  </div>
+                </div>
               </div>
 
               <div style="margin-bottom:14px;">
@@ -3728,6 +3746,14 @@
               <div style="display:grid;grid-template-columns:1fr 1fr 80px;gap:8px;margin-bottom:14px;">
                 <div><label class="field-label">People</label><input class="field-input no-icon" type="number"
                     id="mcPeople" value="2" min="1" /></div>
+
+                <div style="margin-bottom:14px;">
+                  <label class="field-label">Trip Start Date</label>
+                  <input class="field-input no-icon" type="date" id="mcStartDate" style="padding:10px 12px;" />
+                  <div style="font-size:11px;color:var(--muted);margin-top:5px;">
+                    📅 During Trip page activates automatically on this date
+                  </div>
+                </div>
                 <div><label class="field-label">Passport</label><select class="field-input no-icon" id="mcPassport">
                     <option>India</option>
                     <option>USA</option>
@@ -5370,6 +5396,7 @@
             vibe: vibe,
             currency: currency,
             passport: passport,
+            start_date: document.getElementById('startDate').value || new Date().toISOString().split('T')[0],
             travel_mode: selectedTransportMode,  // ← new
           })
         });
@@ -5674,6 +5701,34 @@
       document.querySelectorAll('.day-panel').forEach(function (p, j) { p.classList.toggle('active', j === i); });
     }
 
+    // Auto calculate end date when days or start date changes
+    function updateEndDate() {
+      var startEl = document.getElementById('startDate');
+      var endEl = document.getElementById('endDate');
+      var daysEl = document.getElementById('days');
+
+      if (!startEl.value || !daysEl.value) return;
+
+      var start = new Date(startEl.value);
+      var days = parseInt(daysEl.value) || 1;
+      var end = new Date(start);
+      end.setDate(end.getDate() + days - 1);
+
+      endEl.value = end.toISOString().split('T')[0];
+    }
+
+    // Set today as default start date
+    document.addEventListener('DOMContentLoaded', function () {
+      var today = new Date().toISOString().split('T')[0];
+      var startEl = document.getElementById('startDate');
+      if (startEl && !startEl.value) startEl.value = today;
+      updateEndDate();
+    });
+
+    document.getElementById('startDate').addEventListener('change', updateEndDate);
+    document.getElementById('days').addEventListener('change', updateEndDate);
+    document.getElementById('days').addEventListener('input', updateEndDate);
+
     // ── MULTI-CITY ─────────────────────────────────
     var stopCount = 2;
     function addStop() {
@@ -5765,6 +5820,7 @@
             people: people,
             passport: passport,
             vibe: Array.from(selectedVibes || []).join(' + ') || 'adventure',
+            start_date: document.getElementById('mcStartDate').value || '',
           })
         });
 
