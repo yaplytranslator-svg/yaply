@@ -1390,7 +1390,7 @@
         <div class="form-panel" id="panelSignup">
           <div class="form-header">
             <div class="form-title">Start your journey<em>.</em></div>
-            <div class="form-sub">Free forever. No credit card needed.</div>
+            
           </div>
 
           <form id="signupForm" onsubmit="handleSignup(event)" novalidate>
@@ -1727,7 +1727,7 @@
       setLoading('signinBtn', 'signinSpinner', 'signinBtnIcon', true);
 
       try {
-        var res = await fetch('/api/login', {
+        var res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email, password: pass })

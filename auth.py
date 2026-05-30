@@ -21,7 +21,7 @@ import requests as req
 from datetime import datetime, timedelta
 from functools import wraps
 from urllib.parse import urlencode
-from flask import request, jsonify, g, redirect
+from flask import render_template, request, jsonify, g, redirect
 
 from database import (
     create_user, get_user_by_email, get_user_by_id,
@@ -710,6 +710,11 @@ def register_auth_routes(app):
         except Exception as e:
             print(f"[Forgot Password] {e}")
             return jsonify({'success': False, 'error': 'Something went wrong. Try again.'})
+        
+
+    @app.route('/forgot-password')
+    def forgot_password_page():
+        return render_template('forgot_password.html')
 
     # ════════════════════════════════════════════════
     #  RESET PASSWORD (token from email link)
