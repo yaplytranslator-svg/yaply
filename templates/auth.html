@@ -1,1408 +1,1825 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Yaply — Sign In</title>
-<link rel="icon" href="/static/favicon.png" type="image/png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet"/>
-<script src="/static/yaply-core.js"></script>
-<style>
-/* ═══════════════════════════════════════════════════
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Yaply — Sign In</title>
+  <link rel="icon" href="/static/favicon.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap"
+    rel="stylesheet" />
+  <script src="/static/yaply-core.js"></script>
+
+  <!-- ══════════════════════════════════════════════════════════
+     PWA HEAD SNIPPET
+     Add this inside <head> tag of ALL your HTML pages:
+     landing.html, auth.html, yaply-app.html,
+     before_trip.html, during_trip.html, after_trip.html
+══════════════════════════════════════════════════════════ -->
+
+  <!-- PWA Meta Tags -->
+  <meta name="application-name" content="Yaply" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Yaply" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#2563FF" />
+  <meta name="msapplication-TileColor" content="#2563FF" />
+  <meta name="msapplication-TileImage" content="/static/icons/icon-144.png" />
+
+  <!-- SEO Meta -->
+  <meta name="description"
+    content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere." />
+  <meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel" />
+  <meta name="author" content="Yaply Technologies" />
+
+  <!-- Open Graph (WhatsApp/Facebook preview) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.yaply.live" />
+  <meta property="og:title" content="Yaply — AI Travel OS" />
+  <meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere." />
+  <meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Yaply — AI Travel OS" />
+  <meta name="twitter:description" content="India's first AI Travel Operating System" />
+  <meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png" />
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png" />
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(function (reg) {
+            console.log('[SW] Registered:', reg.scope);
+          })
+          .catch(function (err) {
+            console.log('[SW] Failed:', err);
+          });
+      });
+    }
+  </script>
+
+  <style>
+    /* ═══════════════════════════════════════════════════
    YAPLY DESIGN SYSTEM
 ═══════════════════════════════════════════════════ */
-:root {
-  --blue:      #2563FF;
-  --blue-d:    #1D4ED8;
-  --blue-l:    #EEF2FF;
-  --blue-g:    rgba(37,99,255,0.08);
-  --blue-glow: rgba(37,99,255,0.25);
-  --midnight:  #0B1220;
-  --night:     #0E1829;
-  --bg:        #F7F9FC;
-  --white:     #FFFFFF;
-  --text:      #111827;
-  --muted:     #6B7280;
-  --border:    rgba(17,24,39,0.08);
-  --border-f:  rgba(37,99,255,0.4);
-  --coral:     #FF7A59;
-  --green:     #18C29C;
-  --red:       #EF4444;
-  --red-g:     rgba(239,68,68,0.08);
+    :root {
+      --blue: #2563FF;
+      --blue-d: #1D4ED8;
+      --blue-l: #EEF2FF;
+      --blue-g: rgba(37, 99, 255, 0.08);
+      --blue-glow: rgba(37, 99, 255, 0.25);
+      --midnight: #0B1220;
+      --night: #0E1829;
+      --bg: #F7F9FC;
+      --white: #FFFFFF;
+      --text: #111827;
+      --muted: #6B7280;
+      --border: rgba(17, 24, 39, 0.08);
+      --border-f: rgba(37, 99, 255, 0.4);
+      --coral: #FF7A59;
+      --green: #18C29C;
+      --red: #EF4444;
+      --red-g: rgba(239, 68, 68, 0.08);
 
-  --font-head: 'Instrument Serif', Georgia, serif;
-  --font-body: 'DM Sans', sans-serif;
+      --font-head: 'Instrument Serif', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
 
-  --r:    12px;
-  --r-lg: 18px;
-  --r-xl: 24px;
+      --r: 12px;
+      --r-lg: 18px;
+      --r-xl: 24px;
 
-  --shadow:    0 2px 16px rgba(37,99,255,0.06);
-  --shadow-lg: 0 20px 60px rgba(37,99,255,0.12);
-}
+      --shadow: 0 2px 16px rgba(37, 99, 255, 0.06);
+      --shadow-lg: 0 20px 60px rgba(37, 99, 255, 0.12);
+    }
 
-*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
-html,body {
-  font-family: var(--font-body);
-  height: 100%;
-  overflow: hidden;
-}
-@media(max-width:768px) {
-  html,body { overflow: auto; }
-}
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-/* ══════════════════════════════════════
+    html,
+    body {
+      font-family: var(--font-body);
+      height: 100%;
+      overflow: hidden;
+    }
+
+    @media(max-width:768px) {
+
+      html,
+      body {
+        overflow: auto;
+      }
+    }
+
+    /* ══════════════════════════════════════
    LAYOUT — Split screen
 ══════════════════════════════════════ */
-.auth-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: 100vh;
-}
-@media(max-width:768px) {
-  .auth-layout {
-    grid-template-columns: 1fr;
-    min-height: 100vh;
-  }
-}
+    .auth-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
 
-/* ══════════════════════════════════════
+    @media(max-width:768px) {
+      .auth-layout {
+        grid-template-columns: 1fr;
+        min-height: 100vh;
+      }
+    }
+
+    /* ══════════════════════════════════════
    LEFT PANEL — Brand / Features
 ══════════════════════════════════════ */
-.left-panel {
-  background: linear-gradient(145deg, #0D1628 0%, #0B1220 60%, #060C17 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 48px;
-  position: relative;
-  overflow: hidden;
-}
-@media(max-width:768px) {
-  .left-panel { display: none; }
-}
+    .left-panel {
+      background: linear-gradient(145deg, #0D1628 0%, #0B1220 60%, #060C17 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
 
-/* Background effects */
-.lp-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-}
-.lp-orb-1 {
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(37,99,255,0.2) 0%, transparent 70%);
-  top: -100px; left: -100px;
-  animation: orbDrift 10s ease-in-out infinite;
-}
-.lp-orb-2 {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(255,122,89,0.1) 0%, transparent 70%);
-  bottom: 0; right: -60px;
-  animation: orbDrift 14s ease-in-out infinite reverse;
-}
-@keyframes orbDrift {
-  0%,100% { transform: translate(0,0); }
-  50%      { transform: translate(24px,-20px); }
-}
+    @media(max-width:768px) {
+      .left-panel {
+        display: none;
+      }
+    }
 
-/* Grid overlay */
-.lp-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(37,99,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37,99,255,0.04) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse at 30% 50%, black 0%, transparent 70%);
-}
+    /* Background effects */
+    .lp-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
 
-/* Globe illustration */
-.lp-globe {
-  position: absolute;
-  right: -120px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 400px;
-  height: 400px;
-  opacity: 0.06;
-}
+    .lp-orb-1 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(37, 99, 255, 0.2) 0%, transparent 70%);
+      top: -100px;
+      left: -100px;
+      animation: orbDrift 10s ease-in-out infinite;
+    }
 
-/* Logo */
-.lp-logo {
-  position: relative; z-index: 2;
-  display: flex; align-items: center; gap: 12px;
-  text-decoration: none;
-}
-.lp-logo-mark {
-  width: 40px; height: 40px;
-  background: var(--blue);
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 30px var(--blue-glow);
-  flex-shrink: 0;
-}
-.lp-logo-name {
-  font-family: var(--font-head);
-  font-size: 24px;
-  color: white;
-  letter-spacing: -0.5px;
-}
+    .lp-orb-2 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255, 122, 89, 0.1) 0%, transparent 70%);
+      bottom: 0;
+      right: -60px;
+      animation: orbDrift 14s ease-in-out infinite reverse;
+    }
 
-/* Center content */
-.lp-center {
-  position: relative; z-index: 2;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 40px 0;
-}
+    @keyframes orbDrift {
 
-.lp-headline {
-  font-family: var(--font-head);
-  font-size: clamp(32px, 3.5vw, 48px);
-  font-weight: 400;
-  color: white;
-  letter-spacing: -1px;
-  line-height: 1.15;
-  margin-bottom: 16px;
-  animation: fadeUp .8s ease both;
-}
-.lp-headline em {
-  font-style: italic;
-  background: linear-gradient(135deg, #60A5FA, #2563FF);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
 
-.lp-sub {
-  font-size: 15px;
-  color: rgba(255,255,255,0.35);
-  line-height: 1.7;
-  font-weight: 300;
-  margin-bottom: 48px;
-  animation: fadeUp .8s .1s ease both;
-  max-width: 360px;
-}
+      50% {
+        transform: translate(24px, -20px);
+      }
+    }
 
-/* Feature list */
-.lp-features {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  animation: fadeUp .8s .2s ease both;
-}
+    /* Grid overlay */
+    .lp-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(37, 99, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 255, 0.04) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse at 30% 50%, black 0%, transparent 70%);
+    }
 
-.lp-feat {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-}
-.lp-feat-icon {
-  width: 38px; height: 38px;
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.lp-feat-icon.blue   { background: rgba(37,99,255,0.15); }
-.lp-feat-icon.coral  { background: rgba(255,122,89,0.15); }
-.lp-feat-icon.green  { background: rgba(24,194,156,0.15); }
-.lp-feat-icon.amber  { background: rgba(245,185,66,0.15); }
-.lp-feat-icon svg    { width: 17px; height: 17px; }
+    /* Globe illustration */
+    .lp-globe {
+      position: absolute;
+      right: -120px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 400px;
+      height: 400px;
+      opacity: 0.06;
+    }
 
-.lp-feat-text {}
-.lp-feat-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-  margin-bottom: 2px;
-}
-.lp-feat-desc {
-  font-size: 13px;
-  color: rgba(255,255,255,0.35);
-  line-height: 1.5;
-}
+    /* Logo */
+    .lp-logo {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
 
-/* Stats row */
-.lp-stats {
-  position: relative; z-index: 2;
-  display: flex;
-  gap: 32px;
-  animation: fadeUp .8s .3s ease both;
-}
-.lp-stat-val {
-  font-family: var(--font-head);
-  font-size: 24px;
-  color: white;
-  margin-bottom: 2px;
-}
-.lp-stat-label {
-  font-size: 12px;
-  color: rgba(255,255,255,0.3);
-  letter-spacing: 0.3px;
-}
+    .lp-logo-mark {
+      width: 40px;
+      height: 40px;
+      background: var(--blue);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px var(--blue-glow);
+      flex-shrink: 0;
+    }
 
-/* Floating card on left panel */
-.lp-float-card {
-  position: absolute;
-  bottom: 140px;
-  right: 32px;
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 16px;
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  animation: cardFloat 4s ease-in-out infinite, fadeUp .8s .5s ease both;
-  z-index: 2;
-}
-@keyframes cardFloat {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
-}
-.lfc-icon {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  background: var(--blue);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.lfc-icon svg { width: 16px; height: 16px; }
-.lfc-title { font-size: 13px; font-weight: 600; color: white; }
-.lfc-sub   { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+    .lp-logo-name {
+      font-family: var(--font-head);
+      font-size: 24px;
+      color: white;
+      letter-spacing: -0.5px;
+    }
 
-/* ══════════════════════════════════════
+    /* Center content */
+    .lp-center {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 40px 0;
+    }
+
+    .lp-headline {
+      font-family: var(--font-head);
+      font-size: clamp(32px, 3.5vw, 48px);
+      font-weight: 400;
+      color: white;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      animation: fadeUp .8s ease both;
+    }
+
+    .lp-headline em {
+      font-style: italic;
+      background: linear-gradient(135deg, #60A5FA, #2563FF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .lp-sub {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.35);
+      line-height: 1.7;
+      font-weight: 300;
+      margin-bottom: 48px;
+      animation: fadeUp .8s .1s ease both;
+      max-width: 360px;
+    }
+
+    /* Feature list */
+    .lp-features {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      animation: fadeUp .8s .2s ease both;
+    }
+
+    .lp-feat {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .lp-feat-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .lp-feat-icon.blue {
+      background: rgba(37, 99, 255, 0.15);
+    }
+
+    .lp-feat-icon.coral {
+      background: rgba(255, 122, 89, 0.15);
+    }
+
+    .lp-feat-icon.green {
+      background: rgba(24, 194, 156, 0.15);
+    }
+
+    .lp-feat-icon.amber {
+      background: rgba(245, 185, 66, 0.15);
+    }
+
+    .lp-feat-icon svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .lp-feat-text {}
+
+    .lp-feat-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 2px;
+    }
+
+    .lp-feat-desc {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.35);
+      line-height: 1.5;
+    }
+
+    /* Stats row */
+    .lp-stats {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      gap: 32px;
+      animation: fadeUp .8s .3s ease both;
+    }
+
+    .lp-stat-val {
+      font-family: var(--font-head);
+      font-size: 24px;
+      color: white;
+      margin-bottom: 2px;
+    }
+
+    .lp-stat-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.3);
+      letter-spacing: 0.3px;
+    }
+
+    /* Floating card on left panel */
+    .lp-float-card {
+      position: absolute;
+      bottom: 140px;
+      right: 32px;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: cardFloat 4s ease-in-out infinite, fadeUp .8s .5s ease both;
+      z-index: 2;
+    }
+
+    @keyframes cardFloat {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .lfc-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .lfc-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .lfc-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .lfc-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 1px;
+    }
+
+    /* ══════════════════════════════════════
    RIGHT PANEL — Auth Form
 ══════════════════════════════════════ */
-.right-panel {
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 40px 32px;
-  position: relative;
-  overflow: hidden;
-}
+    .right-panel {
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 32px;
+      position: relative;
+      overflow: hidden;
+    }
 
-/* Mobile top bar */
-.mobile-top {
-  display: none;
-  width: 100%;
-  padding: 20px 24px;
-  background: var(--midnight);
-  align-items: center;
-  justify-content: space-between;
-}
-@media(max-width:768px) {
-  .mobile-top { display: flex; }
-  .right-panel { justify-content: flex-start; }
-}
-.mobile-logo {
-  display: flex; align-items: center; gap: 10px;
-  text-decoration: none;
-}
-.mobile-logo-mark {
-  width: 32px; height: 32px;
-  background: var(--blue);
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-}
-.mobile-logo-name {
-  font-family: var(--font-head);
-  font-size: 20px;
-  color: white;
-}
-.mobile-back {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 13px;
-  color: rgba(255,255,255,0.4);
-  text-decoration: none;
-  transition: color .2s;
-}
-.mobile-back:hover { color: white; }
-.mobile-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+    /* Mobile top bar */
+    .mobile-top {
+      display: none;
+      width: 100%;
+      padding: 20px 24px;
+      background: var(--midnight);
+      align-items: center;
+      justify-content: space-between;
+    }
 
-/* Form wrapper */
-.form-wrap {
-  width: 100%;
-  max-width: 440px;
-}
+    @media(max-width:768px) {
+      .mobile-top {
+        display: flex;
+      }
 
-/* Auth tabs */
-.auth-tabs {
-  display: flex;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 4px;
-  margin-bottom: 32px;
-  box-shadow: var(--shadow);
-}
-.auth-tab {
-  flex: 1;
-  padding: 11px;
-  border-radius: var(--r);
-  border: none;
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all .25s cubic-bezier(.4,0,.2,1);
-  background: none;
-  color: var(--muted);
-}
-.auth-tab.active {
-  background: var(--midnight);
-  color: white;
-  box-shadow: 0 4px 16px rgba(11,18,32,0.2);
-}
+      .right-panel {
+        justify-content: flex-start;
+      }
+    }
 
-/* Form header */
-.form-header { margin-bottom: 28px; }
-.form-title {
-  font-family: var(--font-head);
-  font-size: 28px;
-  font-weight: 400;
-  color: var(--text);
-  letter-spacing: -0.5px;
-  margin-bottom: 6px;
-}
-.form-title em { font-style: italic; color: var(--blue); }
-.form-sub {
-  font-size: 14px;
-  color: var(--muted);
-  font-weight: 300;
-}
+    .mobile-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
 
-/* Form panels */
-.form-panel { display: none; animation: fadeUp .3s ease both; }
-.form-panel.active { display: block; }
+    .mobile-logo-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--blue);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-/* Field */
-.field {
-  margin-bottom: 16px;
-  position: relative;
-}
-.field-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: 0.2px;
-  margin-bottom: 7px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+    .mobile-logo-name {
+      font-family: var(--font-head);
+      font-size: 20px;
+      color: white;
+    }
 
-.field-input-wrap {
-  position: relative;
-}
-.field-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px; height: 16px;
-  color: var(--muted);
-  pointer-events: none;
-  transition: color .2s;
-}
-.field-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 1.8; }
+    .mobile-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.4);
+      text-decoration: none;
+      transition: color .2s;
+    }
 
-.field-input {
-  width: 100%;
-  padding: 13px 44px 13px 42px;
-  background: white;
-  border: 1.5px solid var(--border);
-  border-radius: var(--r);
-  font-family: var(--font-body);
-  font-size: 15px;
-  color: var(--text);
-  outline: none;
-  transition: all .2s;
-  -webkit-appearance: none;
-}
-.field-input:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(37,99,255,0.08);
-  background: white;
-}
-.field-input.error {
-  border-color: var(--red);
-  box-shadow: 0 0 0 3px var(--red-g);
-}
-.field-input::placeholder { color: #C5CDD8; font-weight: 300; }
-.field-input:focus ~ .field-icon,
-.field-input-wrap:focus-within .field-icon { color: var(--blue); }
+    .mobile-back:hover {
+      color: white;
+    }
 
-/* Password toggle */
-.pass-toggle {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 6px;
-  transition: color .2s;
-}
-.pass-toggle:hover { color: var(--text); }
-.pass-toggle svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+    .mobile-back svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
 
-/* Field error message */
-.field-error {
-  display: none;
-  font-size: 12px;
-  color: var(--red);
-  margin-top: 6px;
-  align-items: center;
-  gap: 4px;
-}
-.field-error.show { display: flex; }
-.field-error svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+    /* Form wrapper */
+    .form-wrap {
+      width: 100%;
+      max-width: 440px;
+    }
 
-/* Password strength */
-.pass-strength {
-  display: none;
-  margin-top: 8px;
-  gap: 4px;
-}
-.pass-strength.show { display: flex; }
-.strength-bar {
-  flex: 1;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--border);
-  transition: background .3s;
-}
-.strength-label {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 4px;
-}
+    /* Auth tabs */
+    .auth-tabs {
+      display: flex;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 4px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow);
+    }
 
-/* Forgot password */
-.forgot-link {
-  display: block;
-  text-align: right;
-  font-size: 12px;
-  color: var(--blue);
-  text-decoration: none;
-  margin-top: -8px;
-  margin-bottom: 20px;
-  transition: opacity .2s;
-}
-.forgot-link:hover { opacity: 0.7; }
+    .auth-tab {
+      flex: 1;
+      padding: 11px;
+      border-radius: var(--r);
+      border: none;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .25s cubic-bezier(.4, 0, .2, 1);
+      background: none;
+      color: var(--muted);
+    }
 
-/* Submit button */
-.submit-btn {
-  width: 100%;
-  padding: 14px;
-  background: var(--blue);
-  color: white;
-  border: none;
-  border-radius: var(--r);
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .25s cubic-bezier(.34,1.2,.64,1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 20px rgba(37,99,255,0.35);
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-.submit-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-  opacity: 0;
-  transition: opacity .2s;
-}
-.submit-btn:hover {
-  background: var(--blue-d);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(37,99,255,0.45);
-}
-.submit-btn:hover::before { opacity: 1; }
-.submit-btn:active { transform: scale(0.98); }
-.submit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-.submit-btn svg { width: 16px; height: 16px; stroke: white; fill: none; stroke-width: 2; }
+    .auth-tab.active {
+      background: var(--midnight);
+      color: white;
+      box-shadow: 0 4px 16px rgba(11, 18, 32, 0.2);
+    }
 
-/* Loading spinner in button */
-.btn-spinner {
-  width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  display: none;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+    /* Form header */
+    .form-header {
+      margin-bottom: 28px;
+    }
 
-/* Divider */
-.or-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.or-line {
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-.or-text {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 400;
-  white-space: nowrap;
-}
+    .form-title {
+      font-family: var(--font-head);
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
 
-/* Google button */
-.google-btn {
-  width: 100%;
-  padding: 13px;
-  background: white;
-  color: var(--text);
-  border: 1.5px solid var(--border);
-  border-radius: var(--r);
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all .2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  text-decoration: none;
-}
-.google-btn:hover {
-  border-color: rgba(37,99,255,0.25);
-  box-shadow: 0 4px 16px rgba(37,99,255,0.08);
-  background: var(--blue-g);
-}
-.google-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .form-title em {
+      font-style: italic;
+      color: var(--blue);
+    }
 
-/* Terms */
-.terms-text {
-  text-align: center;
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 16px;
-  line-height: 1.6;
-}
-.terms-text a {
-  color: var(--blue);
-  text-decoration: none;
-}
-.terms-text a:hover { text-decoration: underline; }
+    .form-sub {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 300;
+    }
 
-/* Switch text */
-.switch-text {
-  text-align: center;
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-}
-.switch-text button {
-  background: none;
-  border: none;
-  color: var(--blue);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0 4px;
-  transition: opacity .2s;
-}
-.switch-text button:hover { opacity: 0.7; }
+    /* Form panels */
+    .form-panel {
+      display: none;
+      animation: fadeUp .3s ease both;
+    }
 
-/* Alert box */
-.alert-box {
-  display: none;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: var(--r);
-  margin-bottom: 20px;
-  font-size: 13px;
-  line-height: 1.5;
-  animation: fadeUp .3s ease both;
-}
-.alert-box.show { display: flex; }
-.alert-box.error   { background: var(--red-g);  border: 1px solid rgba(239,68,68,0.2);  color: #DC2626; }
-.alert-box.success { background: rgba(24,194,156,0.08); border: 1px solid rgba(24,194,156,0.2); color: #0F9B78; }
-.alert-box svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; margin-top: 1px; }
+    .form-panel.active {
+      display: block;
+    }
 
-/* Animations */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+    /* Field */
+    .field {
+      margin-bottom: 16px;
+      position: relative;
+    }
 
-/* Back to home */
-.back-home {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--muted);
-  text-decoration: none;
-  margin-bottom: 32px;
-  transition: color .2s;
-  width: fit-content;
-}
-.back-home:hover { color: var(--text); }
-.back-home svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.2px;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-/* Progress dots (form steps for signup) */
-.step-dots {
-  display: none;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 24px;
-}
-.step-dots.show { display: flex; }
-.step-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--border);
-  transition: all .3s;
-}
-.step-dot.active { background: var(--blue); width: 20px; border-radius: 3px; }
-.step-dot.done   { background: var(--green); }
+    .field-input-wrap {
+      position: relative;
+    }
 
-/* Checklist for signup */
-.pass-checklist {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  margin-top: 8px;
-  padding: 10px 12px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-}
-.pass-checklist.show { display: flex; }
-.check-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  color: var(--muted);
-  transition: color .2s;
-}
-.check-item.pass { color: var(--green); }
-.check-item svg  { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; flex-shrink: 0; }
-</style>
+    .field-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--muted);
+      pointer-events: none;
+      transition: color .2s;
+    }
+
+    .field-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 13px 44px 13px 42px;
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: all .2s;
+      -webkit-appearance: none;
+    }
+
+    .field-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 255, 0.08);
+      background: white;
+    }
+
+    .field-input.error {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px var(--red-g);
+    }
+
+    .field-input::placeholder {
+      color: #C5CDD8;
+      font-weight: 300;
+    }
+
+    .field-input:focus~.field-icon,
+    .field-input-wrap:focus-within .field-icon {
+      color: var(--blue);
+    }
+
+    /* Password toggle */
+    .pass-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 6px;
+      transition: color .2s;
+    }
+
+    .pass-toggle:hover {
+      color: var(--text);
+    }
+
+    .pass-toggle svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    /* Field error message */
+    .field-error {
+      display: none;
+      font-size: 12px;
+      color: var(--red);
+      margin-top: 6px;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .field-error.show {
+      display: flex;
+    }
+
+    .field-error svg {
+      width: 12px;
+      height: 12px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      flex-shrink: 0;
+    }
+
+    /* Password strength */
+    .pass-strength {
+      display: none;
+      margin-top: 8px;
+      gap: 4px;
+    }
+
+    .pass-strength.show {
+      display: flex;
+    }
+
+    .strength-bar {
+      flex: 1;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+      transition: background .3s;
+    }
+
+    .strength-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Forgot password */
+    .forgot-link {
+      display: block;
+      text-align: right;
+      font-size: 12px;
+      color: var(--blue);
+      text-decoration: none;
+      margin-top: -8px;
+      margin-bottom: 20px;
+      transition: opacity .2s;
+    }
+
+    .forgot-link:hover {
+      opacity: 0.7;
+    }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .25s cubic-bezier(.34, 1.2, .64, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(37, 99, 255, 0.35);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+
+    .submit-btn:hover {
+      background: var(--blue-d);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(37, 99, 255, 0.45);
+    }
+
+    .submit-btn:hover::before {
+      opacity: 1;
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .submit-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* Loading spinner in button */
+    .btn-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Divider */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .or-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .or-text {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+      white-space: nowrap;
+    }
+
+    /* Google button */
+    .google-btn {
+      width: 100%;
+      padding: 13px;
+      background: white;
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .google-btn:hover {
+      border-color: rgba(37, 99, 255, 0.25);
+      box-shadow: 0 4px 16px rgba(37, 99, 255, 0.08);
+      background: var(--blue-g);
+    }
+
+    .google-btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* Terms */
+    .terms-text {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+
+    .terms-text a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    .terms-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* Switch text */
+    .switch-text {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .switch-text button {
+      background: none;
+      border: none;
+      color: var(--blue);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0 4px;
+      transition: opacity .2s;
+    }
+
+    .switch-text button:hover {
+      opacity: 0.7;
+    }
+
+    /* Alert box */
+    .alert-box {
+      display: none;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--r);
+      margin-bottom: 20px;
+      font-size: 13px;
+      line-height: 1.5;
+      animation: fadeUp .3s ease both;
+    }
+
+    .alert-box.show {
+      display: flex;
+    }
+
+    .alert-box.error {
+      background: var(--red-g);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #DC2626;
+    }
+
+    .alert-box.success {
+      background: rgba(24, 194, 156, 0.08);
+      border: 1px solid rgba(24, 194, 156, 0.2);
+      color: #0F9B78;
+    }
+
+    .alert-box svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Back to home */
+    .back-home {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 32px;
+      transition: color .2s;
+      width: fit-content;
+    }
+
+    .back-home:hover {
+      color: var(--text);
+    }
+
+    .back-home svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* Progress dots (form steps for signup) */
+    .step-dots {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .step-dots.show {
+      display: flex;
+    }
+
+    .step-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all .3s;
+    }
+
+    .step-dot.active {
+      background: var(--blue);
+      width: 20px;
+      border-radius: 3px;
+    }
+
+    .step-dot.done {
+      background: var(--green);
+    }
+
+    /* Checklist for signup */
+    .pass-checklist {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+    }
+
+    .pass-checklist.show {
+      display: flex;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--muted);
+      transition: color .2s;
+    }
+
+    .check-item.pass {
+      color: var(--green);
+    }
+
+    .check-item svg {
+      width: 12px;
+      height: 12px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.5;
+      flex-shrink: 0;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="auth-layout">
+  <div class="auth-layout">
 
-  <!-- ══════════════════════════════════
+    <!-- ══════════════════════════════════
        LEFT PANEL
   ══════════════════════════════════ -->
-  <div class="left-panel">
-    <div class="lp-orb lp-orb-1"></div>
-    <div class="lp-orb lp-orb-2"></div>
-    <div class="lp-grid"></div>
+    <div class="left-panel">
+      <div class="lp-orb lp-orb-1"></div>
+      <div class="lp-orb lp-orb-2"></div>
+      <div class="lp-grid"></div>
 
-    <!-- Globe SVG decoration -->
-    <svg class="lp-globe" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="100" cy="100" r="98" stroke="white" stroke-width="1.5"/>
-      <ellipse cx="100" cy="100" rx="50" ry="98" stroke="white" stroke-width="1.5"/>
-      <ellipse cx="100" cy="100" rx="98" ry="35" stroke="white" stroke-width="1.5"/>
-      <line x1="2" y1="100" x2="198" y2="100" stroke="white" stroke-width="1.5"/>
-      <line x1="100" y1="2" x2="100" y2="198" stroke="white" stroke-width="1.5"/>
-      <circle cx="100" cy="100" r="98" stroke="white" stroke-width="1.5" stroke-dasharray="4 8"/>
-    </svg>
+      <!-- Globe SVG decoration -->
+      <svg class="lp-globe" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="98" stroke="white" stroke-width="1.5" />
+        <ellipse cx="100" cy="100" rx="50" ry="98" stroke="white" stroke-width="1.5" />
+        <ellipse cx="100" cy="100" rx="98" ry="35" stroke="white" stroke-width="1.5" />
+        <line x1="2" y1="100" x2="198" y2="100" stroke="white" stroke-width="1.5" />
+        <line x1="100" y1="2" x2="100" y2="198" stroke="white" stroke-width="1.5" />
+        <circle cx="100" cy="100" r="98" stroke="white" stroke-width="1.5" stroke-dasharray="4 8" />
+      </svg>
 
-    <!-- Logo -->
-    <a href="/" class="lp-logo">
-      <div class="lp-logo-mark">
-        <!-- Yaply logo mark SVG -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
-        </svg>
-      </div>
-      <span class="lp-logo-name">yaply.</span>
-    </a>
-
-    <!-- Center content -->
-    <div class="lp-center">
-      <h2 class="lp-headline">
-        Travel smarter.<br/>
-        <em>Worry less.</em>
-      </h2>
-      <p class="lp-sub">
-        From planning to landing — Yaply handles every part of your journey with AI. Join thousands of travellers worldwide.
-      </p>
-
-      <div class="lp-features">
-
-        <!-- Feature 1 -->
-        <div class="lp-feat">
-          <div class="lp-feat-icon blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#2563FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-          </div>
-          <div class="lp-feat-text">
-            <div class="lp-feat-title">AI Trip Planning</div>
-            <div class="lp-feat-desc">Complete itinerary with hotels, restaurants and hidden gems in 15 seconds.</div>
-          </div>
-        </div>
-
-        <!-- Feature 2 -->
-        <div class="lp-feat">
-          <div class="lp-feat-icon coral">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-              <line x1="12" y1="19" x2="12" y2="23"/>
-              <line x1="8" y1="23" x2="16" y2="23"/>
-            </svg>
-          </div>
-          <div class="lp-feat-text">
-            <div class="lp-feat-title">Live Voice Translation</div>
-            <div class="lp-feat-desc">Speak naturally — Yaply translates and speaks back in 50+ languages instantly.</div>
-          </div>
-        </div>
-
-        <!-- Feature 3 -->
-        <div class="lp-feat">
-          <div class="lp-feat-icon green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#18C29C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
-            </svg>
-          </div>
-          <div class="lp-feat-text">
-            <div class="lp-feat-title">AI Place Finder</div>
-            <div class="lp-feat-desc">Screenshot any place from Instagram — Yaply identifies the exact location in seconds.</div>
-          </div>
-        </div>
-
-        <!-- Feature 4 -->
-        <div class="lp-feat">
-          <div class="lp-feat-icon amber">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#F5B942" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <div class="lp-feat-text">
-            <div class="lp-feat-title">Yaply Groups</div>
-            <div class="lp-feat-desc">Live location of every squad member, group chat, and instant SOS alerts.</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="lp-stats">
-      <div>
-        <div class="lp-stat-val">25+</div>
-        <div class="lp-stat-label">AI Features</div>
-      </div>
-      <div>
-        <div class="lp-stat-val">50+</div>
-        <div class="lp-stat-label">Languages</div>
-      </div>
-      <div>
-        <div class="lp-stat-val">190+</div>
-        <div class="lp-stat-label">Countries</div>
-      </div>
-    </div>
-
-    <!-- Floating card -->
-    <div class="lp-float-card">
-      <div class="lfc-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <div>
-        <div class="lfc-title">Trip saved successfully</div>
-        <div class="lfc-sub">Tokyo · 6 days · Day 2 of 6</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ══════════════════════════════════
-       RIGHT PANEL — FORM
-  ══════════════════════════════════ -->
-  <div class="right-panel">
-
-    <!-- Mobile header -->
-    <div class="mobile-top">
-      <a href="/" class="mobile-logo">
-        <div class="mobile-logo-mark">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
+      <!-- Logo -->
+      <a href="/" class="lp-logo">
+        <div class="lp-logo-mark">
+          <!-- Yaply logo mark SVG -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
           </svg>
         </div>
-        <span class="mobile-logo-name">yaply.</span>
+        <span class="lp-logo-name">yaply.</span>
       </a>
-      <a href="/" class="mobile-back">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-        Back
-      </a>
+
+      <!-- Center content -->
+      <div class="lp-center">
+        <h2 class="lp-headline">
+          Travel smarter.<br />
+          <em>Worry less.</em>
+        </h2>
+        <p class="lp-sub">
+          From planning to landing — Yaply handles every part of your journey with AI. Join thousands of travellers
+          worldwide.
+        </p>
+
+        <div class="lp-features">
+
+          <!-- Feature 1 -->
+          <div class="lp-feat">
+            <div class="lp-feat-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2563FF" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+            </div>
+            <div class="lp-feat-text">
+              <div class="lp-feat-title">AI Trip Planning</div>
+              <div class="lp-feat-desc">Complete itinerary with hotels, restaurants and hidden gems in 15 seconds.</div>
+            </div>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="lp-feat">
+            <div class="lp-feat-icon coral">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="23" />
+                <line x1="8" y1="23" x2="16" y2="23" />
+              </svg>
+            </div>
+            <div class="lp-feat-text">
+              <div class="lp-feat-title">Live Voice Translation</div>
+              <div class="lp-feat-desc">Speak naturally — Yaply translates and speaks back in 50+ languages instantly.
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="lp-feat">
+            <div class="lp-feat-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#18C29C" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+            </div>
+            <div class="lp-feat-text">
+              <div class="lp-feat-title">AI Place Finder</div>
+              <div class="lp-feat-desc">Screenshot any place from Instagram — Yaply identifies the exact location in
+                seconds.</div>
+            </div>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="lp-feat">
+            <div class="lp-feat-icon amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#F5B942" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <div class="lp-feat-text">
+              <div class="lp-feat-title">Yaply Groups</div>
+              <div class="lp-feat-desc">Live location of every squad member, group chat, and instant SOS alerts.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="lp-stats">
+        <div>
+          <div class="lp-stat-val">25+</div>
+          <div class="lp-stat-label">AI Features</div>
+        </div>
+        <div>
+          <div class="lp-stat-val">50+</div>
+          <div class="lp-stat-label">Languages</div>
+        </div>
+        <div>
+          <div class="lp-stat-val">190+</div>
+          <div class="lp-stat-label">Countries</div>
+        </div>
+      </div>
+
+      <!-- Floating card -->
+      <div class="lp-float-card">
+        <div class="lfc-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <div>
+          <div class="lfc-title">Trip saved successfully</div>
+          <div class="lfc-sub">Tokyo · 6 days · Day 2 of 6</div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="form-wrap">
+    <!-- ══════════════════════════════════
+       RIGHT PANEL — FORM
+  ══════════════════════════════════ -->
+    <div class="right-panel">
 
-      <!-- Back to home (desktop) -->
-      <a href="/" class="back-home" id="backHome">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-        Back to yaply.live
-      </a>
-
-      <!-- Tabs -->
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabSignin" onclick="switchTab('signin')">Sign In</button>
-        <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Create Account</button>
-      </div>
-
-      <!-- Alert box -->
-      <div class="alert-box" id="alertBox">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span id="alertText"></span>
-      </div>
-
-      <!-- ── SIGN IN PANEL ── -->
-      <div class="form-panel active" id="panelSignin">
-        <div class="form-header">
-          <div class="form-title">Welcome back<em>.</em></div>
-          <div class="form-sub">Sign in to continue your journey.</div>
-        </div>
-
-        <form id="signinForm" onsubmit="handleSignin(event)" novalidate>
-
-          <!-- Email -->
-          <div class="field">
-            <label class="field-label">Email Address</label>
-            <div class="field-input-wrap">
-              <span class="field-icon">
-                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              </span>
-              <input
-                class="field-input"
-                type="email"
-                id="signinEmail"
-                placeholder="you@example.com"
-                autocomplete="email"
-                required
-              />
-            </div>
-            <div class="field-error" id="signinEmailErr">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              Please enter a valid email address
-            </div>
-          </div>
-
-          <!-- Password -->
-          <div class="field">
-            <label class="field-label">Password</label>
-            <div class="field-input-wrap">
-              <span class="field-icon">
-                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              </span>
-              <input
-                class="field-input"
-                type="password"
-                id="signinPass"
-                placeholder="Enter your password"
-                autocomplete="current-password"
-                required
-              />
-              <button type="button" class="pass-toggle" onclick="togglePass('signinPass', this)" tabindex="-1">
-                <svg viewBox="0 0 24 24" id="siPassIcon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
-            </div>
-            <div class="field-error" id="signinPassErr">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              Password must be at least 8 characters
-            </div>
-          </div>
-
-          <a href="/forgot-password" class="forgot-link">Forgot password?</a>
-
-          <button class="submit-btn" type="submit" id="signinBtn">
-            <div class="btn-spinner" id="signinSpinner"></div>
-            <svg viewBox="0 0 24 24" id="signinBtnIcon"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-            Sign In
-          </button>
-
-          <div class="or-divider">
-            <div class="or-line"></div>
-            <div class="or-text">or continue with</div>
-            <div class="or-line"></div>
-          </div>
-
-          <a href="/auth/google" class="google-btn" onclick="this.innerHTML='<span>Connectng to Google...</span>';this.style.opacity='0.7';">
-            <!-- Official Google SVG -->
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="flex-shrink:0;">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      <!-- Mobile header -->
+      <div class="mobile-top">
+        <a href="/" class="mobile-logo">
+          <div class="mobile-logo-mark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
             </svg>
-            Continue with Google
-          </a>
-
-          <div class="switch-text">
-            Don't have an account?
-            <button type="button" onclick="switchTab('signup')">Create one free</button>
           </div>
-
-        </form>
+          <span class="mobile-logo-name">yaply.</span>
+        </a>
+        <a href="/" class="mobile-back">
+          <svg viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back
+        </a>
       </div>
 
-      <!-- ── SIGN UP PANEL ── -->
-      <div class="form-panel" id="panelSignup">
-        <div class="form-header">
-          <div class="form-title">Start your journey<em>.</em></div>
-          <div class="form-sub">Free forever. No credit card needed.</div>
+      <div class="form-wrap">
+
+        <!-- Back to home (desktop) -->
+        <a href="/" class="back-home" id="backHome">
+          <svg viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back to yaply.live
+        </a>
+
+        <!-- Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabSignin" onclick="switchTab('signin')">Sign In</button>
+          <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Create Account</button>
         </div>
 
-        <form id="signupForm" onsubmit="handleSignup(event)" novalidate>
+        <!-- Alert box -->
+        <div class="alert-box" id="alertBox">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span id="alertText"></span>
+        </div>
 
-          <!-- Full Name -->
-          <div class="field">
-            <label class="field-label">Full Name</label>
-            <div class="field-input-wrap">
-              <span class="field-icon">
-                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              </span>
-              <input
-                class="field-input"
-                type="text"
-                id="signupName"
-                placeholder="Your full name"
-                autocomplete="name"
-                required
-              />
-            </div>
-            <div class="field-error" id="signupNameErr">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              Please enter your full name
-            </div>
+        <!-- ── SIGN IN PANEL ── -->
+        <div class="form-panel active" id="panelSignin">
+          <div class="form-header">
+            <div class="form-title">Welcome back<em>.</em></div>
+            <div class="form-sub">Sign in to continue your journey.</div>
           </div>
 
-          <!-- Email -->
-          <div class="field">
-            <label class="field-label">Email Address</label>
-            <div class="field-input-wrap">
-              <span class="field-icon">
-                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              </span>
-              <input
-                class="field-input"
-                type="email"
-                id="signupEmail"
-                placeholder="you@example.com"
-                autocomplete="email"
-                required
-              />
-            </div>
-            <div class="field-error" id="signupEmailErr">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              Please enter a valid email address
-            </div>
-          </div>
+          <form id="signinForm" onsubmit="handleSignin(event)" novalidate>
 
-          <!-- Password -->
-          <div class="field">
-            <label class="field-label">Password</label>
-            <div class="field-input-wrap">
-              <span class="field-icon">
-                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              </span>
-              <input
-                class="field-input"
-                type="password"
-                id="signupPass"
-                placeholder="Create a strong password"
-                autocomplete="new-password"
-                oninput="checkPasswordStrength(this.value)"
-                required
-              />
-              <button type="button" class="pass-toggle" onclick="togglePass('signupPass', this)" tabindex="-1">
-                <svg viewBox="0 0 24 24" id="suPassIcon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
-            </div>
-
-            <!-- Password strength bars -->
-            <div class="pass-strength" id="passStrength">
-              <div class="strength-bar" id="sb1"></div>
-              <div class="strength-bar" id="sb2"></div>
-              <div class="strength-bar" id="sb3"></div>
-              <div class="strength-bar" id="sb4"></div>
-            </div>
-
-            <!-- Password checklist -->
-            <div class="pass-checklist" id="passChecklist">
-              <div class="check-item" id="ck-len">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
-                At least 8 characters
+            <!-- Email -->
+            <div class="field">
+              <label class="field-label">Email Address</label>
+              <div class="field-input-wrap">
+                <span class="field-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                </span>
+                <input class="field-input" type="email" id="signinEmail" placeholder="you@example.com"
+                  autocomplete="email" required />
               </div>
-              <div class="check-item" id="ck-upper">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
-                One uppercase letter
-              </div>
-              <div class="check-item" id="ck-num">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
-                One number
+              <div class="field-error" id="signinEmailErr">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Please enter a valid email address
               </div>
             </div>
-            <div class="field-error" id="signupPassErr">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              Password must be at least 8 characters
+
+            <!-- Password -->
+            <div class="field">
+              <label class="field-label">Password</label>
+              <div class="field-input-wrap">
+                <span class="field-icon">
+                  <svg viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <input class="field-input" type="password" id="signinPass" placeholder="Enter your password"
+                  autocomplete="current-password" required />
+                <button type="button" class="pass-toggle" onclick="togglePass('signinPass', this)" tabindex="-1">
+                  <svg viewBox="0 0 24 24" id="siPassIcon">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </div>
+              <div class="field-error" id="signinPassErr">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Password must be at least 8 characters
+              </div>
             </div>
+
+            <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+
+            <button class="submit-btn" type="submit" id="signinBtn">
+              <div class="btn-spinner" id="signinSpinner"></div>
+              <svg viewBox="0 0 24 24" id="signinBtnIcon">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+              </svg>
+              Sign In
+            </button>
+
+            <div class="or-divider">
+              <div class="or-line"></div>
+              <div class="or-text">or continue with</div>
+              <div class="or-line"></div>
+            </div>
+
+            <a href="/auth/google" class="google-btn"
+              onclick="this.innerHTML='<span>Connectng to Google...</span>';this.style.opacity='0.7';">
+              <!-- Official Google SVG -->
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="flex-shrink:0;">
+                <path
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  fill="#4285F4" />
+                <path
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  fill="#34A853" />
+                <path
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  fill="#FBBC05" />
+                <path
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  fill="#EA4335" />
+              </svg>
+              Continue with Google
+            </a>
+
+            <div class="switch-text">
+              Don't have an account?
+              <button type="button" onclick="switchTab('signup')">Create one free</button>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- ── SIGN UP PANEL ── -->
+        <div class="form-panel" id="panelSignup">
+          <div class="form-header">
+            <div class="form-title">Start your journey<em>.</em></div>
+            <div class="form-sub">Free forever. No credit card needed.</div>
           </div>
 
-          <button class="submit-btn" type="submit" id="signupBtn" style="background:var(--midnight);">
-            <div class="btn-spinner" id="signupSpinner"></div>
-            <svg viewBox="0 0 24 24" id="signupBtnIcon"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            Create My Account
-          </button>
+          <form id="signupForm" onsubmit="handleSignup(event)" novalidate>
 
-          <div class="or-divider">
-            <div class="or-line"></div>
-            <div class="or-text">or sign up with</div>
-            <div class="or-line"></div>
-          </div>
+            <!-- Full Name -->
+            <div class="field">
+              <label class="field-label">Full Name</label>
+              <div class="field-input-wrap">
+                <span class="field-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </span>
+                <input class="field-input" type="text" id="signupName" placeholder="Your full name" autocomplete="name"
+                  required />
+              </div>
+              <div class="field-error" id="signupNameErr">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Please enter your full name
+              </div>
+            </div>
 
-          <a href="/auth/google" class="google-btn" onclick="this.innerHTML='<span>Connectng to Google...</span>';this.style.opacity='0.7';"></a>>
+            <!-- Email -->
+            <div class="field">
+              <label class="field-label">Email Address</label>
+              <div class="field-input-wrap">
+                <span class="field-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                </span>
+                <input class="field-input" type="email" id="signupEmail" placeholder="you@example.com"
+                  autocomplete="email" required />
+              </div>
+              <div class="field-error" id="signupEmailErr">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Please enter a valid email address
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="field">
+              <label class="field-label">Password</label>
+              <div class="field-input-wrap">
+                <span class="field-icon">
+                  <svg viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <input class="field-input" type="password" id="signupPass" placeholder="Create a strong password"
+                  autocomplete="new-password" oninput="checkPasswordStrength(this.value)" required />
+                <button type="button" class="pass-toggle" onclick="togglePass('signupPass', this)" tabindex="-1">
+                  <svg viewBox="0 0 24 24" id="suPassIcon">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Password strength bars -->
+              <div class="pass-strength" id="passStrength">
+                <div class="strength-bar" id="sb1"></div>
+                <div class="strength-bar" id="sb2"></div>
+                <div class="strength-bar" id="sb3"></div>
+                <div class="strength-bar" id="sb4"></div>
+              </div>
+
+              <!-- Password checklist -->
+              <div class="pass-checklist" id="passChecklist">
+                <div class="check-item" id="ck-len">
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 8 12 12 14 14" />
+                  </svg>
+                  At least 8 characters
+                </div>
+                <div class="check-item" id="ck-upper">
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 8 12 12 14 14" />
+                  </svg>
+                  One uppercase letter
+                </div>
+                <div class="check-item" id="ck-num">
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 8 12 12 14 14" />
+                  </svg>
+                  One number
+                </div>
+              </div>
+              <div class="field-error" id="signupPassErr">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Password must be at least 8 characters
+              </div>
+            </div>
+
+            <button class="submit-btn" type="submit" id="signupBtn" style="background:var(--midnight);">
+              <div class="btn-spinner" id="signupSpinner"></div>
+              <svg viewBox="0 0 24 24" id="signupBtnIcon">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+              Create My Account
+            </button>
+
+            <div class="or-divider">
+              <div class="or-line"></div>
+              <div class="or-text">or sign up with</div>
+              <div class="or-line"></div>
+            </div>
+
+            <a href="/auth/google" class="google-btn"
+              onclick="this.innerHTML='<span>Connectng to Google...</span>';this.style.opacity='0.7';"></a>>
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="flex-shrink:0;">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              <path
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                fill="#4285F4" />
+              <path
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                fill="#34A853" />
+              <path
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                fill="#FBBC05" />
+              <path
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                fill="#EA4335" />
             </svg>
             Sign up with Google
-          </a>
+            </a>
 
-          <div class="terms-text">
-            By creating an account, you agree to our
-            <a href="/terms">Terms of Service</a> and
-            <a href="/privacy">Privacy Policy</a>
-          </div>
+            <div class="terms-text">
+              By creating an account, you agree to our
+              <a href="/terms">Terms of Service</a> and
+              <a href="/privacy">Privacy Policy</a>
+            </div>
 
-          <div class="switch-text">
-            Already have an account?
-            <button type="button" onclick="switchTab('signin')">Sign in</button>
-          </div>
+            <div class="switch-text">
+              Already have an account?
+              <button type="button" onclick="switchTab('signin')">Sign in</button>
+            </div>
 
-        </form>
+          </form>
+        </div>
+
       </div>
-
     </div>
   </div>
-</div>
 
-<script>
+  <script>
 
-// If user lands on /login with a token (shouldn't happen but safety net)
-(function() {
-  var token = localStorage.getItem('yaply_token');
-  if (token) {
-    // Already logged in — redirect to app
-    window.location.href = '/app';
-  }
-})();
+    // If user lands on /login with a token (shouldn't happen but safety net)
+    (function () {
+      var token = localStorage.getItem('yaply_token');
+      if (token) {
+        // Already logged in — redirect to app
+        window.location.href = '/app';
+      }
+    })();
 
-// ── TAB SWITCHING ──────────────────────────────────────
-function switchTab(tab) {
-  var isSignin = tab === 'signin';
+    // ── TAB SWITCHING ──────────────────────────────────────
+    function switchTab(tab) {
+      var isSignin = tab === 'signin';
 
-  document.getElementById('tabSignin').classList.toggle('active', isSignin);
-  document.getElementById('tabSignup').classList.toggle('active', !isSignin);
-  document.getElementById('panelSignin').classList.toggle('active', isSignin);
-  document.getElementById('panelSignup').classList.toggle('active', !isSignin);
+      document.getElementById('tabSignin').classList.toggle('active', isSignin);
+      document.getElementById('tabSignup').classList.toggle('active', !isSignin);
+      document.getElementById('panelSignin').classList.toggle('active', isSignin);
+      document.getElementById('panelSignup').classList.toggle('active', !isSignin);
 
-  clearAlert();
-  clearErrors();
+      clearAlert();
+      clearErrors();
 
-  // Update form header
-  if (!isSignin) {
-    document.getElementById('passChecklist').classList.remove('show');
-    document.getElementById('passStrength').classList.remove('show');
-  }
-}
+      // Update form header
+      if (!isSignin) {
+        document.getElementById('passChecklist').classList.remove('show');
+        document.getElementById('passStrength').classList.remove('show');
+      }
+    }
 
-// ── CHECK URL FOR TAB ──────────────────────────────────
-(function() {
-  var params = new URLSearchParams(window.location.search);
-  if (params.get('tab') === 'signup') {
-    switchTab('signup');
-  }
-  // Show error from server redirect
-  var error = params.get('error');
-  if (error) {
-    showAlert('error', decodeURIComponent(error));
-  }
-  var success = params.get('success');
-  if (success) {
-    showAlert('success', decodeURIComponent(success));
-  }
-})();
+    // ── CHECK URL FOR TAB ──────────────────────────────────
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('tab') === 'signup') {
+        switchTab('signup');
+      }
+      // Show error from server redirect
+      var error = params.get('error');
+      if (error) {
+        showAlert('error', decodeURIComponent(error));
+      }
+      var success = params.get('success');
+      if (success) {
+        showAlert('success', decodeURIComponent(success));
+      }
+    })();
 
-// ── PASSWORD TOGGLE ────────────────────────────────────
-function togglePass(inputId, btn) {
-  var input  = document.getElementById(inputId);
-  var isPass = input.type === 'password';
-  input.type = isPass ? 'text' : 'password';
-  btn.querySelector('svg').innerHTML = isPass
-    ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
-    : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-}
+    // ── PASSWORD TOGGLE ────────────────────────────────────
+    function togglePass(inputId, btn) {
+      var input = document.getElementById(inputId);
+      var isPass = input.type === 'password';
+      input.type = isPass ? 'text' : 'password';
+      btn.querySelector('svg').innerHTML = isPass
+        ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    }
 
-// ── PASSWORD STRENGTH ──────────────────────────────────
-function checkPasswordStrength(val) {
-  var checklist = document.getElementById('passChecklist');
-  var strength  = document.getElementById('passStrength');
+    // ── PASSWORD STRENGTH ──────────────────────────────────
+    function checkPasswordStrength(val) {
+      var checklist = document.getElementById('passChecklist');
+      var strength = document.getElementById('passStrength');
 
-  if (val.length === 0) {
-    checklist.classList.remove('show');
-    strength.classList.remove('show');
-    return;
-  }
+      if (val.length === 0) {
+        checklist.classList.remove('show');
+        strength.classList.remove('show');
+        return;
+      }
 
-  checklist.classList.add('show');
-  strength.classList.add('show');
+      checklist.classList.add('show');
+      strength.classList.add('show');
 
-  var hasLen   = val.length >= 8;
-  var hasUpper = /[A-Z]/.test(val);
-  var hasNum   = /[0-9]/.test(val);
-  var hasSpec  = /[^A-Za-z0-9]/.test(val);
+      var hasLen = val.length >= 8;
+      var hasUpper = /[A-Z]/.test(val);
+      var hasNum = /[0-9]/.test(val);
+      var hasSpec = /[^A-Za-z0-9]/.test(val);
 
-  updateCheck('ck-len',   hasLen);
-  updateCheck('ck-upper', hasUpper);
-  updateCheck('ck-num',   hasNum);
+      updateCheck('ck-len', hasLen);
+      updateCheck('ck-upper', hasUpper);
+      updateCheck('ck-num', hasNum);
 
-  var score = [hasLen, hasUpper, hasNum, hasSpec].filter(Boolean).length;
-  var colors = ['#EF4444','#F5B942','#2563FF','#18C29C'];
-  var bars   = ['sb1','sb2','sb3','sb4'];
+      var score = [hasLen, hasUpper, hasNum, hasSpec].filter(Boolean).length;
+      var colors = ['#EF4444', '#F5B942', '#2563FF', '#18C29C'];
+      var bars = ['sb1', 'sb2', 'sb3', 'sb4'];
 
-  bars.forEach(function(id, i) {
-    var bar = document.getElementById(id);
-    bar.style.background = i < score ? colors[score - 1] : 'rgba(17,24,39,0.08)';
-    bar.style.transition = 'background .3s';
-  });
-}
+      bars.forEach(function (id, i) {
+        var bar = document.getElementById(id);
+        bar.style.background = i < score ? colors[score - 1] : 'rgba(17,24,39,0.08)';
+        bar.style.transition = 'background .3s';
+      });
+    }
 
-function updateCheck(id, passed) {
-  var el = document.getElementById(id);
-  el.classList.toggle('pass', passed);
-  var svgPath = passed
-    ? '<polyline points="20 6 9 17 4 12"/>'
-    : '<circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/>';
-  el.querySelector('svg').innerHTML = svgPath;
-}
+    function updateCheck(id, passed) {
+      var el = document.getElementById(id);
+      el.classList.toggle('pass', passed);
+      var svgPath = passed
+        ? '<polyline points="20 6 9 17 4 12"/>'
+        : '<circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/>';
+      el.querySelector('svg').innerHTML = svgPath;
+    }
 
-// ── VALIDATION ─────────────────────────────────────────
-function validateEmail(val) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-}
+    // ── VALIDATION ─────────────────────────────────────────
+    function validateEmail(val) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    }
 
-function showFieldError(id, show) {
-  document.getElementById(id).classList.toggle('show', show);
-  var input = document.getElementById(id.replace('Err',''));
-  if (input) input.classList.toggle('error', show);
-}
+    function showFieldError(id, show) {
+      document.getElementById(id).classList.toggle('show', show);
+      var input = document.getElementById(id.replace('Err', ''));
+      if (input) input.classList.toggle('error', show);
+    }
 
-function clearErrors() {
-  document.querySelectorAll('.field-error').forEach(function(el) {
-    el.classList.remove('show');
-  });
-  document.querySelectorAll('.field-input').forEach(function(el) {
-    el.classList.remove('error');
-  });
-}
+    function clearErrors() {
+      document.querySelectorAll('.field-error').forEach(function (el) {
+        el.classList.remove('show');
+      });
+      document.querySelectorAll('.field-input').forEach(function (el) {
+        el.classList.remove('error');
+      });
+    }
 
-// ── ALERT ──────────────────────────────────────────────
-function showAlert(type, msg) {
-  var box  = document.getElementById('alertBox');
-  var text = document.getElementById('alertText');
-  box.className = 'alert-box show ' + type;
-  text.textContent = msg;
-  // Update icon
-  var iconHtml = type === 'error'
-    ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
-    : '<polyline points="20 6 9 17 4 12"/>';
-  box.querySelector('svg').innerHTML = iconHtml;
-}
+    // ── ALERT ──────────────────────────────────────────────
+    function showAlert(type, msg) {
+      var box = document.getElementById('alertBox');
+      var text = document.getElementById('alertText');
+      box.className = 'alert-box show ' + type;
+      text.textContent = msg;
+      // Update icon
+      var iconHtml = type === 'error'
+        ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
+        : '<polyline points="20 6 9 17 4 12"/>';
+      box.querySelector('svg').innerHTML = iconHtml;
+    }
 
-function clearAlert() {
-  document.getElementById('alertBox').classList.remove('show');
-}
+    function clearAlert() {
+      document.getElementById('alertBox').classList.remove('show');
+    }
 
-// ── LOADING STATE ──────────────────────────────────────
-function setLoading(btnId, spinnerId, iconId, loading) {
-  var btn     = document.getElementById(btnId);
-  var spinner = document.getElementById(spinnerId);
-  var icon    = document.getElementById(iconId);
-  btn.disabled       = loading;
-  spinner.style.display = loading ? 'block' : 'none';
-  icon.style.display    = loading ? 'none'  : 'block';
-  btn.style.opacity     = loading ? '0.8'   : '1';
-}
+    // ── LOADING STATE ──────────────────────────────────────
+    function setLoading(btnId, spinnerId, iconId, loading) {
+      var btn = document.getElementById(btnId);
+      var spinner = document.getElementById(spinnerId);
+      var icon = document.getElementById(iconId);
+      btn.disabled = loading;
+      spinner.style.display = loading ? 'block' : 'none';
+      icon.style.display = loading ? 'none' : 'block';
+      btn.style.opacity = loading ? '0.8' : '1';
+    }
 
-// ── SIGN IN ────────────────────────────────────────────
-async function handleSignin(e) {
-  e.preventDefault();
-  clearErrors();
-  clearAlert();
+    // ── SIGN IN ────────────────────────────────────────────
+    async function handleSignin(e) {
+      e.preventDefault();
+      clearErrors();
+      clearAlert();
 
-  var email = document.getElementById('signinEmail').value.trim();
-  var pass  = document.getElementById('signinPass').value;
-  var valid = true;
+      var email = document.getElementById('signinEmail').value.trim();
+      var pass = document.getElementById('signinPass').value;
+      var valid = true;
 
-  if (!validateEmail(email)) {
-    showFieldError('signinEmailErr', true);
-    valid = false;
-  }
-  if (pass.length < 1) {
-    showFieldError('signinPassErr', true);
-    valid = false;
-  }
-  if (!valid) return;
+      if (!validateEmail(email)) {
+        showFieldError('signinEmailErr', true);
+        valid = false;
+      }
+      if (pass.length < 1) {
+        showFieldError('signinPassErr', true);
+        valid = false;
+      }
+      if (!valid) return;
 
-  setLoading('signinBtn', 'signinSpinner', 'signinBtnIcon', true);
+      setLoading('signinBtn', 'signinSpinner', 'signinBtnIcon', true);
 
-  try {
-    var res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: pass })
+      try {
+        var res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: pass })
+        });
+        var data = await res.json();
+
+        if (data.success) {
+          // Store token
+          if (data.token) localStorage.setItem('yaply_token', data.token);
+          showAlert('success', 'Welcome back! Redirecting...');
+          setTimeout(function () {
+            window.location.href = data.redirect || '/app';
+          }, 800);
+        } else {
+          showAlert('error', data.error || 'Incorrect email or password. Please try again.');
+          setLoading('signinBtn', 'signinSpinner', 'signinBtnIcon', false);
+        }
+      } catch (err) {
+        showAlert('error', 'Connection error. Please check your internet and try again.');
+        setLoading('signinBtn', 'signinSpinner', 'signinBtnIcon', false);
+      }
+    }
+
+    // ── SIGN UP ────────────────────────────────────────────
+    async function handleSignup(e) {
+      e.preventDefault();
+      clearErrors();
+      clearAlert();
+
+      var name = document.getElementById('signupName').value.trim();
+      var email = document.getElementById('signupEmail').value.trim();
+      var pass = document.getElementById('signupPass').value;
+      var valid = true;
+
+      if (name.length < 2) {
+        showFieldError('signupNameErr', true);
+        valid = false;
+      }
+      if (!validateEmail(email)) {
+        showFieldError('signupEmailErr', true);
+        valid = false;
+      }
+      if (pass.length < 8) {
+        showFieldError('signupPassErr', true);
+        valid = false;
+      }
+      if (!valid) return;
+
+      setLoading('signupBtn', 'signupSpinner', 'signupBtnIcon', true);
+
+      try {
+        var res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name, email: email, password: pass })
+        });
+        var data = await res.json();
+
+        if (data.success) {
+          if (data.token) localStorage.setItem('yaply_token', data.token);
+          showAlert('success', 'Account created! Taking you to Yaply...');
+          setTimeout(function () {
+            window.location.href = data.redirect || '/app';
+          }, 1000);
+        } else {
+          showAlert('error', data.error || 'Could not create account. Please try again.');
+          setLoading('signupBtn', 'signupSpinner', 'signupBtnIcon', false);
+        }
+      } catch (err) {
+        showAlert('error', 'Connection error. Please check your internet and try again.');
+        setLoading('signupBtn', 'signupSpinner', 'signupBtnIcon', false);
+      }
+    }
+
+    // ── ENTER KEY ──────────────────────────────────────────
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        var activePanel = document.querySelector('.form-panel.active');
+        if (activePanel && activePanel.id === 'panelSignin') {
+          var form = document.getElementById('signinForm');
+          if (form) form.requestSubmit();
+        }
+      }
     });
-    var data = await res.json();
 
-    if (data.success) {
-      // Store token
-      if (data.token) localStorage.setItem('yaply_token', data.token);
-      showAlert('success', 'Welcome back! Redirecting...');
-      setTimeout(function() {
-        window.location.href = data.redirect || '/app';
-      }, 800);
-    } else {
-      showAlert('error', data.error || 'Incorrect email or password. Please try again.');
-      setLoading('signinBtn', 'signinSpinner', 'signinBtnIcon', false);
-    }
-  } catch(err) {
-    showAlert('error', 'Connection error. Please check your internet and try again.');
-    setLoading('signinBtn', 'signinSpinner', 'signinBtnIcon', false);
-  }
-}
+    // Instead of repeating auth code everywhere
+    // Just call:
+    YaplyCore.requireAuth();   // redirect if not logged in
+    YaplyCore.getUser();       // get current user
+    YaplyCore.logout();        // logout from anywhere
 
-// ── SIGN UP ────────────────────────────────────────────
-async function handleSignup(e) {
-  e.preventDefault();
-  clearErrors();
-  clearAlert();
-
-  var name  = document.getElementById('signupName').value.trim();
-  var email = document.getElementById('signupEmail').value.trim();
-  var pass  = document.getElementById('signupPass').value;
-  var valid = true;
-
-  if (name.length < 2) {
-    showFieldError('signupNameErr', true);
-    valid = false;
-  }
-  if (!validateEmail(email)) {
-    showFieldError('signupEmailErr', true);
-    valid = false;
-  }
-  if (pass.length < 8) {
-    showFieldError('signupPassErr', true);
-    valid = false;
-  }
-  if (!valid) return;
-
-  setLoading('signupBtn', 'signupSpinner', 'signupBtnIcon', true);
-
-  try {
-    var res = await fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, email: email, password: pass })
-    });
-    var data = await res.json();
-
-    if (data.success) {
-      if (data.token) localStorage.setItem('yaply_token', data.token);
-      showAlert('success', 'Account created! Taking you to Yaply...');
-      setTimeout(function() {
-        window.location.href = data.redirect || '/app';
-      }, 1000);
-    } else {
-      showAlert('error', data.error || 'Could not create account. Please try again.');
-      setLoading('signupBtn', 'signupSpinner', 'signupBtnIcon', false);
-    }
-  } catch(err) {
-    showAlert('error', 'Connection error. Please check your internet and try again.');
-    setLoading('signupBtn', 'signupSpinner', 'signupBtnIcon', false);
-  }
-}
-
-// ── ENTER KEY ──────────────────────────────────────────
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    var activePanel = document.querySelector('.form-panel.active');
-    if (activePanel && activePanel.id === 'panelSignin') {
-      var form = document.getElementById('signinForm');
-      if (form) form.requestSubmit();
-    }
-  }
-});
-
-// Instead of repeating auth code everywhere
-// Just call:
-YaplyCore.requireAuth();   // redirect if not logged in
-YaplyCore.getUser();       // get current user
-YaplyCore.logout();        // logout from anywhere
-
-</script>
+  </script>
 </body>
+
 </html>

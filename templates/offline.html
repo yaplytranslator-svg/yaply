@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Yaply — Offline</title>
+
+<!-- ══════════════════════════════════════════════════════════
+     PWA HEAD SNIPPET
+     Add this inside <head> tag of ALL your HTML pages:
+     landing.html, auth.html, yaply-app.html,
+     before_trip.html, during_trip.html, after_trip.html
+══════════════════════════════════════════════════════════ -->
+
+<!-- PWA Meta Tags -->
+<meta name="application-name" content="Yaply"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Yaply"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#2563FF"/>
+<meta name="msapplication-TileColor" content="#2563FF"/>
+<meta name="msapplication-TileImage" content="/static/icons/icon-144.png"/>
+
+<!-- SEO Meta -->
+<meta name="description" content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere."/>
+<meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel"/>
+<meta name="author" content="Yaply Technologies"/>
+
+<!-- Open Graph (WhatsApp/Facebook preview) -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.yaply.live"/>
+<meta property="og:title" content="Yaply — AI Travel OS"/>
+<meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere."/>
+<meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Yaply — AI Travel OS"/>
+<meta name="twitter:description" content="India's first AI Travel Operating System"/>
+<meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json"/>
+
+<!-- Icons -->
+<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png"/>
+
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(function(reg) {
+        console.log('[SW] Registered:', reg.scope);
+      })
+      .catch(function(err) {
+        console.log('[SW] Failed:', err);
+      });
+  });
+}
+</script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:#0B1220;
+  color:white;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  text-align:center;
+}
+.icon{font-size:64px;margin-bottom:24px;}
+.title{font-size:24px;font-weight:700;margin-bottom:10px;}
+.sub{font-size:15px;color:rgba(255,255,255,0.4);line-height:1.6;margin-bottom:32px;max-width:280px;}
+.btn{
+  padding:14px 32px;
+  background:#2563FF;
+  color:white;border:none;
+  border-radius:14px;
+  font-size:15px;font-weight:700;
+  cursor:pointer;
+}
+.features{
+  margin-top:40px;
+  display:flex;flex-direction:column;gap:12px;
+  max-width:300px;width:100%;
+}
+.feature{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;gap:12px;
+  text-align:left;
+}
+.f-icon{font-size:20px;}
+.f-text{font-size:13px;color:rgba(255,255,255,0.5);}
+</style>
+</head>
+<body>
+<div class="icon">✈️</div>
+<div class="title">You're Offline</div>
+<div class="sub">No internet connection. Connect to continue planning your adventure.</div>
+<button class="btn" onclick="window.location.reload()">Try Again</button>
+<div class="features">
+  <div class="feature">
+    <div class="f-icon">📱</div>
+    <div class="f-text">Your saved trips are available offline</div>
+  </div>
+  <div class="feature">
+    <div class="f-icon">🗺️</div>
+    <div class="f-text">Downloaded maps work without wifi</div>
+  </div>
+  <div class="feature">
+    <div class="f-icon">📋</div>
+    <div class="f-text">Your packing lists are cached locally</div>
+  </div>
+</div>
+</body>
+</html>

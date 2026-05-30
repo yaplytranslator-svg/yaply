@@ -7,6 +7,65 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="/static/yaply-core.js"></script>
 
+
+<!-- ══════════════════════════════════════════════════════════
+     PWA HEAD SNIPPET
+     Add this inside <head> tag of ALL your HTML pages:
+     landing.html, auth.html, yaply-app.html,
+     before_trip.html, during_trip.html, after_trip.html
+══════════════════════════════════════════════════════════ -->
+
+<!-- PWA Meta Tags -->
+<meta name="application-name" content="Yaply"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Yaply"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#2563FF"/>
+<meta name="msapplication-TileColor" content="#2563FF"/>
+<meta name="msapplication-TileImage" content="/static/icons/icon-144.png"/>
+
+<!-- SEO Meta -->
+<meta name="description" content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere."/>
+<meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel"/>
+<meta name="author" content="Yaply Technologies"/>
+
+<!-- Open Graph (WhatsApp/Facebook preview) -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.yaply.live"/>
+<meta property="og:title" content="Yaply — AI Travel OS"/>
+<meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere."/>
+<meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Yaply — AI Travel OS"/>
+<meta name="twitter:description" content="India's first AI Travel Operating System"/>
+<meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json"/>
+
+<!-- Icons -->
+<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png"/>
+
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(function(reg) {
+        console.log('[SW] Registered:', reg.scope);
+      })
+      .catch(function(err) {
+        console.log('[SW] Failed:', err);
+      });
+  });
+}
+</script>
+
 <style>
 :root {
   --teal:    #1A8A72;

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Privacy Policy — Yaply</title>
+<link rel="icon" href="/static/favicon.png"/>
+
+<!-- ══════════════════════════════════════════════════════════
+     PWA HEAD SNIPPET
+     Add this inside <head> tag of ALL your HTML pages:
+     landing.html, auth.html, yaply-app.html,
+     before_trip.html, during_trip.html, after_trip.html
+══════════════════════════════════════════════════════════ -->
+
+<!-- PWA Meta Tags -->
+<meta name="application-name" content="Yaply"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Yaply"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#2563FF"/>
+<meta name="msapplication-TileColor" content="#2563FF"/>
+<meta name="msapplication-TileImage" content="/static/icons/icon-144.png"/>
+
+<!-- SEO Meta -->
+<meta name="description" content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere."/>
+<meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel"/>
+<meta name="author" content="Yaply Technologies"/>
+
+<!-- Open Graph (WhatsApp/Facebook preview) -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.yaply.live"/>
+<meta property="og:title" content="Yaply — AI Travel OS"/>
+<meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere."/>
+<meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Yaply — AI Travel OS"/>
+<meta name="twitter:description" content="India's first AI Travel Operating System"/>
+<meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json"/>
+
+<!-- Icons -->
+<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png"/>
+
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(function(reg) {
+        console.log('[SW] Registered:', reg.scope);
+      })
+      .catch(function(err) {
+        console.log('[SW] Failed:', err);
+      });
+  });
+}
+</script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F7F9FC;color:#111827;line-height:1.7;}
+.page{max-width:680px;margin:0 auto;padding:40px 20px 80px;}
+.nav{display:flex;align-items:center;gap:12px;margin-bottom:40px;}
+.nav a{color:#2563FF;text-decoration:none;font-weight:600;font-size:14px;}
+.nav-div{color:#D1D5DB;}
+.nav-cur{font-size:14px;color:#6B7280;}
+h1{font-size:28px;font-weight:800;color:#111827;margin-bottom:6px;}
+.updated{font-size:13px;color:#9CA3AF;margin-bottom:32px;}
+h2{font-size:18px;font-weight:700;color:#111827;margin:28px 0 10px;}
+p{font-size:14px;color:#374151;margin-bottom:12px;}
+ul{padding-left:20px;margin-bottom:12px;}
+li{font-size:14px;color:#374151;margin-bottom:6px;}
+.highlight{
+  background:#EEF2FF;border:1px solid #C7D2FE;
+  border-radius:12px;padding:16px;margin:16px 0;
+  font-size:14px;color:#3730A3;
+}
+.contact{
+  background:#0B1220;border-radius:16px;
+  padding:24px;margin-top:40px;color:white;
+}
+.contact h3{font-size:16px;font-weight:700;margin-bottom:8px;}
+.contact p{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:4px;}
+.contact a{color:#60A5FA;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="nav">
+    <a href="/">yaply.live</a>
+    <span class="nav-div">›</span>
+    <span class="nav-cur">Privacy Policy</span>
+  </div>
+
+  <h1>Privacy Policy</h1>
+  <div class="updated">Last updated: May 30, 2026</div>
+
+  <div class="highlight">
+    Yaply is built with your privacy as a priority. We collect only what we need to make the app work. We never sell your data. Ever.
+  </div>
+
+  <h2>1. Who We Are</h2>
+  <p>Yaply ("we", "our", "us") is an AI-powered travel operating system available at yaply.live and on the Google Play Store. We are operated by Yaply Technologies, India.</p>
+
+  <h2>2. Information We Collect</h2>
+  <p><strong>Account Information:</strong></p>
+  <ul>
+    <li>Name and email address (when you register)</li>
+    <li>Profile photo (optional, from Google if you sign in with Google)</li>
+    <li>Passport country (to personalise visa and travel recommendations)</li>
+  </ul>
+  <p><strong>Trip Data:</strong></p>
+  <ul>
+    <li>Trip destinations, dates, and preferences you enter</li>
+    <li>Expenses you log in the expense tracker</li>
+    <li>Diary entries and travel journals you write</li>
+    <li>Places you save in the discover feature</li>
+  </ul>
+  <p><strong>Usage Data:</strong></p>
+  <ul>
+    <li>Features you use within the app</li>
+    <li>Device type and operating system</li>
+    <li>IP address (for rate limiting and security)</li>
+  </ul>
+  <p><strong>What we do NOT collect:</strong></p>
+  <ul>
+    <li>We do not track your real-time location without permission</li>
+    <li>We do not access your contacts or photos without permission</li>
+    <li>We do not record audio without your explicit action</li>
+    <li>We do not share data with advertisers</li>
+  </ul>
+
+  <h2>3. How We Use Your Information</h2>
+  <ul>
+    <li>To generate personalised trip plans and recommendations</li>
+    <li>To provide live translation and camera scan features</li>
+    <li>To show emergency contacts relevant to your destination</li>
+    <li>To save your trips, expenses and travel diary</li>
+    <li>To improve the app and fix bugs</li>
+    <li>To send important account notifications (not marketing spam)</li>
+  </ul>
+
+  <h2>4. AI Features and Third-Party Services</h2>
+  <p>Yaply uses the following third-party services to power our AI features:</p>
+  <ul>
+    <li><strong>Groq AI</strong> — for generating trip plans, translations and tools (groq.com)</li>
+    <li><strong>DeepL</strong> — for high-quality translations (deepl.com)</li>
+    <li><strong>Google OAuth</strong> — for sign-in with Google (google.com)</li>
+    <li><strong>Google Places API</strong> — for location search and nearby stations</li>
+  </ul>
+  <p>When you use AI features, your input (destination, preferences, text) is sent to these services to generate responses. We do not send personally identifiable information beyond what is necessary.</p>
+
+  <h2>5. Data Storage and Security</h2>
+  <ul>
+    <li>Your data is stored on secure servers hosted on Render.com</li>
+    <li>Passwords are hashed using bcrypt — we never store plain text passwords</li>
+    <li>Authentication uses JWT tokens with 30-day expiry</li>
+    <li>We use HTTPS encryption for all data in transit</li>
+    <li>We implement rate limiting to prevent abuse</li>
+  </ul>
+
+  <h2>6. Data Retention</h2>
+  <p>We retain your account data as long as your account is active. If you delete your account, we delete all your personal data within 30 days. Trip data and expenses are deleted immediately upon account deletion.</p>
+
+  <h2>7. Your Rights</h2>
+  <p>You have the right to:</p>
+  <ul>
+    <li>Access all data we hold about you</li>
+    <li>Correct inaccurate data</li>
+    <li>Delete your account and all associated data</li>
+    <li>Export your trip data</li>
+    <li>Withdraw consent at any time</li>
+  </ul>
+  <p>To exercise any of these rights, email us at privacy@yaply.live</p>
+
+  <h2>8. Children's Privacy</h2>
+  <p>Yaply is not intended for children under 13 years of age. We do not knowingly collect data from children under 13. If you believe we have collected data from a child, please contact us immediately.</p>
+
+  <h2>9. Cookies</h2>
+  <p>We use minimal cookies only for authentication (keeping you logged in). We do not use advertising cookies or tracking cookies.</p>
+
+  <h2>10. Changes to This Policy</h2>
+  <p>We may update this Privacy Policy from time to time. We will notify you of significant changes via email or an in-app notification. Continued use of Yaply after changes constitutes acceptance of the updated policy.</p>
+
+  <h2>11. Google Play Store</h2>
+  <p>The Yaply Android app (available on Google Play Store) uses the same privacy practices described in this policy. The app uses a Trusted Web Activity (TWA) wrapper around our web application. No additional data is collected by the Android wrapper.</p>
+
+  <div class="contact">
+    <h3>Contact Us</h3>
+    <p>For any privacy concerns or data requests:</p>
+    <p>📧 <a href="mailto:privacy@yaply.live">privacy@yaply.live</a></p>
+    <p>🌐 <a href="https://yaply.live">yaply.live</a></p>
+    <p style="margin-top:12px;font-size:12px;color:rgba(255,255,255,0.25);">Yaply Technologies, India</p>
+  </div>
+</div>
+</body>
+</html>

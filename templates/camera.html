@@ -1,838 +1,1726 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Yaply Lens — Camera Translate</title>
-<link rel="icon" href="/static/yaply favicon.jpeg" type="image/jpeg"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
-<script src="/static/yaply-core.js"></script>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --teal:#1A8A72;--teal-s:rgba(26,138,114,0.12);--teal-m:rgba(26,138,114,0.3);
-  --amber:#E8823A;--sky:#3A6BC8;
-  --green:#28B06A;--red:#D84C3E;
-  --bg:#080C18;--surface:rgba(255,255,255,0.07);
-  --border:rgba(255,255,255,0.1);--border-s:rgba(255,255,255,0.06);
-  --text:#F2F2F0;--muted:rgba(255,255,255,0.45);--muted2:rgba(255,255,255,0.25);
-}
-html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Yaply Lens — Camera Translate</title>
+  <link rel="icon" href="/static/yaply favicon.jpeg" type="image/jpeg" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet" />
+  <script src="/static/yaply-core.js"></script>
 
-/* ─── CAMERA VIEW ─── */
-#cameraView{position:fixed;inset:0;display:flex;flex-direction:column;z-index:1;}
-#video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9;}
-#captureCanvas{display:none;}
+<!-- ══════════════════════════════════════════════════════════
+     PWA HEAD SNIPPET
+     Add this inside <head> tag of ALL your HTML pages:
+     landing.html, auth.html, yaply-app.html,
+     before_trip.html, during_trip.html, after_trip.html
+══════════════════════════════════════════════════════════ -->
 
-/* Top bar */
-.top-bar{
-  position:relative;z-index:10;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:calc(env(safe-area-inset-top,0px) + 52px) 18px 14px;
-  background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);
-}
-.tb-left{display:flex;align-items:center;gap:10px;}
-.tb-back{
-  width:36px;height:36px;border-radius:11px;
-  background:rgba(255,255,255,.1);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .2s;text-decoration:none;flex-shrink:0;
-}
-.tb-back:hover,.tb-back:active{background:rgba(255,255,255,.2);}
-.tb-back svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2.2;}
-.tb-logo{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:#fff;letter-spacing:-.3px;}
-.tb-logo span{color:var(--teal);}
-.tb-badge{padding:3px 9px;background:rgba(26,138,114,.2);border:1px solid var(--teal-m);border-radius:100px;font-size:.6rem;font-weight:700;color:var(--teal);letter-spacing:.5px;}
+<!-- PWA Meta Tags -->
+<meta name="application-name" content="Yaply"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Yaply"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#2563FF"/>
+<meta name="msapplication-TileColor" content="#2563FF"/>
+<meta name="msapplication-TileImage" content="/static/icons/icon-144.png"/>
 
-/* Language selector */
-.lang-pill{
-  display:flex;align-items:center;gap:6px;
-  background:rgba(255,255,255,.1);border:1px solid var(--border);
-  border-radius:100px;padding:7px 13px;cursor:pointer;transition:all .2s;
-}
-.lang-pill:hover{background:rgba(255,255,255,.17);}
-.lang-pill svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2;flex-shrink:0;}
-.lang-pill select{
-  background:none;border:none;color:#fff;
-  font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;
-  outline:none;cursor:pointer;min-width:80px;
-}
-.lang-pill select option{background:#1A2030;}
+<!-- SEO Meta -->
+<meta name="description" content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere."/>
+<meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel"/>
+<meta name="author" content="Yaply Technologies"/>
 
-/* Scan frame area */
-.scan-area{flex:1;position:relative;z-index:5;display:flex;align-items:center;justify-content:center;}
-.frame-box{position:relative;width:min(84vw,320px);height:min(56vw,220px);}
-.corner{position:absolute;width:24px;height:24px;border-color:var(--teal);border-style:solid;}
-.c-tl{top:0;left:0;border-width:2.5px 0 0 2.5px;border-radius:6px 0 0 0;}
-.c-tr{top:0;right:0;border-width:2.5px 2.5px 0 0;border-radius:0 6px 0 0;}
-.c-bl{bottom:0;left:0;border-width:0 0 2.5px 2.5px;border-radius:0 0 0 6px;}
-.c-br{bottom:0;right:0;border-width:0 2.5px 2.5px 0;border-radius:0 0 6px 0;}
-.corner::after{content:'';position:absolute;width:5px;height:5px;border-radius:50%;background:var(--teal);box-shadow:0 0 7px var(--teal);}
-.c-tl::after{top:-3px;left:-3px;}.c-tr::after{top:-3px;right:-3px;}
-.c-bl::after{bottom:-3px;left:-3px;}.c-br::after{bottom:-3px;right:-3px;}
-.scan-beam{
-  position:absolute;left:0;right:0;height:1.5px;
-  background:linear-gradient(90deg,transparent,var(--teal),var(--teal),transparent);
-  box-shadow:0 0 10px var(--teal),0 0 20px rgba(26,138,114,.4);
-  top:0;opacity:0;
-}
-.scan-beam.on{opacity:1;animation:beamSweep 1.6s ease-in-out infinite;}
-@keyframes beamSweep{0%{top:0;}50%{top:calc(100% - 1.5px);}100%{top:0;}}
-.frame-pulse{position:absolute;inset:-6px;border-radius:8px;border:1px solid rgba(26,138,114,.18);animation:fp 2.2s ease-in-out infinite;}
-@keyframes fp{0%,100%{opacity:.3;}50%{opacity:.7;}}
-.frame-hint{
-  position:absolute;bottom:-38px;left:50%;transform:translateX(-50%);
-  font-size:.7rem;color:var(--muted);white-space:nowrap;
-  display:flex;align-items:center;gap:5px;
-}
-.frame-hint svg{width:11px;height:11px;stroke:var(--muted2);fill:none;stroke-width:2;}
+<!-- Open Graph (WhatsApp/Facebook preview) -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.yaply.live"/>
+<meta property="og:title" content="Yaply — AI Travel OS"/>
+<meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere."/>
+<meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
 
-/* Bottom controls */
-.cam-controls{
-  position:relative;z-index:10;
-  padding:0 32px calc(env(safe-area-inset-bottom,0px) + 36px);
-  background:linear-gradient(to top,rgba(0,0,0,.9),transparent);
-}
-.controls-row{display:flex;align-items:center;justify-content:space-between;gap:0;}
-.ctrl-side{display:flex;flex-direction:column;align-items:center;gap:6px;width:60px;}
-.ctrl-ico{
-  width:48px;height:48px;border-radius:14px;
-  background:rgba(255,255,255,.08);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .2s;
-}
-.ctrl-ico:hover,.ctrl-ico:active{background:rgba(255,255,255,.18);}
-.ctrl-ico.on{background:var(--teal-s);border-color:var(--teal-m);}
-.ctrl-ico.on svg{stroke:var(--teal);}
-.ctrl-ico svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;}
-.ctrl-lbl{font-size:.58rem;color:var(--muted2);letter-spacing:.3px;}
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Yaply — AI Travel OS"/>
+<meta name="twitter:description" content="India's first AI Travel Operating System"/>
+<meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
 
-/* Capture button */
-.capture-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
-.capture-btn{
-  width:80px;height:80px;border-radius:50%;
-  background:rgba(255,255,255,.1);border:2.5px solid rgba(255,255,255,.3);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .25s;
-}
-.capture-btn:active{transform:scale(.92);}
-.capture-btn.busy{border-color:var(--teal);box-shadow:0 0 0 8px rgba(26,138,114,.12),0 0 30px rgba(26,138,114,.2);}
-.cap-inner{
-  width:58px;height:58px;border-radius:50%;
-  background:linear-gradient(135deg,var(--teal),#158068);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 18px rgba(26,138,114,.45);transition:all .2s;
-}
-.cap-inner svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:1.8;}
-.capture-btn.busy .cap-inner{animation:capGlow 1s ease-in-out infinite alternate;}
-@keyframes capGlow{from{box-shadow:0 4px 18px rgba(26,138,114,.4);}to{box-shadow:0 4px 36px rgba(26,138,114,.75);}}
-.capture-lbl{font-size:.62rem;color:var(--muted);letter-spacing:.3px;}
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json"/>
 
-/* ─── RESULT VIEW ─── */
-#resultView{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:20;}
-#resultView.show{display:flex;}
+<!-- Icons -->
+<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png"/>
 
-.rv-top{
-  flex-shrink:0;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:calc(env(safe-area-inset-top,0px) + 52px) 16px 10px;
-  background:linear-gradient(to bottom,rgba(0,0,0,.9) 0%,rgba(8,12,24,.95) 100%);
-  border-bottom:1px solid var(--border-s);
-  gap:10px;
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(function(reg) {
+        console.log('[SW] Registered:', reg.scope);
+      })
+      .catch(function(err) {
+        console.log('[SW] Failed:', err);
+      });
+  });
 }
-.rv-back{
-  width:34px;height:34px;border-radius:10px;flex-shrink:0;
-  background:rgba(255,255,255,.08);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;
-}
-.rv-back:hover{background:rgba(255,255,255,.18);}
-.rv-back svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.2;}
+</script>
 
-/* Toggle pill */
-.view-toggle{
-  display:flex;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:100px;padding:3px;gap:3px;
-}
-.vt-btn{
-  padding:5px 14px;border-radius:100px;border:none;cursor:pointer;
-  font-family:'Inter',sans-serif;font-size:.7rem;font-weight:700;transition:all .2s;
-  background:none;color:var(--muted);
-}
-.vt-btn.active{background:var(--teal);color:#fff;box-shadow:0 2px 8px rgba(26,138,114,.3);}
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* Retranslate bar */
-.retrans-bar{
-  flex-shrink:0;padding:8px 16px;
-  background:rgba(232,130,58,.07);border-bottom:1px solid rgba(232,130,58,.15);
-  display:none;align-items:center;justify-content:space-between;gap:8px;
-}
-.retrans-bar.show{display:flex;}
-.retrans-msg{font-size:.72rem;color:var(--amber);}
-.retrans-btn{
-  padding:6px 14px;background:var(--amber);color:#fff;border:none;border-radius:100px;
-  font-family:'Inter',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;
-  white-space:nowrap;transition:all .2s;
-}
-.retrans-btn:hover{background:#D4722A;}
+    :root {
+      --teal: #1A8A72;
+      --teal-s: rgba(26, 138, 114, 0.12);
+      --teal-m: rgba(26, 138, 114, 0.3);
+      --amber: #E8823A;
+      --sky: #3A6BC8;
+      --green: #28B06A;
+      --red: #D84C3E;
+      --bg: #080C18;
+      --surface: rgba(255, 255, 255, 0.07);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-s: rgba(255, 255, 255, 0.06);
+      --text: #F2F2F0;
+      --muted: rgba(255, 255, 255, 0.45);
+      --muted2: rgba(255, 255, 255, 0.25);
+    }
 
-/* Canvas display */
-.rv-canvas-wrap{
-  flex:1;overflow:hidden;position:relative;
-  display:flex;align-items:center;justify-content:center;
-  background:#000;
-}
-#translatedCanvas,#originalCanvas{
-  max-width:100%;max-height:100%;
-  object-fit:contain;display:block;
-}
-#originalCanvas{display:none;}
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
 
-/* Loading shimmer over canvas */
-.canvas-loading{
-  position:absolute;inset:0;background:rgba(8,12,24,.8);backdrop-filter:blur(4px);
-  display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:5;
-}
-.canvas-loading.show{display:flex;}
-.cl-ring{width:36px;height:36px;border:2.5px solid rgba(26,138,114,.2);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.cl-text{font-size:.78rem;font-weight:600;color:rgba(255,255,255,.7);}
+    /* ─── CAMERA VIEW ─── */
+    #cameraView {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
+    }
 
-/* Bottom info drawer */
-.rv-bottom{
-  flex-shrink:0;
-  background:rgba(8,12,24,.97);border-top:1px solid var(--border-s);
-  padding:0 0 calc(env(safe-area-inset-bottom,0px) + 10px);
-}
-.drawer-tabs{display:flex;border-bottom:1px solid var(--border-s);padding:0 16px;}
-.dtab{
-  padding:10px 14px;font-size:.72rem;font-weight:700;color:var(--muted);cursor:pointer;
-  border-bottom:2px solid transparent;transition:all .2s;
-}
-.dtab.active{color:var(--teal);border-color:var(--teal);}
-.drawer-body{padding:10px 16px 6px;max-height:140px;overflow-y:auto;}
-.drawer-pane{display:none;}
-.drawer-pane.active{display:block;}
-.text-block-orig,.text-block-trans{
-  font-size:.8rem;line-height:1.65;padding:8px 10px;border-radius:10px;
-}
-.text-block-orig{background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);}
-.text-block-trans{background:rgba(26,138,114,.08);color:#7FFFD4;font-weight:500;margin-top:6px;}
-.lang-info{font-size:.62rem;color:var(--muted2);margin-top:5px;}
+    #video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .9;
+    }
 
-/* Action buttons */
-.rv-actions{display:flex;gap:7px;padding:8px 16px 0;}
-.act-btn{
-  flex:1;padding:10px 6px;border-radius:11px;
-  border:1px solid var(--border);background:rgba(255,255,255,.05);
-  color:rgba(255,255,255,.65);font-family:'Inter',sans-serif;
-  font-size:.7rem;font-weight:700;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  transition:all .2s;
-}
-.act-btn:hover{background:rgba(255,255,255,.13);}
-.act-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
-.act-btn.primary{background:var(--teal);border-color:var(--teal);color:#fff;}
-.act-btn.primary:hover{background:#158068;}
+    #captureCanvas {
+      display: none;
+    }
 
-/* ─── LOADING OVERLAY ─── */
-#scanOverlay{
-  position:fixed;inset:0;background:rgba(5,8,18,.93);backdrop-filter:blur(14px);
-  display:none;flex-direction:column;align-items:center;justify-content:center;gap:26px;z-index:50;
-}
-#scanOverlay.show{display:flex;}
-.so-rings{position:relative;width:120px;height:120px;}
-.so-ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(26,138,114,.2);}
-.sr1{animation:rp 2.2s 0s ease-out infinite;}
-.sr2{animation:rp 2.2s .55s ease-out infinite;}
-.sr3{animation:rp 2.2s 1.1s ease-out infinite;}
-@keyframes rp{0%{transform:scale(.5);opacity:.7;}100%{transform:scale(1.8);opacity:0;}}
-.so-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
-.so-ico{width:54px;height:54px;border-radius:15px;background:linear-gradient(135deg,var(--teal),var(--sky));display:flex;align-items:center;justify-content:center;}
-.so-ico svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:1.8;}
-.so-line{position:absolute;left:14px;right:14px;height:1.5px;background:linear-gradient(90deg,transparent,var(--teal),transparent);animation:sl 2s ease-in-out infinite;}
-@keyframes sl{0%,100%{top:14px;}50%{top:calc(100% - 14px);}}
-.so-text{text-align:center;}
-.so-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:5px;}
-.so-sub{font-size:.72rem;color:var(--muted);}
-.so-steps{display:flex;flex-direction:column;gap:9px;margin-top:6px;}
-.sstep{display:flex;align-items:center;gap:9px;font-size:.72rem;color:var(--muted2);transition:color .3s;}
-.sstep.on{color:#fff;}
-.sstep.done{color:var(--green);}
-.sstep-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);flex-shrink:0;transition:background .3s;}
-.sstep.on .sstep-dot{background:var(--amber);animation:dp 1s ease-in-out infinite;}
-.sstep.done .sstep-dot{background:var(--green);}
-@keyframes dp{0%,100%{opacity:1;}50%{opacity:.3;}}
+    /* Top bar */
+    .top-bar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: calc(env(safe-area-inset-top, 0px) + 52px) 18px 14px;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, .8), transparent);
+    }
 
-/* ─── NO CAMERA ─── */
-#noCam{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:32px;text-align:center;z-index:60;}
-#noCam.show{display:flex;}
-.nc-ico{width:80px;height:80px;border-radius:22px;background:rgba(255,255,255,.05);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
-.nc-ico svg{width:36px;height:36px;stroke:rgba(255,255,255,.3);fill:none;stroke-width:1.5;}
-.nc-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;}
-.nc-sub{font-size:.78rem;color:var(--muted);line-height:1.7;max-width:280px;}
-.nc-btn{padding:13px 28px;background:var(--teal);color:#fff;border:none;border-radius:100px;font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;}
-.nc-btn:hover{background:#158068;}
-.nc-btn svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2;}
+    .tb-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-/* ─── TOAST ─── */
-.toast{position:fixed;bottom:130px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(26,138,114,.95);color:#fff;padding:9px 18px;border-radius:100px;font-size:.72rem;font-weight:700;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none;}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-</style>
+    .tb-back {
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, .1);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .2s;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .tb-back:hover,
+    .tb-back:active {
+      background: rgba(255, 255, 255, .2);
+    }
+
+    .tb-back svg {
+      width: 15px;
+      height: 15px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2.2;
+    }
+
+    .tb-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -.3px;
+    }
+
+    .tb-logo span {
+      color: var(--teal);
+    }
+
+    .tb-badge {
+      padding: 3px 9px;
+      background: rgba(26, 138, 114, .2);
+      border: 1px solid var(--teal-m);
+      border-radius: 100px;
+      font-size: .6rem;
+      font-weight: 700;
+      color: var(--teal);
+      letter-spacing: .5px;
+    }
+
+    /* Language selector */
+    .lang-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, .1);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 7px 13px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .lang-pill:hover {
+      background: rgba(255, 255, 255, .17);
+    }
+
+    .lang-pill svg {
+      width: 12px;
+      height: 12px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2;
+      flex-shrink: 0;
+    }
+
+    .lang-pill select {
+      background: none;
+      border: none;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: .78rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      min-width: 80px;
+    }
+
+    .lang-pill select option {
+      background: #1A2030;
+    }
+
+    /* Scan frame area */
+    .scan-area {
+      flex: 1;
+      position: relative;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .frame-box {
+      position: relative;
+      width: min(84vw, 320px);
+      height: min(56vw, 220px);
+    }
+
+    .corner {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-color: var(--teal);
+      border-style: solid;
+    }
+
+    .c-tl {
+      top: 0;
+      left: 0;
+      border-width: 2.5px 0 0 2.5px;
+      border-radius: 6px 0 0 0;
+    }
+
+    .c-tr {
+      top: 0;
+      right: 0;
+      border-width: 2.5px 2.5px 0 0;
+      border-radius: 0 6px 0 0;
+    }
+
+    .c-bl {
+      bottom: 0;
+      left: 0;
+      border-width: 0 0 2.5px 2.5px;
+      border-radius: 0 0 0 6px;
+    }
+
+    .c-br {
+      bottom: 0;
+      right: 0;
+      border-width: 0 2.5px 2.5px 0;
+      border-radius: 0 0 6px 0;
+    }
+
+    .corner::after {
+      content: '';
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 7px var(--teal);
+    }
+
+    .c-tl::after {
+      top: -3px;
+      left: -3px;
+    }
+
+    .c-tr::after {
+      top: -3px;
+      right: -3px;
+    }
+
+    .c-bl::after {
+      bottom: -3px;
+      left: -3px;
+    }
+
+    .c-br::after {
+      bottom: -3px;
+      right: -3px;
+    }
+
+    .scan-beam {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--teal), var(--teal), transparent);
+      box-shadow: 0 0 10px var(--teal), 0 0 20px rgba(26, 138, 114, .4);
+      top: 0;
+      opacity: 0;
+    }
+
+    .scan-beam.on {
+      opacity: 1;
+      animation: beamSweep 1.6s ease-in-out infinite;
+    }
+
+    @keyframes beamSweep {
+      0% {
+        top: 0;
+      }
+
+      50% {
+        top: calc(100% - 1.5px);
+      }
+
+      100% {
+        top: 0;
+      }
+    }
+
+    .frame-pulse {
+      position: absolute;
+      inset: -6px;
+      border-radius: 8px;
+      border: 1px solid rgba(26, 138, 114, .18);
+      animation: fp 2.2s ease-in-out infinite;
+    }
+
+    @keyframes fp {
+
+      0%,
+      100% {
+        opacity: .3;
+      }
+
+      50% {
+        opacity: .7;
+      }
+    }
+
+    .frame-hint {
+      position: absolute;
+      bottom: -38px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: .7rem;
+      color: var(--muted);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .frame-hint svg {
+      width: 11px;
+      height: 11px;
+      stroke: var(--muted2);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* Bottom controls */
+    .cam-controls {
+      position: relative;
+      z-index: 10;
+      padding: 0 32px calc(env(safe-area-inset-bottom, 0px) + 36px);
+      background: linear-gradient(to top, rgba(0, 0, 0, .9), transparent);
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0;
+    }
+
+    .ctrl-side {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 60px;
+    }
+
+    .ctrl-ico {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .ctrl-ico:hover,
+    .ctrl-ico:active {
+      background: rgba(255, 255, 255, .18);
+    }
+
+    .ctrl-ico.on {
+      background: var(--teal-s);
+      border-color: var(--teal-m);
+    }
+
+    .ctrl-ico.on svg {
+      stroke: var(--teal);
+    }
+
+    .ctrl-ico svg {
+      width: 19px;
+      height: 19px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+    }
+
+    .ctrl-lbl {
+      font-size: .58rem;
+      color: var(--muted2);
+      letter-spacing: .3px;
+    }
+
+    /* Capture button */
+    .capture-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .capture-btn {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .1);
+      border: 2.5px solid rgba(255, 255, 255, .3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .25s;
+    }
+
+    .capture-btn:active {
+      transform: scale(.92);
+    }
+
+    .capture-btn.busy {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 8px rgba(26, 138, 114, .12), 0 0 30px rgba(26, 138, 114, .2);
+    }
+
+    .cap-inner {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), #158068);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 18px rgba(26, 138, 114, .45);
+      transition: all .2s;
+    }
+
+    .cap-inner svg {
+      width: 24px;
+      height: 24px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .capture-btn.busy .cap-inner {
+      animation: capGlow 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes capGlow {
+      from {
+        box-shadow: 0 4px 18px rgba(26, 138, 114, .4);
+      }
+
+      to {
+        box-shadow: 0 4px 36px rgba(26, 138, 114, .75);
+      }
+    }
+
+    .capture-lbl {
+      font-size: .62rem;
+      color: var(--muted);
+      letter-spacing: .3px;
+    }
+
+    /* ─── RESULT VIEW ─── */
+    #resultView {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+      z-index: 20;
+    }
+
+    #resultView.show {
+      display: flex;
+    }
+
+    .rv-top {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: calc(env(safe-area-inset-top, 0px) + 52px) 16px 10px;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, .9) 0%, rgba(8, 12, 24, .95) 100%);
+      border-bottom: 1px solid var(--border-s);
+      gap: 10px;
+    }
+
+    .rv-back {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .rv-back:hover {
+      background: rgba(255, 255, 255, .18);
+    }
+
+    .rv-back svg {
+      width: 14px;
+      height: 14px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2.2;
+    }
+
+    /* Toggle pill */
+    .view-toggle {
+      display: flex;
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .vt-btn {
+      padding: 5px 14px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: .7rem;
+      font-weight: 700;
+      transition: all .2s;
+      background: none;
+      color: var(--muted);
+    }
+
+    .vt-btn.active {
+      background: var(--teal);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(26, 138, 114, .3);
+    }
+
+    /* Retranslate bar */
+    .retrans-bar {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      background: rgba(232, 130, 58, .07);
+      border-bottom: 1px solid rgba(232, 130, 58, .15);
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .retrans-bar.show {
+      display: flex;
+    }
+
+    .retrans-msg {
+      font-size: .72rem;
+      color: var(--amber);
+    }
+
+    .retrans-btn {
+      padding: 6px 14px;
+      background: var(--amber);
+      color: #fff;
+      border: none;
+      border-radius: 100px;
+      font-family: 'Inter', sans-serif;
+      font-size: .7rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .2s;
+    }
+
+    .retrans-btn:hover {
+      background: #D4722A;
+    }
+
+    /* Canvas display */
+    .rv-canvas-wrap {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    #translatedCanvas,
+    #originalCanvas {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    #originalCanvas {
+      display: none;
+    }
+
+    /* Loading shimmer over canvas */
+    .canvas-loading {
+      position: absolute;
+      inset: 0;
+      background: rgba(8, 12, 24, .8);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 5;
+    }
+
+    .canvas-loading.show {
+      display: flex;
+    }
+
+    .cl-ring {
+      width: 36px;
+      height: 36px;
+      border: 2.5px solid rgba(26, 138, 114, .2);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .cl-text {
+      font-size: .78rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, .7);
+    }
+
+    /* Bottom info drawer */
+    .rv-bottom {
+      flex-shrink: 0;
+      background: rgba(8, 12, 24, .97);
+      border-top: 1px solid var(--border-s);
+      padding: 0 0 calc(env(safe-area-inset-bottom, 0px) + 10px);
+    }
+
+    .drawer-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-s);
+      padding: 0 16px;
+    }
+
+    .dtab {
+      padding: 10px 14px;
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all .2s;
+    }
+
+    .dtab.active {
+      color: var(--teal);
+      border-color: var(--teal);
+    }
+
+    .drawer-body {
+      padding: 10px 16px 6px;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+
+    .drawer-pane {
+      display: none;
+    }
+
+    .drawer-pane.active {
+      display: block;
+    }
+
+    .text-block-orig,
+    .text-block-trans {
+      font-size: .8rem;
+      line-height: 1.65;
+      padding: 8px 10px;
+      border-radius: 10px;
+    }
+
+    .text-block-orig {
+      background: rgba(255, 255, 255, .04);
+      color: rgba(255, 255, 255, .7);
+    }
+
+    .text-block-trans {
+      background: rgba(26, 138, 114, .08);
+      color: #7FFFD4;
+      font-weight: 500;
+      margin-top: 6px;
+    }
+
+    .lang-info {
+      font-size: .62rem;
+      color: var(--muted2);
+      margin-top: 5px;
+    }
+
+    /* Action buttons */
+    .rv-actions {
+      display: flex;
+      gap: 7px;
+      padding: 8px 16px 0;
+    }
+
+    .act-btn {
+      flex: 1;
+      padding: 10px 6px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, .05);
+      color: rgba(255, 255, 255, .65);
+      font-family: 'Inter', sans-serif;
+      font-size: .7rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all .2s;
+    }
+
+    .act-btn:hover {
+      background: rgba(255, 255, 255, .13);
+    }
+
+    .act-btn svg {
+      width: 13px;
+      height: 13px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .act-btn.primary {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
+    }
+
+    .act-btn.primary:hover {
+      background: #158068;
+    }
+
+    /* ─── LOADING OVERLAY ─── */
+    #scanOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 18, .93);
+      backdrop-filter: blur(14px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 26px;
+      z-index: 50;
+    }
+
+    #scanOverlay.show {
+      display: flex;
+    }
+
+    .so-rings {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .so-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1.5px solid rgba(26, 138, 114, .2);
+    }
+
+    .sr1 {
+      animation: rp 2.2s 0s ease-out infinite;
+    }
+
+    .sr2 {
+      animation: rp 2.2s .55s ease-out infinite;
+    }
+
+    .sr3 {
+      animation: rp 2.2s 1.1s ease-out infinite;
+    }
+
+    @keyframes rp {
+      0% {
+        transform: scale(.5);
+        opacity: .7;
+      }
+
+      100% {
+        transform: scale(1.8);
+        opacity: 0;
+      }
+    }
+
+    .so-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .so-ico {
+      width: 54px;
+      height: 54px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, var(--teal), var(--sky));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .so-ico svg {
+      width: 24px;
+      height: 24px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .so-line {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--teal), transparent);
+      animation: sl 2s ease-in-out infinite;
+    }
+
+    @keyframes sl {
+
+      0%,
+      100% {
+        top: 14px;
+      }
+
+      50% {
+        top: calc(100% - 14px);
+      }
+    }
+
+    .so-text {
+      text-align: center;
+    }
+
+    .so-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .so-sub {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    .so-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-top: 6px;
+    }
+
+    .sstep {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: .72rem;
+      color: var(--muted2);
+      transition: color .3s;
+    }
+
+    .sstep.on {
+      color: #fff;
+    }
+
+    .sstep.done {
+      color: var(--green);
+    }
+
+    .sstep-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .15);
+      flex-shrink: 0;
+      transition: background .3s;
+    }
+
+    .sstep.on .sstep-dot {
+      background: var(--amber);
+      animation: dp 1s ease-in-out infinite;
+    }
+
+    .sstep.done .sstep-dot {
+      background: var(--green);
+    }
+
+    @keyframes dp {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .3;
+      }
+    }
+
+    /* ─── NO CAMERA ─── */
+    #noCam {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 32px;
+      text-align: center;
+      z-index: 60;
+    }
+
+    #noCam.show {
+      display: flex;
+    }
+
+    .nc-ico {
+      width: 80px;
+      height: 80px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nc-ico svg {
+      width: 36px;
+      height: 36px;
+      stroke: rgba(255, 255, 255, .3);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    .nc-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .nc-sub {
+      font-size: .78rem;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 280px;
+    }
+
+    .nc-btn {
+      padding: 13px 28px;
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 100px;
+      font-family: 'Inter', sans-serif;
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .nc-btn:hover {
+      background: #158068;
+    }
+
+    .nc-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed;
+      bottom: 130px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: rgba(26, 138, 114, .95);
+      color: #fff;
+      padding: 9px 18px;
+      border-radius: 100px;
+      font-size: .72rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: all .3s;
+      z-index: 200;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ── CAMERA VIEW ── -->
-<div id="cameraView">
-  <video id="video" autoplay playsinline muted></video>
-  <canvas id="captureCanvas"></canvas>
+  <!-- ── CAMERA VIEW ── -->
+  <div id="cameraView">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="captureCanvas"></canvas>
 
-  <div class="top-bar">
-    <div class="tb-left">
-      <a href="/app" class="tb-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></a>
-      <div class="tb-logo">Yaply <span>Lens</span></div>
-      <div class="tb-badge">TRANSLATE</div>
-    </div>
-    <div class="lang-pill">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      <select id="targetLang" onchange="onLangChange()">
-        <option value="EN">→ English</option>
-        <option value="HI">→ Hindi</option>
-        <option value="ES">→ Spanish</option>
-        <option value="FR">→ French</option>
-        <option value="DE">→ German</option>
-        <option value="JA">→ Japanese</option>
-        <option value="ZH">→ Chinese</option>
-        <option value="AR">→ Arabic</option>
-        <option value="PT">→ Portuguese</option>
-        <option value="RU">→ Russian</option>
-        <option value="IT">→ Italian</option>
-        <option value="KO">→ Korean</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="scan-area">
-    <div class="frame-box">
-      <div class="frame-pulse"></div>
-      <div class="corner c-tl"></div><div class="corner c-tr"></div>
-      <div class="corner c-bl"></div><div class="corner c-br"></div>
-      <div class="scan-beam" id="scanBeam"></div>
-      <div class="frame-hint" id="frameHint">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Point at text and tap capture
+    <div class="top-bar">
+      <div class="tb-left">
+        <a href="/app" class="tb-back"><svg viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6" />
+          </svg></a>
+        <div class="tb-logo">Yaply <span>Lens</span></div>
+        <div class="tb-badge">TRANSLATE</div>
+      </div>
+      <div class="lang-pill">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+        <select id="targetLang" onchange="onLangChange()">
+          <option value="EN">→ English</option>
+          <option value="HI">→ Hindi</option>
+          <option value="ES">→ Spanish</option>
+          <option value="FR">→ French</option>
+          <option value="DE">→ German</option>
+          <option value="JA">→ Japanese</option>
+          <option value="ZH">→ Chinese</option>
+          <option value="AR">→ Arabic</option>
+          <option value="PT">→ Portuguese</option>
+          <option value="RU">→ Russian</option>
+          <option value="IT">→ Italian</option>
+          <option value="KO">→ Korean</option>
+        </select>
       </div>
     </div>
-  </div>
 
-  <div class="cam-controls">
-    <div class="controls-row">
-      <!-- Upload -->
-      <div class="ctrl-side">
-        <div class="ctrl-ico" onclick="document.getElementById('fileInput').click()" title="Upload image">
-          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <div class="scan-area">
+      <div class="frame-box">
+        <div class="frame-pulse"></div>
+        <div class="corner c-tl"></div>
+        <div class="corner c-tr"></div>
+        <div class="corner c-bl"></div>
+        <div class="corner c-br"></div>
+        <div class="scan-beam" id="scanBeam"></div>
+        <div class="frame-hint" id="frameHint">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          Point at text and tap capture
         </div>
-        <div class="ctrl-lbl">Upload</div>
-        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleUpload(event)"/>
       </div>
+    </div>
 
-      <!-- Capture -->
-      <div class="capture-wrap">
-        <div class="capture-btn" id="captureBtn" onclick="captureAndTranslate()">
-          <div class="cap-inner">
-            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    <div class="cam-controls">
+      <div class="controls-row">
+        <!-- Upload -->
+        <div class="ctrl-side">
+          <div class="ctrl-ico" onclick="document.getElementById('fileInput').click()" title="Upload image">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
           </div>
+          <div class="ctrl-lbl">Upload</div>
+          <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleUpload(event)" />
         </div>
-        <div class="capture-lbl">Scan & Translate</div>
-      </div>
 
-      <!-- Flash -->
-      <div class="ctrl-side">
-        <div class="ctrl-ico" id="flashBtn" onclick="toggleFlash()" title="Toggle flash">
-          <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <!-- Capture -->
+        <div class="capture-wrap">
+          <div class="capture-btn" id="captureBtn" onclick="captureAndTranslate()">
+            <div class="cap-inner">
+              <svg viewBox="0 0 24 24">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </div>
+          </div>
+          <div class="capture-lbl">Scan & Translate</div>
         </div>
-        <div class="ctrl-lbl">Flash</div>
+
+        <!-- Flash -->
+        <div class="ctrl-side">
+          <div class="ctrl-ico" id="flashBtn" onclick="toggleFlash()" title="Toggle flash">
+            <svg viewBox="0 0 24 24">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          </div>
+          <div class="ctrl-lbl">Flash</div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ── RESULT VIEW ── -->
-<div id="resultView">
-  <div class="rv-top">
-    <div class="rv-back" onclick="backToCamera()">
-      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </div>
-    <div class="view-toggle">
-      <button class="vt-btn active" id="vtTrans" onclick="switchView('translated')">Translated</button>
-      <button class="vt-btn" id="vtOrig" onclick="switchView('original')">Original</button>
-    </div>
-    <div class="lang-pill" style="pointer-events:all;">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      <select id="resultLang" onchange="onResultLangChange()">
-        <option value="EN">English</option>
-        <option value="HI">Hindi</option>
-        <option value="ES">Spanish</option>
-        <option value="FR">French</option>
-        <option value="DE">German</option>
-        <option value="JA">Japanese</option>
-        <option value="ZH">Chinese</option>
-        <option value="AR">Arabic</option>
-        <option value="PT">Portuguese</option>
-        <option value="RU">Russian</option>
-        <option value="IT">Italian</option>
-        <option value="KO">Korean</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="retrans-bar" id="retransBar">
-    <span class="retrans-msg">Language changed — retranslate?</span>
-    <button class="retrans-btn" onclick="retranslate()">Retranslate →</button>
-  </div>
-
-  <div class="rv-canvas-wrap">
-    <canvas id="translatedCanvas"></canvas>
-    <canvas id="originalCanvas"></canvas>
-    <div class="canvas-loading" id="canvasLoading">
-      <div class="cl-ring"></div>
-      <div class="cl-text">Rendering translation…</div>
-    </div>
-  </div>
-
-  <div class="rv-bottom">
-    <div class="drawer-tabs">
-      <div class="dtab active" onclick="switchTab('text')">Text</div>
-      <div class="dtab" onclick="switchTab('orig')">Original</div>
-    </div>
-    <div class="drawer-body">
-      <div class="drawer-pane active" id="paneText">
-        <div class="text-block-trans" id="drawerTrans">—</div>
-        <div class="lang-info" id="drawerLangInfo"></div>
+  <!-- ── RESULT VIEW ── -->
+  <div id="resultView">
+    <div class="rv-top">
+      <div class="rv-back" onclick="backToCamera()">
+        <svg viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
       </div>
-      <div class="drawer-pane" id="paneOrig">
-        <div class="text-block-orig" id="drawerOrig">—</div>
+      <div class="view-toggle">
+        <button class="vt-btn active" id="vtTrans" onclick="switchView('translated')">Translated</button>
+        <button class="vt-btn" id="vtOrig" onclick="switchView('original')">Original</button>
+      </div>
+      <div class="lang-pill" style="pointer-events:all;">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+        <select id="resultLang" onchange="onResultLangChange()">
+          <option value="EN">English</option>
+          <option value="HI">Hindi</option>
+          <option value="ES">Spanish</option>
+          <option value="FR">French</option>
+          <option value="DE">German</option>
+          <option value="JA">Japanese</option>
+          <option value="ZH">Chinese</option>
+          <option value="AR">Arabic</option>
+          <option value="PT">Portuguese</option>
+          <option value="RU">Russian</option>
+          <option value="IT">Italian</option>
+          <option value="KO">Korean</option>
+        </select>
       </div>
     </div>
-    <div class="rv-actions">
-      <button class="act-btn" onclick="downloadResult()">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Save
-      </button>
-      <button class="act-btn" onclick="copyTranslation()">
-        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        Copy
-      </button>
-      <button class="act-btn" onclick="shareResult()">
-        <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        Share
-      </button>
-      <button class="act-btn primary" onclick="backToCamera()">
-        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/></svg>
-        New
-      </button>
+
+    <div class="retrans-bar" id="retransBar">
+      <span class="retrans-msg">Language changed — retranslate?</span>
+      <button class="retrans-btn" onclick="retranslate()">Retranslate →</button>
+    </div>
+
+    <div class="rv-canvas-wrap">
+      <canvas id="translatedCanvas"></canvas>
+      <canvas id="originalCanvas"></canvas>
+      <div class="canvas-loading" id="canvasLoading">
+        <div class="cl-ring"></div>
+        <div class="cl-text">Rendering translation…</div>
+      </div>
+    </div>
+
+    <div class="rv-bottom">
+      <div class="drawer-tabs">
+        <div class="dtab active" onclick="switchTab('text')">Text</div>
+        <div class="dtab" onclick="switchTab('orig')">Original</div>
+      </div>
+      <div class="drawer-body">
+        <div class="drawer-pane active" id="paneText">
+          <div class="text-block-trans" id="drawerTrans">—</div>
+          <div class="lang-info" id="drawerLangInfo"></div>
+        </div>
+        <div class="drawer-pane" id="paneOrig">
+          <div class="text-block-orig" id="drawerOrig">—</div>
+        </div>
+      </div>
+      <div class="rv-actions">
+        <button class="act-btn" onclick="downloadResult()">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Save
+        </button>
+        <button class="act-btn" onclick="copyTranslation()">
+          <svg viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          Copy
+        </button>
+        <button class="act-btn" onclick="shareResult()">
+          <svg viewBox="0 0 24 24">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          </svg>
+          Share
+        </button>
+        <button class="act-btn primary" onclick="backToCamera()">
+          <svg viewBox="0 0 24 24">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+          </svg>
+          New
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ── SCAN OVERLAY ── -->
-<div id="scanOverlay">
-  <div class="so-rings">
-    <div class="so-ring sr1"></div><div class="so-ring sr2"></div><div class="so-ring sr3"></div>
-    <div class="so-center">
-      <div class="so-ico"><svg viewBox="0 0 24 24"><path d="M3 5h12M9 3v2m-3.5 8.5L3 21l4.5-3.5M12 5l-4 11M5 8h7M21 12h-5m0 0l3 3m-3-3l3-3"/></svg></div>
+  <!-- ── SCAN OVERLAY ── -->
+  <div id="scanOverlay">
+    <div class="so-rings">
+      <div class="so-ring sr1"></div>
+      <div class="so-ring sr2"></div>
+      <div class="so-ring sr3"></div>
+      <div class="so-center">
+        <div class="so-ico"><svg viewBox="0 0 24 24">
+            <path d="M3 5h12M9 3v2m-3.5 8.5L3 21l4.5-3.5M12 5l-4 11M5 8h7M21 12h-5m0 0l3 3m-3-3l3-3" />
+          </svg></div>
+      </div>
+      <div class="so-line"></div>
     </div>
-    <div class="so-line"></div>
-  </div>
-  <div class="so-text">
-    <div class="so-title">Translating</div>
-    <div class="so-sub">Reading and translating text in image</div>
-    <div class="so-steps">
-      <div class="sstep on" id="ss1"><div class="sstep-dot"></div>Detecting text in image…</div>
-      <div class="sstep" id="ss2"><div class="sstep-dot"></div>Translating content…</div>
-      <div class="sstep" id="ss3"><div class="sstep-dot"></div>Rendering overlay…</div>
+    <div class="so-text">
+      <div class="so-title">Translating</div>
+      <div class="so-sub">Reading and translating text in image</div>
+      <div class="so-steps">
+        <div class="sstep on" id="ss1">
+          <div class="sstep-dot"></div>Detecting text in image…
+        </div>
+        <div class="sstep" id="ss2">
+          <div class="sstep-dot"></div>Translating content…
+        </div>
+        <div class="sstep" id="ss3">
+          <div class="sstep-dot"></div>Rendering overlay…
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ── NO CAMERA ── -->
-<div id="noCam">
-  <div class="nc-ico"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><line x1="1" y1="1" x2="23" y2="23"/></svg></div>
-  <div class="nc-title">Camera Access Needed</div>
-  <div class="nc-sub">Allow camera access, or upload an image to translate text directly.</div>
-  <button class="nc-btn" onclick="document.getElementById('fileInput2').click()">
-    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    Upload Image
-  </button>
-  <input type="file" id="fileInput2" accept="image/*" style="display:none" onchange="handleUpload(event)"/>
-  <a href="/app" style="font-size:.72rem;color:var(--muted2);text-decoration:none;margin-top:6px;">← Back to Dashboard</a>
-</div>
+  <!-- ── NO CAMERA ── -->
+  <div id="noCam">
+    <div class="nc-ico"><svg viewBox="0 0 24 24">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+        <line x1="1" y1="1" x2="23" y2="23" />
+      </svg></div>
+    <div class="nc-title">Camera Access Needed</div>
+    <div class="nc-sub">Allow camera access, or upload an image to translate text directly.</div>
+    <button class="nc-btn" onclick="document.getElementById('fileInput2').click()">
+      <svg viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="17 8 12 3 7 8" />
+        <line x1="12" y1="3" x2="12" y2="15" />
+      </svg>
+      Upload Image
+    </button>
+    <input type="file" id="fileInput2" accept="image/*" style="display:none" onchange="handleUpload(event)" />
+    <a href="/app" style="font-size:.72rem;color:var(--muted2);text-decoration:none;margin-top:6px;">← Back to
+      Dashboard</a>
+  </div>
 
-<div class="toast" id="toast"></div>
-<script src="/static/yaply-nav.js"></script>
-<script>
-// ── STATE ──
-let videoStream = null, isProcessing = false, flashOn = false;
-let lastImageData = null;   // base64 of last scanned image (with prefix)
-let lastRawBlocks = null;   // [{original, vertices}] from Vision API
-let lastDetectedLang = null;
-let translatedDataUrl = null;
-let scanInterval = null;
+  <div class="toast" id="toast"></div>
+  <script src="/static/yaply-nav.js"></script>
+  <script>
+    // ── STATE ──
+    let videoStream = null, isProcessing = false, flashOn = false;
+    let lastImageData = null;   // base64 of last scanned image (with prefix)
+    let lastRawBlocks = null;   // [{original, vertices}] from Vision API
+    let lastDetectedLang = null;
+    let translatedDataUrl = null;
+    let scanInterval = null;
 
-// ── CAMERA ──
-async function startCamera() {
-  try {
-    videoStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode:{ ideal:'environment' }, width:{ ideal:1920 }, height:{ ideal:1080 } }
-    });
-    const vid = document.getElementById('video');
-    vid.srcObject = videoStream;
-    await vid.play();
-  } catch {
-    document.getElementById('noCam').classList.add('show');
-  }
-}
-
-function toggleFlash() {
-  const btn = document.getElementById('flashBtn');
-  flashOn = !flashOn;
-  btn.classList.toggle('on', flashOn);
-  if (videoStream) {
-    const track = videoStream.getVideoTracks()[0];
-    if (track?.getCapabilities()?.torch)
-      track.applyConstraints({ advanced:[{ torch:flashOn }] });
-  }
-  toast(flashOn ? 'Flash on' : 'Flash off');
-}
-
-// ── CAPTURE ──
-async function captureAndTranslate() {
-  if (isProcessing) return;
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('captureCanvas');
-  canvas.width = video.videoWidth || 1280;
-  canvas.height = video.videoHeight || 720;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  const imageData = canvas.toDataURL('image/jpeg', 0.92);
-  await processImage(imageData);
-}
-
-// ── UPLOAD ──
-function handleUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  e.target.value = '';
-  document.getElementById('noCam').classList.remove('show');
-  const reader = new FileReader();
-  reader.onload = ev => processImage(ev.target.result);
-  reader.readAsDataURL(file);
-}
-
-// ── PROCESS IMAGE ──
-async function processImage(imageDataUrl) {
-  if (isProcessing) return;
-  isProcessing = true;
-  lastImageData = imageDataUrl;
-
-  const btn = document.getElementById('captureBtn');
-  btn.classList.add('busy');
-  document.getElementById('scanBeam').classList.add('on');
-  showScanOverlay();
-
-  try {
-    const lang = document.getElementById('targetLang').value;
-    const res = await apiFetch('/scan', {
-      method: 'POST',
-      body: JSON.stringify({ image: imageDataUrl, target_lang: lang })
-    });
-
-    stepDone(1); stepActive(2);
-
-    if (!res.success) {
-      hideScanOverlay();
-      toast(res.error || 'No text found. Try a clearer image.', 'error');
-      return;
+    // ── CAMERA ──
+    async function startCamera() {
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+        });
+        const vid = document.getElementById('video');
+        vid.srcObject = videoStream;
+        await vid.play();
+      } catch {
+        document.getElementById('noCam').classList.add('show');
+      }
     }
 
-    lastRawBlocks = (res.text_blocks || []).map(b => ({ original: b.original, vertices: b.vertices }));
-    lastDetectedLang = res.detected_lang;
-
-    // Sync result lang selector
-    document.getElementById('resultLang').value = lang;
-
-    // Populate text panes
-    document.getElementById('drawerTrans').textContent = res.translated_text || '—';
-    document.getElementById('drawerOrig').textContent  = res.original_text  || '—';
-    document.getElementById('drawerLangInfo').textContent =
-      (res.detected_lang ? 'Detected: ' + res.detected_lang.toUpperCase() + '  ·  ' : '') +
-      'Translated via ' + (res.engine || 'AI');
-
-    stepDone(2); stepActive(3);
-
-    // Draw original image on originalCanvas
-    await drawImageOnCanvas('originalCanvas', imageDataUrl);
-
-    // Render translated overlay
-    translatedDataUrl = await renderTranslatedOverlay(imageDataUrl, res.text_blocks || []);
-    await drawDataUrlOnCanvas('translatedCanvas', translatedDataUrl);
-
-    stepDone(3);
-    hideScanOverlay();
-    showResultView();
-
-  } catch (err) {
-    hideScanOverlay();
-    toast('Something went wrong. Please try again.', 'error');
-    console.error(err);
-  } finally {
-    isProcessing = false;
-    btn.classList.remove('busy');
-    document.getElementById('scanBeam').classList.remove('on');
-  }
-}
-
-// ── RETRANSLATE ──
-async function retranslate() {
-  if (!lastImageData || !lastRawBlocks) return;
-  document.getElementById('retransBar').classList.remove('show');
-  const lang = document.getElementById('resultLang').value;
-
-  document.getElementById('canvasLoading').classList.add('show');
-  try {
-    const res = await apiFetch('/api/retranslate-blocks', {
-      method: 'POST',
-      body: JSON.stringify({ blocks: lastRawBlocks, target_lang: lang, src_lang: lastDetectedLang })
-    });
-    if (!res.success) { toast(res.error || 'Retranslation failed', 'error'); return; }
-
-    document.getElementById('drawerTrans').textContent = res.text_blocks.map(b => b.translated).join(' ') || '—';
-    document.getElementById('drawerLangInfo').textContent =
-      (lastDetectedLang ? 'Detected: ' + lastDetectedLang.toUpperCase() + '  ·  ' : '') + 'Translated via AI';
-
-    translatedDataUrl = await renderTranslatedOverlay(lastImageData, res.text_blocks);
-    await drawDataUrlOnCanvas('translatedCanvas', translatedDataUrl);
-
-    if (document.getElementById('vtTrans').classList.contains('active')) {
-      document.getElementById('translatedCanvas').style.display = 'block';
-      document.getElementById('originalCanvas').style.display = 'none';
+    function toggleFlash() {
+      const btn = document.getElementById('flashBtn');
+      flashOn = !flashOn;
+      btn.classList.toggle('on', flashOn);
+      if (videoStream) {
+        const track = videoStream.getVideoTracks()[0];
+        if (track?.getCapabilities()?.torch)
+          track.applyConstraints({ advanced: [{ torch: flashOn }] });
+      }
+      toast(flashOn ? 'Flash on' : 'Flash off');
     }
-    toast('Retranslated!');
-  } catch {
-    toast('Retranslation failed', 'error');
-  } finally {
-    document.getElementById('canvasLoading').classList.remove('show');
-  }
-}
 
-function onResultLangChange() {
-  document.getElementById('retransBar').classList.add('show');
-}
-function onLangChange() {} // no-op in camera view; lang is read at scan time
+    // ── CAPTURE ──
+    async function captureAndTranslate() {
+      if (isProcessing) return;
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('captureCanvas');
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const imageData = canvas.toDataURL('image/jpeg', 0.92);
+      await processImage(imageData);
+    }
 
-// ── CANVAS RENDERING ──
-function drawImageOnCanvas(canvasId, src) {
-  return new Promise(resolve => {
-    const canvas = document.getElementById(canvasId);
-    const img = new Image();
-    img.onload = () => {
-      canvas.width  = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      resolve();
-    };
-    img.src = src;
-  });
-}
+    // ── UPLOAD ──
+    function handleUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      e.target.value = '';
+      document.getElementById('noCam').classList.remove('show');
+      const reader = new FileReader();
+      reader.onload = ev => processImage(ev.target.result);
+      reader.readAsDataURL(file);
+    }
 
-function drawDataUrlOnCanvas(canvasId, dataUrl) {
-  return new Promise(resolve => {
-    const canvas = document.getElementById(canvasId);
-    const img = new Image();
-    img.onload = () => {
-      canvas.width  = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      resolve();
-    };
-    img.src = dataUrl;
-  });
-}
+    // ── PROCESS IMAGE ──
+    async function processImage(imageDataUrl) {
+      if (isProcessing) return;
+      isProcessing = true;
+      lastImageData = imageDataUrl;
 
-// Renders translated text over blocks on a new canvas, returns dataURL
-function renderTranslatedOverlay(imageDataUrl, textBlocks) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      const offscreen = document.createElement('canvas');
-      offscreen.width  = img.naturalWidth;
-      offscreen.height = img.naturalHeight;
-      const ctx = offscreen.getContext('2d');
-      ctx.drawImage(img, 0, 0);
+      const btn = document.getElementById('captureBtn');
+      btn.classList.add('busy');
+      document.getElementById('scanBeam').classList.add('on');
+      showScanOverlay();
 
-      (textBlocks || []).forEach(block => {
-        const verts = block.vertices;
-        if (!verts || verts.length < 3) return;
-        const translated = (block.translated || '').trim();
-        if (!translated || translated === block.original) return;
+      try {
+        const lang = document.getElementById('targetLang').value;
+        const res = await apiFetch('/scan', {
+          method: 'POST',
+          body: JSON.stringify({ image: imageDataUrl, target_lang: lang })
+        });
 
-        const xs = verts.map(v => v[0]), ys = verts.map(v => v[1]);
-        const minX = Math.min(...xs), maxX = Math.max(...xs);
-        const minY = Math.min(...ys), maxY = Math.max(...ys);
-        const bw = maxX - minX, bh = maxY - minY;
-        if (bw < 6 || bh < 6) return;
+        stepDone(1); stepActive(2);
 
-        // Sample average bg color of this block
-        const [r, g, b] = sampleAvgColor(ctx, minX, minY, bw, bh, img.naturalWidth, img.naturalHeight);
-        const luma = 0.299*r + 0.587*g + 0.114*b;
-        const isLight = luma > 140;
+        if (!res.success) {
+          hideScanOverlay();
+          toast(res.error || 'No text found. Try a clearer image.', 'error');
+          return;
+        }
 
-        // Fill polygon with background color
-        ctx.beginPath();
-        ctx.moveTo(verts[0][0], verts[0][1]);
-        for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i][0], verts[i][1]);
-        ctx.closePath();
-        ctx.fillStyle = isLight
-          ? `rgba(${Math.min(255, r+20)},${Math.min(255, g+20)},${Math.min(255, b+20)},0.94)`
-          : `rgba(${Math.max(0, r-20)},${Math.max(0, g-20)},${Math.max(0, b-20)},0.94)`;
-        ctx.fill();
+        lastRawBlocks = (res.text_blocks || []).map(b => ({ original: b.original, vertices: b.vertices }));
+        lastDetectedLang = res.detected_lang;
 
-        // Draw translated text, fitted inside the block
-        const textColor = isLight ? '#0a0a14' : '#f0f0ee';
-        const maxFontPx = Math.min(bh * 0.7, 32, Math.max(10, bw / Math.max(translated.length * 0.55, 1)));
-        const fontSize = Math.max(9, maxFontPx);
-        ctx.font = `600 ${fontSize}px "Inter", Arial, sans-serif`;
-        ctx.fillStyle = textColor;
-        ctx.textBaseline = 'middle';
-        fitTextInBox(ctx, translated, minX + 3, minY, bw - 6, bh, fontSize);
+        // Sync result lang selector
+        document.getElementById('resultLang').value = lang;
+
+        // Populate text panes
+        document.getElementById('drawerTrans').textContent = res.translated_text || '—';
+        document.getElementById('drawerOrig').textContent = res.original_text || '—';
+        document.getElementById('drawerLangInfo').textContent =
+          (res.detected_lang ? 'Detected: ' + res.detected_lang.toUpperCase() + '  ·  ' : '') +
+          'Translated via ' + (res.engine || 'AI');
+
+        stepDone(2); stepActive(3);
+
+        // Draw original image on originalCanvas
+        await drawImageOnCanvas('originalCanvas', imageDataUrl);
+
+        // Render translated overlay
+        translatedDataUrl = await renderTranslatedOverlay(imageDataUrl, res.text_blocks || []);
+        await drawDataUrlOnCanvas('translatedCanvas', translatedDataUrl);
+
+        stepDone(3);
+        hideScanOverlay();
+        showResultView();
+
+      } catch (err) {
+        hideScanOverlay();
+        toast('Something went wrong. Please try again.', 'error');
+        console.error(err);
+      } finally {
+        isProcessing = false;
+        btn.classList.remove('busy');
+        document.getElementById('scanBeam').classList.remove('on');
+      }
+    }
+
+    // ── RETRANSLATE ──
+    async function retranslate() {
+      if (!lastImageData || !lastRawBlocks) return;
+      document.getElementById('retransBar').classList.remove('show');
+      const lang = document.getElementById('resultLang').value;
+
+      document.getElementById('canvasLoading').classList.add('show');
+      try {
+        const res = await apiFetch('/api/retranslate-blocks', {
+          method: 'POST',
+          body: JSON.stringify({ blocks: lastRawBlocks, target_lang: lang, src_lang: lastDetectedLang })
+        });
+        if (!res.success) { toast(res.error || 'Retranslation failed', 'error'); return; }
+
+        document.getElementById('drawerTrans').textContent = res.text_blocks.map(b => b.translated).join(' ') || '—';
+        document.getElementById('drawerLangInfo').textContent =
+          (lastDetectedLang ? 'Detected: ' + lastDetectedLang.toUpperCase() + '  ·  ' : '') + 'Translated via AI';
+
+        translatedDataUrl = await renderTranslatedOverlay(lastImageData, res.text_blocks);
+        await drawDataUrlOnCanvas('translatedCanvas', translatedDataUrl);
+
+        if (document.getElementById('vtTrans').classList.contains('active')) {
+          document.getElementById('translatedCanvas').style.display = 'block';
+          document.getElementById('originalCanvas').style.display = 'none';
+        }
+        toast('Retranslated!');
+      } catch {
+        toast('Retranslation failed', 'error');
+      } finally {
+        document.getElementById('canvasLoading').classList.remove('show');
+      }
+    }
+
+    function onResultLangChange() {
+      document.getElementById('retransBar').classList.add('show');
+    }
+    function onLangChange() { } // no-op in camera view; lang is read at scan time
+
+    // ── CANVAS RENDERING ──
+    function drawImageOnCanvas(canvasId, src) {
+      return new Promise(resolve => {
+        const canvas = document.getElementById(canvasId);
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          resolve();
+        };
+        img.src = src;
       });
+    }
 
-      resolve(offscreen.toDataURL('image/jpeg', 0.95));
-    };
-    img.src = imageDataUrl;
-  });
-}
+    function drawDataUrlOnCanvas(canvasId, dataUrl) {
+      return new Promise(resolve => {
+        const canvas = document.getElementById(canvasId);
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          resolve();
+        };
+        img.src = dataUrl;
+      });
+    }
 
-function sampleAvgColor(ctx, x, y, w, h, imgW, imgH) {
-  const sx = Math.max(0, Math.round(x));
-  const sy = Math.max(0, Math.round(y));
-  const sw = Math.max(1, Math.min(Math.round(w), imgW - sx));
-  const sh = Math.max(1, Math.min(Math.round(h), imgH - sy));
-  try {
-    const d = ctx.getImageData(sx, sy, sw, sh).data;
-    let r=0, g=0, b=0, n=d.length/4;
-    for (let i=0; i<d.length; i+=4){ r+=d[i]; g+=d[i+1]; b+=d[i+2]; }
-    return [r/n, g/n, b/n];
-  } catch { return [255,255,255]; }
-}
+    // Renders translated text over blocks on a new canvas, returns dataURL
+    function renderTranslatedOverlay(imageDataUrl, textBlocks) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const offscreen = document.createElement('canvas');
+          offscreen.width = img.naturalWidth;
+          offscreen.height = img.naturalHeight;
+          const ctx = offscreen.getContext('2d');
+          ctx.drawImage(img, 0, 0);
 
-function fitTextInBox(ctx, text, x, y, maxW, boxH, fontSize) {
-  const lh = fontSize * 1.18;
-  const words = text.split(/\s+/);
-  const lines = [];
-  let cur = '';
-  for (const w of words) {
-    const test = cur ? cur + ' ' + w : w;
-    if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; }
-    else cur = test;
-  }
-  if (cur) lines.push(cur);
+          (textBlocks || []).forEach(block => {
+            const verts = block.vertices;
+            if (!verts || verts.length < 3) return;
+            const translated = (block.translated || '').trim();
+            if (!translated || translated === block.original) return;
 
-  const totalH = lines.length * lh;
-  const startY = y + (boxH - totalH) / 2 + lh / 2;
-  lines.forEach((line, i) => {
-    const lw = ctx.measureText(line).width;
-    ctx.fillText(line, x + Math.max(0, (maxW - lw) / 2), startY + i * lh);
-  });
-}
+            const xs = verts.map(v => v[0]), ys = verts.map(v => v[1]);
+            const minX = Math.min(...xs), maxX = Math.max(...xs);
+            const minY = Math.min(...ys), maxY = Math.max(...ys);
+            const bw = maxX - minX, bh = maxY - minY;
+            if (bw < 6 || bh < 6) return;
 
-// ── VIEW SWITCHES ──
-function switchView(mode) {
-  const tCanvas = document.getElementById('translatedCanvas');
-  const oCanvas = document.getElementById('originalCanvas');
-  const vtT = document.getElementById('vtTrans');
-  const vtO = document.getElementById('vtOrig');
-  if (mode === 'translated') {
-    tCanvas.style.display = 'block'; oCanvas.style.display = 'none';
-    vtT.classList.add('active'); vtO.classList.remove('active');
-  } else {
-    oCanvas.style.display = 'block'; tCanvas.style.display = 'none';
-    vtO.classList.add('active'); vtT.classList.remove('active');
-  }
-}
+            // Sample average bg color of this block
+            const [r, g, b] = sampleAvgColor(ctx, minX, minY, bw, bh, img.naturalWidth, img.naturalHeight);
+            const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+            const isLight = luma > 140;
 
-function switchTab(tab) {
-  document.querySelectorAll('.dtab').forEach((t,i) => t.classList.toggle('active', (tab==='text'&&i===0)||(tab==='orig'&&i===1)));
-  document.getElementById('paneText').classList.toggle('active', tab === 'text');
-  document.getElementById('paneOrig').classList.toggle('active', tab === 'orig');
-}
+            // Fill polygon with background color
+            ctx.beginPath();
+            ctx.moveTo(verts[0][0], verts[0][1]);
+            for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i][0], verts[i][1]);
+            ctx.closePath();
+            ctx.fillStyle = isLight
+              ? `rgba(${Math.min(255, r + 20)},${Math.min(255, g + 20)},${Math.min(255, b + 20)},0.94)`
+              : `rgba(${Math.max(0, r - 20)},${Math.max(0, g - 20)},${Math.max(0, b - 20)},0.94)`;
+            ctx.fill();
 
-// ── NAVIGATION ──
-function showResultView() {
-  document.getElementById('resultView').classList.add('show');
-  switchView('translated');
-  document.getElementById('retransBar').classList.remove('show');
-  document.getElementById('vtTrans').classList.add('active');
-  document.getElementById('vtOrig').classList.remove('active');
-}
+            // Draw translated text, fitted inside the block
+            const textColor = isLight ? '#0a0a14' : '#f0f0ee';
+            const maxFontPx = Math.min(bh * 0.7, 32, Math.max(10, bw / Math.max(translated.length * 0.55, 1)));
+            const fontSize = Math.max(9, maxFontPx);
+            ctx.font = `600 ${fontSize}px "Inter", Arial, sans-serif`;
+            ctx.fillStyle = textColor;
+            ctx.textBaseline = 'middle';
+            fitTextInBox(ctx, translated, minX + 3, minY, bw - 6, bh, fontSize);
+          });
 
-function backToCamera() {
-  document.getElementById('resultView').classList.remove('show');
-}
+          resolve(offscreen.toDataURL('image/jpeg', 0.95));
+        };
+        img.src = imageDataUrl;
+      });
+    }
 
-// ── SCAN OVERLAY ──
-function showScanOverlay() {
-  ['ss1','ss2','ss3'].forEach(id => { const el = document.getElementById(id); el.className='sstep'; });
-  document.getElementById('ss1').classList.add('on');
-  document.getElementById('scanOverlay').classList.add('show');
-}
+    function sampleAvgColor(ctx, x, y, w, h, imgW, imgH) {
+      const sx = Math.max(0, Math.round(x));
+      const sy = Math.max(0, Math.round(y));
+      const sw = Math.max(1, Math.min(Math.round(w), imgW - sx));
+      const sh = Math.max(1, Math.min(Math.round(h), imgH - sy));
+      try {
+        const d = ctx.getImageData(sx, sy, sw, sh).data;
+        let r = 0, g = 0, b = 0, n = d.length / 4;
+        for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
+        return [r / n, g / n, b / n];
+      } catch { return [255, 255, 255]; }
+    }
 
-function hideScanOverlay() {
-  document.getElementById('scanOverlay').classList.remove('show');
-}
+    function fitTextInBox(ctx, text, x, y, maxW, boxH, fontSize) {
+      const lh = fontSize * 1.18;
+      const words = text.split(/\s+/);
+      const lines = [];
+      let cur = '';
+      for (const w of words) {
+        const test = cur ? cur + ' ' + w : w;
+        if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; }
+        else cur = test;
+      }
+      if (cur) lines.push(cur);
 
-function stepActive(n) {
-  const id = 'ss'+n;
-  document.getElementById(id).className = 'sstep on';
-}
-function stepDone(n) {
-  document.getElementById('ss'+n).className = 'sstep done';
-}
+      const totalH = lines.length * lh;
+      const startY = y + (boxH - totalH) / 2 + lh / 2;
+      lines.forEach((line, i) => {
+        const lw = ctx.measureText(line).width;
+        ctx.fillText(line, x + Math.max(0, (maxW - lw) / 2), startY + i * lh);
+      });
+    }
 
-// ── ACTIONS ──
-function downloadResult() {
-  const canvas = document.getElementById('translatedCanvas');
-  const link = document.createElement('a');
-  link.download = 'yaply-translated.jpg';
-  link.href = canvas.toDataURL('image/jpeg', 0.95);
-  link.click();
-}
+    // ── VIEW SWITCHES ──
+    function switchView(mode) {
+      const tCanvas = document.getElementById('translatedCanvas');
+      const oCanvas = document.getElementById('originalCanvas');
+      const vtT = document.getElementById('vtTrans');
+      const vtO = document.getElementById('vtOrig');
+      if (mode === 'translated') {
+        tCanvas.style.display = 'block'; oCanvas.style.display = 'none';
+        vtT.classList.add('active'); vtO.classList.remove('active');
+      } else {
+        oCanvas.style.display = 'block'; tCanvas.style.display = 'none';
+        vtO.classList.add('active'); vtT.classList.remove('active');
+      }
+    }
 
-function copyTranslation() {
-  const text = document.getElementById('drawerTrans').textContent;
-  navigator.clipboard?.writeText(text).then(() => toast('Copied!'));
-}
+    function switchTab(tab) {
+      document.querySelectorAll('.dtab').forEach((t, i) => t.classList.toggle('active', (tab === 'text' && i === 0) || (tab === 'orig' && i === 1)));
+      document.getElementById('paneText').classList.toggle('active', tab === 'text');
+      document.getElementById('paneOrig').classList.toggle('active', tab === 'orig');
+    }
 
-function shareResult() {
-  const canvas = document.getElementById('translatedCanvas');
-  canvas.toBlob(blob => {
-    if (navigator.share && blob) {
-      navigator.share({
-        title: 'Yaply Translation',
-        text: document.getElementById('drawerTrans').textContent,
-        files: [new File([blob], 'yaply-translated.jpg', { type:'image/jpeg' })]
-      }).catch(() => copyTranslation());
-    } else { copyTranslation(); }
-  }, 'image/jpeg', 0.92);
-}
+    // ── NAVIGATION ──
+    function showResultView() {
+      document.getElementById('resultView').classList.add('show');
+      switchView('translated');
+      document.getElementById('retransBar').classList.remove('show');
+      document.getElementById('vtTrans').classList.add('active');
+      document.getElementById('vtOrig').classList.remove('active');
+    }
 
-// ── TOAST ──
-function toast(msg, type) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.style.background = type === 'error' ? 'rgba(216,76,62,.95)' : 'rgba(26,138,114,.95)';
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2800);
-}
+    function backToCamera() {
+      document.getElementById('resultView').classList.remove('show');
+    }
 
-startCamera();
-</script>
+    // ── SCAN OVERLAY ──
+    function showScanOverlay() {
+      ['ss1', 'ss2', 'ss3'].forEach(id => { const el = document.getElementById(id); el.className = 'sstep'; });
+      document.getElementById('ss1').classList.add('on');
+      document.getElementById('scanOverlay').classList.add('show');
+    }
+
+    function hideScanOverlay() {
+      document.getElementById('scanOverlay').classList.remove('show');
+    }
+
+    function stepActive(n) {
+      const id = 'ss' + n;
+      document.getElementById(id).className = 'sstep on';
+    }
+    function stepDone(n) {
+      document.getElementById('ss' + n).className = 'sstep done';
+    }
+
+    // ── ACTIONS ──
+    function downloadResult() {
+      const canvas = document.getElementById('translatedCanvas');
+      const link = document.createElement('a');
+      link.download = 'yaply-translated.jpg';
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+    }
+
+    function copyTranslation() {
+      const text = document.getElementById('drawerTrans').textContent;
+      navigator.clipboard?.writeText(text).then(() => toast('Copied!'));
+    }
+
+    function shareResult() {
+      const canvas = document.getElementById('translatedCanvas');
+      canvas.toBlob(blob => {
+        if (navigator.share && blob) {
+          navigator.share({
+            title: 'Yaply Translation',
+            text: document.getElementById('drawerTrans').textContent,
+            files: [new File([blob], 'yaply-translated.jpg', { type: 'image/jpeg' })]
+          }).catch(() => copyTranslation());
+        } else { copyTranslation(); }
+      }, 'image/jpeg', 0.92);
+    }
+
+    // ── TOAST ──
+    function toast(msg, type) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.background = type === 'error' ? 'rgba(216,76,62,.95)' : 'rgba(26,138,114,.95)';
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    startCamera();
+
+    // Instead of repeating auth code everywhere
+    // Just call:
+    YaplyCore.requireAuth();   // redirect if not logged in
+    YaplyCore.getUser();       // get current user
+    YaplyCore.logout();        // logout from anywhere
+
+  </script>
 </body>
+
 </html>

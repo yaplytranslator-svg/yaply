@@ -2391,6 +2391,85 @@ def nearby_stations():
 
     except Exception as e:
         return jsonify({'success': False, 'stations': [], 'error': str(e)})
+    
+
+# ══════════════════════════════════════════════════════════
+# ADD THESE ROUTES TO YOUR app.py
+# ══════════════════════════════════════════════════════════
+
+# ── PWA Manifest ──
+@app.route('/manifest.json')
+def manifest():
+    return jsonify({
+        "name": "Yaply — AI Travel OS",
+        "short_name": "Yaply",
+        "description": "India's first AI Travel Operating System. Plan trips, translate live, stay safe.",
+        "start_url": "/app",
+        "scope": "/",
+        "display": "standalone",
+        "orientation": "portrait",
+        "background_color": "#F7F9FC",
+        "theme_color": "#2563FF",
+        "lang": "en-IN",
+        "categories": ["travel", "lifestyle", "utilities"],
+        "icons": [
+            {"src": "/static/icons/icon-48.png",  "sizes": "48x48",   "type": "image/png"},
+            {"src": "/static/icons/icon-72.png",  "sizes": "72x72",   "type": "image/png"},
+            {"src": "/static/icons/icon-96.png",  "sizes": "96x96",   "type": "image/png"},
+            {"src": "/static/icons/icon-144.png", "sizes": "144x144", "type": "image/png"},
+            {"src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+            {"src": "/static/icons/icon-256.png", "sizes": "256x256", "type": "image/png"},
+            {"src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
+        ],
+        "shortcuts": [
+            {"name": "Plan a Trip",    "url": "/plan",      "description": "Start planning"},
+            {"name": "Live Translate", "url": "/translate", "description": "Live translation"},
+        ]
+    })
+
+# ── Service Worker ──
+@app.route('/sw.js')
+def service_worker():
+    response = make_response(
+        open(os.path.join(app.root_path, 'static', 'sw.js')).read()
+    )
+    response.headers['Content-Type'] = 'application/javascript'
+    response.headers['Service-Worker-Allowed'] = '/'
+    return response
+
+# ── Privacy Policy ──
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+# ── Terms of Service ──
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+# ── Offline page ──
+@app.route('/offline')
+def offline():
+    return render_template('offline.html')
+
+# ── Digital Asset Links (for TWA Play Store verification) ──
+@app.route('/.well-known/assetlinks.json')
+def assetlinks():
+    return jsonify([{
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "live.yaply.app",
+            "sha256_cert_fingerprints": [
+                # REPLACE THIS with your actual SHA256 fingerprint
+                # Get it after creating your keystore:
+                # keytool -list -v -keystore yaply.keystore
+                "YOUR_SHA256_FINGERPRINT_HERE"
+            ]
+        }
+    }])
+
+
 
 # ════════════════════════════════════════════════════════════════
 #  ERROR HANDLERS
