@@ -2461,10 +2461,7 @@ def assetlinks():
             "namespace": "android_app",
             "package_name": "live.yaply.app",
             "sha256_cert_fingerprints": [
-                # REPLACE THIS with your actual SHA256 fingerprint
-                # Get it after creating your keystore:
-                # keytool -list -v -keystore yaply.keystore
-                "YOUR_SHA256_FINGERPRINT_HERE"
+                "28:A2:F6:0F:1A:F0:D6:B2:D8:C9:BD:B1:CD:35:5B:A1:8B:24:BB:09:17:5B:6D:E7:E0:50:7B:59:B1:CA:79:5D"
             ]
         }
     }])
