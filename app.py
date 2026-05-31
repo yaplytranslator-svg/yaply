@@ -2802,10 +2802,7 @@ def api_diary_export():
         return jsonify({'success': False, 'error': str(e)})
 
 
-# ── Profile page ──
-@app.route('/me')
-def profile_page():
-    return render_template('profile.html')
+
 
 # ── Update profile ──
 @app.route('/api/me/update', methods=['POST'])
