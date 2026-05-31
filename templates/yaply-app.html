@@ -13,63 +13,64 @@
     rel="stylesheet" />
   <script src="/static/yaply-core.js"></script>
 
-<!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════════════
      PWA HEAD SNIPPET
      Add this inside <head> tag of ALL your HTML pages:
      landing.html, auth.html, yaply-app.html,
      before_trip.html, during_trip.html, after_trip.html
 ══════════════════════════════════════════════════════════ -->
 
-<!-- PWA Meta Tags -->
-<meta name="application-name" content="Yaply"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="Yaply"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#2563FF"/>
-<meta name="msapplication-TileColor" content="#2563FF"/>
-<meta name="msapplication-TileImage" content="/static/icons/icon-144.png"/>
+  <!-- PWA Meta Tags -->
+  <meta name="application-name" content="Yaply" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Yaply" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#2563FF" />
+  <meta name="msapplication-TileColor" content="#2563FF" />
+  <meta name="msapplication-TileImage" content="/static/icons/icon-144.png" />
 
-<!-- SEO Meta -->
-<meta name="description" content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere."/>
-<meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel"/>
-<meta name="author" content="Yaply Technologies"/>
+  <!-- SEO Meta -->
+  <meta name="description"
+    content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere." />
+  <meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel" />
+  <meta name="author" content="Yaply Technologies" />
 
-<!-- Open Graph (WhatsApp/Facebook preview) -->
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://www.yaply.live"/>
-<meta property="og:title" content="Yaply — AI Travel OS"/>
-<meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere."/>
-<meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+  <!-- Open Graph (WhatsApp/Facebook preview) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.yaply.live" />
+  <meta property="og:title" content="Yaply — AI Travel OS" />
+  <meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere." />
+  <meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png" />
 
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Yaply — AI Travel OS"/>
-<meta name="twitter:description" content="India's first AI Travel Operating System"/>
-<meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Yaply — AI Travel OS" />
+  <meta name="twitter:description" content="India's first AI Travel Operating System" />
+  <meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png" />
 
-<!-- PWA Manifest -->
-<link rel="manifest" href="/manifest.json"/>
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
 
-<!-- Icons -->
-<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png"/>
-<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png"/>
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png"/>
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png" />
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png" />
 
-<!-- PWA Service Worker Registration -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' })
-      .then(function(reg) {
-        console.log('[SW] Registered:', reg.scope);
-      })
-      .catch(function(err) {
-        console.log('[SW] Failed:', err);
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(function (reg) {
+            console.log('[SW] Registered:', reg.scope);
+          })
+          .catch(function (err) {
+            console.log('[SW] Failed:', err);
+          });
       });
-  });
-}
-</script>
+    }
+  </script>
 
   <style>
     /* ═══════════════════════════════════════════
@@ -280,6 +281,66 @@ if ('serviceWorker' in navigator) {
       background: var(--coral);
       border-radius: 50%;
       border: 2px solid var(--white);
+    }
+
+    .notif-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .15s;
+      position: relative;
+    }
+
+    .notif-item:hover {
+      background: var(--bg);
+    }
+
+    .notif-item.unread {
+      background: var(--blue-g);
+    }
+
+    .notif-item.unread::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    .notif-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .notif-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .notif-sub {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .notif-time {
+      font-size: 10px;
+      color: var(--muted2);
+      margin-top: 3px;
     }
 
     /* Avatar wrapper + dropdown  (BUG 3 & BUG 6) */
@@ -2084,13 +2145,51 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <div class="nav-actions">
-      <button class="nav-icon-btn" onclick="window.location.href='/notifications'" title="Notifications">
+      <button class="nav-icon-btn" id="notifBtn" onclick="toggleNotifications(event)" title="Notifications">
         <svg viewBox="0 0 24 24">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
-        <div class="notif-dot"></div>
+        <div class="notif-dot" id="notifDot"></div>
       </button>
+
+      <!-- Notification dropdown -->
+      <div id="notifDropdown" style="
+  display:none;
+  position:fixed;
+  top:62px;right:12px;
+  width:320px;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:20px;
+  box-shadow:0 8px 40px rgba(11,18,32,0.15);
+  z-index:200;
+  overflow:hidden;
+  transform:translateY(-8px);
+  opacity:0;
+  transition:all .25s cubic-bezier(.34,1.2,.64,1);
+">
+        <!-- Header -->
+        <div
+          style="padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:15px;font-weight:700;color:var(--text);">Notifications</div>
+          <button onclick="markAllRead()" id="markAllBtn"
+            style="font-size:12px;font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer;">
+            Mark all read
+          </button>
+        </div>
+        <!-- List -->
+        <div id="notifList" style="max-height:360px;overflow-y:auto;"></div>
+        <!-- Footer -->
+        <div style="padding:12px 18px;border-top:1px solid var(--border);text-align:center;">
+          <div style="font-size:12px;color:var(--muted);">You're all caught up ✨</div>
+        </div>
+      </div>
+
+      <!-- Backdrop -->
+      <div id="notifBackdrop" style="display:none;position:fixed;inset:0;z-index:199;" onclick="closeNotifications()">
+      </div>
+
       <!-- BUG 1 + BUG 3 + BUG 6: real avatar, /profile link, logout dropdown -->
       <div class="nav-avatar-wrapper" id="navAvatarWrapper">
         <div class="nav-avatar" id="navAvatar" onclick="toggleAvatarMenu()"></div>
@@ -2996,6 +3095,132 @@ if ('serviceWorker' in navigator) {
         'Plan your first trip' +
         '</a>';
     }
+
+    // ── NOTIFICATIONS ──
+    var _notifOpen = false;
+    var _notifications = [
+      {
+        id: 1, unread: true,
+        icon: '✈️', bg: 'var(--blue-g)',
+        title: 'Welcome to Yaply!',
+        sub: 'Start planning your first trip with AI.',
+        time: 'Just now',
+        action: '/plan'
+      },
+      {
+        id: 2, unread: true,
+        icon: '🌍', bg: 'var(--green-g)',
+        title: 'Discover new places',
+        sub: 'Upload any photo to identify any location instantly.',
+        time: '2 min ago',
+        action: '/plan'
+      },
+      {
+        id: 3, unread: false,
+        icon: '🛡️', bg: 'var(--coral-g)',
+        title: 'Stay safe on your trip',
+        sub: 'Use live safety tools during your journey.',
+        time: '1 day ago',
+        action: '/live'
+      },
+      {
+        id: 4, unread: false,
+        icon: '💰', bg: 'var(--amber-g)',
+        title: 'Track your expenses',
+        sub: 'Log and split bills after your trip.',
+        time: '2 days ago',
+        action: '/after'
+      },
+    ];
+
+    function toggleNotifications(e) {
+      e.stopPropagation();
+      if (_notifOpen) {
+        closeNotifications();
+      } else {
+        openNotifications();
+      }
+    }
+
+    function openNotifications() {
+      _notifOpen = true;
+      renderNotifications();
+      var dd = document.getElementById('notifDropdown');
+      var bd = document.getElementById('notifBackdrop');
+      dd.style.display = 'block';
+      bd.style.display = 'block';
+      setTimeout(function () {
+        dd.style.opacity = '1';
+        dd.style.transform = 'translateY(0)';
+      }, 10);
+    }
+
+    function closeNotifications() {
+      _notifOpen = false;
+      var dd = document.getElementById('notifDropdown');
+      var bd = document.getElementById('notifBackdrop');
+      dd.style.opacity = '0';
+      dd.style.transform = 'translateY(-8px)';
+      setTimeout(function () {
+        dd.style.display = 'none';
+        bd.style.display = 'none';
+      }, 250);
+    }
+
+    function renderNotifications() {
+      var list = document.getElementById('notifList');
+      var unread = _notifications.filter(function (n) { return n.unread; }).length;
+      var dotEl = document.getElementById('notifDot');
+
+      // Update dot
+      if (dotEl) dotEl.style.display = unread > 0 ? 'block' : 'none';
+
+      if (!_notifications.length) {
+        list.innerHTML = '<div style="text-align:center;padding:32px 16px;"><div style="font-size:32px;margin-bottom:8px;">🔔</div><div style="font-size:13px;color:var(--muted);">No notifications yet</div></div>';
+        return;
+      }
+
+      list.innerHTML = _notifications.map(function (n) {
+        return '<div class="notif-item ' + (n.unread ? 'unread' : '') + '" onclick="notifClick(' + n.id + ')">' +
+          '<div class="notif-icon" style="background:' + n.bg + ';">' + n.icon + '</div>' +
+          '<div style="flex:1;">' +
+          '<div class="notif-title">' + n.title + '</div>' +
+          '<div class="notif-sub">' + n.sub + '</div>' +
+          '<div class="notif-time">' + n.time + '</div>' +
+          '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    function notifClick(id) {
+      var n = _notifications.find(function (n) { return n.id === id; });
+      if (!n) return;
+      n.unread = false;
+      updateNotifDot();
+      closeNotifications();
+      if (n.action) window.location.href = n.action;
+    }
+
+    function markAllRead() {
+      _notifications.forEach(function (n) { n.unread = false; });
+      updateNotifDot();
+      renderNotifications();
+      document.getElementById('markAllBtn').textContent = '✅ Done';
+      setTimeout(function () {
+        document.getElementById('markAllBtn').textContent = 'Mark all read';
+      }, 2000);
+    }
+
+    function updateNotifDot() {
+      var unread = _notifications.filter(function (n) { return n.unread; }).length;
+      var dotEl = document.getElementById('notifDot');
+      if (dotEl) dotEl.style.display = unread > 0 ? 'block' : 'none';
+    }
+
+    // Init dot on load
+    document.addEventListener('DOMContentLoaded', function () {
+      updateNotifDot();
+    });
 
     /* ═══════════════════════════════════════════════════════════════
        BUG 2 — RENDER SQUAD (replaces all hardcoded HTML)
