@@ -395,9 +395,7 @@ def tools_page():
 def discover_page():
     return render_template('discover.html')
 
-@app.route('/profile')
-def profile_page():
-    return render_template('profile.html')
+
 
 @app.route('/translate')
 def translate_page():
