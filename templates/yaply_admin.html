@@ -511,7 +511,7 @@ function renderUsers(users) {
       '<td>' + joined + '</td>' +
       '<td>' + lastLogin + '</td>' +
       '<td>' + authBadge + '</td>' +
-      '<td>' + planBadge + '</td>' +
+      '<td>' + planBadge + (u.is_pro ? '' : '<button onclick="upgradePro(\'' + u.email + '\',this)" style="margin-left:6px;padding:3px 8px;background:rgba(245,185,66,0.15);border:1px solid rgba(245,185,66,0.3);border-radius:6px;font-size:10px;font-weight:700;color:var(--amber);cursor:pointer;">Upgrade</button>') + '</td>' +
       '<td style="font-family:DM Mono,monospace;color:#2563FF;">' + (u.trip_count || 0) + '</td>' +
       '<td style="color:rgba(255,255,255,0.4);">' + (u.passport || 'India') + '</td>' +
     '</tr>';
@@ -579,6 +579,39 @@ function renderTrips(trips) {
       '<td style="color:rgba(37,99,255,0.8);">' + startDate + '</td>' +
     '</tr>';
   }).join('');
+}
+
+async function upgradePro(email, btn) {
+  btn.textContent = '...';
+  btn.disabled = true;
+  try {
+    var res = await fetch('/api/admin/upgrade-pro', {
+      method: 'POST',
+      headers: _headers,
+      body: JSON.stringify({ email: email })
+    });
+    var data = await res.json();
+    if (data.success) {
+      btn.textContent = '✅ Pro';
+      btn.style.color = 'var(--green)';
+      showToast(email + ' is now Pro!');
+    } else {
+      btn.textContent = 'Upgrade';
+      btn.disabled = false;
+      alert(data.error);
+    }
+  } catch(e) {
+    btn.textContent = 'Upgrade';
+    btn.disabled = false;
+  }
+}
+
+function showToast(msg) {
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#18C29C;color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:999;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 3000);
 }
 
 // ══ ACTIVITY ══

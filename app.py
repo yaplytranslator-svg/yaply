@@ -2601,6 +2601,24 @@ def admin_trips():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/api/admin/upgrade-pro', methods=['POST'])
+@require_admin
+def admin_upgrade_pro():
+    try:
+        email = (request.get_json() or {}).get('email', '').lower()
+        if not email:
+            return jsonify({'success': False, 'error': 'Email required'})
+        conn = get_db()
+        conn.execute('UPDATE users SET is_pro=1 WHERE email=?', (email,))
+        conn.commit()
+        affected = conn.execute('SELECT changes()').fetchone()[0]
+        conn.close()
+        if affected:
+            return jsonify({'success': True, 'message': email + ' upgraded to Pro ✅'})
+        return jsonify({'success': False, 'error': 'User not found'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 # ── Admin activity ──
 @app.route('/api/admin/activity')
 @require_admin
