@@ -69,7 +69,7 @@ from database import (
     save_trip, get_trips, get_trip, update_trip, delete_trip,
     save_place, get_places, delete_place,
     add_expense, get_expenses, delete_expense,
-    save_journal, get_journal, get_user_stats, get_user_by_id
+    save_journal, get_journal, get_user_stats, get_user_by_id, update_user
 )
 from auth import register_auth_routes, require_auth, decode_token, get_token_from_request, optional_auth, safe_user
 
@@ -2616,6 +2616,29 @@ def admin_upgrade_pro():
         if affected:
             return jsonify({'success': True, 'message': email + ' upgraded to Pro ✅'})
         return jsonify({'success': False, 'error': 'User not found'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+    
+
+
+
+# ── Profile page ──
+@app.route('/me')
+def profile_page():
+    return render_template('profile.html')
+
+# ── Update profile ──
+@app.route('/api/me/update', methods=['POST'])
+@require_auth
+def update_profile():
+    try:
+        data = request.get_json() or {}
+        allowed = ['name', 'home_city', 'passport', 'currency']
+        updates = {k: data[k] for k in allowed if k in data and data[k]}
+        if updates:
+            update_user(g.user_id, **updates)
+        user = get_user_by_id(g.user_id)
+        return jsonify({'success': True, 'user': safe_user(user)})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
