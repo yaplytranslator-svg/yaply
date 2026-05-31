@@ -632,7 +632,7 @@ def register_auth_routes(app):
 
     @app.route('/api/auth/update-profile', methods=['POST'])
     @require_auth
-    def update_profile():
+    def auth_update_profile():
         try:
             data    = request.get_json() or {}
             allowed = ['name', 'passport', 'home_city', 'currency', 'locale']
