@@ -431,15 +431,6 @@ def after_trip_page():
     return render_template('after_trip.html')
 
 
-# ════════════════════════════════════════════════════════════════
-#  AUTH API ROUTES
-# ════════════════════════════════════════════════════════════════
-
-@app.route('/api/me', methods=['GET'])
-@require_auth
-def api_me():
-    return jsonify({'success': True, 'user': safe_user(g.user)})
-
 
 # ════════════════════════════════════════════════════════════════
 #  DATABASE / TRIP ROUTES
