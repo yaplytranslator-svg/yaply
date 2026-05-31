@@ -65,11 +65,13 @@ limiter = Limiter(
 
 # ── DATABASE + AUTH ───────────────────────────────────────────
 from database import (
-    init_db, migrate_db, log_action, get_db,
+    init_db, init_diary_db, migrate_db, log_action, get_db,
     save_trip, get_trips, get_trip, update_trip, delete_trip,
     save_place, get_places, delete_place,
     add_expense, get_expenses, delete_expense,
-    save_journal, get_journal, get_user_stats, get_user_by_id, update_user
+    save_journal, get_journal, get_user_stats, get_user_by_id, update_user,
+    get_diary_trips, get_diary_trip, create_diary_trip, get_diary_entries,
+    create_diary_entry, delete_diary_entry, toggle_diary_favorite, get_diary_stats
 )
 from auth import register_auth_routes, require_auth, decode_token, get_token_from_request, optional_auth, safe_user
 
@@ -2620,6 +2622,193 @@ def admin_upgrade_pro():
         return jsonify({'success': False, 'error': str(e)})
     
 
+
+# ── Get diary trips ──
+@app.route('/api/diary/trips', methods=['GET'])
+@require_auth
+def api_diary_trips():
+    try:
+        trips = get_diary_trips(g.user_id)
+        return jsonify({'success': True, 'trips': trips})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Get single diary trip ──
+@app.route('/api/diary/trips/<int:trip_id>', methods=['GET'])
+@require_auth
+def api_diary_trip(trip_id):
+    try:
+        trip = get_diary_trip(trip_id, g.user_id)
+        if not trip:
+            return jsonify({'success': False, 'error': 'Trip not found'})
+        return jsonify({'success': True, 'trip': trip})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Create diary trip ──
+@app.route('/api/diary/trips', methods=['POST'])
+@require_auth
+def api_create_diary_trip():
+    try:
+        data        = request.get_json() or {}
+        destination = clean(data.get('destination', 'My Trip'))
+        currency    = clean(data.get('currency', 'INR'), 3)
+        start_date  = data.get('start_date', '')
+        trip_id     = create_diary_trip(g.user_id, destination, currency, start_date)
+        return jsonify({'success': True, 'trip_id': trip_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Get diary entries ──
+@app.route('/api/diary/entries', methods=['GET'])
+@require_auth
+def api_diary_entries():
+    try:
+        trip_id    = request.args.get('trip_id', type=int)
+        entry_type = request.args.get('type')
+        search     = request.args.get('search')
+        limit      = request.args.get('limit', 100, type=int)
+        entries    = get_diary_entries(g.user_id, trip_id, entry_type, search, limit)
+        return jsonify({'success': True, 'entries': entries})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Create diary entry ──
+@app.route('/api/diary/entries', methods=['POST'])
+@require_auth
+@limiter.limit("60 per hour")
+def api_create_diary_entry():
+    try:
+        data       = request.get_json() or {}
+        trip_id    = data.get('trip_id')
+        entry_type = clean(data.get('type', 'note'), 20)
+        text       = clean(data.get('text', ''), 2000)
+        mood       = clean(data.get('mood', ''), 10)
+        location   = clean(data.get('location', ''), 100)
+        tags       = data.get('tags', [])[:10]
+        photos     = data.get('photos', [])[:5]
+        amount     = float(data.get('amount', 0) or 0)
+        currency   = clean(data.get('currency', 'INR'), 3)
+        day_number = int(data.get('day_number', 1) or 1)
+
+        entry_id = create_diary_entry(
+            g.user_id, trip_id, entry_type, text, mood,
+            location, tags, photos, amount, currency, day_number
+        )
+
+        # Return the full entry
+        entries = get_diary_entries(g.user_id, trip_id, limit=1)
+        entry   = next((e for e in entries if e['id'] == entry_id), None)
+        log_action(g.user_id, 'diary_entry', request.remote_addr)
+        return jsonify({'success': True, 'entry': entry, 'entry_id': entry_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Delete diary entry ──
+@app.route('/api/diary/entries/<int:entry_id>', methods=['DELETE'])
+@require_auth
+def api_delete_diary_entry(entry_id):
+    try:
+        delete_diary_entry(entry_id, g.user_id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Toggle favorite ──
+@app.route('/api/diary/entries/<int:entry_id>/favorite', methods=['POST'])
+@require_auth
+def api_diary_favorite(entry_id):
+    try:
+        is_fav = toggle_diary_favorite(entry_id, g.user_id)
+        return jsonify({'success': True, 'is_favorite': is_fav})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Diary stats ──
+@app.route('/api/diary/stats', methods=['GET'])
+@require_auth
+def api_diary_stats():
+    try:
+        trip_id = request.args.get('trip_id', type=int)
+        stats   = get_diary_stats(g.user_id, trip_id)
+        return jsonify({'success': True, **stats})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Expense summary ──
+@app.route('/api/diary/expenses', methods=['GET'])
+@require_auth
+def api_diary_expenses():
+    try:
+        trip_id = request.args.get('trip_id', type=int)
+        entries = get_diary_entries(g.user_id, trip_id, entry_type='expense')
+        total   = sum(e.get('amount', 0) for e in entries)
+        by_cat  = {}
+        for e in entries:
+            cat = e.get('location') or 'Other'
+            by_cat[cat] = by_cat.get(cat, 0) + (e.get('amount') or 0)
+        by_category = [{'category': k, 'total': v} for k, v in sorted(by_cat.items(), key=lambda x: -x[1])]
+        return jsonify({'success': True, 'total': round(total, 2), 'by_category': by_category, 'entries': entries})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── AI Journal ──
+@app.route('/api/diary/ai-journal', methods=['POST'])
+@require_auth
+@limiter.limit("5 per hour")
+def api_diary_ai_journal():
+    try:
+        data    = request.get_json() or {}
+        trip_id = data.get('trip_id')
+        style   = clean(data.get('style', 'storytelling'), 20)
+
+        entries = get_diary_entries(g.user_id, trip_id, limit=50)
+        if not entries:
+            return jsonify({'success': False, 'error': 'No diary entries yet'})
+
+        entries_text = '\n'.join([
+            f"Day {e.get('day_number',1)} [{e.get('type','note').upper()}] {e.get('location','')} — {e.get('text','')} {('₹'+str(e.get('amount',''))) if e.get('amount') else ''}"
+            for e in entries[:20]
+        ])
+
+        result = groq_json(
+            f"""Transform these real travel diary entries into a beautiful literary travel journal.
+Style: {style}. Entries: {entries_text}
+
+Return JSON: title, tagline, opening, chapters (array of: day, chapter_title, story, highlight, mood, emoji),
+closing, best_memory, lesson_learned, quote, would_return, rating""",
+            model="llama-3.3-70b-versatile", temp=0.7, max_tok=3000
+        )
+        log_action(g.user_id, 'ai_journal', request.remote_addr)
+        return jsonify({'success': True, 'journal': result})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ── Export diary ──
+@app.route('/api/diary/export', methods=['GET'])
+@require_auth
+def api_diary_export():
+    try:
+        trip_id = request.args.get('trip_id', type=int)
+        entries = get_diary_entries(g.user_id, trip_id, limit=500)
+        lines   = []
+        for e in entries:
+            lines.append(f"[Day {e.get('day_number',1)}] [{e.get('type','note').upper()}] {e.get('created_at','')}")
+            if e.get('location'): lines.append(f"📍 {e['location']}")
+            if e.get('mood'):     lines.append(f"Mood: {e['mood']}")
+            lines.append(e.get('text', ''))
+            if e.get('amount'):   lines.append(f"💰 ₹{e['amount']}")
+            lines.append('─' * 40)
+
+        text = '\n'.join(lines)
+        from flask import Response
+        return Response(
+            text,
+            mimetype='text/plain',
+            headers={'Content-Disposition': 'attachment; filename=yaply_diary.txt'}
+        )
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 
 # ── Profile page ──

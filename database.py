@@ -340,6 +340,197 @@ def get_journal(trip_id, user_id):
         return j
     finally: conn.close()
 
+
+def init_diary_db():
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute('''CREATE TABLE IF NOT EXISTS diary_trips (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        destination TEXT NOT NULL,
+        currency TEXT DEFAULT 'INR',
+        start_date TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS diary_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        trip_id INTEGER,
+        type TEXT DEFAULT 'note',
+        text TEXT NOT NULL DEFAULT '',
+        mood TEXT DEFAULT '',
+        location TEXT DEFAULT '',
+        tags TEXT DEFAULT '[]',
+        photos TEXT DEFAULT '[]',
+        amount REAL DEFAULT 0,
+        currency TEXT DEFAULT 'INR',
+        day_number INTEGER DEFAULT 1,
+        is_favorite INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (trip_id) REFERENCES diary_trips(id) ON DELETE SET NULL
+    )''')
+
+    c.execute('CREATE INDEX IF NOT EXISTS idx_diary_user ON diary_entries(user_id)')
+    c.execute('CREATE INDEX IF NOT EXISTS idx_diary_trip ON diary_entries(trip_id)')
+
+    conn.commit()
+    conn.close()
+    print('[DB] Diary tables initialized')
+
+
+def get_diary_trips(user_id):
+    conn = get_db()
+    try:
+        rows = conn.execute(
+            'SELECT * FROM diary_trips WHERE user_id=? ORDER BY created_at DESC',
+            (user_id,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_diary_trip(trip_id, user_id):
+    conn = get_db()
+    try:
+        row = conn.execute(
+            'SELECT * FROM diary_trips WHERE id=? AND user_id=?',
+            (trip_id, user_id)
+        ).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def create_diary_trip(user_id, destination, currency='INR', start_date=None):
+    conn = get_db()
+    try:
+        c = conn.execute(
+            'INSERT INTO diary_trips (user_id,destination,currency,start_date) VALUES (?,?,?,?)',
+            (user_id, destination, currency, start_date)
+        )
+        conn.commit()
+        return c.lastrowid
+    finally:
+        conn.close()
+
+
+def get_diary_entries(user_id, trip_id=None, entry_type=None, search=None, limit=100):
+    conn = get_db()
+    try:
+        sql    = 'SELECT * FROM diary_entries WHERE user_id=?'
+        params = [user_id]
+        if trip_id:
+            sql += ' AND trip_id=?'; params.append(trip_id)
+        if entry_type:
+            sql += ' AND type=?';    params.append(entry_type)
+        if search:
+            sql += ' AND (text LIKE ? OR location LIKE ?)';
+            params += ['%'+search+'%', '%'+search+'%']
+        sql += ' ORDER BY created_at DESC LIMIT ?'
+        params.append(limit)
+        rows = conn.execute(sql, params).fetchall()
+        entries = []
+        for r in rows:
+            e = dict(r)
+            try:    e['tags']   = json.loads(e['tags'])
+            except: e['tags']   = []
+            try:    e['photos'] = json.loads(e['photos'])
+            except: e['photos'] = []
+            entries.append(e)
+        return entries
+    finally:
+        conn.close()
+
+
+def create_diary_entry(user_id, trip_id, entry_type, text, mood='',
+                       location='', tags=None, photos=None,
+                       amount=0, currency='INR', day_number=1):
+    conn = get_db()
+    try:
+        c = conn.execute(
+            '''INSERT INTO diary_entries
+               (user_id,trip_id,type,text,mood,location,tags,photos,amount,currency,day_number)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
+            (user_id, trip_id, entry_type, text, mood, location,
+             json.dumps(tags or []), json.dumps(photos or []),
+             float(amount or 0), currency, int(day_number or 1))
+        )
+        conn.commit()
+        return c.lastrowid
+    finally:
+        conn.close()
+
+
+def delete_diary_entry(entry_id, user_id):
+    conn = get_db()
+    try:
+        conn.execute('DELETE FROM diary_entries WHERE id=? AND user_id=?', (entry_id, user_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def toggle_diary_favorite(entry_id, user_id):
+    conn = get_db()
+    try:
+        row = conn.execute('SELECT is_favorite FROM diary_entries WHERE id=? AND user_id=?', (entry_id, user_id)).fetchone()
+        if not row: return False
+        new_val = 0 if row['is_favorite'] else 1
+        conn.execute('UPDATE diary_entries SET is_favorite=? WHERE id=? AND user_id=?', (new_val, entry_id, user_id))
+        conn.commit()
+        return bool(new_val)
+    finally:
+        conn.close()
+
+
+def get_diary_stats(user_id, trip_id=None):
+    conn = get_db()
+    try:
+        params = [user_id]
+        trip_filter = ''
+        if trip_id:
+            trip_filter = ' AND trip_id=?'
+            params.append(trip_id)
+
+        total = conn.execute(
+            'SELECT COUNT(*) FROM diary_entries WHERE user_id=?' + trip_filter, params
+        ).fetchone()[0]
+
+        spent = conn.execute(
+            'SELECT COALESCE(SUM(amount),0) FROM diary_entries WHERE user_id=? AND type="expense"' + trip_filter, params
+        ).fetchone()[0]
+
+        days = conn.execute(
+            'SELECT COUNT(DISTINCT date(created_at)) FROM diary_entries WHERE user_id=?' + trip_filter, params
+        ).fetchone()[0]
+
+        by_cat = conn.execute(
+            '''SELECT type, COUNT(*) as count FROM diary_entries
+               WHERE user_id=?''' + trip_filter + ''' GROUP BY type''', params
+        ).fetchall()
+
+        exp_cats = conn.execute(
+            '''SELECT COALESCE(location,"Other") as category,
+               SUM(amount) as total FROM diary_entries
+               WHERE user_id=? AND type="expense"''' + trip_filter + '''
+               GROUP BY location ORDER BY total DESC''', params
+        ).fetchall()
+
+        return {
+            'total_entries': total,
+            'total_spent':   round(float(spent), 2),
+            'days_logged':   days,
+            'by_type':       {r['type']: r['count'] for r in by_cat},
+            'by_category':   [{'category': r['category'], 'total': r['total']} for r in exp_cats],
+        }
+    finally:
+        conn.close()
+
 def migrate_db():
     conn = get_db()
     try:
