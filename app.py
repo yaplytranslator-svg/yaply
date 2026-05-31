@@ -431,7 +431,14 @@ def after_trip_page():
     return render_template('after_trip.html')
 
 
+# ════════════════════════════════════════════════════════════════
+#  AUTH API ROUTES
+# ════════════════════════════════════════════════════════════════
 
+@app.route('/api/me', methods=['GET'])
+@require_auth
+def api_me():
+    return jsonify({'success': True, 'user': safe_user(g.user)})
 
 
 # ════════════════════════════════════════════════════════════════
@@ -2804,12 +2811,15 @@ def api_diary_export():
         return jsonify({'success': False, 'error': str(e)})
 
 
-
+# ── Profile page ──
+@app.route('/me')
+def profile_page():
+    return render_template('profile.html')
 
 # ── Update profile ──
 @app.route('/api/me/update', methods=['POST'])
 @require_auth
-def update_profile():
+def api_update_profile():
     try:
         data = request.get_json() or {}
         allowed = ['name', 'home_city', 'passport', 'currency']
