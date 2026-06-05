@@ -90,6 +90,11 @@ if not _groq_key:
     raise RuntimeError("GROQ_API_KEY not set — app cannot start")
 groq_client = Groq(api_key=_groq_key)
 
+# Groq Model Constants
+SCOUT    = "meta-llama/llama-4-scout-17b-16e-instruct"
+MAVERICK = "meta-llama/llama-4-maverick-17b-128e-instruct"
+MODEL_70B = "llama-3.3-70b-versatile"
+
 try:
     import deepl
     deepl_client = deepl.Translator(os.getenv("DEEPL_API_KEY", ""))
@@ -232,27 +237,30 @@ def safe_send(ws, data):
     try: ws.send(json.dumps(data))
     except: pass
 
-def groq_json(prompt, system="Return ONLY valid JSON. No markdown, no backticks.",
-              model="llama-3.1-8b-instant", temp=0.2, max_tok=2000):
-    response = groq_client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=temp,
-        max_tokens=max_tok
-    )
-    result = response.choices[0].message.content.strip()
-    if '```' in result:
-        for p in result.split('```'):
-            if '{' in p:
-                result = p[4:] if p.startswith('json') else p
-                break
-    start = result.find('{')
-    end   = result.rfind('}') + 1
-    if start != -1: result = result[start:end]
-    return json.loads(result)
+def groq_json(prompt, model=SCOUT, temp=0.3, max_tok=1000):
+    models_to_try = [model]
+    if model == MODEL_70B:
+        models_to_try.append(SCOUT)
+
+    last_error = None
+    for m in models_to_try:
+        try:
+            response = groq_client.chat.completions.create(
+                model=m,
+                messages=[
+                    {"role": "system", "content":
+                     "Return ONLY valid JSON. No markdown. No backticks. No explanation."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=temp,
+                max_tokens=max_tok
+            )
+            return clean_json(response.choices[0].message.content)
+        except Exception as e:
+            last_error = e
+            print(f"[Groq] {m} failed: {e}, trying fallback...")
+            continue
+    raise last_error
 
 def clean_json(text):
     text = text.strip()
@@ -308,7 +316,7 @@ def translate(text, target_lang, src_lang=None):
             print(f"[DeepL] {e}")
     lang_name = LANG_NAMES.get(target_lang, 'English')
     r = groq_client.chat.completions.create(
-        model='llama-3.1-8b-instant',
+        model=SCOUT,
         messages=[
             {'role': 'system', 'content': f'Translate to {lang_name}. Return ONLY the translation.'},
             {'role': 'user', 'content': text}
@@ -781,9 +789,9 @@ Return ONLY valid JSON with this structure:
 
         result = groq_json(
             prompt,
-            model="llama-3.3-70b-versatile",
+            model=MODEL_70B,
             temp=0.3,
-            max_tok=4000
+            max_tok=6000
         )
 
         # Save to trip if trip_id provided
@@ -847,7 +855,7 @@ def multi_city_plan():
         )
 
         response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=MODEL_70B,
             messages=[
                 {"role": "system", "content": "Return ONLY valid JSON. No markdown. No backticks."},
                 {"role": "user", "content": prompt}
@@ -951,9 +959,9 @@ Return ONLY valid JSON:
   "important_notes": ["note1", "note2"],
   "documents_needed": ["doc1", "doc2"]
 }}""",
-            model="llama-3.3-70b-versatile",
-            temp=0.2,
-            max_tok=2000
+            model=MODEL_70B,
+            temp=0.3,
+            max_tok=3000
         )
         return jsonify({'success': True, 'journey': result})
     except Exception as e:
@@ -982,7 +990,7 @@ def sim_guide():
 Return JSON: top_recommendation (name/provider/type/cost/data/validity/where_to_buy/activation/coverage),
 all_options, esim_options (Airalo/Holafly/Nomad), airport_buying_guide, roaming_option (Jio/Airtel/Vi),
 connectivity_tips, data_saving_tips, offline_essentials, budget_summary""",
-            model="llama-3.3-70b-versatile", temp=0.2, max_tok=3000
+            model=SCOUT, temp=0.2, max_tok=1000
         )
         return jsonify({'success': True, 'guide': result})
     except Exception as e:
@@ -1092,7 +1100,7 @@ def api_identify():
             return jsonify({'success': False, 'error': 'Image too large (max 5MB)'})
 
         response = groq_client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model=SCOUT,
             messages=[{"role": "user", "content": [
                 {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}},
                 {"type": "text", "text": """Identify this location. Return ONLY valid JSON:
@@ -1125,7 +1133,7 @@ Return JSON: place_name, city, country, continent, confidence, place_type, descr
 best_time, climate, budget_level, avg_daily_cost, language, currency, nearest_airport, airport_code,
 why_famous, nearby (name/distance/type/icon/description), similar_places (name/country/why_similar/emoji),
 travel_tips, best_food""",
-            model="llama-3.3-70b-versatile", temp=0.3, max_tok=2000
+            model=SCOUT, temp=0.2, max_tok=1000
         )
         return jsonify({'success': True, 'result': result})
     except Exception as e:
@@ -1145,7 +1153,7 @@ def api_scam_alerts():
             f"""All tourist scams in {destination}. Return JSON: scam_risk_level,
 scams (name/category/severity/how_it_works/red_flags/how_to_avoid/what_to_say/icon),
 general_rules, safe_alternatives, emergency_if_robbed""",
-            model="llama-3.3-70b-versatile", max_tok=3000
+            model=SCOUT, temp=0.2, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1238,8 +1246,8 @@ Return ONLY this JSON:
   "solo_female_safety": "<specific assessment for solo female travellers in {destination}>",
   "best_safety_tips": ["<tip specific to {destination}>", "<tip 2>", "<tip 3>", "<tip 4>", "<tip 5>"]
 }}""",
-            model="llama-3.3-70b-versatile",
-            temp=0.4,
+            model=SCOUT,
+            temp=0.3,
             max_tok=1200
         )
         return jsonify({'success': True, 'data': result})
@@ -1258,7 +1266,7 @@ def api_local_laws():
 Return JSON: strict_laws (law/penalty/severity/icon), photography_rules, dress_code_rules,
 alcohol_rules, drug_laws, customs_limits (cash/cigarettes/alcohol/prohibited_items),
 good_to_know, legal_tip""",
-            model="llama-3.3-70b-versatile", temp=0.1, max_tok=1500
+            model=SCOUT, temp=0.1, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1329,7 +1337,7 @@ def api_emergency_card():
 Return JSON: emergency_numbers, indian_embassy (address/phone/emergency_phone/email),
 nearest_hospitals, medical_phrases (english/local/pronunciation),
 what_to_do_if_robbed, what_to_do_if_sick, what_to_do_if_lost""",
-            model="llama-3.3-70b-versatile", temp=0.1, max_tok=1500
+            model=SCOUT, temp=0.1, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1353,7 +1361,7 @@ def api_jetlag():
             f"""Jet lag recovery plan for {from_city} to {to_city} on {travel_date}.
 Return JSON: from_timezone, to_timezone, time_difference, jet_lag_severity, recovery_days,
 direction, symptoms, before_flight, during_flight, after_arrival, sleep_schedule, avoid, recovery_tip""",
-            model="llama-3.3-70b-versatile", temp=0.1, max_tok=1200
+            model=SCOUT, temp=0.2, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1372,7 +1380,7 @@ def api_festivals():
             f"""Festivals and events in {destination} around {travel_date}.
 Return JSON: public_holidays, festivals, peak_season, season_type, price_impact,
 crowd_level, booking_advice, weather_this_month, best_festival_tip""",
-            model="llama-3.3-70b-versatile", temp=0.2, max_tok=1200
+            model=SCOUT, temp=0.2, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1395,7 +1403,7 @@ def api_budget_plan():
 Return JSON: total_budget, per_person, per_day, budget_tier, breakdown (flights/accommodation/food/transport/activities/shopping),
 daily_budget (budget_day/comfort_day/splurge_day), money_saving_tips, hidden_costs,
 free_things, worth_splurging, budget_verdict""",
-            model="llama-3.3-70b-versatile", temp=0.1, max_tok=1500
+            model=SCOUT, temp=0.2, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1419,7 +1427,7 @@ def api_passport_check():
             f"""Passport check for {destination}. Expiry: {data['expiry_date']}. Travel: {data['travel_date']}. Days valid after travel: {days_after_travel}.
 Return JSON: is_valid, validity_status, days_remaining, days_after_travel, destination_requirement,
 verdict, action_needed, renewal_urgency, renewal_time, renewal_cost, tatkal_available, tatkal_time, tatkal_cost, tips""",
-            model="llama-3.3-70b-versatile", temp=0.1, max_tok=800
+            model=SCOUT, temp=0.1, max_tok=800
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1440,7 +1448,7 @@ def api_luggage_check():
             f"""Luggage allowance for {airline} to {destination} in {cabin_class} class.
 Return JSON: airline, cabin_class, carry_on (weight/dimensions/pieces), checked_baggage (weight/dimensions/pieces/extra_cost),
 prohibited_items, liquid_rules, duty_free_allowance (alcohol/cigarettes/cash/gifts), packing_tips, pro_tip""",
-            model="llama-3.3-70b-versatile", temp=0.1, max_tok=1000
+            model=SCOUT, temp=0.1, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1475,7 +1483,7 @@ def api_trip_journal():
             f"""Write vivid personal travel journal. Destination:{clean(data.get('destination',''))}, {data.get('days',5)} days, with {clean(data.get('travel_with','solo'))}, vibe:{clean(data.get('vibe','adventure'))}, highlights:{clean(data.get('highlights','amazing trip'),300)}.
 Return JSON (first person): title, tagline, opening, chapters (day/title/story/highlight/emotion/emoji),
 closing, best_memory, lesson_learned, quote, would_return, rating, tags""",
-            model="llama-3.3-70b-versatile", temp=0.7, max_tok=3000
+            model=MODEL_70B, temp=0.7, max_tok=3000
         )
         trip_id = data.get('trip_id')
         if trip_id: save_journal(trip_id, g.user_id, result)
@@ -1493,7 +1501,7 @@ def api_trip_stats():
             f"""Fun viral trip stats for {clean(data.get('destination',''))}, {data.get('days',5)} days, {clean(data.get('travel_with','solo'))}, vibes:{clean(data.get('vibes','adventure'))}.
 Return JSON: traveller_type, traveller_description, fun_stats (label/value/icon),
 achievements (title/description/icon/rarity), travel_score, instagram_caption""",
-            temp=0.5, max_tok=1500
+            model=MODEL_70B, temp=0.5, max_tok=1500
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1510,7 +1518,7 @@ def api_review_generator():
         result = groq_json(
             f"""Genuine {clean(data.get('platform','Google'))} review for {clean(data.get('place',''))}, rated {data.get('rating',5)}/5. Experience: {clean(data.get('experience',''),500)}.
 Return JSON: review_title, review_body, pros, cons, best_for, tip, short_version, hashtags""",
-            temp=0.6, max_tok=1000
+            model=MODEL_70B, temp=0.6, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1526,7 +1534,7 @@ def api_next_trip():
             f"""Next trip suggestions after {clean(data.get('past_destination',''))}. Loved:{clean(data.get('loved',''),200)}. Budget:{clean(data.get('budget',''))}. Month:{clean(data.get('travel_month',''))}. Passport:{clean(data.get('passport','India'))}.
 Return JSON: recommendations (destination/why_perfect/similarity_score/best_time/budget_level/estimated_cost/unique_experience/vibe/emoji/visa_for_india),
 travel_pattern, bucket_list_suggestion""",
-            temp=0.4, max_tok=1500
+            model=MODEL_70B, temp=0.4, max_tok=1500
         )
         return jsonify({'success': True, 'data': result})
     except Exception as e:
@@ -1732,7 +1740,7 @@ def _translate_blocks_batch(blocks, target_lang, src_lang=None):
         combined  = sep.join(texts)
         try:
             r = groq_client.chat.completions.create(
-                model='llama-3.1-8b-instant',
+                model=SCOUT,
                 messages=[
                     {'role': 'system', 'content': f'Translate each segment to {lang_name}. Keep [|||] separators exactly. Return ONLY translations separated by [|||].'},
                     {'role': 'user', 'content': combined}
@@ -1816,7 +1824,7 @@ def scan():
         def run_groq_vision():
             try:
                 response = groq_client.chat.completions.create(
-                    model="meta-llama/llama-4-scout-17b-16e-instruct",
+                    model=SCOUT,
                     messages=[{"role": "user", "content": [
                         {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_data}"}},
                         {"type": "text", "text": "Extract ALL text in this image exactly as written. Preserve line breaks. Return ONLY the raw text. If no text, return NO_TEXT."}
@@ -2775,7 +2783,7 @@ Style: {style}. Entries: {entries_text}
 
 Return JSON: title, tagline, opening, chapters (array of: day, chapter_title, story, highlight, mood, emoji),
 closing, best_memory, lesson_learned, quote, would_return, rating""",
-            model="llama-3.3-70b-versatile", temp=0.7, max_tok=3000
+            model=MODEL_70B, temp=0.7, max_tok=3000
         )
         log_action(g.user_id, 'ai_journal', request.remote_addr)
         return jsonify({'success': True, 'journal': result})
@@ -2808,6 +2816,34 @@ def api_diary_export():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+
+# In database.py — add this
+def init_promo_db():
+    conn = get_db()
+    conn.execute('''CREATE TABLE IF NOT EXISTS promo_codes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT UNIQUE NOT NULL,
+        influencer TEXT NOT NULL,
+        discount_pct INTEGER DEFAULT 50,
+        pro_months INTEGER DEFAULT 3,
+        max_uses INTEGER DEFAULT 500,
+        uses INTEGER DEFAULT 0,
+        expires_at TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS promo_redemptions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        code TEXT NOT NULL,
+        redeemed_at TEXT DEFAULT (datetime('now'))
+    )''')
+    conn.commit()
+    conn.close()
+
+conn.execute(
+    "INSERT INTO promo_codes (code, influencer, discount_pct, pro_months, max_uses, expires_at) VALUES (?,?,?,?,?,?)",
+    ('SAURABH50', 'ghumakkadsaurabh', 50, 3, 500, '2026-06-14')
+)
 
 # ── Profile page ──
 @app.route('/me')
@@ -2846,6 +2882,114 @@ def admin_activity():
         return jsonify({'success': True, 'logs': [dict(r) for r in rows]})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/promo/apply', methods=['POST'])
+@require_auth
+def apply_promo():
+    try:
+        code = (request.get_json() or {}).get('code','').upper().strip()
+        conn = get_db()
+
+        # Get promo
+        promo = conn.execute(
+            'SELECT * FROM promo_codes WHERE code=?', (code,)
+        ).fetchone()
+
+        if not promo:
+            return jsonify({'success':False,'error':'Invalid promo code'})
+
+        promo = dict(promo)
+
+        # Check expiry
+        from datetime import datetime
+        if promo['expires_at'] < datetime.now().isoformat()[:10]:
+            return jsonify({'success':False,'error':'This promo has expired'})
+
+        # Check max uses
+        if promo['uses'] >= promo['max_uses']:
+            return jsonify({'success':False,'error':'Promo code limit reached'})
+
+        # Check already used
+        already = conn.execute(
+            'SELECT id FROM promo_redemptions WHERE user_id=? AND code=?',
+            (g.user_id, code)
+        ).fetchone()
+        if already:
+            return jsonify({'success':False,'error':'You have already used this code'})
+
+        # Apply promo
+        conn.execute(
+            'UPDATE users SET is_pro=1 WHERE id=?', (g.user_id,)
+        )
+        conn.execute(
+            'UPDATE promo_codes SET uses=uses+1 WHERE code=?', (code,)
+        )
+        conn.execute(
+            'INSERT INTO promo_redemptions (user_id,code) VALUES (?,?)',
+            (g.user_id, code)
+        )
+        conn.commit()
+        conn.close()
+
+        log_action(g.user_id, 'promo_redeemed_'+code, request.remote_addr)
+
+        return jsonify({
+            'success': True,
+            'message': '🎉 ' + str(promo['pro_months']) + ' months Pro activated at ' + str(promo['discount_pct']) + '% off!',
+            'pro_months': promo['pro_months'],
+            'discount': promo['discount_pct']
+        })
+
+    except Exception as e:
+        return jsonify({'success':False,'error':str(e)})
+
+
+@app.route('/api/promo/validate', methods=['POST'])
+def validate_promo():
+    try:
+        code  = (request.get_json() or {}).get('code','').upper().strip()
+        conn  = get_db()
+        promo = conn.execute(
+            'SELECT * FROM promo_codes WHERE code=?', (code,)
+        ).fetchone()
+        conn.close()
+        if not promo:
+            return jsonify({'success':False,'error':'Invalid code'})
+        promo = dict(promo)
+        return jsonify({
+            'success':     True,
+            'discount':    promo['discount_pct'],
+            'pro_months':  promo['pro_months'],
+            'uses_left':   promo['max_uses'] - promo['uses'],
+            'expires':     promo['expires_at'],
+        })
+    except Exception as e:
+        return jsonify({'success':False,'error':str(e)})
+
+
+@app.route('/api/admin/promos')
+@require_admin
+def admin_promos():
+    try:
+        conn  = get_db()
+        promos = conn.execute(
+            'SELECT * FROM promo_codes ORDER BY created_at DESC'
+        ).fetchall()
+        redemptions = conn.execute(
+            '''SELECT pr.code, u.name, u.email, pr.redeemed_at
+               FROM promo_redemptions pr
+               JOIN users u ON u.id = pr.user_id
+               ORDER BY pr.redeemed_at DESC'''
+        ).fetchall()
+        conn.close()
+        return jsonify({
+            'success': True,
+            'promos': [dict(p) for p in promos],
+            'redemptions': [dict(r) for r in redemptions]
+        })
+    except Exception as e:
+        return jsonify({'success':False,'error':str(e)})
 
 # ════════════════════════════════════════════════════════════════
 #  ERROR HANDLERS
