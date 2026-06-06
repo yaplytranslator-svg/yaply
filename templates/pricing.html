@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1"/>
+<title>Yaply Pro — Pricing</title>
+<link rel="icon" href="/static/favicon.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:16px;-webkit-text-size-adjust:100%;}
+body{font-family:'DM Sans',sans-serif;background:#0B1220;color:#F7F9FC;min-height:100vh;overscroll-behavior:none;}
+
+:root{
+  --blue:#2563FF;--blue-d:#1D4ED8;--blue-g:rgba(37,99,255,0.1);
+  --midnight:#0B1220;--bg:#F7F9FC;--white:#FFFFFF;
+  --text:#111827;--muted:#6B7280;--muted2:#9CA3AF;
+  --coral:#FF7A59;--green:#18C29C;--amber:#F5B942;
+  --border:rgba(255,255,255,0.08);
+  --font-head:'Instrument Serif',serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+/* ── Background ── */
+.bg-orb1{position:fixed;top:-100px;right:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,255,0.12),transparent 70%);pointer-events:none;z-index:0;}
+.bg-orb2{position:fixed;bottom:-100px;left:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,122,89,0.07),transparent 70%);pointer-events:none;z-index:0;}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(37,99,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,255,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+/* ── Page ── */
+.page{max-width:480px;margin:0 auto;padding:0 18px 80px;position:relative;z-index:1;}
+
+/* ── Nav ── */
+.top-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;position:relative;z-index:1;}
+.nav-back{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:500;color:rgba(255,255,255,0.4);text-decoration:none;transition:color .2s;}
+.nav-back:hover{color:white;}
+.nav-back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;}
+.nav-logo{font-family:var(--font-head);font-size:16px;color:white;}
+
+/* ── Hero ── */
+.hero{text-align:center;padding:32px 0 40px;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(37,99,255,0.12);border:1px solid rgba(37,99,255,0.25);border-radius:100px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#93C5FD;margin-bottom:18px;}
+.hero-eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:#2563FF;animation:shimmer 2s infinite;}
+.hero-title{font-family:var(--font-head);font-size:36px;color:white;letter-spacing:-.5px;line-height:1.15;margin-bottom:14px;}
+.hero-title span{font-style:italic;color:var(--amber);}
+.hero-sub{font-size:15px;color:rgba(255,255,255,0.4);line-height:1.7;max-width:320px;margin:0 auto;}
+
+/* ── Toggle ── */
+.plan-toggle{display:flex;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:100px;padding:4px;margin:0 auto 32px;width:fit-content;}
+.toggle-btn{padding:8px 20px;border-radius:100px;border:none;background:none;font-family:var(--font-body);font-size:13px;font-weight:600;color:rgba(255,255,255,0.4);cursor:pointer;transition:all .2s;position:relative;}
+.toggle-btn.active{background:white;color:var(--text);}
+.toggle-btn .save-tag{position:absolute;top:-8px;right:-4px;background:var(--green);color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:100px;white-space:nowrap;}
+
+/* ── Pricing cards ── */
+.pricing-wrap{display:flex;flex-direction:column;gap:12px;margin-bottom:32px;}
+
+.plan-card{
+  border-radius:24px;padding:24px;
+  position:relative;overflow:hidden;
+  transition:transform .2s;
+}
+.plan-card:hover{transform:translateY(-2px);}
+
+.plan-card.free{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+}
+.plan-card.pro{
+  background:linear-gradient(145deg,#1a2a4a,#0d1f3c);
+  border:1px solid rgba(37,99,255,0.3);
+  box-shadow:0 0 0 1px rgba(37,99,255,0.1),0 24px 64px rgba(37,99,255,0.15);
+}
+.plan-card.pro::before{
+  content:'';position:absolute;top:-1px;left:20%;right:20%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--blue),transparent);
+}
+
+.plan-popular{
+  position:absolute;top:16px;right:16px;
+  background:var(--amber);color:#0B1220;
+  font-size:10px;font-weight:800;
+  padding:4px 10px;border-radius:100px;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+
+.plan-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.35);margin-bottom:12px;}
+.plan-price-row{display:flex;align-items:baseline;gap:4px;margin-bottom:4px;}
+.plan-price{font-family:var(--font-mono);font-size:40px;font-weight:800;color:white;letter-spacing:-1px;}
+.plan-period{font-size:13px;color:rgba(255,255,255,0.3);}
+.plan-desc{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:20px;}
+
+.plan-features{display:flex;flex-direction:column;gap:9px;margin-bottom:24px;}
+.plan-feature{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.6);}
+.plan-feature.included{color:rgba(255,255,255,0.8);}
+.feat-check{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.feat-check.yes{background:rgba(24,194,156,0.15);}
+.feat-check.yes svg{width:10px;height:10px;stroke:var(--green);fill:none;stroke-width:3;}
+.feat-check.no{background:rgba(255,255,255,0.05);}
+.feat-check.no svg{width:10px;height:10px;stroke:rgba(255,255,255,0.2);fill:none;stroke-width:2.5;}
+
+.plan-btn{
+  width:100%;padding:14px;border-radius:12px;
+  font-family:var(--font-body);font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .2s;border:none;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.plan-btn.free-btn{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);border:1px solid var(--border);}
+.plan-btn.free-btn:hover{background:rgba(255,255,255,0.1);color:white;}
+.plan-btn.pro-btn{background:var(--blue);color:white;box-shadow:0 8px 24px rgba(37,99,255,0.35);}
+.plan-btn.pro-btn:hover{background:var(--blue-d);transform:translateY(-1px);}
+.plan-btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important;}
+.plan-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+.btn-spinner{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);border-top-color:white;animation:spin .7s linear infinite;}
+
+/* ── Features comparison ── */
+.features-section{margin-bottom:32px;}
+.features-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.25);text-align:center;margin-bottom:16px;}
+.feature-row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.feature-row:last-child{border-bottom:none;}
+.feat-name{flex:1;font-size:13px;color:rgba(255,255,255,0.5);}
+.feat-free{width:48px;text-align:center;font-size:12px;}
+.feat-pro{width:48px;text-align:center;font-size:12px;}
+.feat-col-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,0.25);}
+.feat-col-header.pro{color:var(--blue);}
+
+/* ── Trust section ── */
+.trust-section{text-align:center;margin-bottom:32px;}
+.trust-title{font-family:var(--font-head);font-style:italic;font-size:20px;color:white;margin-bottom:16px;}
+.trust-items{display:flex;flex-direction:column;gap:10px;}
+.trust-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;}
+.trust-icon{font-size:20px;flex-shrink:0;}
+.trust-text{font-size:13px;color:rgba(255,255,255,0.5);text-align:left;line-height:1.5;}
+.trust-text b{color:rgba(255,255,255,0.8);}
+
+/* ── FAQ ── */
+.faq-section{margin-bottom:32px;}
+.faq-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.25);text-align:center;margin-bottom:16px;}
+.faq-item{border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 0;cursor:pointer;}
+.faq-q{font-size:14px;font-weight:600;color:rgba(255,255,255,0.7);display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.faq-q svg{width:16px;height:16px;stroke:rgba(255,255,255,0.3);fill:none;stroke-width:2;flex-shrink:0;transition:transform .2s;}
+.faq-item.open .faq-q svg{transform:rotate(180deg);}
+.faq-a{font-size:13px;color:rgba(255,255,255,0.4);line-height:1.7;margin-top:8px;display:none;}
+.faq-item.open .faq-a{display:block;}
+
+/* ── Footer ── */
+.pricing-footer{text-align:center;padding:16px 0;font-size:12px;color:rgba(255,255,255,0.2);}
+.pricing-footer a{color:rgba(255,255,255,0.3);text-decoration:none;}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--midnight);border:1px solid var(--border);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;z-index:999;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* ── Success overlay ── */
+.success-overlay{position:fixed;inset:0;background:rgba(11,18,32,0.95);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px;}
+.success-overlay.show{display:flex;}
+.success-icon{width:80px;height:80px;border-radius:50%;background:rgba(24,194,156,0.15);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px;animation:float 3s ease infinite;}
+.success-title{font-family:var(--font-head);font-size:28px;color:white;margin-bottom:8px;}
+.success-sub{font-size:15px;color:rgba(255,255,255,0.4);margin-bottom:32px;line-height:1.6;}
+.success-btn{padding:14px 32px;background:var(--blue);color:white;border:none;border-radius:12px;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer;}
+</style>
+</head>
+
+<body>
+<div class="bg-orb1"></div>
+<div class="bg-orb2"></div>
+<div class="bg-grid"></div>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <a href="/app" class="nav-back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </a>
+  <div class="nav-logo">yaply.</div>
+  <div style="width:60px;"></div>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero" style="animation:fadeUp .5s ease both;">
+    <div class="hero-eyebrow">Pricing</div>
+    <div class="hero-title">Travel smarter.<br/><span>Pay less.</span></div>
+    <div class="hero-sub">Start free. Upgrade when you need more. Cancel anytime.</div>
+  </div>
+
+  <!-- TOGGLE -->
+  <div class="plan-toggle" style="animation:fadeUp .5s .1s ease both;opacity:0;">
+    <button class="toggle-btn" id="toggleWeekly" onclick="setPeriod('weekly')">Weekly</button>
+    <button class="toggle-btn active" id="toggleMonthly" onclick="setPeriod('monthly')">
+      Monthly
+      <span class="save-tag">Save 50%</span>
+    </button>
+  </div>
+
+  <!-- PRICING CARDS -->
+  <div class="pricing-wrap" style="animation:fadeUp .5s .15s ease both;opacity:0;">
+
+    <!-- FREE -->
+    <div class="plan-card free">
+      <div class="plan-name">Free</div>
+      <div class="plan-price-row">
+        <div class="plan-price">₹0</div>
+        <div class="plan-period">forever</div>
+      </div>
+      <div class="plan-desc">Perfect to try Yaply</div>
+      <div class="plan-features">
+        <div class="plan-feature included"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>3 AI trip plans/month</div>
+        <div class="plan-feature included"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Live translation (10/day)</div>
+        <div class="plan-feature included"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Basic safety tools</div>
+        <div class="plan-feature included"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Travel diary</div>
+        <div class="plan-feature"><div class="feat-check no"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>Unlimited AI plans</div>
+        <div class="plan-feature"><div class="feat-check no"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>Multi-city planning</div>
+        <div class="plan-feature"><div class="feat-check no"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>AI travel story</div>
+      </div>
+      <button class="plan-btn free-btn" onclick="window.location.href='/app'">
+        Continue Free
+      </button>
+    </div>
+
+    <!-- PRO -->
+    <div class="plan-card pro">
+      <div class="plan-popular">Most Popular</div>
+      <div class="plan-name" style="color:rgba(255,255,255,0.5);">Pro</div>
+      <div class="plan-price-row">
+        <div class="plan-price" id="priceDisplay">₹399</div>
+        <div class="plan-period" id="periodDisplay">/month</div>
+      </div>
+      <div class="plan-desc" id="planDesc" style="color:rgba(255,255,255,0.4);">Everything unlimited. No limits.</div>
+      <div class="plan-features">
+        <div class="plan-feature included" style="color:rgba(255,255,255,0.85);"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Unlimited AI trip plans</div>
+        <div class="plan-feature included" style="color:rgba(255,255,255,0.85);"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Unlimited live translation</div>
+        <div class="plan-feature included" style="color:rgba(255,255,255,0.85);"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>All 25+ AI safety tools</div>
+        <div class="plan-feature included" style="color:rgba(255,255,255,0.85);"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Multi-city trip planner</div>
+        <div class="plan-feature included" style="color:rgba(255,255,255,0.85);"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>AI travel story generator</div>
+        <div class="plan-feature included" style="color:rgba(255,255,255,0.85);"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Expense tracker + bill split</div>
+        <div class="plan-feature included" style="color:rgba(255,255,255,0.85);"><div class="feat-check yes"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Priority AI responses</div>
+      </div>
+      <button class="plan-btn pro-btn" id="proBtn" onclick="startPayment()">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span id="proBtnText">Get Pro — ₹399/month</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- TRUST -->
+  <div class="trust-section" style="animation:fadeUp .5s .2s ease both;opacity:0;">
+    <div class="trust-title">Why travellers love Pro</div>
+    <div class="trust-items">
+      <div class="trust-item">
+        <div class="trust-icon">⚡</div>
+        <div class="trust-text"><b>Unlimited everything.</b> Plan 10 trips a month. Translate all day. No daily limits.</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon">🔒</div>
+        <div class="trust-text"><b>Cancel anytime.</b> No questions asked. No hidden fees. No contracts.</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon">💳</div>
+        <div class="trust-text"><b>Secure payments.</b> Powered by Razorpay. UPI, cards, net banking accepted.</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon">🇮🇳</div>
+        <div class="trust-text"><b>Built for India.</b> ₹ pricing. Indian passport. Indian travel routes. Always.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-section" style="animation:fadeUp .5s .25s ease both;opacity:0;">
+    <div class="faq-title">Common Questions</div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">What happens after I pay?<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">Pro activates instantly the moment payment is confirmed. No waiting. Your account upgrades in real time.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Can I cancel anytime?<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">Yes. Cancel anytime from your profile. No questions asked. You keep Pro access until the end of your paid period.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">What payment methods are accepted?<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">UPI (GPay, PhonePe, Paytm), all debit and credit cards, net banking. Powered by Razorpay.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Is my data safe?<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">Yes. We never sell your data. All payments are processed by Razorpay — we never store card details. Read our privacy policy at yaply.live/privacy.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Weekly vs Monthly — which is better?<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">Monthly saves you 50%. Weekly at ₹99 = ₹396/month. Monthly at ₹399 = flat ₹399. Monthly is almost the same price and you get full month access.</div>
+    </div>
+  </div>
+
+  <div class="pricing-footer">
+    <a href="/privacy">Privacy Policy</a> · <a href="/app">Back to Yaply</a><br/>
+    <span style="margin-top:6px;display:block;">© 2026 Yaply Technologies</span>
+  </div>
+
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-icon">🚀</div>
+  <div class="success-title">Welcome to Pro!</div>
+  <div class="success-sub">You now have unlimited access to<br/>everything Yaply has to offer.</div>
+  <button class="success-btn" onclick="window.location.href='/app'">Start Exploring ✈️</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- Razorpay -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+var _token  = localStorage.getItem('yaply_token') || '';
+var _period = 'monthly';
+
+// ── Period toggle ──
+function setPeriod(period) {
+  _period = period;
+  document.getElementById('toggleWeekly').classList.toggle('active', period==='weekly');
+  document.getElementById('toggleMonthly').classList.toggle('active', period==='monthly');
+
+  if (period === 'weekly') {
+    document.getElementById('priceDisplay').textContent = '₹99';
+    document.getElementById('periodDisplay').textContent = '/week';
+    document.getElementById('planDesc').textContent = 'Perfect for one trip';
+    document.getElementById('proBtnText').textContent = 'Get Pro — ₹99/week';
+  } else {
+    document.getElementById('priceDisplay').textContent = '₹399';
+    document.getElementById('periodDisplay').textContent = '/month';
+    document.getElementById('planDesc').textContent = 'Everything unlimited. No limits.';
+    document.getElementById('proBtnText').textContent = 'Get Pro — ₹399/month';
+  }
+}
+
+// ── Payment ──
+async function startPayment() {
+  if (!_token) { window.location.href = '/login'; return; }
+
+  var btn = document.getElementById('proBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="btn-spinner"></div> Processing...';
+
+  try {
+    var res  = await fetch('/api/payment/create-order', {
+      method:  'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+_token},
+      body:    JSON.stringify({plan: _period})
+    });
+    var data = await res.json();
+
+    if (!data.success) {
+      showToast(data.error || 'Could not start payment');
+      resetBtn();
+      return;
+    }
+
+    var rzp = new Razorpay({
+      key:         data.key,
+      amount:      data.amount,
+      currency:    'INR',
+      order_id:    data.order_id,
+      name:        'Yaply',
+      description: _period === 'weekly' ? 'Pro Weekly — ₹99' : 'Pro Monthly — ₹399',
+      image:       '/static/icons/icon-192.png',
+      prefill: {
+        name:  '',
+        email: '',
+      },
+      theme:   {color:'#2563FF'},
+      modal: {
+        ondismiss: function() { resetBtn(); }
+      },
+      handler: async function(response) {
+        var vres = await fetch('/api/payment/verify', {
+          method:  'POST',
+          headers: {'Content-Type':'application/json','Authorization':'Bearer '+_token},
+          body: JSON.stringify({
+            razorpay_order_id:   response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature:  response.razorpay_signature,
+            plan: _period
+          })
+        });
+        var vdata = await vres.json();
+        resetBtn();
+        if (vdata.success) {
+          document.getElementById('successOverlay').classList.add('show');
+        } else {
+          showToast('Payment verification failed. Contact support@yaply.live');
+        }
+      }
+    });
+
+    rzp.open();
+
+  } catch(e) {
+    showToast('Connection error. Try again.');
+    resetBtn();
+  }
+}
+
+function resetBtn() {
+  var btn = document.getElementById('proBtn');
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span id="proBtnText">' +
+    (_period==='weekly' ? 'Get Pro — ₹99/week' : 'Get Pro — ₹399/month') + '</span>';
+}
+
+// ── FAQ ──
+function toggleFaq(el) {
+  el.classList.toggle('open');
+}
+
+// ── Toast ──
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function(){el.classList.remove('show');},3000);
+}
+
+// Pre-fill user email if logged in
+document.addEventListener('DOMContentLoaded', async function() {
+  if (!_token) return;
+  try {
+    var r = await fetch('/api/me', {headers:{'Authorization':'Bearer '+_token}});
+    var d = await r.json();
+    if (d.success && d.user && d.user.is_pro) {
+      var btn = document.getElementById('proBtn');
+      btn.style.background = 'var(--green)';
+      btn.innerHTML = '✅ Already on Pro';
+      btn.disabled = true;
+    }
+  } catch(e) {}
+});
+</script>
+</body>
+</html>

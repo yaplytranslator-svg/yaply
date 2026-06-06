@@ -12,4 +12,5 @@ flask-socketio
 simple-websocket
 eventlet
 PyJWT
-Pillow
+Pillow6
+razorpay
