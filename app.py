@@ -2921,10 +2921,16 @@ def init_promo_db():
     conn.commit()
     conn.close()
 
-conn.execute(
-    "INSERT INTO promo_codes (code, influencer, discount_pct, pro_months, max_uses, expires_at) VALUES (?,?,?,?,?,?)",
-    ('SAURABH50', 'ghumakkadsaurabh', 50, 3, 500, '2026-06-14')
+try:
+    conn2 = get_db()
+    conn2.execute(
+        "INSERT INTO promo_codes (code, influencer, discount_pct, pro_months, max_uses, expires_at) VALUES (?,?,?,?,?,?)",
+        ('SAURABH50', 'ghumakkadsaurabh', 50, 3, 500, '2026-06-14')
 )
+    conn2.commit()
+    conn2.close()
+except:
+    pass
 
 # ── Profile page ──
 @app.route('/me')
