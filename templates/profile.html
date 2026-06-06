@@ -740,6 +740,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!_token) { window.location.href = '/login'; return; }
   loadProfile();
   loadTrips();
+  loadPLanStatus();
 });
 
 // ════════════════════════════════════════════════════════
@@ -797,6 +798,49 @@ async function loadProfile() {
 
   } catch(e) {
     console.error('[Profile] Load error:', e);
+  }
+}
+
+// After existing loadProfile fetch, add:
+async function loadPlanStatus() {
+  try {
+    var r = await fetch('/api/me/status', {headers: _headers});
+    var d = await r.json();
+    if (!d.success) return;
+
+    var proCard  = document.getElementById('proCard');
+    var freeCard = document.getElementById('freeCard');
+    var subDet   = document.getElementById('subDetails');
+    var heroBadge = document.getElementById('heroBadge');
+
+    if (d.plan === 'pro') {
+      // Show pro card
+      if (proCard)  proCard.style.display  = 'block';
+      if (freeCard) freeCard.style.display = 'none';
+      if (subDet)   subDet.textContent = d.days_remaining + ' days remaining · ' + (d.pro_expires_at||'').split('T')[0];
+      if (heroBadge) {
+        heroBadge.className = 'hero-badge pro';
+        heroBadge.textContent = '🏆 Pro Member';
+      }
+    } else {
+      // Show free card
+      if (proCard)  proCard.style.display  = 'none';
+      if (freeCard) freeCard.style.display = 'block';
+      if (heroBadge) {
+        heroBadge.className = 'hero-badge free';
+        heroBadge.textContent = 'Free Plan';
+      }
+      // Show expired banner if was pro before
+      if (d.pro_expired) {
+        var expBanner = document.createElement('div');
+        expBanner.style.cssText = 'margin:0 18px 16px;padding:12px 16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:14px;display:flex;align-items:center;gap:10px;';
+        expBanner.innerHTML = '<span>⚠️</span><div style="flex:1;font-size:13px;color:#FCA5A5;font-weight:600;">Your Pro has expired</div><a href="/pricing" style="font-size:12px;font-weight:700;color:#EF4444;text-decoration:none;">Renew →</a>';
+        var subSection = document.querySelector('.section');
+        if (subSection) subSection.parentNode.insertBefore(expBanner, subSection);
+      }
+    }
+  } catch(e) {
+    console.error('[Profile] Status error:', e);
   }
 }
 

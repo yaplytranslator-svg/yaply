@@ -2122,9 +2122,8 @@
   <nav class="top-nav">
     <a href="/app" class="nav-logo">
       <div class="nav-logo-mark">
-        <img src="/static/icons/icon-192.png" 
-     style="width:32px;height:32px;border-radius:8px;object-fit:cover;" 
-     alt="Yaply"/>
+        <img src="/static/icons/icon-192.png" style="width:32px;height:32px;border-radius:8px;object-fit:cover;"
+          alt="Yaply" />
       </div>
       <span class="nav-logo-name">Yaply</span>
     </a>
@@ -2212,6 +2211,42 @@
     </div>
   </nav>
 
+  <!-- PRO EXPIRY BANNER -->
+  <div id="proExpiryBanner" style="display:none;margin:0;padding:12px 18px;
+  background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.06));
+  border-bottom:1px solid rgba(239,68,68,0.2);">
+    <div style="max-width:480px;margin:0 auto;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">⚠️</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:#FCA5A5;">Your Yaply Pro has expired</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">Renew to restore unlimited access to all
+          tools</div>
+      </div>
+      <a href="/pricing" style="padding:7px 14px;background:#EF4444;color:white;
+      border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;
+      white-space:nowrap;">Renew Pro →</a>
+    </div>
+  </div>
+
+  <!-- USAGE BAR (shows for free users) -->
+  <div id="usageBar" style="display:none;padding:10px 18px;
+  background:rgba(37,99,255,0.05);border-bottom:1px solid rgba(37,99,255,0.08);">
+    <div style="max-width:480px;margin:0 auto;display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);">Free Plan · AI Plans</span>
+          <span style="font-size:11px;font-weight:700;color:white;" id="usageText">0 / 3 used</span>
+        </div>
+        <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;">
+          <div id="usageFill"
+            style="height:100%;background:#2563FF;border-radius:2px;transition:width .5s ease;width:0%;"></div>
+        </div>
+      </div>
+      <a href="/pricing"
+        style="font-size:11px;font-weight:700;color:#2563FF;text-decoration:none;white-space:nowrap;">Upgrade ↑</a>
+    </div>
+  </div>
+
   <!-- MAIN -->
   <main class="main">
 
@@ -2223,7 +2258,7 @@
       </div>
       <!-- BUG 1: greeting name rendered by JS, no hardcoded name -->
       <div class="hero-greeting-name" id="greetName">
-        Welcome back, <span class="skel"
+        Welcome back, <span class="skel" id="userName"
           style="display:inline-block;width:110px;height:26px;vertical-align:middle;border-radius:8px;"></span>
       </div>
     </div>
@@ -2883,6 +2918,130 @@
       }
     });
 
+
+    async function loadUserStatus() {
+      var token = localStorage.getItem('yaply_token') || '';
+      if (!token) return;
+
+      try {
+        var r = await fetch('/api/me/status', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        var d = await r.json();
+        if (!d.success) return;
+
+        // Update greeting with name
+        var cached = JSON.parse(localStorage.getItem('yaply_user') || '{}');
+        if (cached.name) {
+          var greetEl = document.getElementById('userName');
+          if (greetEl) greetEl.textContent = cached.name.split(' ')[0];
+        }
+
+        // Pro expiry banner
+        if (d.pro_expired) {
+          var banner = document.getElementById('proExpiryBanner');
+          if (banner) banner.style.display = 'block';
+        }
+
+        // Days remaining warning (3 days left)
+        if (d.plan === 'pro' && d.days_remaining !== null && d.days_remaining <= 3) {
+          var banner = document.getElementById('proExpiryBanner');
+          if (banner) {
+            banner.style.display = 'block';
+            banner.style.background = 'linear-gradient(135deg,rgba(245,185,66,0.1),rgba(245,185,66,0.05))';
+            banner.style.borderBottomColor = 'rgba(245,185,66,0.2)';
+            banner.querySelector('span').textContent = '⏰';
+            banner.querySelector('div div:first-child').textContent = 'Pro expires in ' + d.days_remaining + ' day' + (d.days_remaining === 1 ? '' : 's');
+            banner.querySelector('div div:last-child').textContent = 'Renew now to keep your access';
+            banner.querySelector('a').style.background = '#F5B942';
+            banner.querySelector('a').style.color = '#0B1220';
+          }
+        }
+
+        // Usage bar for free users
+        if (d.plan === 'free') {
+          var usageBar = document.getElementById('usageBar');
+          var usageText = document.getElementById('usageText');
+          var usageFill = document.getElementById('usageFill');
+          if (usageBar && d.usage && d.limits) {
+            var used = d.usage.plans_used || 0;
+            var limit = d.limits.plans || 3;
+            var pct = Math.min(100, Math.round(used / limit * 100));
+            usageBar.style.display = 'block';
+            usageText.textContent = used + ' / ' + limit + ' plans used';
+            usageFill.style.width = pct + '%';
+            if (pct >= 100) {
+              usageFill.style.background = '#EF4444';
+              usageText.style.color = '#FCA5A5';
+            } else if (pct >= 66) {
+              usageFill.style.background = '#F5B942';
+            }
+          }
+
+          // Update plan badge on dashboard
+          var planBadge = document.getElementById('dashPlanBadge');
+          if (planBadge) {
+            planBadge.textContent = 'Free Plan';
+            planBadge.style.background = 'rgba(255,255,255,0.07)';
+            planBadge.style.color = 'rgba(255,255,255,0.4)';
+          }
+        }
+
+        // Update pro badge
+        if (d.plan === 'pro') {
+          var planBadge = document.getElementById('dashPlanBadge');
+          if (planBadge) {
+            planBadge.textContent = '🏆 Pro';
+            planBadge.style.background = 'rgba(245,185,66,0.15)';
+            planBadge.style.color = '#F5B942';
+          }
+        }
+
+        // Handle limit errors from AI tools
+        window.handleLimitError = function (data) {
+          if (data.error === 'limit_reached') {
+            showLimitModal(data.feature, data.used, data.limit);
+          }
+        };
+
+      } catch (e) {
+        console.error('[Status]', e);
+      }
+    }
+
+    // Limit modal
+    function showLimitModal(feature, used, limit) {
+      var FEATURE_NAMES = {
+        'plan': 'AI Trip Plans',
+        'translation': 'Translations',
+        'tool': 'Safety Tools',
+        'identify': 'Place Identifier',
+        'voice': 'Voice Translation',
+        'ai_story': 'AI Travel Story',
+        'journal': 'AI Journal',
+        'multicity': 'Multi-city Planning'
+      };
+      var name = FEATURE_NAMES[feature] || feature;
+
+      var modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(11,18,32,0.85);z-index:500;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);';
+      modal.innerHTML = '<div style="background:#0d1f3c;border:1px solid rgba(37,99,255,0.2);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;">' +
+        '<div style="width:40px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin:0 auto 20px;"></div>' +
+        '<div style="font-size:32px;text-align:center;margin-bottom:12px;">🔒</div>' +
+        '<div style="font-family:Instrument Serif,serif;font-size:22px;color:white;text-align:center;margin-bottom:8px;">Limit Reached</div>' +
+        '<div style="font-size:14px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:20px;line-height:1.6;">You\'ve used <b style="color:white;">' + used + '/' + limit + '</b> free ' + name + '.<br/>Upgrade to Pro for more.</div>' +
+        '<a href="/pricing" style="display:block;padding:14px;background:#2563FF;color:white;border-radius:12px;font-size:15px;font-weight:700;text-align:center;text-decoration:none;box-shadow:0 8px 24px rgba(37,99,255,0.3);">Upgrade to Pro →</a>' +
+        '<button onclick="this.closest(\'div[style]\').remove()" style="width:100%;margin-top:8px;padding:12px;background:transparent;border:none;font-size:14px;color:rgba(255,255,255,0.35);cursor:pointer;font-family:DM Sans,sans-serif;">Continue on Free</button>' +
+        '</div>';
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) modal.remove();
+      });
+      document.body.appendChild(modal);
+    }
+
+    // Call on page load
+    document.addEventListener('DOMContentLoaded', loadUserStatus);
+
     /* ═══════════════════════════════════════════════════════════════
        BUG 4 — COMPLETE FLAG MAP
     ═══════════════════════════════════════════════════════════════ */
@@ -3016,7 +3175,7 @@
         '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">' +
         '< path d = "M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L9 10 1.2 8.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 15l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 4.5 8.8c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" >' +
         '</svg > ' +
-      '</div>' +
+        '</div>' +
         '<div class="no-trip-title">Where to next?</div>' +
         '<div class="no-trip-sub">Plan your first trip with AI. Full itinerary in 15 seconds.</div>' +
         '<div class="no-trip-btn">' +

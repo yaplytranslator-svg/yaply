@@ -554,3 +554,228 @@ def log_action(user_id, action, ip=''):
 if __name__ == '__main__':
     init_db()
     print("[DB] All tables created successfully")
+
+
+def migrate_subscription_db():
+    """Add subscription + onboarding + usage limit columns"""
+    conn = get_db()
+    migrations = [
+        "ALTER TABLE users ADD COLUMN onboarding_done INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN travel_style TEXT DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN budget_style TEXT DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN plan_type TEXT DEFAULT 'free'",
+        "ALTER TABLE users ADD COLUMN pro_expires_at TEXT DEFAULT NULL",
+        "ALTER TABLE users ADD COLUMN plans_used_month INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN multiciy_used_month INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN translations_today INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN voice_today INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN identify_today INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN tools_today INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN diary_entries_trip INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN ai_story_used INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN journal_used_month INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN usage_reset_date TEXT DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN monthly_reset_date TEXT DEFAULT ''",
+    ]
+    for sql in migrations:
+        try:
+            conn.execute(sql)
+            conn.commit()
+        except:
+            pass  # Column already exists
+    conn.close()
+    print("[DB] Subscription columns migrated")
+
+
+# ── FREE TIER LIMITS ──
+FREE_LIMITS = {
+    'plans_month':        3,
+    'multicity_month':    0,
+    'translations_day':   10,
+    'voice_day':          5,
+    'identify_day':       3,
+    'tools_day':          5,
+    'diary_entries_trip': 10,
+    'ai_story':           0,
+    'journal_month':      0,
+    'saved_places':       5,
+}
+
+# ── PRO TIER LIMITS ──
+PRO_LIMITS = {
+    'plans_month':        20,
+    'multicity_month':    5,
+    'translations_day':   100,
+    'voice_day':          50,
+    'identify_day':       20,
+    'tools_day':          25,
+    'diary_entries_trip': 100,
+    'ai_story':           3,
+    'journal_month':      5,
+    'saved_places':       100,
+}
+
+
+def get_user_plan(user_id):
+    """Returns 'free' or 'pro' and auto-expires if needed"""
+    from datetime import datetime
+    conn = get_db()
+    try:
+        user = conn.execute('SELECT * FROM users WHERE id=?', (user_id,)).fetchone()
+        if not user:
+            return 'free'
+        user = dict(user)
+        plan = user.get('plan_type', 'free')
+        expires = user.get('pro_expires_at')
+
+        # Auto-expire pro
+        if plan == 'pro' and expires:
+            if datetime.now().isoformat() > expires:
+                conn.execute(
+                    "UPDATE users SET plan_type='free', is_pro=0 WHERE id=?",
+                    (user_id,)
+                )
+                conn.commit()
+                return 'free'
+        return plan
+    finally:
+        conn.close()
+
+
+def reset_daily_usage(user_id):
+    """Reset daily counters if new day"""
+    from datetime import date
+    today = date.today().isoformat()
+    conn = get_db()
+    try:
+        user = conn.execute('SELECT usage_reset_date FROM users WHERE id=?', (user_id,)).fetchone()
+        if user and dict(user).get('usage_reset_date') != today:
+            conn.execute(
+                """UPDATE users SET
+                   translations_today=0, voice_today=0,
+                   identify_today=0, tools_today=0,
+                   usage_reset_date=?
+                   WHERE id=?""",
+                (today, user_id)
+            )
+            conn.commit()
+    finally:
+        conn.close()
+
+
+def reset_monthly_usage(user_id):
+    """Reset monthly counters if new month"""
+    from datetime import date
+    month = date.today().strftime('%Y-%m')
+    conn = get_db()
+    try:
+        user = conn.execute('SELECT monthly_reset_date FROM users WHERE id=?', (user_id,)).fetchone()
+        if user and dict(user).get('monthly_reset_date') != month:
+            conn.execute(
+                """UPDATE users SET
+                   plans_used_month=0, multiciy_used_month=0,
+                   journal_used_month=0, ai_story_used=0,
+                   monthly_reset_date=?
+                   WHERE id=?""",
+                (month, user_id)
+            )
+            conn.commit()
+    finally:
+        conn.close()
+
+
+def check_limit(user_id, feature):
+    """
+    Returns (allowed: bool, used: int, limit: int)
+    Features: 'plan', 'multicity', 'translation', 'voice',
+              'identify', 'tool', 'ai_story', 'journal'
+    """
+    reset_daily_usage(user_id)
+    reset_monthly_usage(user_id)
+    plan = get_user_plan(user_id)
+    limits = PRO_LIMITS if plan == 'pro' else FREE_LIMITS
+
+    conn = get_db()
+    try:
+        user = dict(conn.execute('SELECT * FROM users WHERE id=?', (user_id,)).fetchone())
+
+        checks = {
+            'plan':        ('plans_used_month',    limits['plans_month']),
+            'multicity':   ('multiciy_used_month', limits['multicity_month']),
+            'translation': ('translations_today',  limits['translations_day']),
+            'voice':       ('voice_today',         limits['voice_day']),
+            'identify':    ('identify_today',      limits['identify_day']),
+            'tool':        ('tools_today',         limits['tools_day']),
+            'ai_story':    ('ai_story_used',       limits['ai_story']),
+            'journal':     ('journal_used_month',  limits['journal_month']),
+        }
+
+        if feature not in checks:
+            return True, 0, 999
+
+        col, limit = checks[feature]
+        used = user.get(col, 0) or 0
+
+        if limit == 0:
+            return False, used, 0
+
+        return used < limit, used, limit
+    finally:
+        conn.close()
+
+
+def increment_usage(user_id, feature):
+    """Increment usage counter after successful AI call"""
+    col_map = {
+        'plan':        'plans_used_month',
+        'multicity':   'multiciy_used_month',
+        'translation': 'translations_today',
+        'voice':       'voice_today',
+        'identify':    'identify_today',
+        'tool':        'tools_today',
+        'ai_story':    'ai_story_used',
+        'journal':     'journal_used_month',
+    }
+    col = col_map.get(feature)
+    if not col:
+        return
+    conn = get_db()
+    try:
+        conn.execute(f'UPDATE users SET {col}={col}+1 WHERE id=?', (user_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def activate_pro(user_id, plan='monthly'):
+    """Activate Pro for user after payment"""
+    from datetime import datetime, timedelta
+    days = 7 if plan == 'weekly' else 30
+    expires = (datetime.now() + timedelta(days=days)).isoformat()
+    conn = get_db()
+    try:
+        conn.execute(
+            "UPDATE users SET plan_type='pro', is_pro=1, pro_expires_at=? WHERE id=?",
+            (expires, user_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def complete_onboarding(user_id, name, home_city='', passport='India',
+                         currency='INR', travel_style='', budget_style=''):
+    """Save onboarding data and mark complete"""
+    conn = get_db()
+    try:
+        conn.execute(
+            """UPDATE users SET
+               name=?, home_city=?, passport=?, currency=?,
+               travel_style=?, budget_style=?, onboarding_done=1
+               WHERE id=?""",
+            (name.strip(), home_city.strip(), passport,
+             currency, travel_style, budget_style, user_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()

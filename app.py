@@ -65,7 +65,9 @@ limiter = Limiter(
 
 # ── DATABASE + AUTH ───────────────────────────────────────────
 from database import (
-    init_db, init_diary_db, migrate_db, log_action, get_db,
+    init_db, init_diary_db, migrate_db, log_action, get_db, migrate_subscription_db, get_user_plan, check_limit, increment_usage,
+    activate_pro, complete_onboarding, FREE_LIMITS, PRO_LIMITS,
+    reset_daily_usage, reset_monthly_usage,
     save_trip, get_trips, get_trip, update_trip, delete_trip,
     save_place, get_places, delete_place,
     add_expense, get_expenses, delete_expense,
@@ -76,6 +78,7 @@ from database import (
 from auth import register_auth_routes, require_auth, decode_token, get_token_from_request, optional_auth, safe_user
 
 init_db()
+migrate_subscription_db()
 migrate_db()
 register_auth_routes(app)
 init_groups_db()
@@ -100,6 +103,44 @@ try:
     deepl_client = deepl.Translator(os.getenv("DEEPL_API_KEY", ""))
 except Exception:
     deepl_client = None
+
+# ══════════════════════════════════════════════════════════
+# LIMIT CHECK DECORATOR
+# ══════════════════════════════════════════════════════════
+
+def check_feature_limit(feature):
+    """Decorator to enforce usage limits"""
+    from functools import wraps
+    def decorator(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            allowed, used, limit = check_limit(g.user_id, feature)
+            if not allowed:
+                plan = get_user_plan(g.user_id)
+                if plan == 'free':
+                    return jsonify({
+                        'success': False,
+                        'error': 'limit_reached',
+                        'feature': feature,
+                        'used': used,
+                        'limit': limit,
+                        'plan': 'free',
+                        'message': f'You\'ve used your free limit for this feature. Upgrade to Pro to continue.',
+                        'upgrade_url': '/pricing'
+                    }), 429
+                else:
+                    return jsonify({
+                        'success': False,
+                        'error': 'pro_limit_reached',
+                        'feature': feature,
+                        'used': used,
+                        'limit': limit,
+                        'plan': 'pro',
+                        'message': f'Monthly limit reached. Resets next month.'
+                    }), 429
+            return f(*args, **kwargs)
+        return wrapped
+    return decorator
 
 # ── ENV KEYS ──────────────────────────────────────────────────
 WEATHER_KEY          = os.getenv("OPENWEATHER_API_KEY", "")
@@ -602,6 +643,7 @@ def api_profile():
 @app.route('/api/plan', methods=['POST'])
 @require_auth
 @limiter.limit("15 per hour")
+@check_feature_limit('plan')
 def api_plan():
     try:
         data = request.get_json() or {}
@@ -793,7 +835,8 @@ Return ONLY valid JSON with this structure:
             temp=0.3,
             max_tok=6000
         )
-
+        
+        increment_usage(g.user_id, 'plan')
         # Save to trip if trip_id provided
         trip_id = data.get('trip_id')
         if trip_id:
@@ -812,6 +855,7 @@ Return ONLY valid JSON with this structure:
 @app.route('/api/multi-city-plan', methods=['POST'])
 @require_auth
 @limiter.limit("10 per hour")
+@check_feature_limit('multicity')
 def multi_city_plan():
     try:
         data         = request.get_json() or {}
@@ -865,6 +909,7 @@ def multi_city_plan():
         )
         plan = clean_json(response.choices[0].message.content)
         log_action(g.user_id, 'multi_city_plan', request.remote_addr)
+        increment_usage(g.user_id, 'multicity')
         return jsonify({'success': True, 'plan': plan})
     except Exception as e:
         import traceback; traceback.print_exc()
@@ -1002,6 +1047,7 @@ connectivity_tips, data_saving_tips, offline_essentials, budget_summary""",
 @app.route('/api/weather', methods=['POST'])
 @require_auth
 @limiter.limit("30 per hour")
+@check_feature_limit('tool')
 def api_weather():
     try:
         city = clean((request.get_json() or {}).get('city', ''))
@@ -1028,6 +1074,7 @@ def api_weather():
             else:
                 daily[date]['temp_max'] = max(daily[date]['temp_max'], item['main']['temp_max'])
                 daily[date]['temp_min'] = min(daily[date]['temp_min'], item['main']['temp_min'])
+        increment_usage(g.user_id, 'tool')
         return jsonify({
             'success': True,
             'city': data['city']['name'],
@@ -1071,6 +1118,7 @@ def api_currency():
 @app.route('/api/visa', methods=['POST'])
 @require_auth
 @limiter.limit("20 per hour")
+@check_feature_limit('tool')
 def api_visa():
     try:
         data = request.get_json() or {}
@@ -1081,6 +1129,7 @@ def api_visa():
             f"""Visa requirements for {passport} passport holder visiting {destination}.
 Return JSON: visa_required, visa_type, validity, cost, processing_days, apply_online, apply_url, documents, tips, visa_on_arrival, visa_free_days"""
         )
+        increment_usage(g.user_id, 'tool')
         return jsonify({'success': True, 'visa': result})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -1091,6 +1140,7 @@ Return JSON: visa_required, visa_type, validity, cost, processing_days, apply_on
 @app.route('/api/identify', methods=['POST'])
 @require_auth
 @limiter.limit("20 per hour")
+@check_feature_limit('identify')
 def api_identify():
     try:
         data         = request.get_json() or {}
@@ -1115,6 +1165,7 @@ def api_identify():
         )
         result = clean_json(response.choices[0].message.content)
         log_action(g.user_id, 'identify_place', request.remote_addr)
+        increment_usage(g.user_id, 'identify')
         return jsonify({'success': True, 'result': result})
     except Exception as e:
         import traceback; traceback.print_exc()
@@ -1145,6 +1196,7 @@ travel_tips, best_food""",
 @app.route('/api/scam-alerts', methods=['POST'])
 @require_auth
 @limiter.limit("10 per hour")
+@check_feature_limit('tool')
 def api_scam_alerts():
     try:
         destination = clean((request.get_json() or {}).get('destination', ''))
@@ -1155,6 +1207,7 @@ scams (name/category/severity/how_it_works/red_flags/how_to_avoid/what_to_say/ic
 general_rules, safe_alternatives, emergency_if_robbed""",
             model=SCOUT, temp=0.2, max_tok=1000
         )
+        increment_usage(g.user_id, 'tool')
         return jsonify({'success': True, 'data': result})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -1474,6 +1527,7 @@ Return JSON: essentials, clothing, toiletries, electronics, documents, health, d
 @app.route('/api/trip-journal', methods=['POST'])
 @require_auth
 @limiter.limit("5 per hour")
+@check_feature_limit('journal')
 def api_trip_journal():
     try:
         data = request.get_json() or {}
@@ -1487,6 +1541,7 @@ closing, best_memory, lesson_learned, quote, would_return, rating, tags""",
         )
         trip_id = data.get('trip_id')
         if trip_id: save_journal(trip_id, g.user_id, result)
+        increment_usage(g.user_id, 'journal')
         return jsonify({'success': True, 'data': result})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -3030,6 +3085,148 @@ def apply_promo():
 
     except Exception as e:
         return jsonify({'success':False,'error':str(e)})
+
+
+# ══════════════════════════════════════════════════════════
+# ONBOARDING ROUTES
+# ══════════════════════════════════════════════════════════
+
+@app.route('/onboarding')
+def onboarding_page():
+    return render_template('onboarding.html')
+
+@app.route('/api/onboarding/complete', methods=['POST'])
+@require_auth
+def api_complete_onboarding():
+    try:
+        data = request.get_json() or {}
+        name         = clean(data.get('name', ''), 50)
+        home_city    = clean(data.get('home_city', ''), 50)
+        passport     = clean(data.get('passport', 'India'), 30)
+        currency     = clean(data.get('currency', 'INR'), 3)
+        travel_style = clean(data.get('travel_style', ''), 20)
+        budget_style = clean(data.get('budget_style', ''), 20)
+
+        if not name:
+            return jsonify({'success': False, 'error': 'Name is required'})
+
+        complete_onboarding(
+            g.user_id, name, home_city, passport,
+            currency, travel_style, budget_style
+        )
+
+        user = get_user_by_id(g.user_id)
+        log_action(g.user_id, 'onboarding_complete', request.remote_addr)
+
+        return jsonify({
+            'success': True,
+            'user': safe_user(user),
+            'redirect': '/app'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ══════════════════════════════════════════════════════════
+# USER STATUS ROUTE
+# ══════════════════════════════════════════════════════════
+
+@app.route('/api/me/status')
+@require_auth
+def api_user_status():
+    """Returns full user plan status, limits, usage"""
+    try:
+        from datetime import datetime
+        reset_daily_usage(g.user_id)
+        reset_monthly_usage(g.user_id)
+
+        user = get_user_by_id(g.user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'})
+
+        plan = get_user_plan(g.user_id)
+        limits = PRO_LIMITS if plan == 'pro' else FREE_LIMITS
+
+        # Check if pro just expired
+        pro_expired = False
+        pro_expires_at = user.get('pro_expires_at')
+        if user.get('plan_type') == 'free' and pro_expires_at:
+            if pro_expires_at > '2020':  # had pro before
+                pro_expired = True
+
+        # Days remaining
+        days_remaining = None
+        if plan == 'pro' and pro_expires_at:
+            try:
+                exp = datetime.fromisoformat(pro_expires_at)
+                diff = (exp - datetime.now()).days
+                days_remaining = max(0, diff)
+            except:
+                pass
+
+        return jsonify({
+            'success': True,
+            'plan': plan,
+            'pro_expires_at': pro_expires_at,
+            'days_remaining': days_remaining,
+            'pro_expired': pro_expired,
+            'onboarding_done': bool(user.get('onboarding_done')),
+            'usage': {
+                'plans_used':        user.get('plans_used_month', 0),
+                'translations_used': user.get('translations_today', 0),
+                'tools_used':        user.get('tools_today', 0),
+                'identify_used':     user.get('identify_today', 0),
+                'voice_used':        user.get('voice_today', 0),
+            },
+            'limits': {
+                'plans':        limits['plans_month'],
+                'translations': limits['translations_day'],
+                'tools':        limits['tools_day'],
+                'identify':     limits['identify_day'],
+                'voice':        limits['voice_day'],
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ══════════════════════════════════════════════════════════
+# UPDATED PAYMENT VERIFY — uses activate_pro()
+# ══════════════════════════════════════════════════════════
+
+@app.route('/api/payment/verify', methods=['POST'])
+@require_auth
+def verify_payment():
+    try:
+        data       = request.get_json() or {}
+        order_id   = data.get('razorpay_order_id')
+        payment_id = data.get('razorpay_payment_id')
+        signature  = data.get('razorpay_signature')
+        plan       = data.get('plan', 'monthly')
+
+        params = {
+            'razorpay_order_id':   order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature':  signature
+        }
+        rzp_client.utility.verify_payment_signature(params)
+
+        # Activate pro with correct duration
+        activate_pro(g.user_id, plan)
+        log_action(g.user_id, f'payment_success_{plan}', request.remote_addr)
+
+        user = get_user_by_id(g.user_id)
+        return jsonify({
+            'success': True,
+            'message': '🎉 Pro activated!',
+            'plan': plan,
+            'pro_expires_at': user.get('pro_expires_at'),
+            'redirect': '/app'
+        })
+
+    except Exception as e:
+        log_action(g.user_id if hasattr(g,'user_id') else 0,
+                   'payment_failed', request.remote_addr)
+        return jsonify({'success': False, 'error': str(e)})
+
 
 
 @app.route('/api/promo/validate', methods=['POST'])

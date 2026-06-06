@@ -363,7 +363,7 @@ def register_auth_routes(app):
                 'success':  True,
                 'token':    token,
                 'user':     safe_user(user),
-                'redirect': '/app',
+                'redirect': '/onboarding',
                 'message':  f"Welcome to Yaply, {name.split()[0]}! ✈️"
             })
         except Exception as e:
@@ -417,7 +417,7 @@ def register_auth_routes(app):
                 'success':  True,
                 'token':    token,
                 'user':     safe_user(user),
-                'redirect': '/app',
+                'redirect': '/onboarding' if not user.get('onboarding_done') else '/app',
                 'message':  f"Welcome back, {user['name'].split()[0]}! ✈️"
             })
         except Exception as e:
@@ -466,7 +466,9 @@ def register_auth_routes(app):
                 'token':    token,
                 'user':     safe_user(user),
                 'is_new':   is_new,
-                'redirect': '/app',
+                'redirect': if not user.get('onboarding_done'):
+                                return redirect('/onboarding')
+                            return redirect('/app'),
                 'message':  f"{'Welcome to Yaply' if is_new else 'Welcome back'}, {first_name}! ✈️"
             })
         except Exception as e:

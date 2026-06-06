@@ -1,32 +1,249 @@
 """
-Yaply — Perfected Translation Engine v2
-Fixes applied:
-  STREAM:  Silence detection 0.6s → faster trigger, parallel processing
-  CONVO:   Whisper language prompts → right words, audio normalization
-  CAMERA:  Vision + Groq run in PARALLEL → first result wins, no waiting
+Yaply — Translation Engine v3
+Upgrades:
+  - JWT auth on all routes (same secret as main app)
+  - Usage limit enforcement (translation, voice, identify)
+  - Daily usage tracking via shared SQLite DB
+  - Rate limiting per user
+  - Proper error responses matching main app format
+  - Scout model for identify, 70b for translation fallback
+  - CORS locked to yaply.live
 """
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, g
 from flask_cors import CORS
 from flask_sock import Sock
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from groq import Groq
 import deepl, edge_tts, asyncio
 import os, io, base64, json, wave, struct, threading, time
 import requests as req
 from dotenv import load_dotenv
+import jwt as pyjwt
+import sqlite3
 
 load_dotenv()
 
+# ══════════════════════════════════════════════════════════
+# APP SETUP
+# ══════════════════════════════════════════════════════════
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=[
+    'https://www.yaply.live',
+    'https://yaply.live',
+    'http://localhost:5000',
+    'http://localhost:5001',
+])
 sock = Sock(app)
 app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 25}
 
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per hour"],
+    storage_uri="memory://"
+)
+
+# ══════════════════════════════════════════════════════════
+# CLIENTS
+# ══════════════════════════════════════════════════════════
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-try:    deepl_client = deepl.Translator(os.getenv("DEEPL_API_KEY"))
-except: deepl_client = None
+try:
+    deepl_client = deepl.Translator(os.getenv("DEEPL_API_KEY"))
+except:
+    deepl_client = None
 
 GOOGLE_VISION_KEY = os.getenv("GOOGLE_VISION_API_KEY")
+JWT_SECRET        = os.getenv("JWT_SECRET", "yaply_secret_key_change_in_prod")
+DB_PATH           = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'yaply.db')
 
+# ══════════════════════════════════════════════════════════
+# MODEL CONSTANTS
+# ══════════════════════════════════════════════════════════
+SCOUT    = "meta-llama/llama-4-scout-17b-16e-instruct"
+MODEL_70B = "llama-3.3-70b-versatile"
+WHISPER_TURBO = "whisper-large-v3-turbo"
+WHISPER_LARGE = "whisper-large-v3"
+
+# ══════════════════════════════════════════════════════════
+# FREE / PRO LIMITS (mirrors main app)
+# ══════════════════════════════════════════════════════════
+FREE_LIMITS = {
+    'translations_day': 10,
+    'voice_day':         5,
+    'identify_day':      3,
+}
+PRO_LIMITS = {
+    'translations_day': 100,
+    'voice_day':         50,
+    'identify_day':      20,
+}
+
+# ══════════════════════════════════════════════════════════
+# DATABASE HELPERS
+# ══════════════════════════════════════════════════════════
+def get_db():
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def get_user_from_token(token):
+    """Decode JWT and return user row from DB"""
+    try:
+        payload = pyjwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+        user_id = payload.get('user_id')
+        if not user_id:
+            return None
+        conn = get_db()
+        user = conn.execute('SELECT * FROM users WHERE id=?', (user_id,)).fetchone()
+        conn.close()
+        return dict(user) if user else None
+    except:
+        return None
+
+def get_token_from_request():
+    """Extract Bearer token from Authorization header or query param"""
+    auth = request.headers.get('Authorization', '')
+    if auth.startswith('Bearer '):
+        return auth[7:]
+    return request.args.get('token', '')
+
+def get_user_plan(user):
+    """Check if user is pro and not expired"""
+    from datetime import datetime
+    if not user:
+        return 'free'
+    plan = user.get('plan_type', 'free')
+    expires = user.get('pro_expires_at')
+    if plan == 'pro' and expires:
+        if datetime.now().isoformat() > expires:
+            # Auto expire
+            try:
+                conn = get_db()
+                conn.execute(
+                    "UPDATE users SET plan_type='free', is_pro=0 WHERE id=?",
+                    (user['id'],)
+                )
+                conn.commit()
+                conn.close()
+            except:
+                pass
+            return 'free'
+    return plan
+
+def reset_daily_if_needed(user_id):
+    """Reset daily counters if new day"""
+    from datetime import date
+    today = date.today().isoformat()
+    try:
+        conn = get_db()
+        row = conn.execute(
+            'SELECT usage_reset_date FROM users WHERE id=?', (user_id,)
+        ).fetchone()
+        if row and dict(row).get('usage_reset_date') != today:
+            conn.execute(
+                """UPDATE users SET
+                   translations_today=0, voice_today=0,
+                   identify_today=0, tools_today=0,
+                   usage_reset_date=?
+                   WHERE id=?""",
+                (today, user_id)
+            )
+            conn.commit()
+        conn.close()
+    except:
+        pass
+
+def check_and_increment(user_id, feature, plan):
+    """
+    Returns (allowed: bool, used: int, limit: int)
+    Increments counter if allowed.
+    """
+    limits = PRO_LIMITS if plan == 'pro' else FREE_LIMITS
+    col_map = {
+        'translation': ('translations_today', limits['translations_day']),
+        'voice':       ('voice_today',         limits['voice_day']),
+        'identify':    ('identify_today',      limits['identify_day']),
+    }
+    if feature not in col_map:
+        return True, 0, 999
+
+    col, limit = col_map[feature]
+    try:
+        conn = get_db()
+        reset_daily_if_needed(user_id)
+        user = dict(conn.execute('SELECT * FROM users WHERE id=?', (user_id,)).fetchone())
+        used = user.get(col, 0) or 0
+        if used >= limit:
+            conn.close()
+            return False, used, limit
+        # Increment
+        conn.execute(f'UPDATE users SET {col}={col}+1 WHERE id=?', (user_id,))
+        conn.commit()
+        conn.close()
+        return True, used + 1, limit
+    except:
+        return True, 0, 999  # Fail open — don't block user on DB error
+
+def limit_error_response(feature, used, limit, plan):
+    """Standard limit error response"""
+    NAMES = {
+        'translation': 'Translations',
+        'voice':       'Voice TTS',
+        'identify':    'Place Identifier',
+    }
+    return jsonify({
+        'success':     False,
+        'error':       'limit_reached',
+        'feature':     feature,
+        'used':        used,
+        'limit':       limit,
+        'plan':        plan,
+        'message':     f"You've used {used}/{limit} free {NAMES.get(feature, feature)} today. Upgrade to Pro for more.",
+        'upgrade_url': '/pricing'
+    }), 429
+
+# ══════════════════════════════════════════════════════════
+# AUTH DECORATOR
+# ══════════════════════════════════════════════════════════
+from functools import wraps
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = get_token_from_request()
+        if not token:
+            return jsonify({'success': False, 'error': 'Authentication required', 'code': 'NO_TOKEN'}), 401
+        user = get_user_from_token(token)
+        if not user:
+            return jsonify({'success': False, 'error': 'Session expired. Please log in again.', 'code': 'EXPIRED'}), 401
+        g.user    = user
+        g.user_id = user['id']
+        g.plan    = get_user_plan(user)
+        return f(*args, **kwargs)
+    return decorated
+
+def optional_auth(f):
+    """Auth is optional — sets g.user if token exists, else None"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = get_token_from_request()
+        if token:
+            user = get_user_from_token(token)
+            if user:
+                g.user    = user
+                g.user_id = user['id']
+                g.plan    = get_user_plan(user)
+                return f(*args, **kwargs)
+        g.user    = None
+        g.user_id = None
+        g.plan    = 'free'
+        return f(*args, **kwargs)
+    return decorated
+
+# ══════════════════════════════════════════════════════════
+# LANGUAGE DATA
+# ══════════════════════════════════════════════════════════
 EDGE_VOICES = {
     'en':'en-US-JennyNeural','es':'es-ES-ElviraNeural','fr':'fr-FR-DeniseNeural',
     'de':'de-DE-KatjaNeural','ja':'ja-JP-NanamiNeural','zh':'zh-CN-XiaoxiaoNeural',
@@ -56,7 +273,6 @@ WHISPER_LANG = {
     'EN':'en','ES':'es','FR':'fr','DE':'de','JA':'ja','ZH':'zh',
     'AR':'ar','HI':'hi','PT':'pt','RU':'ru','IT':'it','KO':'ko',
 }
-# FIX: Language-specific prompts boost Whisper accuracy ~15%
 WHISPER_PROMPTS = {
     'en':'This is a clear English conversation.',
     'hi':'यह हिंदी में बातचीत है।',
@@ -77,13 +293,11 @@ HALLUCINATIONS = {
     'Um','um','Uh','uh','Ah','ah','Oh','oh','i','I','A','a',
     'Subtitles by','Subscribe','MBC','Please subscribe',
 }
-# Languages with natural pauses — need longer silence window
 SLOW_LANGS = {'hi','ar','zh','ja','ko'}
 
-# ─────────────────────────────────────
+# ══════════════════════════════════════════════════════════
 # AUDIO HELPERS
-# ─────────────────────────────────────
-
+# ══════════════════════════════════════════════════════════
 def get_rms(audio_bytes):
     try:
         count = len(audio_bytes)//2
@@ -93,7 +307,6 @@ def get_rms(audio_bytes):
     except: return 0
 
 def normalize_audio(raw_bytes):
-    """Normalize volume — Whisper performs best at consistent volume"""
     try:
         count = len(raw_bytes)//2
         if count == 0: return raw_bytes
@@ -124,14 +337,13 @@ def safe_send(ws, data):
     try: ws.send(json.dumps(data))
     except: pass
 
-# ─────────────────────────────────────
-# TRANSCRIPTION — with prompts for accuracy
-# ─────────────────────────────────────
-
+# ══════════════════════════════════════════════════════════
+# TRANSCRIPTION
+# ══════════════════════════════════════════════════════════
 def transcribe(wav_data, lang_hint=None):
-    return transcribe_with_model(wav_data, lang_hint, 'whisper-large-v3-turbo')
+    return transcribe_with_model(wav_data, lang_hint, WHISPER_TURBO)
 
-def transcribe_with_model(wav_data, lang_hint=None, model='whisper-large-v3-turbo', prompt_override=None):
+def transcribe_with_model(wav_data, lang_hint=None, model=WHISPER_TURBO, prompt_override=None):
     kwargs = {
         'file': ('audio.wav', wav_data),
         'model': model,
@@ -142,42 +354,34 @@ def transcribe_with_model(wav_data, lang_hint=None, model='whisper-large-v3-turb
         wc = WHISPER_LANG.get(lang_hint)
         if wc:
             kwargs['language'] = wc
-            if prompt_override:
-                kwargs['prompt'] = prompt_override
-            else:
-                prompt = WHISPER_PROMPTS.get(wc,'')
-                if prompt: kwargs['prompt'] = prompt
+            prompt = prompt_override or WHISPER_PROMPTS.get(wc,'')
+            if prompt: kwargs['prompt'] = prompt
     t0 = time.time()
     result = groq_client.audio.transcriptions.create(**kwargs)
     text = result.text.strip()
     detected = getattr(result,'language','unknown')
     segments = getattr(result,'segments',[])
     conf = sum(abs(s.get('avg_logprob',-1)) for s in segments)/max(len(segments),1) if segments else 0.0
-    print(f"[{model.split('/')[-1]} {time.time()-t0:.2f}s] '{text[:50]}' | lang={detected} | conf={conf:.2f}")
+    print(f"[{model.split('/')[-1]} {time.time()-t0:.2f}s] '{text[:50]}' | lang={detected}")
     return text, detected, conf
 
-# ─────────────────────────────────────
+# ══════════════════════════════════════════════════════════
 # TRANSLATION
-# ─────────────────────────────────────
-
+# ══════════════════════════════════════════════════════════
 _TRANSLATE_PREFIXES = (
-    'translation:', 'translated:', 'in english:', 'in hindi:', 'in spanish:',
-    'in french:', 'in german:', 'in japanese:', 'in chinese:', 'in arabic:',
-    'in portuguese:', 'in russian:', 'in italian:', 'in korean:',
+    'translation:', 'translated:', 'in english:', 'in hindi:',
     'here is the translation:', 'here\'s the translation:',
     'the translation is:', 'sure,', 'sure!', 'certainly,',
 )
 
 def _strip_translation_noise(text):
-    """Remove any AI commentary the model may have prepended."""
+    import re
     t = text.strip()
     lower = t.lower()
     for prefix in _TRANSLATE_PREFIXES:
         if lower.startswith(prefix):
             t = t[len(prefix):].lstrip(' \n')
             lower = t.lower()
-    # Strip trailing notes in parentheses like "(Note: ...)"
-    import re
     t = re.sub(r'\s*\(Note:[^)]*\)\s*$', '', t, flags=re.IGNORECASE).strip()
     t = re.sub(r'\s*\[Note:[^\]]*\]\s*$', '', t, flags=re.IGNORECASE).strip()
     return t
@@ -196,24 +400,23 @@ def translate(text, target_lang, src_lang=None):
             print(f"[DeepL {time.time()-t0:.2f}s]")
             return result.text,'DeepL'
         except Exception as e: print(f"[DeepL error] {e}")
+
     tgt_name = LANG_NAMES.get(tgt) or LANG_NAMES.get(target_lang,'English')
     src_name = LANG_NAMES.get(src_lang,'') if src_lang and src_lang not in ('unknown','auto',None,'') else ''
     src_clause = f' from {src_name}' if src_name else ''
     t0=time.time()
     r = groq_client.chat.completions.create(
-        model='llama-3.3-70b-versatile',
+        model=MODEL_70B,
         messages=[
             {'role':'system','content':(
-                f'You are a professional translator. Your sole task is to translate text{src_clause} into {tgt_name}.\n'
-                'RULES — follow exactly:\n'
-                '• Output ONLY the translated text. No labels, no explanations, no commentary.\n'
-                '• Do NOT answer questions in the text — translate them as questions.\n'
-                '• Do NOT greet, confirm, or add anything before or after the translation.\n'
-                '• Preserve the original meaning, tone, register, and punctuation.\n'
-                '• If the input contains multiple sentences, translate all of them in order.\n'
-                '• Never say "Translation:", "Sure,", "Here is", or any similar prefix.'
+                f'You are a professional translator. Translate text{src_clause} into {tgt_name}.\n'
+                'RULES:\n'
+                '• Output ONLY the translated text. No labels, no explanations.\n'
+                '• Do NOT answer questions — translate them as questions.\n'
+                '• Never say "Translation:", "Sure,", "Here is", or any prefix.\n'
+                '• Preserve meaning, tone, register, and punctuation exactly.'
             )},
-            {'role':'user','content':f'Text to translate:\n"""\n{text}\n"""'}
+            {'role':'user','content':f'"""\n{text}\n"""'}
         ],
         temperature=0.05, max_tokens=600
     )
@@ -222,21 +425,20 @@ def translate(text, target_lang, src_lang=None):
     print(f"[Groq translate {time.time()-t0:.2f}s]")
     return result,'Groq AI'
 
-# ─────────────────────────────────────
+# ══════════════════════════════════════════════════════════
 # TTS
-# ─────────────────────────────────────
-
+# ══════════════════════════════════════════════════════════
 def tts(text, lang_code):
     async def _run():
         voice = EDGE_VOICES.get(lang_code,'en-US-JennyNeural')
         try:
-            communicate = edge_tts.Communicate(text,voice)
+            communicate = edge_tts.Communicate(text, voice)
             buf=io.BytesIO()
             async for chunk in communicate.stream():
                 if chunk['type']=='audio': buf.write(chunk['data'])
             buf.seek(0); data=buf.read()
             if len(data)>100: return data
-            raise Exception("Empty")
+            raise Exception("Empty audio")
         except:
             communicate = edge_tts.Communicate(text,'en-US-JennyNeural')
             buf=io.BytesIO()
@@ -247,11 +449,10 @@ def tts(text, lang_code):
     print(f"[TTS {time.time()-t0:.2f}s]")
     return result
 
-# ─────────────────────────────────────
-# ROUTES
-# ─────────────────────────────────────
-
-@app.route('/') 
+# ══════════════════════════════════════════════════════════
+# PAGE ROUTES
+# ══════════════════════════════════════════════════════════
+@app.route('/')
 def stream_page(): return render_template('stream.html')
 
 @app.route('/convo')
@@ -260,17 +461,68 @@ def convo_page(): return render_template('convo.html')
 @app.route('/camera')
 def camera_page(): return render_template('camera.html')
 
-@app.route('/landing')
-def landing_page(): return render_template('landing.html')
+@app.route('/translate')
+def translate_page(): return render_template('stream.html')
 
-# ─────────────────────────────────────
-# CAMERA — PARALLEL Vision + Groq
-# Both run simultaneously, first result wins
-# Returns text_blocks with bounding boxes for in-image overlay
-# ─────────────────────────────────────
+# ══════════════════════════════════════════════════════════
+# REST TRANSLATION API
+# ══════════════════════════════════════════════════════════
+@app.route('/api/translate/text', methods=['POST'])
+@require_auth
+@limiter.limit("60 per minute")
+def api_translate_text():
+    """Translate text — enforces daily limit"""
+    allowed, used, limit = check_and_increment(g.user_id, 'translation', g.plan)
+    if not allowed:
+        return limit_error_response('translation', used, limit, g.plan)
+    try:
+        data        = request.get_json() or {}
+        text        = (data.get('text') or '').strip()
+        target_lang = (data.get('target_lang') or 'en').strip()
+        src_lang    = (data.get('src_lang') or None)
+        if not text:
+            return jsonify({'success': False, 'error': 'No text provided'})
+        translated, engine = translate(text, target_lang, src_lang)
+        return jsonify({
+            'success':    True,
+            'translated': translated,
+            'engine':     engine,
+            'used':       used,
+            'limit':      limit,
+            'plan':       g.plan,
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/api/translate/tts', methods=['POST'])
+@require_auth
+@limiter.limit("30 per minute")
+def api_tts():
+    """Text to speech — enforces daily voice limit"""
+    allowed, used, limit = check_and_increment(g.user_id, 'voice', g.plan)
+    if not allowed:
+        return limit_error_response('voice', used, limit, g.plan)
+    try:
+        data      = request.get_json() or {}
+        text      = (data.get('text') or '').strip()
+        lang_code = (data.get('lang') or 'en').strip()
+        if not text:
+            return jsonify({'success': False, 'error': 'No text provided'})
+        audio_data = tts(text, lang_code)
+        return jsonify({
+            'success': True,
+            'audio':   base64.b64encode(audio_data).decode(),
+            'used':    used,
+            'limit':   limit,
+            'plan':    g.plan,
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# ══════════════════════════════════════════════════════════
+# CAMERA SCAN — with auth + identify limit
+# ══════════════════════════════════════════════════════════
 def _translate_blocks_batch(blocks, target_lang, src_lang=None):
-    """Translate [{text, vertices}] blocks in one shot. Returns [{original, translated, vertices}]."""
     if not blocks: return []
     texts = [b['text'] for b in blocks]
     tgt = target_lang.lower()[:2] if len(target_lang) >= 2 else target_lang
@@ -290,9 +542,9 @@ def _translate_blocks_batch(blocks, target_lang, src_lang=None):
         combined = sep.join(texts)
         try:
             r = groq_client.chat.completions.create(
-                model='llama-3.1-8b-instant',
+                model=SCOUT,
                 messages=[
-                    {'role':'system','content':f'Translate each segment to {lang_name}. Keep [|||] separators exactly. Return ONLY translations separated by [|||].'},
+                    {'role':'system','content':f'Translate each segment to {lang_name}. Keep [|||] separators exactly. Return ONLY translations.'},
                     {'role':'user','content':combined}
                 ], temperature=0.1, max_tokens=1500
             )
@@ -302,15 +554,30 @@ def _translate_blocks_batch(blocks, target_lang, src_lang=None):
             print(f"[Groq batch] {e}")
             translated_texts = texts
     return [
-        {'original': b['text'], 'translated': translated_texts[i].strip() if i < len(translated_texts) else b['text'], 'vertices': b['vertices']}
+        {
+            'original':   b['text'],
+            'translated': translated_texts[i].strip() if i < len(translated_texts) else b['text'],
+            'vertices':   b['vertices']
+        }
         for i, b in enumerate(blocks)
     ]
 
 @app.route('/scan', methods=['POST'])
+@optional_auth
+@limiter.limit("20 per minute")
 def scan():
+    """Camera scan + translate — enforces identify limit"""
+    user_id = g.user_id
+    plan    = g.plan
+
+    if user_id:
+        allowed, used, limit = check_and_increment(user_id, 'identify', plan)
+        if not allowed:
+            return limit_error_response('identify', used, limit, plan)
+
     try:
-        data = request.get_json()
-        image_data = data.get('image','')
+        data        = request.get_json()
+        image_data  = data.get('image','')
         target_lang = data.get('target_lang','EN').upper()
         if ',' in image_data: image_data = image_data.split(',')[1]
         if not image_data: return jsonify({'success':False,'error':'No image'})
@@ -339,7 +606,6 @@ def scan():
                 if pages:
                     langs=pages[0].get('property',{}).get('detectedLanguages',[])
                     if langs: lang=langs[0].get('languageCode','unknown')
-                # Extract paragraph-level blocks with bounding boxes
                 raw_blocks=[]
                 for page in pages:
                     for block in page.get('blocks',[]):
@@ -355,14 +621,13 @@ def scan():
                         verts=block.get('boundingBox',{}).get('vertices',[])
                         vertices=[[v.get('x',0),v.get('y',0)] for v in verts]
                         if vertices: raw_blocks.append({'text':block_text,'vertices':vertices})
-                # Fallback to word-level annotations if no blocks
                 if not raw_blocks and resp0.get('textAnnotations'):
                     for ann in resp0['textAnnotations'][1:]:
                         t=ann.get('description','').strip()
                         verts=ann.get('boundingPoly',{}).get('vertices',[])
                         vertices=[[v.get('x',0),v.get('y',0)] for v in verts]
                         if t and vertices: raw_blocks.append({'text':t,'vertices':vertices})
-                print(f"[Vision {time.time()-t0:.2f}s] '{full_text[:50]}' | {len(raw_blocks)} blocks")
+                print(f"[Vision {time.time()-t0:.2f}s] '{full_text[:50]}'")
                 if full_text.strip(): vision_result[0]=(full_text.strip(), lang, raw_blocks)
             except Exception as e: print(f"[Vision error] {e}")
             vision_done.set()
@@ -371,7 +636,7 @@ def scan():
             try:
                 t0=time.time()
                 response = groq_client.chat.completions.create(
-                    model="meta-llama/llama-4-scout-17b-16e-instruct",
+                    model=SCOUT,
                     messages=[{"role":"user","content":[
                         {"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{image_data}"}},
                         {"type":"text","text":"Extract ALL text in this image exactly as written. Preserve line breaks. Return ONLY the raw text. If no text, return NO_TEXT."}
@@ -379,16 +644,14 @@ def scan():
                     temperature=0.0, max_tokens=800
                 )
                 text=response.choices[0].message.content.strip()
-                print(f"[Groq Vision {time.time()-t0:.2f}s] '{text[:50]}'")
+                print(f"[Scout Vision {time.time()-t0:.2f}s] '{text[:50]}'")
                 if text and text!='NO_TEXT': groq_result[0]=(text,'unknown',[])
-            except Exception as e: print(f"[Groq Vision error] {e}")
+            except Exception as e: print(f"[Scout Vision error] {e}")
             groq_done.set()
 
-        # START BOTH IN PARALLEL
-        threading.Thread(target=run_vision,daemon=True).start()
-        threading.Thread(target=run_groq_vision,daemon=True).start()
+        threading.Thread(target=run_vision, daemon=True).start()
+        threading.Thread(target=run_groq_vision, daemon=True).start()
 
-        # Wait for first good result
         extracted_text=''; detected_lang='unknown'; raw_blocks=[]
         deadline=time.time()+8.0
         while time.time()<deadline:
@@ -408,35 +671,65 @@ def scan():
 
         translated_text,engine = translate(extracted_text,target_lang,detected_lang)
         text_blocks = _translate_blocks_batch(raw_blocks, target_lang, detected_lang)
+
         return jsonify({
-            'success':True,'original_text':extracted_text,
-            'translated_text':translated_text,'detected_lang':detected_lang,
-            'engine':engine,'text_blocks':text_blocks
+            'success':         True,
+            'original_text':   extracted_text,
+            'translated_text': translated_text,
+            'detected_lang':   detected_lang,
+            'engine':          engine,
+            'text_blocks':     text_blocks,
+            'used':            used if user_id else 0,
+            'limit':           limit if user_id else 999,
+            'plan':            plan,
         })
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({'success':False,'error':str(e)})
 
 @app.route('/api/retranslate-blocks', methods=['POST'])
+@optional_auth
 def api_retranslate_blocks():
     try:
         data = request.get_json() or {}
-        blocks = data.get('blocks',[])
+        blocks      = data.get('blocks',[])
         target_lang = data.get('target_lang','EN').upper()
-        src_lang = data.get('src_lang', None)
+        src_lang    = data.get('src_lang', None)
         if not blocks: return jsonify({'success':False,'error':'No blocks provided'})
         text_blocks = _translate_blocks_batch(blocks, target_lang, src_lang)
         return jsonify({'success':True,'text_blocks':text_blocks})
     except Exception as e:
         return jsonify({'success':False,'error':str(e)})
 
-# ─────────────────────────────────────
-# STREAM — Fast silence detection
-# ─────────────────────────────────────
+# ══════════════════════════════════════════════════════════
+# STREAM WEBSOCKET — with per-session limit tracking
+# ══════════════════════════════════════════════════════════
+def _get_user_from_ws_token(token):
+    """Get user for WebSocket (token passed in first message)"""
+    if not token: return None, 'free'
+    user = get_user_from_token(token)
+    if not user: return None, 'free'
+    return user, get_user_plan(user)
 
-def process_stream(ws, audio_bytes, target_lang, src_lang, sentence_id):
+def process_stream(ws, audio_bytes, target_lang, src_lang, sentence_id, user_id, plan):
     t_start=time.time()
     try:
+        # Check translation limit
+        if user_id:
+            allowed, used, limit = check_and_increment(user_id, 'translation', plan)
+            if not allowed:
+                safe_send(ws, {
+                    'type':    'limit_reached',
+                    'feature': 'translation',
+                    'used':    used,
+                    'limit':   limit,
+                    'plan':    plan,
+                    'message': f"Daily translation limit reached ({used}/{limit}). Upgrade to Pro.",
+                    'upgrade_url': '/pricing'
+                })
+                safe_send(ws, {'type':'ready'})
+                return
+
         safe_send(ws,{'type':'status','message':'🎯 Listening...'})
         wav=audio_to_wav(bytes(audio_bytes))
         text,detected,conf=transcribe(wav, src_lang if src_lang!='auto' else None)
@@ -444,16 +737,24 @@ def process_stream(ws, audio_bytes, target_lang, src_lang, sentence_id):
         if not is_valid(text):
             safe_send(ws,{'type':'ready'}); return
 
-        # Send transcript IMMEDIATELY — users see this first
         safe_send(ws,{'type':'transcript','text':text,'lang':detected,'id':sentence_id})
-
         safe_send(ws,{'type':'status','message':'🌍 Translating...'})
         translated,engine=translate(text,target_lang,detected)
         safe_send(ws,{'type':'translation','text':translated,'engine':engine,'lang':target_lang,'id':sentence_id})
 
-        safe_send(ws,{'type':'status','message':'🔊 Speaking...'})
-        audio_data=tts(translated,target_lang)
-        safe_send(ws,{'type':'audio','data':base64.b64encode(audio_data).decode(),'id':sentence_id})
+        # TTS limit check
+        tts_allowed = True
+        if user_id:
+            tts_ok, _, _ = check_and_increment(user_id, 'voice', plan)
+            tts_allowed = tts_ok
+
+        if tts_allowed:
+            safe_send(ws,{'type':'status','message':'🔊 Speaking...'})
+            audio_data=tts(translated,target_lang)
+            safe_send(ws,{'type':'audio','data':base64.b64encode(audio_data).decode(),'id':sentence_id})
+        else:
+            safe_send(ws,{'type':'status','message':'Voice limit reached — text only'})
+
         safe_send(ws,{'type':'ready'})
         print(f"[Stream #{sentence_id}] TOTAL {time.time()-t_start:.2f}s")
     except Exception as e:
@@ -467,9 +768,10 @@ def stream_ws(ws):
     target_lang='HI'; src_lang='auto'
     audio_buffer=bytearray(); silent_chunks=0; speaking=False
     sentence_id=0; processing=False
+    user_id=None; plan='free'
     SILENCE_THRESHOLD=450
-    SILENCE_CHUNKS_NEEDED=2       # ~0.6s silence = sentence done
-    MIN_BYTES=int(16000*2*0.25)   # Min 0.25s audio
+    SILENCE_CHUNKS_NEEDED=2
+    MIN_BYTES=int(16000*2*0.25)
 
     while True:
         try:
@@ -479,14 +781,27 @@ def stream_ws(ws):
                 try:
                     cfg=json.loads(msg)
                     if 'target_lang' in cfg: target_lang=cfg['target_lang']
-                    if 'src_lang' in cfg: src_lang=cfg['src_lang']
+                    if 'src_lang'    in cfg: src_lang=cfg['src_lang']
+                    # Auth via token in first config message
+                    if 'token' in cfg:
+                        user, plan = _get_user_from_ws_token(cfg['token'])
+                        if user:
+                            user_id = user['id']
+                            safe_send(ws, {
+                                'type':  'auth_ok',
+                                'plan':  plan,
+                                'name':  user.get('name',''),
+                            })
+                        else:
+                            safe_send(ws, {'type':'auth_failed'})
                 except: pass
                 continue
             chunk=bytes(msg); rms=get_rms(chunk)
             safe_send(ws,{'type':'volume','level':min(100,int(rms/35))})
             if rms>=SILENCE_THRESHOLD:
                 if not speaking:
-                    speaking=True; safe_send(ws,{'type':'speaking','status':True})
+                    speaking=True
+                    safe_send(ws,{'type':'speaking','status':True})
                 silent_chunks=0; audio_buffer.extend(chunk)
             elif speaking:
                 silent_chunks+=1; audio_buffer.extend(chunk)
@@ -494,7 +809,11 @@ def stream_ws(ws):
                     if len(audio_buffer)>=MIN_BYTES and not processing:
                         sentence_id+=1; processing=True
                         buf_copy=bytearray(audio_buffer)
-                        t=threading.Thread(target=process_stream,args=(ws,buf_copy,target_lang,src_lang,sentence_id),daemon=True)
+                        t=threading.Thread(
+                            target=process_stream,
+                            args=(ws,buf_copy,target_lang,src_lang,sentence_id,user_id,plan),
+                            daemon=True
+                        )
                         t.start(); t.join(); processing=False
                     audio_buffer=bytearray(); silent_chunks=0; speaking=False
                     safe_send(ws,{'type':'speaking','status':False})
@@ -502,35 +821,34 @@ def stream_ws(ws):
             print(f"[Stream WS] {e}"); break
     print("❌ Stream disconnected")
 
-# ─────────────────────────────────────
-# CONVERSATION — Better accuracy
-# ─────────────────────────────────────
-
+# ══════════════════════════════════════════════════════════
+# CONVERSATION WEBSOCKET
+# ══════════════════════════════════════════════════════════
 @sock.route('/convo-ws')
 def convo_ws(ws):
     print("✅ Convo connected")
     lang_a='en'; lang_b='hi'; active_speaker='A'
     audio_buffer=bytearray(); silent_chunks=0; speaking=False; msg_id=0
-    mode='fast'   # 'fast' or 'advanced'
-    overlap_buf=bytearray()   # last 0.3s kept for word-boundary continuity (advanced)
-    context_a=''; context_b=''  # per-speaker transcript context for Whisper prompt
+    mode='fast'
+    overlap_buf=bytearray()
+    context_a=''; context_b=''
+    user_id=None; plan='free'
     OVERLAP_BYTES=int(16000*2*0.3)
 
-    # ── Mode configs ──
     MODES = {
         'fast': {
-            'model':  'whisper-large-v3-turbo',
-            'threshold': 400,
-            'silence_fast': 2,   # ~0.6s
+            'model':       WHISPER_TURBO,
+            'threshold':   400,
+            'silence_fast': 2,
             'silence_slow': 4,
-            'min_bytes': int(16000*2*0.25),
+            'min_bytes':   int(16000*2*0.25),
         },
         'advanced': {
-            'model':  'whisper-large-v3',
-            'threshold': 450,
-            'silence_fast': 3,   # ~0.9s — gives full sentences
+            'model':       WHISPER_LARGE,
+            'threshold':   450,
+            'silence_fast': 3,
             'silence_slow': 5,
-            'min_bytes': int(16000*2*0.35),
+            'min_bytes':   int(16000*2*0.35),
         },
     }
 
@@ -541,17 +859,21 @@ def convo_ws(ws):
             if isinstance(msg,str):
                 try:
                     cfg=json.loads(msg)
-                    if 'lang_a' in cfg: lang_a=cfg['lang_a'].lower().strip()[:2]
-                    if 'lang_b' in cfg: lang_b=cfg['lang_b'].lower().strip()[:2]
-                    if 'mode' in cfg:
+                    if 'lang_a'   in cfg: lang_a=cfg['lang_a'].lower().strip()[:2]
+                    if 'lang_b'   in cfg: lang_b=cfg['lang_b'].lower().strip()[:2]
+                    if 'mode'     in cfg:
                         mode=cfg['mode']
-                        print(f"[Convo] Mode → {mode}")
                         safe_send(ws,{'type':'mode_ack','mode':mode})
-                    if 'speaker' in cfg:
+                    if 'speaker'  in cfg:
                         active_speaker=cfg['speaker']
-                        audio_buffer=bytearray(); silent_chunks=0; speaking=False
-                        overlap_buf=bytearray()
+                        audio_buffer=bytearray(); silent_chunks=0
+                        speaking=False; overlap_buf=bytearray()
                         safe_send(ws,{'type':'speaker_changed','speaker':active_speaker})
+                    if 'token'    in cfg:
+                        user, plan = _get_user_from_ws_token(cfg['token'])
+                        if user:
+                            user_id = user['id']
+                            safe_send(ws, {'type':'auth_ok','plan':plan})
                 except Exception as e: print(f"[Convo config] {e}")
                 continue
 
@@ -562,7 +884,6 @@ def convo_ws(ws):
             if rms>=mc['threshold']:
                 if not speaking:
                     speaking=True
-                    # Advanced: prepend overlap so we don't clip word starts
                     if mode=='advanced' and overlap_buf:
                         audio_buffer.extend(overlap_buf)
                     safe_send(ws,{'type':'speaking','status':True,'speaker':active_speaker})
@@ -575,17 +896,31 @@ def convo_ws(ws):
                     if len(audio_buffer)>=mc['min_bytes']:
                         msg_id+=1
                         tgt=lang_b if active_speaker=='A' else lang_a
-                        # Save overlap for next utterance
-                        if len(audio_buffer)>OVERLAP_BYTES:
-                            overlap_buf=bytearray(audio_buffer[-OVERLAP_BYTES:])
+
+                        # Check translation limit
+                        if user_id:
+                            allowed, used, limit = check_and_increment(user_id, 'translation', plan)
+                            if not allowed:
+                                safe_send(ws, {
+                                    'type':    'limit_reached',
+                                    'feature': 'translation',
+                                    'used':    used,
+                                    'limit':   limit,
+                                    'plan':    plan,
+                                    'message': f"Daily limit reached ({used}/{limit}). Upgrade to Pro.",
+                                    'upgrade_url': '/pricing'
+                                })
+                                safe_send(ws,{'type':'ready'})
+                                audio_buffer=bytearray(); silent_chunks=0; speaking=False
+                                safe_send(ws,{'type':'speaking','status':False,'speaker':active_speaker})
+                                continue
+
                         try:
-                            status_msg='⚡ Processing...' if mode=='fast' else '🔍 High-accuracy scan...'
+                            status_msg='⚡ Processing...' if mode=='fast' else '🔍 High-accuracy...'
                             safe_send(ws,{'type':'status','message':status_msg})
                             wav=audio_to_wav(bytes(audio_buffer))
                             whisper_hint=WHISPER_LANG.get(src)
-
                             if mode=='advanced':
-                                # Build context prompt: base language prompt + last 120 chars spoken
                                 ctx = context_a if active_speaker=='A' else context_b
                                 base_prompt = WHISPER_PROMPTS.get(WHISPER_LANG.get(src,'en'),'')
                                 prompt_ctx = (base_prompt+' '+ctx[-120:]).strip() if ctx else base_prompt or None
@@ -594,22 +929,25 @@ def convo_ws(ws):
                                 text,detected,_ = transcribe_with_model(wav, whisper_hint, mc['model'])
 
                             if is_valid(text):
-                                # Update per-speaker context
                                 if active_speaker=='A': context_a=text
                                 else: context_b=text
-
                                 safe_send(ws,{'type':'transcript','text':text,'speaker':active_speaker,
                                               'lang':detected,'id':msg_id,'mode':mode})
                                 safe_send(ws,{'type':'status','message':'🌍 Translating...'})
                                 translated,engine=translate(text,tgt,src)
                                 safe_send(ws,{'type':'translation','text':translated,'speaker':active_speaker,
-                                              'engine':engine,'src_lang':src,'tgt_lang':tgt,'id':msg_id,'mode':mode})
-                                safe_send(ws,{'type':'status','message':'🔊 Speaking...'})
-                                audio_data=tts(translated,tgt)
-                                safe_send(ws,{'type':'audio','data':base64.b64encode(audio_data).decode(),
-                                              'speaker':active_speaker,'id':msg_id})
-                            else:
-                                print(f"[Convo {active_speaker}/{mode}] Filtered: '{text}'")
+                                              'engine':engine,'src_lang':src,'tgt_lang':tgt,'id':msg_id})
+                                # TTS
+                                if user_id:
+                                    tts_ok, _, _ = check_and_increment(user_id, 'voice', plan)
+                                else:
+                                    tts_ok = True
+                                if tts_ok:
+                                    safe_send(ws,{'type':'status','message':'🔊 Speaking...'})
+                                    audio_data=tts(translated,tgt)
+                                    safe_send(ws,{'type':'audio',
+                                                  'data':base64.b64encode(audio_data).decode(),
+                                                  'speaker':active_speaker,'id':msg_id})
                         except Exception as e:
                             print(f"[Convo error] {e}")
                             safe_send(ws,{'type':'error','message':str(e)})
@@ -620,7 +958,20 @@ def convo_ws(ws):
             print(f"[Convo WS] {e}"); break
     print("❌ Convo disconnected")
 
+# ══════════════════════════════════════════════════════════
+# HEALTH CHECK
+# ══════════════════════════════════════════════════════════
+@app.route('/health')
+def health():
+    return jsonify({
+        'status':  'ok',
+        'service': 'yaply-translation-engine',
+        'version': '3.0',
+        'deepl':   deepl_client is not None,
+        'vision':  GOOGLE_VISION_KEY is not None,
+    })
+
 if __name__=='__main__':
     port=int(os.environ.get('PORT',5001))
-    print(f"🚀 Yaply Translation Engine — port {port}")
-    app.run(debug=False,host='0.0.0.0',port=port,threaded=True)
+    print(f"🚀 Yaply Translation Engine v3 — port {port}")
+    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
