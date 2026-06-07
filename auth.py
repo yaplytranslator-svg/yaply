@@ -466,9 +466,7 @@ def register_auth_routes(app):
                 'token':    token,
                 'user':     safe_user(user),
                 'is_new':   is_new,
-                'redirect': if not user.get('onboarding_done'):
-                                return redirect('/onboarding')
-                            return redirect('/app'),
+                'redirect': '/onboarding' if not user.get('onboarding_done') else '/app',
                 'message':  f"{'Welcome to Yaply' if is_new else 'Welcome back'}, {first_name}! ✈️"
             })
         except Exception as e:
