@@ -2920,38 +2920,7 @@ def create_payment_order():
 def pricing_page():
     return render_template('pricing.html')
 
-# ── Verify payment ──
-@app.route('/api/payment/verify', methods=['POST'])
-@require_auth
-def verify_payment():
-    try:
-        data        = request.get_json() or {}
-        order_id    = data.get('razorpay_order_id')
-        payment_id  = data.get('razorpay_payment_id')
-        signature   = data.get('razorpay_signature')
-        plan        = data.get('plan', 'monthly')
 
-        # Verify signature
-        params = {
-            'razorpay_order_id':   order_id,
-            'razorpay_payment_id': payment_id,
-            'razorpay_signature':  signature
-        }
-        rzp_client.utility.verify_payment_signature(params)
-
-        # Activate Pro
-        update_user(g.user_id, is_pro=1)
-        log_action(g.user_id, 'payment_' + plan, request.remote_addr)
-
-        return jsonify({
-            'success': True,
-            'message': 'Pro activated! Welcome to Yaply Pro 🚀'
-        })
-
-    except razorpay.errors.SignatureVerificationError:
-        return jsonify({'success': False, 'error': 'Payment verification failed'})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
 
 # In database.py — add this
 def init_promo_db():
