@@ -762,6 +762,24 @@ def admin_get_revenue_chart(days=30):
         (days,)
     )
 
+def link_google_to_user(user_id, google_id, avatar=''):
+    execute(
+        'UPDATE users SET google_id=%s, avatar=%s, email_verified=TRUE WHERE id=%s',
+        (google_id, avatar, user_id)
+    )
+
+def update_user_password(user_id, password_hash):
+    execute(
+        'UPDATE users SET password_hash=%s WHERE id=%s',
+        (password_hash, user_id)
+    )
+
+def delete_user(user_id):
+    execute(
+        'UPDATE users SET deleted_at=NOW() WHERE id=%s',
+        (user_id,)
+    )
+
 # ══════════════════════════════════════════════════════════
 # INIT
 # ══════════════════════════════════════════════════════════

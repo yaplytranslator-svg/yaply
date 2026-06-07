@@ -401,7 +401,7 @@ def register_auth_routes(app):
                 _record_fail(email, ip)
                 return jsonify({'success': False, 'error': 'No account found with this email'})
 
-            if not user.get('password'):
+            if not user.get('password_hash'):
                 return jsonify({'success': False, 'error': 'This account uses Google sign-in. Please use the Google button.'})
 
             if not check_password(password, user['password_hash']):
@@ -663,9 +663,9 @@ def register_auth_routes(app):
             new_pw  = data.get('new_password', '')
             user    = get_user_by_id(g.user_id)
 
-            if not user.get('password'):
+            if not user.get('password_hash'):
                 return jsonify({'success': False, 'error': 'Google account — no password to change'})
-            if not check_password(current, user['password']):
+            if not check_password(current, user['password_hash']):
                 _record_fail(user['email'], request.remote_addr)
                 return jsonify({'success': False, 'error': 'Current password is incorrect'})
             valid, err = validate_password(new_pw)
