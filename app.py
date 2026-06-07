@@ -65,7 +65,7 @@ limiter = Limiter(
 
 # ── DATABASE + AUTH ───────────────────────────────────────────
 from database import (
-    init_db, init_diary_db, migrate_db, log_action, get_db, migrate_subscription_db, get_user_plan, check_limit, increment_usage,
+    init_db, migrate_db, log_action, get_db, migrate_subscription_db, get_user_plan, check_limit, increment_usage,
     activate_pro, complete_onboarding, FREE_LIMITS, PRO_LIMITS,
     reset_daily_usage, reset_monthly_usage,
     save_trip, get_trips, get_trip, update_trip, delete_trip,
@@ -82,7 +82,7 @@ migrate_subscription_db()
 migrate_db()
 register_auth_routes(app)
 init_groups_db()
-init_diary_db()
+
 
 # ── AI CLIENTS ────────────────────────────────────────────────
 from groq import Groq
