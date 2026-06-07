@@ -3054,6 +3054,267 @@ def api_user_status():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+
+# ══════════════════════════════════════════════════════════
+# NEW ADMIN ROUTES — paste these into app.py
+# Add to imports: from database import query_one, query_all, execute
+# ══════════════════════════════════════════════════════════
+
+@app.route('/api/admin/revenue')
+@require_admin
+def admin_revenue():
+    try:
+        # Daily revenue last 30 days
+        daily = query_all(
+            """SELECT DATE(paid_at) as date,
+               COUNT(*) as transactions,
+               SUM(amount)/100.0 as revenue,
+               COUNT(*) FILTER (WHERE plan='weekly') as weekly,
+               COUNT(*) FILTER (WHERE plan='monthly') as monthly
+               FROM payments WHERE status='paid'
+               AND paid_at > NOW() - INTERVAL '30 days'
+               GROUP BY DATE(paid_at)
+               ORDER BY date DESC"""
+        )
+        # Totals
+        totals = query_one(
+            """SELECT
+               COALESCE(SUM(amount)/100.0, 0) as total_revenue,
+               COALESCE(SUM(amount) FILTER (WHERE paid_at > NOW() - INTERVAL '30 days')/100.0, 0) as mrr,
+               COALESCE(SUM(amount) FILTER (WHERE DATE(paid_at)=CURRENT_DATE)/100.0, 0) as today,
+               COALESCE(SUM(amount) FILTER (WHERE paid_at > NOW() - INTERVAL '7 days')/100.0, 0) as week,
+               COUNT(*) as total_payments,
+               COUNT(*) FILTER (WHERE plan='weekly') as weekly_count,
+               COUNT(*) FILTER (WHERE plan='monthly') as monthly_count,
+               COUNT(*) FILTER (WHERE DATE(paid_at)=CURRENT_DATE) as payments_today
+               FROM payments WHERE status='paid'"""
+        )
+        # Recent payments with user info
+        recent = query_all(
+            """SELECT p.*, u.name as user_name, u.email as user_email
+               FROM payments p
+               LEFT JOIN users u ON u.id = p.user_id
+               WHERE p.status='paid'
+               ORDER BY p.paid_at DESC LIMIT 50"""
+        )
+        for r in daily:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        for r in recent:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        if totals:
+            for k, v in totals.items():
+                if hasattr(v, 'isoformat'): totals[k] = v.isoformat()
+        return jsonify({
+            'success': True,
+            'daily': daily,
+            'totals': totals or {},
+            'recent': recent
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/admin/funnel')
+@require_admin
+def admin_funnel():
+    try:
+        row = query_one(
+            """SELECT
+               COUNT(*) as total_users,
+               COUNT(*) FILTER (WHERE onboarding_done=TRUE) as onboarded,
+               COUNT(*) FILTER (WHERE id IN (SELECT DISTINCT user_id FROM trips WHERE deleted_at IS NULL)) as planned,
+               COUNT(*) FILTER (WHERE id IN (SELECT DISTINCT user_id FROM payments WHERE status='paid')) as paid,
+               COUNT(*) FILTER (WHERE plan_type='pro') as pro_now
+               FROM users WHERE deleted_at IS NULL"""
+        )
+        # Daily signups last 14 days
+        signups = query_all(
+            """SELECT DATE(created_at) as date, COUNT(*) as count
+               FROM users WHERE deleted_at IS NULL
+               AND created_at > NOW() - INTERVAL '14 days'
+               GROUP BY DATE(created_at)
+               ORDER BY date ASC"""
+        )
+        for r in signups:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        return jsonify({'success': True, 'funnel': dict(row or {}), 'signups': signups})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/admin/retention')
+@require_admin
+def admin_retention():
+    try:
+        # D1, D7, D30 retention: users who signed up N days ago and were active since
+        d1 = query_one(
+            """SELECT
+               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 1) as cohort,
+               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 1
+                 AND last_active_at > NOW() - INTERVAL '1 day') as retained
+               FROM users WHERE deleted_at IS NULL"""
+        )
+        d7 = query_one(
+            """SELECT
+               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 7) as cohort,
+               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 7
+                 AND last_active_at > NOW() - INTERVAL '7 days') as retained
+               FROM users WHERE deleted_at IS NULL"""
+        )
+        d30 = query_one(
+            """SELECT
+               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 30) as cohort,
+               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 30
+                 AND last_active_at > NOW() - INTERVAL '30 days') as retained
+               FROM users WHERE deleted_at IS NULL"""
+        )
+        # Churn: pro users whose subscription expired in last 30 days
+        churn = query_all(
+            """SELECT u.name, u.email, u.pro_expires_at, u.pro_plan
+               FROM users u
+               WHERE u.plan_type='free'
+               AND u.pro_expires_at IS NOT NULL
+               AND u.pro_expires_at > NOW() - INTERVAL '30 days'
+               AND u.pro_expires_at < NOW()
+               ORDER BY u.pro_expires_at DESC
+               LIMIT 20"""
+        )
+        for r in churn:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        def safe_pct(retained, cohort):
+            if not cohort: return 0
+            return round(retained / cohort * 100, 1)
+        return jsonify({
+            'success': True,
+            'retention': {
+                'd1':  {'cohort': d1['cohort'] or 0,  'retained': d1['retained'] or 0,  'pct': safe_pct(d1['retained'] or 0,  d1['cohort'] or 0)},
+                'd7':  {'cohort': d7['cohort'] or 0,  'retained': d7['retained'] or 0,  'pct': safe_pct(d7['retained'] or 0,  d7['cohort'] or 0)},
+                'd30': {'cohort': d30['cohort'] or 0, 'retained': d30['retained'] or 0, 'pct': safe_pct(d30['retained'] or 0, d30['cohort'] or 0)},
+            },
+            'churn': churn
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/admin/errors')
+@require_admin
+def admin_errors():
+    try:
+        errors = query_all(
+            """SELECT action, error, COUNT(*) as count,
+               MAX(created_at) as last_seen,
+               COUNT(DISTINCT user_id) as affected_users
+               FROM usage_logs
+               WHERE success=FALSE AND created_at > NOW() - INTERVAL '7 days'
+               GROUP BY action, error
+               ORDER BY count DESC LIMIT 50"""
+        )
+        recent_errors = query_all(
+            """SELECT l.*, u.email as user_email
+               FROM usage_logs l
+               LEFT JOIN users u ON u.id = l.user_id
+               WHERE l.success=FALSE
+               AND l.created_at > NOW() - INTERVAL '24 hours'
+               ORDER BY l.created_at DESC LIMIT 30"""
+        )
+        total_errors_today = query_one(
+            """SELECT COUNT(*) as c FROM usage_logs
+               WHERE success=FALSE AND DATE(created_at)=CURRENT_DATE"""
+        )
+        for r in errors:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        for r in recent_errors:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        return jsonify({
+            'success': True,
+            'errors': errors,
+            'recent': recent_errors,
+            'total_today': (total_errors_today or {}).get('c', 0)
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/admin/geographic')
+@require_admin
+def admin_geographic():
+    try:
+        # Home cities
+        cities = query_all(
+            """SELECT home_city, COUNT(*) as count
+               FROM users
+               WHERE deleted_at IS NULL AND home_city != ''
+               GROUP BY home_city ORDER BY count DESC LIMIT 20"""
+        )
+        # Passport countries (where users are from)
+        passports = query_all(
+            """SELECT passport, COUNT(*) as count
+               FROM users
+               WHERE deleted_at IS NULL AND passport != ''
+               GROUP BY passport ORDER BY count DESC LIMIT 20"""
+        )
+        # Top destination countries from trips
+        destinations = query_all(
+            """SELECT destination, COUNT(*) as count
+               FROM trips WHERE deleted_at IS NULL
+               GROUP BY destination ORDER BY count DESC LIMIT 20"""
+        )
+        return jsonify({
+            'success': True,
+            'cities': cities,
+            'passports': passports,
+            'destinations': destinations
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/admin/export-users')
+@require_admin
+def admin_export_users():
+    try:
+        import csv, io
+        users = query_all(
+            """SELECT u.id, u.name, u.email, u.plan_type, u.is_pro,
+               u.pro_expires_at, u.home_city, u.passport, u.travel_style,
+               u.budget_style, u.onboarding_done, u.created_at, u.last_active_at,
+               COUNT(t.id) as trip_count
+               FROM users u
+               LEFT JOIN trips t ON t.user_id=u.id AND t.deleted_at IS NULL
+               WHERE u.deleted_at IS NULL
+               GROUP BY u.id ORDER BY u.created_at DESC"""
+        )
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['ID','Name','Email','Plan','Is Pro','Pro Expires',
+                         'City','Passport','Travel Style','Budget Style',
+                         'Onboarding Done','Joined','Last Active','Trips'])
+        for u in users:
+            writer.writerow([
+                u.get('id',''), u.get('name',''), u.get('email',''),
+                u.get('plan_type',''), u.get('is_pro',''),
+                u.get('pro_expires_at',''), u.get('home_city',''),
+                u.get('passport',''), u.get('travel_style',''),
+                u.get('budget_style',''), u.get('onboarding_done',''),
+                u.get('created_at',''), u.get('last_active_at',''),
+                u.get('trip_count',0)
+            ])
+        from flask import Response
+        return Response(
+            output.getvalue(),
+            mimetype='text/csv',
+            headers={'Content-Disposition': 'attachment;filename=yaply_users.csv'}
+        )
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 # ══════════════════════════════════════════════════════════
 # UPDATED PAYMENT VERIFY — uses activate_pro()
 # ══════════════════════════════════════════════════════════
