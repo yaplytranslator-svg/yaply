@@ -65,9 +65,11 @@ limiter = Limiter(
 
 # ── DATABASE + AUTH ───────────────────────────────────────────
 from database import (
-    init_db, migrate_db, log_action, get_db, migrate_subscription_db, get_user_plan, check_limit, increment_usage,
+    init_db, log_action, get_user_plan, check_limit, increment_usage,
+    admin_get_stats, admin_get_users, get_user_by_email, query_all,
+    get_promo_code, check_promo_redeemed, redeem_promo, query_all, execute,
+    query_one, execute as db_execute,
     activate_pro, complete_onboarding, FREE_LIMITS, PRO_LIMITS,
-    reset_daily_usage, reset_monthly_usage,
     save_trip, get_trips, get_trip, update_trip, delete_trip,
     save_place, get_places, delete_place,
     add_expense, get_expenses, delete_expense,
@@ -78,8 +80,6 @@ from database import (
 from auth import register_auth_routes, require_auth, decode_token, get_token_from_request, optional_auth, safe_user
 
 init_db()
-migrate_subscription_db()
-migrate_db()
 register_auth_routes(app)
 init_groups_db()
 
@@ -2563,58 +2563,19 @@ def admin_page():
 @require_admin
 def admin_stats():
     try:
-        conn = get_db()
-        from datetime import date
-
-        today = date.today().isoformat()
-
-        total_users    = conn.execute('SELECT COUNT(*) FROM users').fetchone()[0]
-        total_trips    = conn.execute('SELECT COUNT(*) FROM trips').fetchone()[0]
-        total_places   = conn.execute('SELECT COUNT(*) FROM saved_places').fetchone()[0]
-        total_expenses = conn.execute('SELECT COUNT(*) FROM expenses').fetchone()[0]
-        total_journals = conn.execute('SELECT COUNT(*) FROM journals').fetchone()[0]
-        pro_users      = conn.execute('SELECT COUNT(*) FROM users WHERE is_pro=1').fetchone()[0]
-
-        new_users_today = conn.execute(
-            "SELECT COUNT(*) FROM users WHERE date(created_at)=?", (today,)
-        ).fetchone()[0]
-
-        trips_today = conn.execute(
-            "SELECT COUNT(*) FROM trips WHERE date(created_at)=?", (today,)
-        ).fetchone()[0]
-
-        actions_today = conn.execute(
-            "SELECT COUNT(*) FROM usage_logs WHERE date(created_at)=?", (today,)
-        ).fetchone()[0]
-
-        # Top destinations
-        top_dests = conn.execute(
-            "SELECT destination, COUNT(*) as count FROM trips GROUP BY destination ORDER BY count DESC LIMIT 10"
-        ).fetchall()
-
-        # Feature usage (from logs)
-        feature_rows = conn.execute(
-            "SELECT action, COUNT(*) as count FROM usage_logs GROUP BY action ORDER BY count DESC LIMIT 20"
-        ).fetchall()
-
-        conn.close()
-
-        return jsonify({
-            'success': True,
-            'stats': {
-                'total_users':    total_users,
-                'total_trips':    total_trips,
-                'total_places':   total_places,
-                'total_expenses': total_expenses,
-                'total_journals': total_journals,
-                'pro_users':      pro_users,
-                'new_users_today': new_users_today,
-                'trips_today':    trips_today,
-                'actions_today':  actions_today,
-                'top_destinations': [{'destination': r[0], 'count': r[1]} for r in top_dests],
-                'feature_usage':  {r[0]: r[1] for r in feature_rows},
-            }
-        })
+        stats = admin_get_stats()
+        top_dests = query_all(
+            """SELECT destination, COUNT(*) as count FROM trips
+               WHERE deleted_at IS NULL
+               GROUP BY destination ORDER BY count DESC LIMIT 10"""
+        )
+        feature_rows = query_all(
+            """SELECT action, COUNT(*) as count FROM usage_logs
+               GROUP BY action ORDER BY count DESC LIMIT 20"""
+        )
+        stats['top_destinations'] = [{'destination': r['destination'], 'count': r['count']} for r in top_dests]
+        stats['feature_usage']    = {r['action']: r['count'] for r in feature_rows}
+        return jsonify({'success': True, 'stats': stats})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -2623,20 +2584,7 @@ def admin_stats():
 @require_admin
 def admin_users():
     try:
-        conn = get_db()
-        rows = conn.execute('''
-            SELECT u.*, COUNT(t.id) as trip_count
-            FROM users u
-            LEFT JOIN trips t ON t.user_id = u.id
-            GROUP BY u.id
-            ORDER BY u.created_at DESC
-        ''').fetchall()
-        conn.close()
-        users = []
-        for r in rows:
-            u = dict(r)
-            u.pop('password', None)  # Never expose password
-            users.append(u)
+        users = admin_get_users()
         return jsonify({'success': True, 'users': users})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -2646,24 +2594,27 @@ def admin_users():
 @require_admin
 def admin_trips():
     try:
-        conn = get_db()
-        rows = conn.execute('''
-            SELECT t.*, u.name as user_name, u.email as user_email
-            FROM trips t
-            LEFT JOIN users u ON u.id = t.user_id
-            ORDER BY t.created_at DESC
-            LIMIT 200
-        ''').fetchall()
-        conn.close()
+        rows = query_all(
+            """SELECT t.*, u.name as user_name, u.email as user_email
+               FROM trips t
+               LEFT JOIN users u ON u.id = t.user_id
+               WHERE t.deleted_at IS NULL
+               ORDER BY t.created_at DESC
+               LIMIT 200"""
+        )
         trips = []
         for r in rows:
             t = dict(r)
-            t.pop('plan_data', None)  # Too large to send
+            t.pop('plan_data', None)
+            for k, v in t.items():
+                if hasattr(v, 'isoformat'):
+                    t[k] = v.isoformat()
             trips.append(t)
         return jsonify({'success': True, 'trips': trips})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+# ── Admin upgrade pro ──
 @app.route('/api/admin/upgrade-pro', methods=['POST'])
 @require_admin
 def admin_upgrade_pro():
@@ -2671,19 +2622,14 @@ def admin_upgrade_pro():
         email = (request.get_json() or {}).get('email', '').lower()
         if not email:
             return jsonify({'success': False, 'error': 'Email required'})
-        conn = get_db()
-        conn.execute('UPDATE users SET is_pro=1 WHERE email=?', (email,))
-        conn.commit()
-        affected = conn.execute('SELECT changes()').fetchone()[0]
-        conn.close()
-        if affected:
-            return jsonify({'success': True, 'message': email + ' upgraded to Pro ✅'})
-        return jsonify({'success': False, 'error': 'User not found'})
+        user = get_user_by_email(email)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'})
+        activate_pro(user['id'], 'monthly')
+        return jsonify({'success': True, 'message': email + ' upgraded to Pro ✅'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
     
-
-
 # ── Get diary trips ──
 @app.route('/api/diary/trips', methods=['GET'])
 @require_auth
@@ -2922,40 +2868,6 @@ def pricing_page():
 
 
 
-# In database.py — add this
-def init_promo_db():
-    conn = get_db()
-    conn.execute('''CREATE TABLE IF NOT EXISTS promo_codes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        code TEXT UNIQUE NOT NULL,
-        influencer TEXT NOT NULL,
-        discount_pct INTEGER DEFAULT 50,
-        pro_months INTEGER DEFAULT 3,
-        max_uses INTEGER DEFAULT 500,
-        uses INTEGER DEFAULT 0,
-        expires_at TEXT NOT NULL,
-        created_at TEXT DEFAULT (datetime('now'))
-    )''')
-    conn.execute('''CREATE TABLE IF NOT EXISTS promo_redemptions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        code TEXT NOT NULL,
-        redeemed_at TEXT DEFAULT (datetime('now'))
-    )''')
-    conn.commit()
-    conn.close()
-
-try:
-    conn2 = get_db()
-    conn2.execute(
-        "INSERT INTO promo_codes (code, influencer, discount_pct, pro_months, max_uses, expires_at) VALUES (?,?,?,?,?,?)",
-        ('SAURABH50', 'ghumakkadsaurabh', 50, 3, 500, '2026-06-14')
-)
-    conn2.commit()
-    conn2.close()
-except:
-    pass
-
 # ── Profile page ──
 @app.route('/me')
 def profile_page():
@@ -2981,16 +2893,21 @@ def api_update_profile():
 @require_admin
 def admin_activity():
     try:
-        conn = get_db()
-        rows = conn.execute('''
-            SELECT l.*, u.name as user_name, u.email as user_email
-            FROM usage_logs l
-            LEFT JOIN users u ON u.id = l.user_id
-            ORDER BY l.created_at DESC
-            LIMIT 200
-        ''').fetchall()
-        conn.close()
-        return jsonify({'success': True, 'logs': [dict(r) for r in rows]})
+        rows = query_all(
+            """SELECT l.*, u.name as user_name, u.email as user_email
+               FROM usage_logs l
+               LEFT JOIN users u ON u.id = l.user_id
+               ORDER BY l.created_at DESC
+               LIMIT 200"""
+        )
+        logs = []
+        for r in rows:
+            row = dict(r)
+            for k, v in row.items():
+                if hasattr(v, 'isoformat'):
+                    row[k] = v.isoformat()
+            logs.append(row)
+        return jsonify({'success': True, 'logs': logs})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -2999,61 +2916,43 @@ def admin_activity():
 @require_auth
 def apply_promo():
     try:
-        code = (request.get_json() or {}).get('code','').upper().strip()
-        conn = get_db()
+        code = (request.get_json() or {}).get('code', '').upper().strip()
 
         # Get promo
-        promo = conn.execute(
-            'SELECT * FROM promo_codes WHERE code=?', (code,)
-        ).fetchone()
-
+        promo = get_promo_code(code)
         if not promo:
-            return jsonify({'success':False,'error':'Invalid promo code'})
-
-        promo = dict(promo)
-
-        # Check expiry
-        from datetime import datetime
-        if promo['expires_at'] < datetime.now().isoformat()[:10]:
-            return jsonify({'success':False,'error':'This promo has expired'})
-
-        # Check max uses
-        if promo['uses'] >= promo['max_uses']:
-            return jsonify({'success':False,'error':'Promo code limit reached'})
+            return jsonify({'success': False, 'error': 'Invalid promo code'})
 
         # Check already used
-        already = conn.execute(
-            'SELECT id FROM promo_redemptions WHERE user_id=? AND code=?',
-            (g.user_id, code)
-        ).fetchone()
-        if already:
-            return jsonify({'success':False,'error':'You have already used this code'})
+        if check_promo_redeemed(g.user_id, code):
+            return jsonify({'success': False, 'error': 'You have already used this code'})
 
-        # Apply promo
-        conn.execute(
-            'UPDATE users SET is_pro=1 WHERE id=?', (g.user_id,)
+        # Activate pro for pro_months duration
+        from datetime import datetime, timedelta
+        days = int(promo['pro_months']) * 30
+        expires = datetime.utcnow() + timedelta(days=days)
+        execute(
+            """UPDATE users SET plan_type='pro', is_pro=TRUE,
+               pro_expires_at=%s WHERE id=%s""",
+            (expires, g.user_id)
         )
-        conn.execute(
-            'UPDATE promo_codes SET uses=uses+1 WHERE code=?', (code,)
-        )
-        conn.execute(
-            'INSERT INTO promo_redemptions (user_id,code) VALUES (?,?)',
-            (g.user_id, code)
-        )
-        conn.commit()
-        conn.close()
 
-        log_action(g.user_id, 'promo_redeemed_'+code, request.remote_addr)
+        # Record redemption + increment uses
+        redeem_promo(g.user_id, code,
+                     discount_amount=promo['discount_pct'],
+                     pro_months=promo['pro_months'])
+
+        log_action(g.user_id, 'promo_redeemed_' + code, request.remote_addr)
 
         return jsonify({
             'success': True,
             'message': '🎉 ' + str(promo['pro_months']) + ' months Pro activated at ' + str(promo['discount_pct']) + '% off!',
             'pro_months': promo['pro_months'],
-            'discount': promo['discount_pct']
+            'discount':   promo['discount_pct']
         })
 
     except Exception as e:
-        return jsonify({'success':False,'error':str(e)})
+        return jsonify({'success': False, 'error': str(e)})
 
 
 # ══════════════════════════════════════════════════════════
@@ -3105,9 +3004,7 @@ def api_user_status():
     """Returns full user plan status, limits, usage"""
     try:
         from datetime import datetime
-        reset_daily_usage(g.user_id)
-        reset_monthly_usage(g.user_id)
-
+       
         user = get_user_by_id(g.user_id)
         if not user:
             return jsonify({'success': False, 'error': 'User not found'})
@@ -3201,49 +3098,49 @@ def verify_payment():
 @app.route('/api/promo/validate', methods=['POST'])
 def validate_promo():
     try:
-        code  = (request.get_json() or {}).get('code','').upper().strip()
-        conn  = get_db()
-        promo = conn.execute(
-            'SELECT * FROM promo_codes WHERE code=?', (code,)
-        ).fetchone()
-        conn.close()
+        code  = (request.get_json() or {}).get('code', '').upper().strip()
+        promo = get_promo_code(code)
         if not promo:
-            return jsonify({'success':False,'error':'Invalid code'})
-        promo = dict(promo)
+            return jsonify({'success': False, 'error': 'Invalid code'})
         return jsonify({
-            'success':     True,
-            'discount':    promo['discount_pct'],
-            'pro_months':  promo['pro_months'],
-            'uses_left':   promo['max_uses'] - promo['uses'],
-            'expires':     promo['expires_at'],
+            'success':    True,
+            'discount':   promo['discount_pct'],
+            'pro_months': promo['pro_months'],
+            'uses_left':  promo['max_uses'] - promo['uses'],
+            'expires':    promo['expires_at'].isoformat() if hasattr(promo['expires_at'], 'isoformat') else promo['expires_at'],
         })
     except Exception as e:
-        return jsonify({'success':False,'error':str(e)})
+        return jsonify({'success': False, 'error': str(e)})
 
 
 @app.route('/api/admin/promos')
 @require_admin
 def admin_promos():
     try:
-        conn  = get_db()
-        promos = conn.execute(
+        promos = query_all(
             'SELECT * FROM promo_codes ORDER BY created_at DESC'
-        ).fetchall()
-        redemptions = conn.execute(
-            '''SELECT pr.code, u.name, u.email, pr.redeemed_at
+        )
+        redemptions = query_all(
+            """SELECT pr.code, u.name, u.email, pr.redeemed_at
                FROM promo_redemptions pr
                JOIN users u ON u.id = pr.user_id
-               ORDER BY pr.redeemed_at DESC'''
-        ).fetchall()
-        conn.close()
+               ORDER BY pr.redeemed_at DESC"""
+        )
+        # Serialize datetimes
+        for p in promos:
+            for k, v in p.items():
+                if hasattr(v, 'isoformat'): p[k] = v.isoformat()
+        for r in redemptions:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+
         return jsonify({
             'success': True,
-            'promos': [dict(p) for p in promos],
-            'redemptions': [dict(r) for r in redemptions]
+            'promos': promos,
+            'redemptions': redemptions
         })
     except Exception as e:
-        return jsonify({'success':False,'error':str(e)})
-
+        return jsonify({'success': False, 'error': str(e)})
 # ════════════════════════════════════════════════════════════════
 #  ERROR HANDLERS
 # ════════════════════════════════════════════════════════════════
