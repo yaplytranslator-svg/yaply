@@ -404,7 +404,7 @@ def register_auth_routes(app):
             if not user.get('password'):
                 return jsonify({'success': False, 'error': 'This account uses Google sign-in. Please use the Google button.'})
 
-            if not check_password(password, user['password']):
+            if not check_password(password, user['password_hash']):
                 _record_fail(email, ip)
                 return jsonify({'success': False, 'error': 'Incorrect password'})
 

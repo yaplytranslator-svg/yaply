@@ -1,593 +1,80 @@
 """
-database.py — Yaply Database Layer v2 FIXED
+Yaply — Production Database Layer
+Supabase PostgreSQL — replaces SQLite database.py
 """
-import sqlite3, os, json
-from datetime import datetime
+import os, json
+from datetime import datetime, date, timedelta
+import psycopg2
+import psycopg2.extras
+from psycopg2.pool import ThreadedConnectionPool
+from dotenv import load_dotenv
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'yaply.db')
+load_dotenv()
+
+# ══════════════════════════════════════════════════════════
+# CONNECTION POOL
+# ══════════════════════════════════════════════════════════
+
+DATABASE_URL = os.getenv('DATABASE_URL')  # Supabase connection string
+
+_pool = None
+
+def get_pool():
+    global _pool
+    if _pool is None:
+        _pool = ThreadedConnectionPool(
+            minconn=2,
+            maxconn=20,
+            dsn=DATABASE_URL,
+            cursor_factory=psycopg2.extras.RealDictCursor
+        )
+    return _pool
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA foreign_keys=ON")
-    conn.execute("PRAGMA synchronous=NORMAL")
-    return conn
+    return get_pool().getconn()
 
-def init_db():
-    conn = get_db(); c = conn.cursor()
+def release_db(conn):
+    get_pool().putconn(conn)
 
-    c.execute('''CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        name TEXT NOT NULL,
-        password TEXT,
-        google_id TEXT UNIQUE,
-        avatar TEXT DEFAULT '',
-        passport TEXT DEFAULT 'India',
-        home_city TEXT DEFAULT '',
-        currency TEXT DEFAULT 'INR',
-        is_verified INTEGER DEFAULT 0,
-        is_pro INTEGER DEFAULT 0,
-        created_at TEXT DEFAULT (datetime('now')),
-        last_login TEXT DEFAULT (datetime('now'))
-    )''')
+class db_conn:
+    """Context manager for DB connections"""
+    def __enter__(self):
+        self.conn = get_db()
+        self.conn.autocommit = False
+        return self.conn
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self.conn.rollback()
+        else:
+            self.conn.commit()
+        release_db(self.conn)
 
-    c.execute('''CREATE TABLE IF NOT EXISTS trips (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        destination TEXT NOT NULL,
-        origin TEXT NOT NULL DEFAULT '',
-        days INTEGER NOT NULL DEFAULT 5,
-        people INTEGER DEFAULT 1,
-        budget TEXT DEFAULT '50000',
-        currency TEXT DEFAULT 'INR',
-        vibes TEXT DEFAULT 'Adventure',
-        passport TEXT DEFAULT 'India',
-        status TEXT DEFAULT 'planning',
-        plan_data TEXT,
-        notes TEXT DEFAULT '',
-        is_favourite INTEGER DEFAULT 0,
-        created_at TEXT DEFAULT (datetime('now')),
-        updated_at TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    )''')
-
-    c.execute('''CREATE TABLE IF NOT EXISTS saved_places (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        name TEXT NOT NULL,
-        city TEXT DEFAULT '',
-        country TEXT DEFAULT '',
-        continent TEXT DEFAULT '',
-        description TEXT DEFAULT '',
-        image_url TEXT DEFAULT '',
-        emoji TEXT DEFAULT '📍',
-        tags TEXT DEFAULT '[]',
-        trip_id INTEGER,
-        created_at TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE SET NULL
-    )''')
-
-    c.execute('''CREATE TABLE IF NOT EXISTS expenses (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        trip_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        amount REAL NOT NULL,
-        category TEXT DEFAULT 'Other',
-        currency TEXT DEFAULT 'INR',
-        paid_by TEXT DEFAULT '',
-        split_with TEXT DEFAULT '[]',
-        date TEXT DEFAULT (date('now')),
-        created_at TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    )''')
-
-    c.execute('''CREATE TABLE IF NOT EXISTS journals (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        trip_id INTEGER NOT NULL UNIQUE,
-        user_id INTEGER NOT NULL,
-        content TEXT NOT NULL,
-        created_at TEXT DEFAULT (datetime('now')),
-        updated_at TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    )''')
-
-    c.execute('''CREATE TABLE IF NOT EXISTS usage_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        action TEXT NOT NULL,
-        ip TEXT DEFAULT '',
-        created_at TEXT DEFAULT (datetime('now'))
-    )''')
-
-    # Performance indexes
-    c.execute('CREATE INDEX IF NOT EXISTS idx_trips_user ON trips(user_id)')
-    c.execute('CREATE INDEX IF NOT EXISTS idx_places_user ON saved_places(user_id)')
-    c.execute('CREATE INDEX IF NOT EXISTS idx_expenses_trip ON expenses(trip_id, user_id)')
-    c.execute('CREATE INDEX IF NOT EXISTS idx_logs_user ON usage_logs(user_id)')
-
-    conn.commit(); conn.close()
-    print(f"[DB] Initialized at {DB_PATH}")
-
-# ── USERS ──
-def create_user(email, name, password_hash=None, google_id=None, avatar=None):
-    conn = get_db()
-    try:
-        c = conn.execute(
-            'INSERT INTO users (email,name,password,google_id,avatar,is_verified) VALUES (?,?,?,?,?,?)',
-            (email.lower().strip(), name.strip(), password_hash, google_id, avatar or '', 1 if google_id else 0)
-        )
-        conn.commit(); return c.lastrowid
-    except sqlite3.IntegrityError: return None
-    finally: conn.close()
-
-def get_user_by_email(email):
-    conn = get_db()
-    try:
-        row = conn.execute('SELECT * FROM users WHERE email=?', (email.lower().strip(),)).fetchone()
+def query_one(sql, params=None):
+    with db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(sql, params or ())
+        row = cur.fetchone()
         return dict(row) if row else None
-    finally: conn.close()
 
-def get_user_by_id(user_id):
-    conn = get_db()
-    try:
-        row = conn.execute('SELECT * FROM users WHERE id=?', (user_id,)).fetchone()
-        return dict(row) if row else None
-    finally: conn.close()
+def query_all(sql, params=None):
+    with db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(sql, params or ())
+        return [dict(r) for r in cur.fetchall()]
 
-def get_user_by_google(google_id):
-    conn = get_db()
-    try:
-        row = conn.execute('SELECT * FROM users WHERE google_id=?', (google_id,)).fetchone()
-        return dict(row) if row else None
-    finally: conn.close()
-
-def update_user(user_id, **fields):
-    allowed = ['name','avatar','passport','home_city','currency','last_login','is_verified','is_pro']
-    updates = {k:v for k,v in fields.items() if k in allowed}
-    if not updates: return
-    conn = get_db()
-    try:
-        sets = ', '.join(f'{k}=?' for k in updates)
-        conn.execute(f'UPDATE users SET {sets} WHERE id=?', (*updates.values(), user_id))
-        conn.commit()
-    finally: conn.close()
-
-def link_google_to_user(user_id, google_id, avatar=''):
-    conn = get_db()
-    try:
-        conn.execute('UPDATE users SET google_id=?, avatar=? WHERE id=?', (google_id, avatar, user_id))
-        conn.commit()
-    finally: conn.close()
-
-def update_user_password(user_id, hashed):
-    conn = get_db()
-    try:
-        conn.execute('UPDATE users SET password=? WHERE id=?', (hashed, user_id))
-        conn.commit()
-    finally: conn.close()
-
-def delete_user(user_id):
-    conn = get_db()
-    try:
-        conn.execute('DELETE FROM users WHERE id=?', (user_id,))
-        conn.commit()
-    finally: conn.close()
-
-def get_user_stats(user_id):
-    conn = get_db()
-    try:
-        trips  = conn.execute('SELECT COUNT(*) as c FROM trips WHERE user_id=?', (user_id,)).fetchone()['c']
-        days   = conn.execute('SELECT SUM(days) as s FROM trips WHERE user_id=?', (user_id,)).fetchone()['s'] or 0
-        places = conn.execute('SELECT COUNT(*) as c FROM saved_places WHERE user_id=?', (user_id,)).fetchone()['c']
-        return {'trips': trips, 'days': int(days), 'places': places}
-    finally: conn.close()
-
-# ── TRIPS ──
-def save_trip(user_id, destination, origin, days, people,
-              budget, currency, vibes, passport,
-              plan_data=None, start_date=None):
-    conn = get_db()
-    try:
-        vibes_str = vibes if isinstance(vibes, str) else '+'.join(vibes)
-        c = conn.execute(
-            '''INSERT INTO trips
-               (user_id,destination,origin,days,people,
-                budget,currency,vibes,passport,plan_data,start_date)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
-            (user_id, destination, origin, int(days), int(people),
-             str(budget), currency, vibes_str, passport,
-             json.dumps(plan_data) if plan_data else None,
-             start_date)
-        )
-        conn.commit()
-        return c.lastrowid
-    finally:
-        conn.close()
-
-def get_trips(user_id):
-    conn = get_db()
-    try:
-        rows = conn.execute('SELECT * FROM trips WHERE user_id=? ORDER BY updated_at DESC', (user_id,)).fetchall()
-        trips = []
-        for r in rows:
-            t = dict(r)
-            try:    t['plan_data'] = json.loads(t['plan_data']) if t['plan_data'] else None
-            except: t['plan_data'] = None
-            trips.append(t)
-        return trips
-    finally: conn.close()
-
-def get_trip(trip_id, user_id):
-    conn = get_db()
-    try:
-        row = conn.execute('SELECT * FROM trips WHERE id=? AND user_id=?', (trip_id, user_id)).fetchone()
-        if not row: return None
-        t = dict(row)
-        try:    t['plan_data'] = json.loads(t['plan_data']) if t['plan_data'] else None
-        except: t['plan_data'] = None
-        return t
-    finally: conn.close()
-
-def update_trip(trip_id, user_id, **fields):
-    allowed = ['destination','origin','days','people','budget','currency','vibes',
-               'passport','status','plan_data','notes','is_favourite']
-    updates = {k:v for k,v in fields.items() if k in allowed}
-    if not updates: return
-    if 'plan_data' in updates and isinstance(updates['plan_data'], (dict, list)):
-        updates['plan_data'] = json.dumps(updates['plan_data'])
-    updates['updated_at'] = datetime.now().isoformat()
-    conn = get_db()
-    try:
-        sets = ', '.join(f'{k}=?' for k in updates)
-        conn.execute(f'UPDATE trips SET {sets} WHERE id=? AND user_id=?', (*updates.values(), trip_id, user_id))
-        conn.commit()
-    finally: conn.close()
-
-def delete_trip(trip_id, user_id):
-    conn = get_db()
-    try:
-        conn.execute('DELETE FROM trips WHERE id=? AND user_id=?', (trip_id, user_id))
-        conn.commit()
-    finally: conn.close()
-
-# ── SAVED PLACES ──
-def save_place(user_id, name, city='', country='', continent='', description='', image_url='', emoji='📍', tags=None, trip_id=None):
-    conn = get_db()
-    try:
-        c = conn.execute(
-            'INSERT INTO saved_places (user_id,name,city,country,continent,description,image_url,emoji,tags,trip_id) VALUES (?,?,?,?,?,?,?,?,?,?)',
-            (user_id, name, city, country, continent, description, image_url, emoji, json.dumps(tags or []), trip_id)
-        )
-        conn.commit(); return c.lastrowid
-    finally: conn.close()
-
-def get_places(user_id):
-    conn = get_db()
-    try:
-        rows = conn.execute('SELECT * FROM saved_places WHERE user_id=? ORDER BY created_at DESC', (user_id,)).fetchall()
-        places = []
-        for r in rows:
-            p = dict(r)
-            try:    p['tags'] = json.loads(p['tags'])
-            except: p['tags'] = []
-            places.append(p)
-        return places
-    finally: conn.close()
-
-def delete_place(place_id, user_id):
-    conn = get_db()
-    try:
-        conn.execute('DELETE FROM saved_places WHERE id=? AND user_id=?', (place_id, user_id))
-        conn.commit()
-    finally: conn.close()
-
-# ── EXPENSES ──
-def add_expense(trip_id, user_id, title, amount, category='Other', currency='INR', paid_by='', split_with=None):
-    conn = get_db()
-    try:
-        c = conn.execute(
-            'INSERT INTO expenses (trip_id,user_id,title,amount,category,currency,paid_by,split_with) VALUES (?,?,?,?,?,?,?,?)',
-            (trip_id, user_id, title, float(amount), category, currency, paid_by, json.dumps(split_with or []))
-        )
-        conn.commit(); return c.lastrowid
-    finally: conn.close()
-
-def get_expenses(trip_id, user_id):
-    conn = get_db()
-    try:
-        rows = conn.execute('SELECT * FROM expenses WHERE trip_id=? AND user_id=? ORDER BY created_at DESC', (trip_id, user_id)).fetchall()
-        expenses = []
-        for r in rows:
-            e = dict(r)
-            try:    e['split_with'] = json.loads(e['split_with'])
-            except: e['split_with'] = []
-            expenses.append(e)
-        return expenses
-    finally: conn.close()
-
-def delete_expense(expense_id, user_id):
-    conn = get_db()
-    try:
-        conn.execute('DELETE FROM expenses WHERE id=? AND user_id=?', (expense_id, user_id))
-        conn.commit()
-    finally: conn.close()
-
-# ── JOURNAL ──
-def save_journal(trip_id, user_id, content):
-    conn = get_db()
-    try:
-        content_str = json.dumps(content) if isinstance(content, (dict, list)) else str(content)
-        conn.execute('''INSERT INTO journals (trip_id,user_id,content) VALUES (?,?,?)
-            ON CONFLICT(trip_id) DO UPDATE SET content=excluded.content, updated_at=datetime('now')
-        ''', (trip_id, user_id, content_str))
-        conn.commit()
-    finally: conn.close()
-
-def get_journal(trip_id, user_id):
-    conn = get_db()
-    try:
-        row = conn.execute('SELECT * FROM journals WHERE trip_id=? AND user_id=?', (trip_id, user_id)).fetchone()
-        if not row: return None
-        j = dict(row)
-        try:    j['content'] = json.loads(j['content'])
-        except: pass
-        return j
-    finally: conn.close()
-
-
-def init_diary_db():
-    conn = get_db()
-    c = conn.cursor()
-
-    c.execute('''CREATE TABLE IF NOT EXISTS diary_trips (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        destination TEXT NOT NULL,
-        currency TEXT DEFAULT 'INR',
-        start_date TEXT,
-        created_at TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    )''')
-
-    c.execute('''CREATE TABLE IF NOT EXISTS diary_entries (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        trip_id INTEGER,
-        type TEXT DEFAULT 'note',
-        text TEXT NOT NULL DEFAULT '',
-        mood TEXT DEFAULT '',
-        location TEXT DEFAULT '',
-        tags TEXT DEFAULT '[]',
-        photos TEXT DEFAULT '[]',
-        amount REAL DEFAULT 0,
-        currency TEXT DEFAULT 'INR',
-        day_number INTEGER DEFAULT 1,
-        is_favorite INTEGER DEFAULT 0,
-        created_at TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (trip_id) REFERENCES diary_trips(id) ON DELETE SET NULL
-    )''')
-
-    c.execute('CREATE INDEX IF NOT EXISTS idx_diary_user ON diary_entries(user_id)')
-    c.execute('CREATE INDEX IF NOT EXISTS idx_diary_trip ON diary_entries(trip_id)')
-
-    conn.commit()
-    conn.close()
-    print('[DB] Diary tables initialized')
-
-
-def get_diary_trips(user_id):
-    conn = get_db()
-    try:
-        rows = conn.execute(
-            'SELECT * FROM diary_trips WHERE user_id=? ORDER BY created_at DESC',
-            (user_id,)
-        ).fetchall()
-        return [dict(r) for r in rows]
-    finally:
-        conn.close()
-
-
-def get_diary_trip(trip_id, user_id):
-    conn = get_db()
-    try:
-        row = conn.execute(
-            'SELECT * FROM diary_trips WHERE id=? AND user_id=?',
-            (trip_id, user_id)
-        ).fetchone()
-        return dict(row) if row else None
-    finally:
-        conn.close()
-
-
-def create_diary_trip(user_id, destination, currency='INR', start_date=None):
-    conn = get_db()
-    try:
-        c = conn.execute(
-            'INSERT INTO diary_trips (user_id,destination,currency,start_date) VALUES (?,?,?,?)',
-            (user_id, destination, currency, start_date)
-        )
-        conn.commit()
-        return c.lastrowid
-    finally:
-        conn.close()
-
-
-def get_diary_entries(user_id, trip_id=None, entry_type=None, search=None, limit=100):
-    conn = get_db()
-    try:
-        sql    = 'SELECT * FROM diary_entries WHERE user_id=?'
-        params = [user_id]
-        if trip_id:
-            sql += ' AND trip_id=?'; params.append(trip_id)
-        if entry_type:
-            sql += ' AND type=?';    params.append(entry_type)
-        if search:
-            sql += ' AND (text LIKE ? OR location LIKE ?)';
-            params += ['%'+search+'%', '%'+search+'%']
-        sql += ' ORDER BY created_at DESC LIMIT ?'
-        params.append(limit)
-        rows = conn.execute(sql, params).fetchall()
-        entries = []
-        for r in rows:
-            e = dict(r)
-            try:    e['tags']   = json.loads(e['tags'])
-            except: e['tags']   = []
-            try:    e['photos'] = json.loads(e['photos'])
-            except: e['photos'] = []
-            entries.append(e)
-        return entries
-    finally:
-        conn.close()
-
-
-def create_diary_entry(user_id, trip_id, entry_type, text, mood='',
-                       location='', tags=None, photos=None,
-                       amount=0, currency='INR', day_number=1):
-    conn = get_db()
-    try:
-        c = conn.execute(
-            '''INSERT INTO diary_entries
-               (user_id,trip_id,type,text,mood,location,tags,photos,amount,currency,day_number)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
-            (user_id, trip_id, entry_type, text, mood, location,
-             json.dumps(tags or []), json.dumps(photos or []),
-             float(amount or 0), currency, int(day_number or 1))
-        )
-        conn.commit()
-        return c.lastrowid
-    finally:
-        conn.close()
-
-
-def delete_diary_entry(entry_id, user_id):
-    conn = get_db()
-    try:
-        conn.execute('DELETE FROM diary_entries WHERE id=? AND user_id=?', (entry_id, user_id))
-        conn.commit()
-    finally:
-        conn.close()
-
-
-def toggle_diary_favorite(entry_id, user_id):
-    conn = get_db()
-    try:
-        row = conn.execute('SELECT is_favorite FROM diary_entries WHERE id=? AND user_id=?', (entry_id, user_id)).fetchone()
-        if not row: return False
-        new_val = 0 if row['is_favorite'] else 1
-        conn.execute('UPDATE diary_entries SET is_favorite=? WHERE id=? AND user_id=?', (new_val, entry_id, user_id))
-        conn.commit()
-        return bool(new_val)
-    finally:
-        conn.close()
-
-
-def get_diary_stats(user_id, trip_id=None):
-    conn = get_db()
-    try:
-        params = [user_id]
-        trip_filter = ''
-        if trip_id:
-            trip_filter = ' AND trip_id=?'
-            params.append(trip_id)
-
-        total = conn.execute(
-            'SELECT COUNT(*) FROM diary_entries WHERE user_id=?' + trip_filter, params
-        ).fetchone()[0]
-
-        spent = conn.execute(
-            'SELECT COALESCE(SUM(amount),0) FROM diary_entries WHERE user_id=? AND type="expense"' + trip_filter, params
-        ).fetchone()[0]
-
-        days = conn.execute(
-            'SELECT COUNT(DISTINCT date(created_at)) FROM diary_entries WHERE user_id=?' + trip_filter, params
-        ).fetchone()[0]
-
-        by_cat = conn.execute(
-            '''SELECT type, COUNT(*) as count FROM diary_entries
-               WHERE user_id=?''' + trip_filter + ''' GROUP BY type''', params
-        ).fetchall()
-
-        exp_cats = conn.execute(
-            '''SELECT COALESCE(location,"Other") as category,
-               SUM(amount) as total FROM diary_entries
-               WHERE user_id=? AND type="expense"''' + trip_filter + '''
-               GROUP BY location ORDER BY total DESC''', params
-        ).fetchall()
-
-        return {
-            'total_entries': total,
-            'total_spent':   round(float(spent), 2),
-            'days_logged':   days,
-            'by_type':       {r['type']: r['count'] for r in by_cat},
-            'by_category':   [{'category': r['category'], 'total': r['total']} for r in exp_cats],
-        }
-    finally:
-        conn.close()
-
-def migrate_db():
-    conn = get_db()
-    try:
-        # Add start_date to trips if not exists
-        conn.execute('ALTER TABLE trips ADD COLUMN start_date TEXT')
-        conn.commit()
-        print('[DB] start_date column added to trips')
-    except Exception as e:
-        pass  # Column already exists
-    finally:
-        conn.close()
-
-# ── LOGGING ──
-def log_action(user_id, action, ip=''):
-    try:
-        conn = get_db()
-        conn.execute('INSERT INTO usage_logs (user_id,action,ip) VALUES (?,?,?)', (user_id, action, ip))
-        conn.commit(); conn.close()
-    except: pass
-
-if __name__ == '__main__':
-    init_db()
-    print("[DB] All tables created successfully")
-
-
-def migrate_subscription_db():
-    """Add subscription + onboarding + usage limit columns"""
-    conn = get_db()
-    migrations = [
-        "ALTER TABLE users ADD COLUMN onboarding_done INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN travel_style TEXT DEFAULT ''",
-        "ALTER TABLE users ADD COLUMN budget_style TEXT DEFAULT ''",
-        "ALTER TABLE users ADD COLUMN plan_type TEXT DEFAULT 'free'",
-        "ALTER TABLE users ADD COLUMN pro_expires_at TEXT DEFAULT NULL",
-        "ALTER TABLE users ADD COLUMN plans_used_month INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN multiciy_used_month INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN translations_today INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN voice_today INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN identify_today INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN tools_today INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN diary_entries_trip INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN ai_story_used INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN journal_used_month INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN usage_reset_date TEXT DEFAULT ''",
-        "ALTER TABLE users ADD COLUMN monthly_reset_date TEXT DEFAULT ''",
-    ]
-    for sql in migrations:
+def execute(sql, params=None):
+    with db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(sql, params or ())
         try:
-            conn.execute(sql)
-            conn.commit()
+            return dict(cur.fetchone()) if cur.description else None
         except:
-            pass  # Column already exists
-    conn.close()
-    print("[DB] Subscription columns migrated")
+            return None
 
+# ══════════════════════════════════════════════════════════
+# PLAN LIMITS
+# ══════════════════════════════════════════════════════════
 
-# ── FREE TIER LIMITS ──
 FREE_LIMITS = {
     'plans_month':        3,
     'multicity_month':    0,
@@ -601,7 +88,6 @@ FREE_LIMITS = {
     'saved_places':       5,
 }
 
-# ── PRO TIER LIMITS ──
 PRO_LIMITS = {
     'plans_month':        20,
     'multicity_month':    5,
@@ -615,120 +101,146 @@ PRO_LIMITS = {
     'saved_places':       100,
 }
 
+# ══════════════════════════════════════════════════════════
+# USERS
+# ══════════════════════════════════════════════════════════
+
+def create_user(email, name, password_hash=None, google_id=None, avatar=None):
+    try:
+        row = execute(
+            """INSERT INTO users
+               (email, name, password_hash, google_id, avatar, email_verified)
+               VALUES (%s, %s, %s, %s, %s, %s)
+               RETURNING id""",
+            (email.lower().strip(), name.strip(), password_hash,
+             google_id, avatar or '', bool(google_id))
+        )
+        return row['id'] if row else None
+    except psycopg2.IntegrityError:
+        return None
+
+def get_user_by_email(email):
+    return query_one(
+        'SELECT * FROM users WHERE email=%s AND deleted_at IS NULL',
+        (email.lower().strip(),)
+    )
+
+def get_user_by_id(user_id):
+    return query_one(
+        'SELECT * FROM users WHERE id=%s AND deleted_at IS NULL',
+        (user_id,)
+    )
+
+def get_user_by_google(google_id):
+    return query_one(
+        'SELECT * FROM users WHERE google_id=%s AND deleted_at IS NULL',
+        (google_id,)
+    )
+
+def update_user(user_id, **fields):
+    allowed = [
+        'name', 'avatar', 'passport', 'home_city', 'currency',
+        'last_login_at', 'last_active_at', 'is_verified', 'is_pro',
+        'plan_type', 'pro_expires_at', 'travel_style', 'budget_style',
+        'onboarding_done', 'email_verified', 'phone', 'password_hash'
+    ]
+    updates = {k: v for k, v in fields.items() if k in allowed}
+    if not updates:
+        return
+    sets = ', '.join(f'{k}=%s' for k in updates)
+    execute(
+        f'UPDATE users SET {sets} WHERE id=%s',
+        (*updates.values(), user_id)
+    )
+
+def get_user_stats(user_id):
+    row = query_one(
+        """SELECT
+           (SELECT COUNT(*) FROM trips WHERE user_id=%s AND deleted_at IS NULL) AS trips,
+           (SELECT COALESCE(SUM(days),0) FROM trips WHERE user_id=%s AND deleted_at IS NULL) AS days,
+           (SELECT COUNT(*) FROM saved_places WHERE user_id=%s AND deleted_at IS NULL) AS places
+        """,
+        (user_id, user_id, user_id)
+    )
+    return row or {'trips': 0, 'days': 0, 'places': 0}
+
+def safe_user(user):
+    if not user:
+        return None
+    u = dict(user)
+    u.pop('password_hash', None)
+    u.pop('email_verify_token', None)
+    # Convert datetime objects to ISO strings
+    for k, v in u.items():
+        if hasattr(v, 'isoformat'):
+            u[k] = v.isoformat()
+    return u
+
+# ══════════════════════════════════════════════════════════
+# SUBSCRIPTION
+# ══════════════════════════════════════════════════════════
 
 def get_user_plan(user_id):
-    """Returns 'free' or 'pro' and auto-expires if needed"""
-    from datetime import datetime
-    conn = get_db()
-    try:
-        user = conn.execute('SELECT * FROM users WHERE id=?', (user_id,)).fetchone()
-        if not user:
-            return 'free'
-        user = dict(user)
-        plan = user.get('plan_type', 'free')
-        expires = user.get('pro_expires_at')
+    """Returns 'free' or 'pro', auto-expires if needed"""
+    user = query_one(
+        'SELECT plan_type, pro_expires_at FROM users WHERE id=%s',
+        (user_id,)
+    )
+    if not user:
+        return 'free'
+    plan = user.get('plan_type', 'free')
+    expires = user.get('pro_expires_at')
+    if plan == 'pro' and expires and expires < datetime.now(expires.tzinfo):
+        execute(
+            "UPDATE users SET plan_type='free', is_pro=FALSE WHERE id=%s",
+            (user_id,)
+        )
+        return 'free'
+    return plan
 
-        # Auto-expire pro
-        if plan == 'pro' and expires:
-            if datetime.now().isoformat() > expires:
-                conn.execute(
-                    "UPDATE users SET plan_type='free', is_pro=0 WHERE id=?",
-                    (user_id,)
-                )
-                conn.commit()
-                return 'free'
-        return plan
-    finally:
-        conn.close()
-
-
-def reset_daily_usage(user_id):
-    """Reset daily counters if new day"""
-    from datetime import date
-    today = date.today().isoformat()
-    conn = get_db()
-    try:
-        user = conn.execute('SELECT usage_reset_date FROM users WHERE id=?', (user_id,)).fetchone()
-        if user and dict(user).get('usage_reset_date') != today:
-            conn.execute(
-                """UPDATE users SET
-                   translations_today=0, voice_today=0,
-                   identify_today=0, tools_today=0,
-                   usage_reset_date=?
-                   WHERE id=?""",
-                (today, user_id)
-            )
-            conn.commit()
-    finally:
-        conn.close()
-
-
-def reset_monthly_usage(user_id):
-    """Reset monthly counters if new month"""
-    from datetime import date
-    month = date.today().strftime('%Y-%m')
-    conn = get_db()
-    try:
-        user = conn.execute('SELECT monthly_reset_date FROM users WHERE id=?', (user_id,)).fetchone()
-        if user and dict(user).get('monthly_reset_date') != month:
-            conn.execute(
-                """UPDATE users SET
-                   plans_used_month=0, multiciy_used_month=0,
-                   journal_used_month=0, ai_story_used=0,
-                   monthly_reset_date=?
-                   WHERE id=?""",
-                (month, user_id)
-            )
-            conn.commit()
-    finally:
-        conn.close()
-
+def activate_pro(user_id, plan='monthly'):
+    days = 7 if plan == 'weekly' else 30
+    expires = datetime.utcnow() + timedelta(days=days)
+    execute(
+        """UPDATE users SET
+           plan_type='pro', is_pro=TRUE,
+           pro_expires_at=%s, pro_plan=%s
+           WHERE id=%s""",
+        (expires, plan, user_id)
+    )
+    return expires
 
 def check_limit(user_id, feature):
-    """
-    Returns (allowed: bool, used: int, limit: int)
-    Features: 'plan', 'multicity', 'translation', 'voice',
-              'identify', 'tool', 'ai_story', 'journal'
-    """
-    reset_daily_usage(user_id)
-    reset_monthly_usage(user_id)
+    """Returns (allowed, used, limit)"""
     plan = get_user_plan(user_id)
     limits = PRO_LIMITS if plan == 'pro' else FREE_LIMITS
 
-    conn = get_db()
-    try:
-        user = dict(conn.execute('SELECT * FROM users WHERE id=?', (user_id,)).fetchone())
+    col_map = {
+        'plan':        ('plans_used_month',     limits['plans_month']),
+        'multicity':   ('multicity_used_month', limits['multicity_month']),
+        'translation': ('translations_today',   limits['translations_day']),
+        'voice':       ('voice_today',          limits['voice_day']),
+        'identify':    ('identify_today',       limits['identify_day']),
+        'tool':        ('tools_today',          limits['tools_day']),
+        'ai_story':    ('ai_story_used',        limits['ai_story']),
+        'journal':     ('journal_used_month',   limits['journal_month']),
+    }
 
-        checks = {
-            'plan':        ('plans_used_month',    limits['plans_month']),
-            'multicity':   ('multiciy_used_month', limits['multicity_month']),
-            'translation': ('translations_today',  limits['translations_day']),
-            'voice':       ('voice_today',         limits['voice_day']),
-            'identify':    ('identify_today',      limits['identify_day']),
-            'tool':        ('tools_today',         limits['tools_day']),
-            'ai_story':    ('ai_story_used',       limits['ai_story']),
-            'journal':     ('journal_used_month',  limits['journal_month']),
-        }
+    if feature not in col_map:
+        return True, 0, 999
 
-        if feature not in checks:
-            return True, 0, 999
+    col, limit = col_map[feature]
+    if limit == 0:
+        return False, 0, 0
 
-        col, limit = checks[feature]
-        used = user.get(col, 0) or 0
-
-        if limit == 0:
-            return False, used, 0
-
-        return used < limit, used, limit
-    finally:
-        conn.close()
-
+    user = query_one(f'SELECT {col} FROM users WHERE id=%s', (user_id,))
+    used = (user or {}).get(col, 0) or 0
+    return used < limit, used, limit
 
 def increment_usage(user_id, feature):
-    """Increment usage counter after successful AI call"""
     col_map = {
         'plan':        'plans_used_month',
-        'multicity':   'multiciy_used_month',
+        'multicity':   'multicity_used_month',
         'translation': 'translations_today',
         'voice':       'voice_today',
         'identify':    'identify_today',
@@ -737,45 +249,532 @@ def increment_usage(user_id, feature):
         'journal':     'journal_used_month',
     }
     col = col_map.get(feature)
-    if not col:
-        return
-    conn = get_db()
-    try:
-        conn.execute(f'UPDATE users SET {col}={col}+1 WHERE id=?', (user_id,))
-        conn.commit()
-    finally:
-        conn.close()
-
-
-def activate_pro(user_id, plan='monthly'):
-    """Activate Pro for user after payment"""
-    from datetime import datetime, timedelta
-    days = 7 if plan == 'weekly' else 30
-    expires = (datetime.now() + timedelta(days=days)).isoformat()
-    conn = get_db()
-    try:
-        conn.execute(
-            "UPDATE users SET plan_type='pro', is_pro=1, pro_expires_at=? WHERE id=?",
-            (expires, user_id)
-        )
-        conn.commit()
-    finally:
-        conn.close()
-
+    if col:
+        execute(f'UPDATE users SET {col}={col}+1 WHERE id=%s', (user_id,))
 
 def complete_onboarding(user_id, name, home_city='', passport='India',
                          currency='INR', travel_style='', budget_style=''):
-    """Save onboarding data and mark complete"""
-    conn = get_db()
+    execute(
+        """UPDATE users SET
+           name=%s, home_city=%s, passport=%s, currency=%s,
+           travel_style=%s, budget_style=%s, onboarding_done=TRUE
+           WHERE id=%s""",
+        (name.strip(), home_city.strip(), passport,
+         currency, travel_style, budget_style, user_id)
+    )
+
+# ══════════════════════════════════════════════════════════
+# SESSIONS (refresh tokens)
+# ══════════════════════════════════════════════════════════
+
+def create_session(user_id, token_hash, refresh_token, device_info='',
+                   ip_address='', user_agent='', expires_at=None):
+    if not expires_at:
+        expires_at = datetime.utcnow() + timedelta(days=30)
+    row = execute(
+        """INSERT INTO user_sessions
+           (user_id, token_hash, refresh_token, device_info, ip_address, user_agent, expires_at)
+           VALUES (%s, %s, %s, %s, %s, %s, %s)
+           RETURNING id""",
+        (user_id, token_hash, refresh_token, device_info, ip_address, user_agent, expires_at)
+    )
+    return row['id'] if row else None
+
+def invalidate_session(token_hash):
+    execute(
+        'UPDATE user_sessions SET is_active=FALSE WHERE token_hash=%s',
+        (token_hash,)
+    )
+
+def invalidate_all_sessions(user_id):
+    execute(
+        'UPDATE user_sessions SET is_active=FALSE WHERE user_id=%s',
+        (user_id,)
+    )
+
+def get_session_by_refresh(refresh_token):
+    return query_one(
+        """SELECT * FROM user_sessions
+           WHERE refresh_token=%s AND is_active=TRUE AND expires_at > NOW()""",
+        (refresh_token,)
+    )
+
+# ══════════════════════════════════════════════════════════
+# PAYMENTS
+# ══════════════════════════════════════════════════════════
+
+def create_payment(user_id, razorpay_order_id, amount, plan,
+                   promo_code=None, discount_amount=0):
+    row = execute(
+        """INSERT INTO payments
+           (user_id, razorpay_order_id, amount, plan, promo_code,
+            discount_amount, original_amount, status)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, 'created')
+           RETURNING id""",
+        (user_id, razorpay_order_id, amount, plan,
+         promo_code, discount_amount, amount + discount_amount)
+    )
+    return row['id'] if row else None
+
+def confirm_payment(razorpay_order_id, razorpay_payment_id,
+                    razorpay_signature, pro_expires_at):
+    execute(
+        """UPDATE payments SET
+           razorpay_payment_id=%s,
+           razorpay_signature=%s,
+           status='paid',
+           paid_at=NOW(),
+           pro_expires_at=%s
+           WHERE razorpay_order_id=%s""",
+        (razorpay_payment_id, razorpay_signature, pro_expires_at, razorpay_order_id)
+    )
+
+def get_user_payments(user_id, limit=10):
+    return query_all(
+        """SELECT * FROM payments WHERE user_id=%s
+           ORDER BY created_at DESC LIMIT %s""",
+        (user_id, limit)
+    )
+
+# ══════════════════════════════════════════════════════════
+# TRIPS
+# ══════════════════════════════════════════════════════════
+
+def save_trip(user_id, destination, origin, days, people,
+              budget, currency, vibes, passport,
+              plan_data=None, start_date=None):
+    vibes_str = vibes if isinstance(vibes, str) else '+'.join(vibes)
+    end_date = None
+    if start_date:
+        try:
+            sd = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = sd + timedelta(days=int(days)-1)
+        except:
+            pass
+    row = execute(
+        """INSERT INTO trips
+           (user_id,destination,origin,days,people,budget,currency,
+            vibes,passport,plan_data,start_date,end_date)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+           RETURNING id""",
+        (user_id, destination, origin, int(days), int(people),
+         str(budget), currency, vibes_str, passport,
+         json.dumps(plan_data) if plan_data else None,
+         start_date, end_date)
+    )
+    return row['id'] if row else None
+
+def get_trips(user_id):
+    rows = query_all(
+        """SELECT * FROM trips WHERE user_id=%s AND deleted_at IS NULL
+           ORDER BY updated_at DESC""",
+        (user_id,)
+    )
+    for t in rows:
+        if isinstance(t.get('plan_data'), str):
+            try: t['plan_data'] = json.loads(t['plan_data'])
+            except: t['plan_data'] = None
+        for k, v in t.items():
+            if hasattr(v, 'isoformat'): t[k] = v.isoformat()
+    return rows
+
+def get_trip(trip_id, user_id):
+    row = query_one(
+        'SELECT * FROM trips WHERE id=%s AND user_id=%s AND deleted_at IS NULL',
+        (trip_id, user_id)
+    )
+    if row:
+        if isinstance(row.get('plan_data'), str):
+            try: row['plan_data'] = json.loads(row['plan_data'])
+            except: pass
+        for k, v in row.items():
+            if hasattr(v, 'isoformat'): row[k] = v.isoformat()
+    return row
+
+def update_trip(trip_id, user_id, **fields):
+    allowed = ['destination','origin','days','people','budget','currency',
+               'vibes','passport','status','plan_data','notes','is_favourite']
+    updates = {k: v for k, v in fields.items() if k in allowed}
+    if not updates: return
+    if 'plan_data' in updates and isinstance(updates['plan_data'], (dict, list)):
+        updates['plan_data'] = json.dumps(updates['plan_data'])
+    sets = ', '.join(f'{k}=%s' for k in updates)
+    execute(
+        f'UPDATE trips SET {sets} WHERE id=%s AND user_id=%s',
+        (*updates.values(), trip_id, user_id)
+    )
+
+def delete_trip(trip_id, user_id):
+    # Soft delete
+    execute(
+        'UPDATE trips SET deleted_at=NOW() WHERE id=%s AND user_id=%s',
+        (trip_id, user_id)
+    )
+
+# ══════════════════════════════════════════════════════════
+# SAVED PLACES
+# ══════════════════════════════════════════════════════════
+
+def save_place(user_id, name, city='', country='', continent='',
+               description='', image_url='', emoji='📍',
+               tags=None, trip_id=None, lat=None, lng=None):
+    row = execute(
+        """INSERT INTO saved_places
+           (user_id,name,city,country,continent,description,
+            image_url,emoji,tags,trip_id,lat,lng)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+           RETURNING id""",
+        (user_id, name, city, country, continent, description,
+         image_url, emoji, json.dumps(tags or []), trip_id, lat, lng)
+    )
+    return row['id'] if row else None
+
+def get_places(user_id):
+    rows = query_all(
+        """SELECT * FROM saved_places WHERE user_id=%s AND deleted_at IS NULL
+           ORDER BY created_at DESC""",
+        (user_id,)
+    )
+    for p in rows:
+        if isinstance(p.get('tags'), str):
+            try: p['tags'] = json.loads(p['tags'])
+            except: p['tags'] = []
+        for k, v in p.items():
+            if hasattr(v, 'isoformat'): p[k] = v.isoformat()
+    return rows
+
+def delete_place(place_id, user_id):
+    execute(
+        'UPDATE saved_places SET deleted_at=NOW() WHERE id=%s AND user_id=%s',
+        (place_id, user_id)
+    )
+
+# ══════════════════════════════════════════════════════════
+# EXPENSES
+# ══════════════════════════════════════════════════════════
+
+def add_expense(trip_id, user_id, title, amount, category='Other',
+                currency='INR', paid_by='', split_with=None, notes=''):
+    row = execute(
+        """INSERT INTO expenses
+           (trip_id,user_id,title,amount,category,currency,paid_by,split_with,notes)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+           RETURNING id""",
+        (trip_id, user_id, title, float(amount), category,
+         currency, paid_by, json.dumps(split_with or []), notes)
+    )
+    return row['id'] if row else None
+
+def get_expenses(trip_id, user_id):
+    rows = query_all(
+        """SELECT * FROM expenses WHERE trip_id=%s AND user_id=%s
+           AND deleted_at IS NULL ORDER BY created_at DESC""",
+        (trip_id, user_id)
+    )
+    for e in rows:
+        if isinstance(e.get('split_with'), str):
+            try: e['split_with'] = json.loads(e['split_with'])
+            except: e['split_with'] = []
+        for k, v in e.items():
+            if hasattr(v, 'isoformat'): e[k] = v.isoformat()
+    return rows
+
+def delete_expense(expense_id, user_id):
+    execute(
+        'UPDATE expenses SET deleted_at=NOW() WHERE id=%s AND user_id=%s',
+        (expense_id, user_id)
+    )
+
+# ══════════════════════════════════════════════════════════
+# JOURNALS
+# ══════════════════════════════════════════════════════════
+
+def save_journal(trip_id, user_id, content):
+    content_str = json.dumps(content) if isinstance(content, (dict, list)) else str(content)
+    execute(
+        """INSERT INTO journals (trip_id, user_id, content)
+           VALUES (%s, %s, %s)
+           ON CONFLICT (trip_id) DO UPDATE
+           SET content=EXCLUDED.content, updated_at=NOW()""",
+        (trip_id, user_id, content_str)
+    )
+
+def get_journal(trip_id, user_id):
+    row = query_one(
+        'SELECT * FROM journals WHERE trip_id=%s AND user_id=%s',
+        (trip_id, user_id)
+    )
+    if row:
+        if isinstance(row.get('content'), str):
+            try: row['content'] = json.loads(row['content'])
+            except: pass
+        for k, v in row.items():
+            if hasattr(v, 'isoformat'): row[k] = v.isoformat()
+    return row
+
+# ══════════════════════════════════════════════════════════
+# DIARY
+# ══════════════════════════════════════════════════════════
+
+def get_diary_trips(user_id):
+    rows = query_all(
+        """SELECT * FROM diary_trips WHERE user_id=%s AND deleted_at IS NULL
+           ORDER BY created_at DESC""",
+        (user_id,)
+    )
+    for r in rows:
+        for k, v in r.items():
+            if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+    return rows
+
+def get_diary_trip(trip_id, user_id):
+    row = query_one(
+        'SELECT * FROM diary_trips WHERE id=%s AND user_id=%s AND deleted_at IS NULL',
+        (trip_id, user_id)
+    )
+    if row:
+        for k, v in row.items():
+            if hasattr(v, 'isoformat'): row[k] = v.isoformat()
+    return row
+
+def create_diary_trip(user_id, destination, currency='INR', start_date=None):
+    row = execute(
+        """INSERT INTO diary_trips (user_id, destination, currency, start_date)
+           VALUES (%s, %s, %s, %s) RETURNING id""",
+        (user_id, destination, currency, start_date)
+    )
+    return row['id'] if row else None
+
+def get_diary_entries(user_id, trip_id=None, entry_type=None,
+                       search=None, limit=100):
+    sql = """SELECT * FROM diary_entries
+             WHERE user_id=%s AND deleted_at IS NULL"""
+    params = [user_id]
+    if trip_id:
+        sql += ' AND trip_id=%s'; params.append(trip_id)
+    if entry_type:
+        sql += ' AND type=%s'; params.append(entry_type)
+    if search:
+        sql += ' AND to_tsvector(\'english\', text) @@ plainto_tsquery(%s)'
+        params.append(search)
+    sql += ' ORDER BY created_at DESC LIMIT %s'
+    params.append(limit)
+    rows = query_all(sql, params)
+    for e in rows:
+        for field in ['tags', 'photos']:
+            if isinstance(e.get(field), str):
+                try: e[field] = json.loads(e[field])
+                except: e[field] = []
+        for k, v in e.items():
+            if hasattr(v, 'isoformat'): e[k] = v.isoformat()
+    return rows
+
+def create_diary_entry(user_id, trip_id, entry_type, text, mood='',
+                        location='', tags=None, photos=None,
+                        amount=0, currency='INR', day_number=1):
+    row = execute(
+        """INSERT INTO diary_entries
+           (user_id,trip_id,type,text,mood,location,tags,photos,amount,currency,day_number)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+           RETURNING id""",
+        (user_id, trip_id, entry_type, text, mood, location,
+         json.dumps(tags or []), json.dumps(photos or []),
+         float(amount or 0), currency, int(day_number or 1))
+    )
+    return row['id'] if row else None
+
+def delete_diary_entry(entry_id, user_id):
+    execute(
+        'UPDATE diary_entries SET deleted_at=NOW() WHERE id=%s AND user_id=%s',
+        (entry_id, user_id)
+    )
+
+def toggle_diary_favorite(entry_id, user_id):
+    execute(
+        """UPDATE diary_entries
+           SET is_favorite = NOT is_favorite
+           WHERE id=%s AND user_id=%s""",
+        (entry_id, user_id)
+    )
+    row = query_one(
+        'SELECT is_favorite FROM diary_entries WHERE id=%s',
+        (entry_id,)
+    )
+    return bool(row['is_favorite']) if row else False
+
+def get_diary_stats(user_id, trip_id=None):
+    params = [user_id]
+    trip_filter = ''
+    if trip_id:
+        trip_filter = ' AND trip_id=%s'
+        params.append(trip_id)
+    total = query_one(
+        f'SELECT COUNT(*) AS c FROM diary_entries WHERE user_id=%s{trip_filter} AND deleted_at IS NULL',
+        params
+    )
+    spent = query_one(
+        f'SELECT COALESCE(SUM(amount),0) AS s FROM diary_entries WHERE user_id=%s AND type=\'expense\'{trip_filter} AND deleted_at IS NULL',
+        params
+    )
+    days = query_one(
+        f'SELECT COUNT(DISTINCT DATE(created_at)) AS d FROM diary_entries WHERE user_id=%s{trip_filter} AND deleted_at IS NULL',
+        params
+    )
+    return {
+        'total_entries': (total or {}).get('c', 0),
+        'total_spent':   float((spent or {}).get('s', 0)),
+        'days_logged':   (days or {}).get('d', 0),
+    }
+
+# ══════════════════════════════════════════════════════════
+# PROMO CODES
+# ══════════════════════════════════════════════════════════
+
+def get_promo_code(code):
+    return query_one(
+        """SELECT * FROM promo_codes
+           WHERE code=%s AND is_active=TRUE AND expires_at > NOW()""",
+        (code.upper().strip(),)
+    )
+
+def redeem_promo(user_id, code, discount_amount=0, pro_months=0):
     try:
-        conn.execute(
-            """UPDATE users SET
-               name=?, home_city=?, passport=?, currency=?,
-               travel_style=?, budget_style=?, onboarding_done=1
-               WHERE id=?""",
-            (name.strip(), home_city.strip(), passport,
-             currency, travel_style, budget_style, user_id)
+        execute(
+            """INSERT INTO promo_redemptions
+               (user_id, code, discount_amount, pro_months)
+               VALUES (%s, %s, %s, %s)""",
+            (user_id, code, discount_amount, pro_months)
         )
-        conn.commit()
-    finally:
-        conn.close()
+        execute(
+            'UPDATE promo_codes SET uses=uses+1 WHERE code=%s',
+            (code,)
+        )
+        return True
+    except psycopg2.IntegrityError:
+        return False  # Already redeemed
+
+def check_promo_redeemed(user_id, code):
+    row = query_one(
+        'SELECT id FROM promo_redemptions WHERE user_id=%s AND code=%s',
+        (user_id, code)
+    )
+    return bool(row)
+
+# ══════════════════════════════════════════════════════════
+# NOTIFICATIONS
+# ══════════════════════════════════════════════════════════
+
+def create_notification(user_id, notif_type, title, body, data=None):
+    execute(
+        """INSERT INTO notifications (user_id, type, title, body, data)
+           VALUES (%s, %s, %s, %s, %s)""",
+        (user_id, notif_type, title, body, json.dumps(data or {}))
+    )
+
+def get_notifications(user_id, unread_only=False, limit=20):
+    sql = 'SELECT * FROM notifications WHERE user_id=%s'
+    params = [user_id]
+    if unread_only:
+        sql += ' AND is_read=FALSE'
+    sql += ' ORDER BY created_at DESC LIMIT %s'
+    params.append(limit)
+    return query_all(sql, params)
+
+def mark_notifications_read(user_id):
+    execute(
+        'UPDATE notifications SET is_read=TRUE, read_at=NOW() WHERE user_id=%s AND is_read=FALSE',
+        (user_id,)
+    )
+
+# ══════════════════════════════════════════════════════════
+# LOGGING
+# ══════════════════════════════════════════════════════════
+
+def log_action(user_id, action, ip='', feature='', duration_ms=None,
+               success=True, error=None, metadata=None):
+    try:
+        execute(
+            """INSERT INTO usage_logs
+               (user_id, action, feature, ip_address, duration_ms, success, error, metadata)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+            (user_id, action, feature, ip, duration_ms,
+             success, error, json.dumps(metadata or {}))
+        )
+    except:
+        pass
+
+# ══════════════════════════════════════════════════════════
+# FEEDBACK
+# ══════════════════════════════════════════════════════════
+
+def submit_feedback(user_id, message, rating=None, feedback_type='general',
+                    subject='', feature='', email=''):
+    execute(
+        """INSERT INTO feedback
+           (user_id, message, rating, type, subject, feature, email)
+           VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+        (user_id, message, rating, feedback_type, subject, feature, email)
+    )
+
+# ══════════════════════════════════════════════════════════
+# ADMIN QUERIES
+# ══════════════════════════════════════════════════════════
+
+def admin_get_stats():
+    return {
+        'total_users':     (query_one('SELECT COUNT(*) AS c FROM users WHERE deleted_at IS NULL') or {}).get('c', 0),
+        'total_trips':     (query_one('SELECT COUNT(*) AS c FROM trips WHERE deleted_at IS NULL') or {}).get('c', 0),
+        'pro_users':       (query_one("SELECT COUNT(*) AS c FROM users WHERE plan_type='pro' AND deleted_at IS NULL") or {}).get('c', 0),
+        'total_revenue':   (query_one("SELECT COALESCE(SUM(amount),0)/100.0 AS r FROM payments WHERE status='paid'") or {}).get('r', 0),
+        'revenue_today':   (query_one("SELECT COALESCE(SUM(amount),0)/100.0 AS r FROM payments WHERE status='paid' AND DATE(paid_at)=CURRENT_DATE") or {}).get('r', 0),
+        'new_users_today': (query_one('SELECT COUNT(*) AS c FROM users WHERE DATE(created_at)=CURRENT_DATE AND deleted_at IS NULL') or {}).get('c', 0),
+        'trips_today':     (query_one('SELECT COUNT(*) AS c FROM trips WHERE DATE(created_at)=CURRENT_DATE AND deleted_at IS NULL') or {}).get('c', 0),
+        'actions_today':   (query_one('SELECT COUNT(*) AS c FROM usage_logs WHERE DATE(created_at)=CURRENT_DATE') or {}).get('c', 0),
+        'total_payments':  (query_one("SELECT COUNT(*) AS c FROM payments WHERE status='paid'") or {}).get('c', 0),
+    }
+
+def admin_get_users(limit=200, offset=0, search=None):
+    sql = """SELECT u.*,
+             COUNT(t.id) AS trip_count,
+             COALESCE(SUM(p.amount)/100.0, 0) AS total_paid
+             FROM users u
+             LEFT JOIN trips t ON t.user_id=u.id AND t.deleted_at IS NULL
+             LEFT JOIN payments p ON p.user_id=u.id AND p.status='paid'
+             WHERE u.deleted_at IS NULL"""
+    params = []
+    if search:
+        sql += ' AND (u.email ILIKE %s OR u.name ILIKE %s)'
+        params += [f'%{search}%', f'%{search}%']
+    sql += ' GROUP BY u.id ORDER BY u.created_at DESC LIMIT %s OFFSET %s'
+    params += [limit, offset]
+    rows = query_all(sql, params)
+    return [safe_user(r) for r in rows]
+
+def admin_get_revenue_chart(days=30):
+    return query_all(
+        """SELECT DATE(paid_at) AS date,
+           COUNT(*) AS transactions,
+           SUM(amount)/100.0 AS revenue
+           FROM payments
+           WHERE status='paid' AND paid_at > NOW() - INTERVAL '%s days'
+           GROUP BY DATE(paid_at)
+           ORDER BY date DESC""",
+        (days,)
+    )
+
+# ══════════════════════════════════════════════════════════
+# INIT
+# ══════════════════════════════════════════════════════════
+
+def init_db():
+    """Test connection on startup"""
+    try:
+        row = query_one('SELECT NOW() AS time')
+        print(f"[DB] Supabase connected ✅ — {row['time']}")
+    except Exception as e:
+        print(f"[DB] Connection failed ❌ — {e}")
+        raise
+
+if __name__ == '__main__':
+    init_db()
+    print("[DB] All systems go")
