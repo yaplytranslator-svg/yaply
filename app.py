@@ -2926,6 +2926,9 @@ def apply_promo():
 # ONBOARDING ROUTES
 # ══════════════════════════════════════════════════════════
 
+def clean(val, maxlen=100):
+    return str(val or '').strip()[:maxlen]
+
 @app.route('/onboarding')
 def onboarding_page():
     return render_template('onboarding.html')
@@ -2954,13 +2957,12 @@ def api_complete_onboarding():
         log_action(g.user_id, 'onboarding_complete', request.remote_addr)
 
         return jsonify({
-            'success': True,
-            'user': safe_user(user),
+            'success':  True,
+            'user':     safe_user(user),
             'redirect': '/app'
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
-
 # ══════════════════════════════════════════════════════════
 # USER STATUS ROUTE
 # ══════════════════════════════════════════════════════════

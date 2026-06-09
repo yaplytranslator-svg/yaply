@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1"/>
+<title>Yaply — Let's set you up ✈️</title>
+<link rel="icon" href="/static/favicon.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:#07101f;color:#F7F9FC;}
+
+:root{
+  --blue:#2563FF;--blue-d:#1D4ED8;--green:#18C29C;--amber:#F5B942;
+  --coral:#FF7A59;--purple:#8B5CF6;--border:rgba(255,255,255,0.08);
+  --muted:rgba(255,255,255,0.35);--text:rgba(255,255,255,0.85);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes slideRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes popIn{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+
+/* ── BACKGROUND ── */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;}
+.bg-gradient{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(37,99,255,0.18) 0%,transparent 60%),
+             radial-gradient(ellipse 60% 40% at 90% 90%,rgba(255,122,89,0.07) 0%,transparent 60%),
+             #07101f;
+}
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(37,99,255,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(37,99,255,0.04) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse at 50% 0%,black 0%,transparent 70%);
+}
+/* Floating destination tags */
+.float-tags{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.ftag{
+  position:absolute;padding:6px 12px;border-radius:100px;
+  font-size:11px;font-weight:600;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.07);
+  color:rgba(255,255,255,0.2);
+  animation:float linear infinite;
+  white-space:nowrap;
+}
+
+/* ── LAYOUT ── */
+.app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;}
+
+/* ── TOP BAR ── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px 0;flex-shrink:0;
+}
+.logo{font-family:'Instrument Serif',serif;font-size:18px;color:white;}
+.step-counter{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap{padding:16px 24px 0;flex-shrink:0;}
+.progress-track{
+  height:2px;background:rgba(255,255,255,0.08);border-radius:1px;overflow:visible;
+  position:relative;
+}
+.progress-fill{
+  height:100%;border-radius:1px;
+  background:linear-gradient(90deg,var(--blue),#60A5FA);
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+  position:relative;
+}
+.progress-fill::after{
+  content:'';position:absolute;right:-3px;top:-3px;
+  width:8px;height:8px;border-radius:50%;
+  background:white;box-shadow:0 0 8px rgba(37,99,255,0.8);
+}
+.progress-steps{
+  display:flex;justify-content:space-between;
+  margin-top:10px;
+}
+.ps-dot{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.ps-circle{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;
+  border:1.5px solid rgba(255,255,255,0.1);
+  color:var(--muted);background:transparent;
+  transition:all .4s;
+}
+.ps-circle.done{background:var(--blue);border-color:var(--blue);color:white;}
+.ps-circle.active{border-color:var(--blue);color:white;box-shadow:0 0 10px rgba(37,99,255,0.4);}
+.ps-label{font-size:9px;color:var(--muted);transition:color .3s;white-space:nowrap;}
+.ps-label.active{color:rgba(255,255,255,0.6);}
+
+/* ── SCROLLABLE CONTENT ── */
+.content{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:0 24px 120px;
+  -webkit-overflow-scrolling:touch;
+}
+.content::-webkit-scrollbar{display:none;}
+
+/* ── STEP ── */
+.step{display:none;}
+.step.active{display:block;animation:slideRight .35s cubic-bezier(.4,0,.2,1) both;}
+.step.leaving{animation:slideLeft .25s cubic-bezier(.4,0,.2,1) both;pointer-events:none;}
+
+/* Step header */
+.step-header{padding:32px 0 24px;}
+.step-emoji{font-size:36px;margin-bottom:12px;display:block;animation:float 4s ease-in-out infinite;}
+.step-title{font-family:'Instrument Serif',serif;font-size:28px;color:white;letter-spacing:-.4px;line-height:1.2;margin-bottom:8px;}
+.step-title em{font-style:italic;color:var(--amber);}
+.step-sub{font-size:14px;color:var(--muted);line-height:1.6;max-width:300px;}
+
+/* ── FORM ELEMENTS ── */
+.field{margin-bottom:18px;}
+.field-label{
+  display:block;font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.8px;
+  color:rgba(255,255,255,0.35);margin-bottom:8px;
+}
+.field-input{
+  width:100%;padding:14px 16px;
+  background:rgba(255,255,255,0.05);
+  border:1.5px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  font-family:'DM Sans',sans-serif;font-size:16px;color:white;
+  outline:none;transition:all .2s;
+  -webkit-appearance:none;
+}
+.field-input:focus{
+  border-color:rgba(37,99,255,0.5);
+  background:rgba(37,99,255,0.05);
+  box-shadow:0 0 0 3px rgba(37,99,255,0.1);
+}
+.field-input::placeholder{color:rgba(255,255,255,0.2);}
+.field-input.error{border-color:rgba(239,68,68,0.5);background:rgba(239,68,68,0.04);}
+.field-error{font-size:12px;color:#F87171;margin-top:6px;display:none;}
+.field-error.show{display:block;}
+
+/* SELECT */
+.field-select{
+  width:100%;padding:14px 40px 14px 16px;
+  background:rgba(255,255,255,0.05);
+  border:1.5px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  font-family:'DM Sans',sans-serif;font-size:15px;color:white;
+  outline:none;transition:all .2s;
+  -webkit-appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;
+}
+.field-select:focus{border-color:rgba(37,99,255,0.5);background-color:rgba(37,99,255,0.05);}
+.field-select option{background:#0d1f3c;color:white;}
+
+/* ── CHIP SELECTORS ── */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;}
+.chip{
+  padding:10px 18px;border-radius:100px;
+  background:rgba(255,255,255,0.05);
+  border:1.5px solid rgba(255,255,255,0.08);
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;
+  color:var(--muted);cursor:pointer;
+  transition:all .2s cubic-bezier(.34,1.1,.64,1);
+  display:flex;align-items:center;gap:7px;
+  user-select:none;
+}
+.chip:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);}
+.chip.selected{
+  background:rgba(37,99,255,0.15);
+  border-color:rgba(37,99,255,0.45);
+  color:white;
+  box-shadow:0 0 12px rgba(37,99,255,0.2);
+  animation:popIn .25s ease both;
+}
+.chip-icon{font-size:16px;}
+
+/* ── DESTINATION SEARCH ── */
+.dest-wrap{position:relative;}
+.dest-input{
+  width:100%;padding:16px 16px 16px 46px;
+  background:rgba(255,255,255,0.05);
+  border:1.5px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  font-family:'DM Sans',sans-serif;font-size:16px;color:white;
+  outline:none;transition:all .2s;
+}
+.dest-input:focus{border-color:rgba(37,99,255,0.5);background:rgba(37,99,255,0.05);}
+.dest-input::placeholder{color:rgba(255,255,255,0.2);}
+.dest-icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;pointer-events:none;
+  stroke:rgba(255,255,255,0.25);fill:none;stroke-width:2;
+}
+
+/* Quick destinations */
+.quick-dests{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.qdest{
+  padding:8px 14px;border-radius:100px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.07);
+  font-size:13px;color:rgba(255,255,255,0.5);
+  cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;gap:6px;
+}
+.qdest:hover{background:rgba(255,255,255,0.08);color:white;border-color:rgba(255,255,255,0.15);}
+.qdest.picked{background:rgba(37,99,255,0.12);border-color:rgba(37,99,255,0.3);color:#93C5FD;}
+
+/* ── BOTTOM ACTIONS ── */
+.bottom-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  padding:16px 24px 32px;
+  background:linear-gradient(to top,#07101f 60%,transparent);
+}
+.bottom-actions{display:flex;flex-direction:column;gap:10px;max-width:480px;margin:0 auto;}
+
+.next-btn{
+  width:100%;padding:16px;border-radius:14px;
+  background:var(--blue);color:white;border:none;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .25s cubic-bezier(.34,1.1,.64,1);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 8px 24px rgba(37,99,255,0.3);
+}
+.next-btn:hover{background:var(--blue-d);transform:translateY(-2px);box-shadow:0 12px 32px rgba(37,99,255,0.4);}
+.next-btn:active{transform:scale(.98);}
+.next-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none;}
+.next-btn svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2;}
+
+.skip-btn{
+  width:100%;padding:12px;border-radius:14px;
+  background:transparent;color:var(--muted);border:none;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;
+  cursor:pointer;transition:color .2s;
+}
+.skip-btn:hover{color:rgba(255,255,255,0.6);}
+
+/* ── STEP 4 SPECIAL ── */
+.dream-card{
+  background:linear-gradient(145deg,rgba(37,99,255,0.08),rgba(255,122,89,0.04));
+  border:1px solid rgba(37,99,255,0.15);
+  border-radius:20px;padding:20px;margin-bottom:20px;
+}
+.dream-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,0.3);margin-bottom:12px;}
+
+/* ── FINISHING ANIMATION ── */
+.finish-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:#07101f;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px;
+}
+.finish-overlay.show{display:flex;animation:fadeIn .4s ease both;}
+.finish-plane{font-size:56px;animation:float 2s ease-in-out infinite;margin-bottom:24px;}
+.finish-title{font-family:'Instrument Serif',serif;font-size:32px;color:white;margin-bottom:10px;}
+.finish-sub{font-size:15px;color:var(--muted);line-height:1.7;max-width:280px;margin-bottom:32px;}
+.finish-dots{display:flex;gap:6px;justify-content:center;margin-bottom:20px;}
+.finish-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 1.4s ease infinite;}
+.finish-dot:nth-child(2){animation-delay:.2s;}
+.finish-dot:nth-child(3){animation-delay:.4s;}
+
+/* Spinner */
+.spinner{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);border-top-color:white;animation:spin .7s linear infinite;}
+
+/* Responsive */
+@media(min-width:480px){
+  .content,.bottom-actions{max-width:480px;margin-left:auto;margin-right:auto;}
+  .topbar,.progress-wrap{max-width:480px;margin-left:auto;margin-right:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<div class="bg">
+  <div class="bg-gradient"></div>
+  <div class="bg-grid"></div>
+  <div class="float-tags" id="floatTags"></div>
+</div>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">yaply.</div>
+    <div class="step-counter" id="stepCounter">Step 1 of 4</div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:25%;"></div>
+    </div>
+    <div class="progress-steps">
+      <div class="ps-dot">
+        <div class="ps-circle active" id="pdot1">1</div>
+        <div class="ps-label active" id="plbl1">Identity</div>
+      </div>
+      <div class="ps-dot">
+        <div class="ps-circle" id="pdot2">2</div>
+        <div class="ps-label" id="plbl2">Profile</div>
+      </div>
+      <div class="ps-dot">
+        <div class="ps-circle" id="pdot3">3</div>
+        <div class="ps-label" id="plbl3">Style</div>
+      </div>
+      <div class="ps-dot">
+        <div class="ps-circle" id="pdot4">4</div>
+        <div class="ps-label" id="plbl4">Dream</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ════════════════════
+         STEP 1 — IDENTITY
+    ════════════════════ -->
+    <div class="step active" id="step1">
+      <div class="step-header">
+        <span class="step-emoji">👋</span>
+        <div class="step-title">What should we<br/>call you<em>?</em></div>
+        <div class="step-sub">This shows on your dashboard and travel diary.</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Your Full Name</label>
+        <input
+          class="field-input" id="inputName" type="text"
+          placeholder="e.g. Piyush Sharma"
+          autocomplete="name" autocapitalize="words"
+          oninput="clearError('nameErr')"
+          onkeydown="if(event.key==='Enter')nextStep()"
+        />
+        <div class="field-error" id="nameErr">Please enter your name to continue</div>
+      </div>
+
+      <!-- Welcome message -->
+      <div style="margin-top:24px;padding:16px;background:rgba(37,99,255,0.06);border:1px solid rgba(37,99,255,0.12);border-radius:16px;">
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">
+          👋 You just joined <b style="color:rgba(255,255,255,0.8);">India's first AI Travel OS</b>.<br/>
+          Let's set you up in under a minute.
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════
+         STEP 2 — TRAVEL PROFILE
+    ════════════════════ -->
+    <div class="step" id="step2">
+      <div class="step-header">
+        <span class="step-emoji">🌍</span>
+        <div class="step-title">Your travel<br/><em>profile.</em></div>
+        <div class="step-sub">Helps Yaply personalise visa checks, trip origins and budgets for you.</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Passport Country</label>
+        <select class="field-select" id="inputPassport">
+          <option value="">Select country</option>
+          <option value="India" selected>🇮🇳 India</option>
+          <option value="USA">🇺🇸 United States</option>
+          <option value="UK">🇬🇧 United Kingdom</option>
+          <option value="Canada">🇨🇦 Canada</option>
+          <option value="Australia">🇦🇺 Australia</option>
+          <option value="UAE">🇦🇪 UAE</option>
+          <option value="Singapore">🇸🇬 Singapore</option>
+          <option value="Germany">🇩🇪 Germany</option>
+          <option value="France">🇫🇷 France</option>
+          <option value="Japan">🇯🇵 Japan</option>
+          <option value="China">🇨🇳 China</option>
+          <option value="Brazil">🇧🇷 Brazil</option>
+          <option value="South Africa">🇿🇦 South Africa</option>
+          <option value="Nepal">🇳🇵 Nepal</option>
+          <option value="Sri Lanka">🇱🇰 Sri Lanka</option>
+          <option value="Bangladesh">🇧🇩 Bangladesh</option>
+          <option value="Pakistan">🇵🇰 Pakistan</option>
+          <option value="Other">🌍 Other</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Home City</label>
+        <input class="field-input" id="inputCity" type="text" placeholder="e.g. Mumbai, Delhi, Bangalore" autocomplete="off"/>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Default Currency</label>
+        <select class="field-select" id="inputCurrency">
+          <option value="INR" selected>₹ INR — Indian Rupee</option>
+          <option value="USD">$ USD — US Dollar</option>
+          <option value="EUR">€ EUR — Euro</option>
+          <option value="GBP">£ GBP — British Pound</option>
+          <option value="AED">AED — UAE Dirham</option>
+          <option value="SGD">S$ SGD — Singapore Dollar</option>
+          <option value="JPY">¥ JPY — Japanese Yen</option>
+          <option value="AUD">A$ AUD — Australian Dollar</option>
+          <option value="CAD">C$ CAD — Canadian Dollar</option>
+          <option value="THB">฿ THB — Thai Baht</option>
+          <option value="IDR">Rp IDR — Indonesian Rupiah</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ════════════════════
+         STEP 3 — TRAVEL STYLE
+    ════════════════════ -->
+    <div class="step" id="step3">
+      <div class="step-header">
+        <span class="step-emoji">✨</span>
+        <div class="step-title">How do you<br/><em>travel?</em></div>
+        <div class="step-sub">Yaply uses this to personalise your trip plans and recommendations.</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Travel Crew</label>
+        <div class="chips" id="travelStyleChips">
+          <div class="chip" onclick="selectChip('travelStyle',this,'Solo')"><span class="chip-icon">🎒</span> Solo</div>
+          <div class="chip" onclick="selectChip('travelStyle',this,'Couple')"><span class="chip-icon">💑</span> Couple</div>
+          <div class="chip" onclick="selectChip('travelStyle',this,'Friends')"><span class="chip-icon">👯</span> Friends</div>
+          <div class="chip" onclick="selectChip('travelStyle',this,'Family')"><span class="chip-icon">👨‍👩‍👧</span> Family</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:24px;">
+        <label class="field-label">Budget Style</label>
+        <div class="chips" id="budgetStyleChips">
+          <div class="chip" onclick="selectChip('budgetStyle',this,'Budget')">
+            <span class="chip-icon">🎯</span>
+            <div>
+              <div style="font-weight:600;">Budget</div>
+              <div style="font-size:11px;opacity:.6;">₹1K–3K/day</div>
+            </div>
+          </div>
+          <div class="chip" onclick="selectChip('budgetStyle',this,'Mid-range')">
+            <span class="chip-icon">✈️</span>
+            <div>
+              <div style="font-weight:600;">Mid-range</div>
+              <div style="font-size:11px;opacity:.6;">₹3K–8K/day</div>
+            </div>
+          </div>
+          <div class="chip" onclick="selectChip('budgetStyle',this,'Luxury')">
+            <span class="chip-icon">💎</span>
+            <div>
+              <div style="font-weight:600;">Luxury</div>
+              <div style="font-size:11px;opacity:.6;">₹8K+/day</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════
+         STEP 4 — DREAM DESTINATION
+    ════════════════════ -->
+    <div class="step" id="step4">
+      <div class="step-header">
+        <span class="step-emoji">🗺️</span>
+        <div class="step-title">Where do you<br/>want to <em>go?</em></div>
+        <div class="step-sub">We'll plan your first trip right now. You can always change it later.</div>
+      </div>
+
+      <div class="dream-card">
+        <div class="dream-label">Your next destination</div>
+        <div class="dest-wrap">
+          <svg class="dest-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <input
+            class="dest-input" id="inputDestination"
+            type="text" placeholder="Tokyo, Bali, Paris, Goa..."
+            autocomplete="off"
+            onkeydown="if(event.key==='Enter')finishOnboarding()"
+          />
+        </div>
+
+        <div class="quick-dests" id="quickDests">
+          <div class="qdest" onclick="pickDest('Tokyo 🇯🇵')">🇯🇵 Tokyo</div>
+          <div class="qdest" onclick="pickDest('Bali 🇮🇩')">🇮🇩 Bali</div>
+          <div class="qdest" onclick="pickDest('Bangkok 🇹🇭')">🇹🇭 Bangkok</div>
+          <div class="qdest" onclick="pickDest('Dubai 🇦🇪')">🇦🇪 Dubai</div>
+          <div class="qdest" onclick="pickDest('Paris 🇫🇷')">🇫🇷 Paris</div>
+          <div class="qdest" onclick="pickDest('Goa 🇮🇳')">🇮🇳 Goa</div>
+          <div class="qdest" onclick="pickDest('Singapore 🇸🇬')">🇸🇬 Singapore</div>
+          <div class="qdest" onclick="pickDest('Maldives 🇲🇻')">🇲🇻 Maldives</div>
+        </div>
+      </div>
+
+      <div style="padding:14px;background:rgba(245,185,66,0.06);border:1px solid rgba(245,185,66,0.12);border-radius:14px;font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">
+        ✨ <b style="color:rgba(255,255,255,0.65);">Pro tip:</b> Fill this in and Yaply will instantly start planning your trip the moment you land in the app.
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM ACTIONS -->
+  <div class="bottom-bar">
+    <div class="bottom-actions">
+      <button class="next-btn" id="nextBtn" onclick="nextStep()">
+        <span id="nextBtnText">Continue</span>
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="skip-btn" id="skipBtn" style="display:none;" onclick="skipStep()">
+        Skip for now
+      </button>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- FINISH OVERLAY -->
+<div class="finish-overlay" id="finishOverlay">
+  <div class="finish-plane">✈️</div>
+  <div class="finish-title" id="finishTitle">You're all set!</div>
+  <div class="finish-sub" id="finishSub">Taking you into Yaply...</div>
+  <div class="finish-dots">
+    <div class="finish-dot"></div>
+    <div class="finish-dot"></div>
+    <div class="finish-dot"></div>
+  </div>
+</div>
+
+<script>
+var _token   = localStorage.getItem('yaply_token') || '';
+var _headers = {'Content-Type':'application/json','Authorization':'Bearer '+_token};
+var _step    = 1;
+var _total   = 4;
+var _data    = {
+  name:'', passport:'India', home_city:'',
+  currency:'INR', travel_style:'', budget_style:'',
+  destination:''
+};
+var _travelStyle = '';
+var _budgetStyle = '';
+
+// ── FLOATING TAGS ──
+var TAGS = ['Tokyo 🇯🇵','Bali 🇮🇩','Paris 🇫🇷','Dubai 🇦🇪','Singapore 🇸🇬','London 🇬🇧','New York 🇺🇸','Bangkok 🇹🇭','Maldives 🇲🇻','Rome 🇮🇹','Istanbul 🇹🇷','Kyoto 🇯🇵','Barcelona 🇪🇸','Vietnam 🇻🇳','Goa 🇮🇳','Rajasthan 🇮🇳','Nepal 🇳🇵','Sri Lanka 🇱🇰'];
+(function initTags(){
+  var wrap = document.getElementById('floatTags');
+  TAGS.forEach(function(tag,i){
+    var el = document.createElement('div');
+    el.className = 'ftag';
+    el.textContent = tag;
+    var top  = 5 + (i*9)%85;
+    var left = (i*17)%90;
+    var dur  = 8 + (i%5)*3;
+    var delay= (i%6)*-2;
+    el.style.cssText = 'top:'+top+'%;left:'+left+'%;animation-duration:'+dur+'s;animation-delay:'+delay+'s;';
+    wrap.appendChild(el);
+  });
+})();
+
+// ── REDIRECT IF NO TOKEN ──
+if (!_token) { window.location.href = '/login'; }
+
+// ── CHIP SELECT ──
+var _chips = {};
+function selectChip(group, el, value) {
+  document.querySelectorAll('#'+group+'Chips .chip').forEach(function(c){c.classList.remove('selected');});
+  el.classList.add('selected');
+  _chips[group] = value;
+  if (group === 'travelStyle') _travelStyle = value;
+  if (group === 'budgetStyle') _budgetStyle = value;
+}
+
+// ── QUICK DEST ──
+function pickDest(dest) {
+  document.getElementById('inputDestination').value = dest;
+  document.querySelectorAll('.qdest').forEach(function(d){d.classList.remove('picked');});
+  event.target.closest('.qdest').classList.add('picked');
+}
+
+// ── PROGRESS UPDATE ──
+function updateProgress(step) {
+  var pct = (step / _total) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('stepCounter').textContent = 'Step ' + step + ' of ' + _total;
+
+  for (var i = 1; i <= _total; i++) {
+    var dot = document.getElementById('pdot'+i);
+    var lbl = document.getElementById('plbl'+i);
+    dot.className = 'ps-circle';
+    lbl.className = 'ps-label';
+    if (i < step) { dot.classList.add('done'); dot.innerHTML = '✓'; }
+    else if (i === step) { dot.classList.add('active'); dot.textContent = i; lbl.classList.add('active'); }
+    else { dot.textContent = i; }
+  }
+
+  // Show/hide skip
+  document.getElementById('skipBtn').style.display = step > 1 ? 'block' : 'none';
+
+  // Update button text
+  var btnText = document.getElementById('nextBtnText');
+  if (step === 4) { btnText.textContent = 'Plan My Trip ✈️'; }
+  else if (step === 3) { btnText.textContent = 'Almost there'; }
+  else { btnText.textContent = 'Continue'; }
+}
+
+// ── VALIDATE STEP ──
+function validateStep(step) {
+  if (step === 1) {
+    var name = document.getElementById('inputName').value.trim();
+    if (name.length < 2) {
+      document.getElementById('inputName').classList.add('error');
+      document.getElementById('nameErr').classList.add('show');
+      document.getElementById('inputName').focus();
+      return false;
+    }
+    _data.name = name;
+  }
+  if (step === 2) {
+    _data.passport  = document.getElementById('inputPassport').value || 'India';
+    _data.home_city = document.getElementById('inputCity').value.trim();
+    _data.currency  = document.getElementById('inputCurrency').value || 'INR';
+  }
+  if (step === 3) {
+    _data.travel_style = _travelStyle;
+    _data.budget_style = _budgetStyle;
+  }
+  if (step === 4) {
+    _data.destination = document.getElementById('inputDestination').value.trim();
+  }
+  return true;
+}
+
+// ── NEXT STEP ──
+function nextStep() {
+  if (!validateStep(_step)) return;
+
+  if (_step === 4) {
+    finishOnboarding();
+    return;
+  }
+
+  // Animate out
+  var current = document.getElementById('step' + _step);
+  current.classList.remove('active');
+  current.style.display = 'none';
+
+  _step++;
+  updateProgress(_step);
+
+  var next = document.getElementById('step' + _step);
+  next.style.display = 'block';
+  next.classList.add('active');
+
+  // Scroll to top
+  document.querySelector('.content').scrollTop = 0;
+}
+
+// ── SKIP STEP ──
+function skipStep() {
+  // Collect whatever is filled
+  if (_step === 2) {
+    _data.passport  = document.getElementById('inputPassport').value || 'India';
+    _data.home_city = document.getElementById('inputCity').value.trim();
+    _data.currency  = document.getElementById('inputCurrency').value || 'INR';
+  }
+  if (_step === 3) {
+    _data.travel_style = _travelStyle;
+    _data.budget_style = _budgetStyle;
+  }
+  if (_step === 4) {
+    _data.destination = '';
+    finishOnboarding();
+    return;
+  }
+
+  var current = document.getElementById('step' + _step);
+  current.style.display = 'none';
+  _step++;
+  updateProgress(_step);
+  var next = document.getElementById('step' + _step);
+  next.style.display = 'block';
+  next.classList.add('active');
+  document.querySelector('.content').scrollTop = 0;
+}
+
+// ── CLEAR ERROR ──
+function clearError(id) {
+  document.getElementById(id).classList.remove('show');
+  document.getElementById('inputName').classList.remove('error');
+}
+
+// ── FINISH ONBOARDING ──
+async function finishOnboarding() {
+  _data.destination = document.getElementById('inputDestination').value.trim();
+
+  var btn = document.getElementById('nextBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  try {
+    var res = await fetch('/api/onboarding/complete', {
+      method:'POST',
+      headers:_headers,
+      body:JSON.stringify({
+        name:         _data.name,
+        passport:     _data.passport,
+        home_city:    _data.home_city,
+        currency:     _data.currency,
+        travel_style: _data.travel_style,
+        budget_style: _data.budget_style,
+      })
+    });
+    var d = await res.json();
+  } catch(e) {
+    // Non-blocking — still redirect
+  }
+
+  // Show finish overlay
+  var overlay = document.getElementById('finishOverlay');
+  var title   = document.getElementById('finishTitle');
+  var sub     = document.getElementById('finishSub');
+
+  overlay.classList.add('show');
+
+  var firstName = _data.name.split(' ')[0];
+
+  if (_data.destination) {
+    title.textContent = 'Let\'s go, ' + firstName + '! 🚀';
+    sub.textContent   = 'Planning your ' + _data.destination + ' trip...';
+    setTimeout(function(){
+      // Build destination — strip emoji for URL
+      var dest = _data.destination.replace(/[\u{1F300}-\u{1F9FF}]/gu,'').trim();
+      window.location.href = '/plan?destination=' + encodeURIComponent(dest);
+    }, 2000);
+  } else {
+    title.textContent = 'You\'re all set, ' + firstName + '!';
+    sub.textContent   = 'Welcome to Yaply. Let\'s explore.';
+    setTimeout(function(){
+      // Check if came from pricing page with plan
+      var params = new URLSearchParams(window.location.search);
+      var plan   = params.get('plan');
+      if (plan === 'pro') {
+        window.location.href = '/pricing';
+      } else {
+        window.location.href = '/app';
+      }
+    }, 2000);
+  }
+}
+
+// ── INIT ──
+updateProgress(1);
+
+// Pre-fill name from user data if available
+(async function prefill(){
+  try {
+    var r = await fetch('/api/me', {headers:_headers});
+    var d = await r.json();
+    if (d.success && d.user) {
+      var nameInput = document.getElementById('inputName');
+      if (d.user.name && d.user.name !== 'Traveller') {
+        nameInput.value = d.user.name;
+        _data.name = d.user.name;
+      }
+      if (d.user.passport)  { document.getElementById('inputPassport').value = d.user.passport; }
+      if (d.user.home_city) { document.getElementById('inputCity').value = d.user.home_city; }
+      if (d.user.currency)  { document.getElementById('inputCurrency').value = d.user.currency; }
+    }
+  } catch(e){}
+})();
+</script>
+</body>
+</html>
