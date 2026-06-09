@@ -66,6 +66,7 @@ limiter = Limiter(
 # ── DATABASE + AUTH ───────────────────────────────────────────
 from database import (
     init_db, log_action, get_user_plan, check_limit, increment_usage,
+    create_payment, confirm_payment,  
     admin_get_stats, admin_get_users, get_user_by_email, query_all,
     get_promo_code, check_promo_redeemed, redeem_promo, query_all, execute,
     query_one, execute as db_execute,
@@ -2827,40 +2828,6 @@ rzp_client = razorpay.Client(
     )
 )
 
-# ── Create order ──
-@app.route('/api/payment/create-order', methods=['POST'])
-@require_auth
-def create_payment_order():
-    try:
-        data = request.get_json() or {}
-        plan = data.get('plan', 'monthly')  # weekly or monthly
-
-        amounts = {
-            'weekly':  9900,   # ₹99 in paise
-            'monthly': 39900,  # ₹399 in paise
-        }
-        amount = amounts.get(plan, 39900)
-
-        order = rzp_client.order.create({
-            'amount':   amount,
-            'currency': 'INR',
-            'receipt':  'yaply_' + str(g.user_id) + '_' + plan,
-            'notes': {
-                'user_id': str(g.user_id),
-                'plan':    plan
-            }
-        })
-
-        return jsonify({
-            'success':  True,
-            'order_id': order['id'],
-            'amount':   amount,
-            'currency': 'INR',
-            'key':      os.getenv('RAZORPAY_KEY_ID')
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
 
 @app.route('/pricing')
 def pricing_page():
@@ -3316,7 +3283,75 @@ def admin_export_users():
         return jsonify({'success': False, 'error': str(e)})
 
 # ══════════════════════════════════════════════════════════
-# UPDATED PAYMENT VERIFY — uses activate_pro()
+# create_payment_order route 
+# ══════════════════════════════════════════════════════════
+
+@app.route('/api/payment/create-order', methods=['POST'])
+@require_auth
+def create_payment_order():
+    try:
+        data       = request.get_json() or {}
+        plan       = data.get('plan', 'monthly')
+        promo_code = (data.get('promo_code') or '').upper().strip()
+
+        base_amounts = {
+            'weekly':  9900,   # ₹99 in paise
+            'monthly': 39900,  # ₹399 in paise
+        }
+        amount = base_amounts.get(plan, 39900)
+        discount_amount = 0
+        promo_data = None
+
+        # Apply promo discount if code provided
+        if promo_code:
+            promo_data = get_promo_code(promo_code)
+            if promo_data:
+                # Check not already redeemed
+                if not check_promo_redeemed(g.user_id, promo_code):
+                    discount_pct    = promo_data['discount_pct']
+                    discount_amount = int(amount * discount_pct / 100)
+                    amount          = amount - discount_amount
+
+        # Minimum ₹1 (100 paise) for Razorpay
+        amount = max(amount, 100)
+
+        order = rzp_client.order.create({
+            'amount':   amount,
+            'currency': 'INR',
+            'receipt':  f'yaply_{g.user_id}_{plan}',
+            'notes': {
+                'user_id':    str(g.user_id),
+                'plan':       plan,
+                'promo_code': promo_code or '',
+            }
+        })
+
+        # Store payment record in DB
+        create_payment(
+            user_id=g.user_id,
+            razorpay_order_id=order['id'],
+            amount=amount,
+            plan=plan,
+            promo_code=promo_code or None,
+            discount_amount=discount_amount
+        )
+
+        return jsonify({
+            'success':         True,
+            'order_id':        order['id'],
+            'amount':          amount,
+            'original_amount': base_amounts.get(plan, 39900),
+            'discount_amount': discount_amount,
+            'currency':        'INR',
+            'key':             os.getenv('RAZORPAY_KEY_ID'),
+            'promo_applied':   bool(promo_code and promo_data),
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+# ══════════════════════════════════════════════════════════
+#  verify_payment route 
 # ══════════════════════════════════════════════════════════
 
 @app.route('/api/payment/verify', methods=['POST'])
@@ -3328,30 +3363,46 @@ def verify_payment():
         payment_id = data.get('razorpay_payment_id')
         signature  = data.get('razorpay_signature')
         plan       = data.get('plan', 'monthly')
+        promo_code = (data.get('promo_code') or '').upper().strip()
 
-        params = {
+        # Verify Razorpay signature
+        rzp_client.utility.verify_payment_signature({
             'razorpay_order_id':   order_id,
             'razorpay_payment_id': payment_id,
             'razorpay_signature':  signature
-        }
-        rzp_client.utility.verify_payment_signature(params)
+        })
 
-        # Activate pro with correct duration
-        activate_pro(g.user_id, plan)
+        # Activate Pro
+        expires_at = activate_pro(g.user_id, plan)
+
+        # Confirm payment in DB
+        confirm_payment(order_id, payment_id, signature, expires_at)
+
+        # Apply promo redemption if used
+        if promo_code:
+            promo = get_promo_code(promo_code)
+            if promo and not check_promo_redeemed(g.user_id, promo_code):
+                redeem_promo(
+                    g.user_id, promo_code,
+                    discount_amount=promo['discount_pct'],
+                    pro_months=promo['pro_months']
+                )
+
         log_action(g.user_id, f'payment_success_{plan}', request.remote_addr)
 
         user = get_user_by_id(g.user_id)
         return jsonify({
-            'success': True,
-            'message': '🎉 Pro activated!',
-            'plan': plan,
-            'pro_expires_at': user.get('pro_expires_at'),
-            'redirect': '/app'
+            'success':       True,
+            'message':       '🎉 Pro activated!',
+            'plan':          plan,
+            'pro_expires_at': str(user.get('pro_expires_at', '')),
         })
 
     except Exception as e:
-        log_action(g.user_id if hasattr(g,'user_id') else 0,
-                   'payment_failed', request.remote_addr)
+        log_action(
+            g.user_id if hasattr(g, 'user_id') else 0,
+            'payment_failed', request.remote_addr
+        )
         return jsonify({'success': False, 'error': str(e)})
 
 
