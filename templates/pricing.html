@@ -732,16 +732,27 @@ function showSuccess() {
   document.getElementById('successOverlay').classList.add('show');
 }
 
+// Update success button in HTML to handle destination
+document.querySelector('.success-btn').onclick = function(){
+  var params = new URLSearchParams(window.location.search);
+  var dest   = params.get('destination');
+  if (dest) {
+    window.location.href = '/plan?destination=' + encodeURIComponent(dest);
+  } else {
+    window.location.href = '/app';
+  }
+};
+
 // ── FREE PLAN ──
 function chooseFree() {
-  if (!_token) { window.location.href='/login?redirect=/onboarding?plan=free'; return; }
-  fetch('/api/me/status',{headers:_headers}).then(function(r){return r.json();}).then(function(d){
-    if (d.success && !d.onboarding_done) {
-      window.location.href = '/onboarding?plan=free';
-    } else {
-      window.location.href = '/app';
-    }
-  }).catch(function(){window.location.href='/app';});
+  if (!_token) { window.location.href='/login?redirect=/pricing'; return; }
+  var params = new URLSearchParams(window.location.search);
+  var dest   = params.get('destination');
+  if (dest) {
+    window.location.href = '/plan?destination=' + encodeURIComponent(dest);
+  } else {
+    window.location.href = '/app';
+  }
 }
 
 // ── TOAST ──

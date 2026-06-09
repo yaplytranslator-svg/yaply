@@ -729,26 +729,19 @@ async function finishOnboarding() {
   var firstName = _data.name.split(' ')[0];
 
   if (_data.destination) {
-    title.textContent = 'Let\'s go, ' + firstName + '! 🚀';
-    sub.textContent   = 'Planning your ' + _data.destination + ' trip...';
+    // Has destination — go to pricing first, destination saved for after
+    title.textContent = 'Almost there, ' + firstName + '! ✨';
+    sub.textContent   = 'Choose your plan to start planning ' + _data.destination + '...';
     setTimeout(function(){
-      // Build destination — strip emoji for URL
       var dest = _data.destination.replace(/[\u{1F300}-\u{1F9FF}]/gu,'').trim();
-      window.location.href = '/plan?destination=' + encodeURIComponent(dest);
-    }, 2000);
+      window.location.href = '/pricing?destination=' + encodeURIComponent(dest);
+    }, 1800);
   } else {
     title.textContent = 'You\'re all set, ' + firstName + '!';
-    sub.textContent   = 'Welcome to Yaply. Let\'s explore.';
+    sub.textContent   = 'Pick a plan and start exploring.';
     setTimeout(function(){
-      // Check if came from pricing page with plan
-      var params = new URLSearchParams(window.location.search);
-      var plan   = params.get('plan');
-      if (plan === 'pro') {
-        window.location.href = '/pricing';
-      } else {
-        window.location.href = '/app';
-      }
-    }, 2000);
+      window.location.href = '/pricing';
+    }, 1800);
   }
 }
 

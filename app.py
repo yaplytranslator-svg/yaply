@@ -65,7 +65,7 @@ limiter = Limiter(
 
 # ── DATABASE + AUTH ───────────────────────────────────────────
 from database import (
-    init_db, log_action, get_user_plan, check_limit, increment_usage,
+    init_db, log_action, get_user_plan, get_user_usage, check_limit, increment_usage,
     create_payment, confirm_payment,  
     admin_get_stats, admin_get_users, get_user_by_email, query_all,
     get_promo_code, check_promo_redeemed, redeem_promo, query_all, execute,
@@ -109,39 +109,61 @@ except Exception:
 # LIMIT CHECK DECORATOR
 # ══════════════════════════════════════════════════════════
 
-def check_feature_limit(feature):
-    """Decorator to enforce usage limits"""
-    from functools import wraps
-    def decorator(f):
-        @wraps(f)
-        def wrapped(*args, **kwargs):
-            allowed, used, limit = check_limit(g.user_id, feature)
-            if not allowed:
-                plan = get_user_plan(g.user_id)
-                if plan == 'free':
-                    return jsonify({
-                        'success': False,
-                        'error': 'limit_reached',
-                        'feature': feature,
-                        'used': used,
-                        'limit': limit,
-                        'plan': 'free',
-                        'message': f'You\'ve used your free limit for this feature. Upgrade to Pro to continue.',
-                        'upgrade_url': '/pricing'
-                    }), 429
-                else:
-                    return jsonify({
-                        'success': False,
-                        'error': 'pro_limit_reached',
-                        'feature': feature,
-                        'used': used,
-                        'limit': limit,
-                        'plan': 'pro',
-                        'message': f'Monthly limit reached. Resets next month.'
-                    }), 429
-            return f(*args, **kwargs)
-        return wrapped
-    return decorator
+def check_feature_limit(user_id, feature_key, increment=True):
+    """
+    feature_key examples:
+      'plan'        → checks plans_used_month vs plans_month
+      'translation' → checks translations_today vs translations_day
+      'voice'       → voice_today vs voice_day
+      'identify'    → identify_today vs identify_day
+      'multicity'   → multicity_used_month vs multicity_month
+      'ai_story'    → ai_story_used vs ai_story_month
+      'journal'     → journal_used_month vs ai_journal_month
+      'tool'        → tools_today vs tools_day
+      'camera_scan' → camera_scan_day (needs new col)
+      'packing'     → packing_day (needs new col)
+      'budget'      → budget_day (needs new col)
+ 
+    Returns: (allowed:bool, used:int, limit:int, plan:str)
+    """
+    from database import get_user_plan, query_one, execute, FREE_LIMITS, PRO_LIMITS
+ 
+    plan   = get_user_plan(user_id)
+    limits = PRO_LIMITS if plan == 'pro' else FREE_LIMITS
+ 
+    # Map feature → (db_column, limit_key)
+    col_map = {
+        'plan':        ('plans_used_month',     'plans_month'),
+        'multicity':   ('multicity_used_month', 'multicity_month'),
+        'translation': ('translations_today',   'translations_day'),
+        'voice':       ('voice_today',          'voice_day'),
+        'identify':    ('identify_today',       'identify_photo_day'),
+        'tool':        ('tools_today',          'tools_day'),
+        'ai_story':    ('ai_story_used',        'ai_story_month'),
+        'journal':     ('journal_used_month',   'ai_journal_month'),
+    }
+ 
+    if feature_key not in col_map:
+        return True, 0, 999, plan
+ 
+    col, limit_key = col_map[feature_key]
+    limit = limits.get(limit_key, 0)
+ 
+    # Pro-only feature (limit = 0 on free)
+    if limit == 0:
+        return False, 0, 0, plan
+ 
+    user = query_one(f'SELECT {col} FROM users WHERE id=%s', (user_id,))
+    used = (user or {}).get(col, 0) or 0
+ 
+    if used >= limit:
+        return False, used, limit, plan
+ 
+    if increment:
+        execute(f'UPDATE users SET {col}={col}+1 WHERE id=%s', (user_id,))
+ 
+    return True, used + (1 if increment else 0), limit, plan
+ 
 
 # ── ENV KEYS ──────────────────────────────────────────────────
 WEATHER_KEY          = os.getenv("OPENWEATHER_API_KEY", "")
@@ -2970,59 +2992,51 @@ def api_complete_onboarding():
 @app.route('/api/me/status')
 @require_auth
 def api_user_status():
-    """Returns full user plan status, limits, usage"""
+    """Returns full plan status, usage, and limits for the frontend."""
     try:
-        from datetime import datetime
-       
-        user = get_user_by_id(g.user_id)
-        if not user:
+        from database import get_user_usage
+        usage_data = get_user_usage(g.user_id)
+        if not usage_data:
             return jsonify({'success': False, 'error': 'User not found'})
-
-        plan = get_user_plan(g.user_id)
-        limits = PRO_LIMITS if plan == 'pro' else FREE_LIMITS
-
-        # Check if pro just expired
-        pro_expired = False
-        pro_expires_at = user.get('pro_expires_at')
-        if user.get('plan_type') == 'free' and pro_expires_at:
-            if pro_expires_at > '2020':  # had pro before
-                pro_expired = True
-
-        # Days remaining
-        days_remaining = None
-        if plan == 'pro' and pro_expires_at:
-            try:
-                exp = datetime.fromisoformat(pro_expires_at)
-                diff = (exp - datetime.now()).days
-                days_remaining = max(0, diff)
-            except:
-                pass
-
+ 
+        plan   = usage_data['plan']
+        limits = usage_data['limits']
+        usage  = usage_data['usage']
+ 
+        # Build remaining counts for each feature
+        remaining = {}
+        for feat, used_key in [
+            ('translations_day',  'translations_today'),
+            ('voice_day',         'voice_today'),
+            ('identify_photo_day','identify_today'),
+            ('tools_day',         'tools_today'),
+            ('plans_month',       'plans_used_month'),
+            ('multicity_month',   'multicity_used_month'),
+            ('ai_story_month',    'ai_story_used'),
+            ('ai_journal_month',  'journal_used_month'),
+        ]:
+            lim = limits.get(feat, 0)
+            used = usage.get(used_key, 0)
+            remaining[feat] = max(0, lim - used)
+ 
         return jsonify({
-            'success': True,
-            'plan': plan,
-            'pro_expires_at': pro_expires_at,
-            'days_remaining': days_remaining,
-            'pro_expired': pro_expired,
-            'onboarding_done': bool(user.get('onboarding_done')),
-            'usage': {
-                'plans_used':        user.get('plans_used_month', 0),
-                'translations_used': user.get('translations_today', 0),
-                'tools_used':        user.get('tools_today', 0),
-                'identify_used':     user.get('identify_today', 0),
-                'voice_used':        user.get('voice_today', 0),
-            },
-            'limits': {
-                'plans':        limits['plans_month'],
-                'translations': limits['translations_day'],
-                'tools':        limits['tools_day'],
-                'identify':     limits['identify_day'],
-                'voice':        limits['voice_day'],
-            }
+            'success':        True,
+            'plan':           plan,
+            'is_pro':         plan == 'pro',
+            'pro_expires_at': usage_data.get('pro_expires_at'),
+            'days_remaining': usage_data.get('days_remaining', 0),
+            'onboarding_done': usage_data.get('onboarding_done', False),
+            'pro_expired':    bool(
+                usage_data.get('pro_expires_at') and
+                plan == 'free' and
+                usage_data.get('pro_expires_at')
+            ),
+            'limits':         limits,
+            'usage':          usage,
+            'remaining':      remaining,
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
-
 
 # ══════════════════════════════════════════════════════════
 # NEW ADMIN ROUTES — paste these into app.py
@@ -3455,6 +3469,53 @@ def admin_promos():
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+
+def limit_response(feature_key, used, limit, plan, feature_label=None):
+    """
+    Standard blocked response — frontend reads this and shows upgrade sheet.
+    """
+    labels = {
+        'plan':        'AI Trip Plans',
+        'multicity':   'Multi-City Planning',
+        'translation': 'Live Translation',
+        'voice':       'Voice Translation',
+        'identify':    'Place Finder',
+        'tool':        'Safety Tools',
+        'ai_story':    'AI Travel Story',
+        'journal':     'AI Trip Journal',
+    }
+    name = feature_label or labels.get(feature_key, 'This feature')
+ 
+    if plan == 'pro':
+        msg = f"You've used all {limit} {name} for today. Resets at midnight."
+        return jsonify({
+            'success':       False,
+            'limit_reached': True,
+            'is_pro':        True,
+            'feature':       feature_key,
+            'feature_label': name,
+            'used':          used,
+            'limit':         limit,
+            'error':         msg,
+            'message':       msg,
+        }), 429
+    else:
+        msg = f"You've used your {limit} free {name}. Upgrade to Pro for more."
+        return jsonify({
+            'success':        False,
+            'limit_reached':  True,
+            'is_pro':         False,
+            'feature':        feature_key,
+            'feature_label':  name,
+            'used':           used,
+            'limit':          limit,
+            'error':          msg,
+            'message':        msg,
+            'upgrade_prompt': True,
+            'upgrade_url':    '/pricing',
+        }), 429
+         
 # ════════════════════════════════════════════════════════════════
 #  ERROR HANDLERS
 # ════════════════════════════════════════════════════════════════

@@ -76,30 +76,139 @@ def execute(sql, params=None):
 # ══════════════════════════════════════════════════════════
 
 FREE_LIMITS = {
-    'plans_month':        3,
-    'multicity_month':    0,
+    # Daily
+    'plans_day':          1,
     'translations_day':   10,
     'voice_day':          5,
-    'identify_day':       3,
-    'tools_day':          5,
+    'camera_scan_day':    3,
+    'identify_photo_day': 3,
+    'identify_text_day':  5,
+    'price_check_day':    5,
+    'packing_day':        2,
+    'budget_day':         1,
+    'trip_review_day':    1,
+
+    # Monthly
+    'plans_month':        3,
+    'multicity_month':    0,
+    'door_to_door_month': 0,
+    'ai_journal_month':   0,
+    'ai_story_month':     0,
+    'next_trips_month':   0,
+    'export_month':       0,
+    'trip_card_month':    0,
+
+    # Hard caps
     'diary_entries_trip': 10,
-    'ai_story':           0,
-    'journal_month':      0,
     'saved_places':       5,
+    'trip_history':       3,
+    'diary_trips':        3,
+    'photos_per_entry':   2,
 }
 
 PRO_LIMITS = {
-    'plans_month':        20,
-    'multicity_month':    5,
-    'translations_day':   100,
-    'voice_day':          50,
-    'identify_day':       20,
-    'tools_day':          25,
+    # Daily
+    'plans_day':          5,
+    'translations_day':   80,
+    'voice_day':          40,
+    'camera_scan_day':    20,
+    'identify_photo_day': 15,
+    'identify_text_day':  20,
+    'price_check_day':    30,
+    'packing_day':        5,
+    'budget_day':         5,
+    'trip_review_day':    5,
+
+    # Monthly
+    'plans_month':        15,
+    'multicity_month':    4,
+    'door_to_door_month': 8,
+    'ai_journal_month':   5,
+    'ai_story_month':     2,   # per day above, 5 per month total
+    'next_trips_month':   10,
+    'export_month':       10,
+    'trip_card_month':    10,
+
+    # Hard caps
     'diary_entries_trip': 100,
-    'ai_story':           3,
-    'journal_month':      5,
     'saved_places':       100,
+    'trip_history':       50,
+    'diary_trips':        30,
+    'photos_per_entry':   8,
 }
+
+# -- usage track -- #
+
+def get_user_usage(user_id):
+    """Returns current usage counts for all tracked features."""
+    user = query_one(
+        """SELECT
+           plan_type, is_pro, pro_expires_at, pro_plan,
+           onboarding_done,
+           -- daily
+           translations_today, voice_today, identify_today, tools_today,
+           usage_reset_date,
+           -- monthly
+           plans_used_month, multicity_used_month, ai_story_used,
+           journal_used_month, monthly_reset_date
+           FROM users WHERE id=%s AND deleted_at IS NULL""",
+        (user_id,)
+    )
+    if not user:
+        return None
+ 
+    from datetime import datetime, date
+    today = date.today()
+    plan  = user.get('plan_type', 'free')
+ 
+    # Auto-expire pro
+    expires = user.get('pro_expires_at')
+    if plan == 'pro' and expires:
+        if hasattr(expires, 'date'):
+            expired = expires.date() < today
+        else:
+            expired = str(expires)[:10] < str(today)
+        if expired:
+            execute(
+                "UPDATE users SET plan_type='free', is_pro=FALSE WHERE id=%s",
+                (user_id,)
+            )
+            plan = 'free'
+ 
+    limits = PRO_LIMITS if plan == 'pro' else FREE_LIMITS
+ 
+    # Days remaining for pro
+    days_remaining = 0
+    if plan == 'pro' and expires:
+        try:
+            if hasattr(expires, 'date'):
+                diff = (expires.date() - today).days
+            else:
+                from datetime import datetime
+                exp_date = datetime.fromisoformat(str(expires)).date()
+                diff = (exp_date - today).days
+            days_remaining = max(0, diff)
+        except:
+            days_remaining = 0
+ 
+    return {
+        'plan':           plan,
+        'is_pro':         plan == 'pro',
+        'pro_expires_at': str(expires) if expires else None,
+        'days_remaining': days_remaining,
+        'onboarding_done': bool(user.get('onboarding_done')),
+        'limits':         limits,
+        'usage': {
+            'translations_today':  user.get('translations_today', 0) or 0,
+            'voice_today':         user.get('voice_today', 0) or 0,
+            'identify_today':      user.get('identify_today', 0) or 0,
+            'tools_today':         user.get('tools_today', 0) or 0,
+            'plans_used_month':    user.get('plans_used_month', 0) or 0,
+            'multicity_used_month':user.get('multicity_used_month', 0) or 0,
+            'ai_story_used':       user.get('ai_story_used', 0) or 0,
+            'journal_used_month':  user.get('journal_used_month', 0) or 0,
+        }
+    }
 
 # ══════════════════════════════════════════════════════════
 # USERS

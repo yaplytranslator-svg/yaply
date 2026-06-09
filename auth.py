@@ -250,6 +250,28 @@ def fetch_google_profile(access_token):
         print(f"[Google Profile] exception: {e}")
         return None
 
+def require_onboarding(f):
+    """
+    Use on page routes (not API routes) to force onboarding.
+    If user is logged in but hasn't done onboarding, redirect.
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = get_token_from_request()
+        if not token:
+            return redirect('/login')
+        payload = decode_token(token)
+        if not payload:
+            return redirect('/login')
+        user = get_user_by_id(payload.get('user_id'))
+        if not user:
+            return redirect('/login')
+        if not user.get('onboarding_done'):
+            return redirect('/onboarding')
+        g.user    = user
+        g.user_id = user['id']
+        return f(*args, **kwargs)
+    return decorated
 
 def verify_google_id_token(id_token):
     """Verify One Tap id_token."""
