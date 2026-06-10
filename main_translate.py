@@ -15,6 +15,7 @@ from flask_sock import Sock
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from groq import Groq
+from app import check_feature_limit
 import deepl, edge_tts, asyncio
 import os, io, base64, json, wave, struct, threading, time
 import requests as req
@@ -470,6 +471,7 @@ def translate_page(): return render_template('stream.html')
 @app.route('/api/translate/text', methods=['POST'])
 @require_auth
 @limiter.limit("60 per minute")
+@check_feature_limit('translation')
 def api_translate_text():
     """Translate text — enforces daily limit"""
     allowed, used, limit = check_and_increment(g.user_id, 'translation', g.plan)
@@ -497,6 +499,7 @@ def api_translate_text():
 @app.route('/api/translate/tts', methods=['POST'])
 @require_auth
 @limiter.limit("30 per minute")
+@check_feature_limit('voice')
 def api_tts():
     """Text to speech — enforces daily voice limit"""
     allowed, used, limit = check_and_increment(g.user_id, 'voice', g.plan)

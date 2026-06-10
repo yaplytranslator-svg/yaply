@@ -1,631 +1,1807 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Yaply Live — Real-Time Translation</title>
-<link rel="icon" href="/static/yaply favicon.jpeg" type="image/jpeg"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
-<script src="/static/yaply-core.js"></script>
 
-<!-- ══════════════════════════════════════════════════════════
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yaply Live — Real-Time Translation</title>
+  <link rel="icon" href="/static/yaply favicon.jpeg" type="image/jpeg" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet" />
+  <script src="/static/yaply-core.js"></script>
+
+  <!-- ══════════════════════════════════════════════════════════
      PWA HEAD SNIPPET
      Add this inside <head> tag of ALL your HTML pages:
      landing.html, auth.html, yaply-app.html,
      before_trip.html, during_trip.html, after_trip.html
 ══════════════════════════════════════════════════════════ -->
 
-<!-- PWA Meta Tags -->
-<meta name="application-name" content="Yaply"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="Yaply"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#2563FF"/>
-<meta name="msapplication-TileColor" content="#2563FF"/>
-<meta name="msapplication-TileImage" content="/static/icons/icon-144.png"/>
+  <!-- PWA Meta Tags -->
+  <meta name="application-name" content="Yaply" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Yaply" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#2563FF" />
+  <meta name="msapplication-TileColor" content="#2563FF" />
+  <meta name="msapplication-TileImage" content="/static/icons/icon-144.png" />
 
-<!-- SEO Meta -->
-<meta name="description" content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere."/>
-<meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel"/>
-<meta name="author" content="Yaply Technologies"/>
+  <!-- SEO Meta -->
+  <meta name="description"
+    content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere." />
+  <meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel" />
+  <meta name="author" content="Yaply Technologies" />
 
-<!-- Open Graph (WhatsApp/Facebook preview) -->
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://www.yaply.live"/>
-<meta property="og:title" content="Yaply — AI Travel OS"/>
-<meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere."/>
-<meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+  <!-- Open Graph (WhatsApp/Facebook preview) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.yaply.live" />
+  <meta property="og:title" content="Yaply — AI Travel OS" />
+  <meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere." />
+  <meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png" />
 
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Yaply — AI Travel OS"/>
-<meta name="twitter:description" content="India's first AI Travel Operating System"/>
-<meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Yaply — AI Travel OS" />
+  <meta name="twitter:description" content="India's first AI Travel Operating System" />
+  <meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png" />
 
-<!-- PWA Manifest -->
-<link rel="manifest" href="/manifest.json"/>
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
 
-<!-- Icons -->
-<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png"/>
-<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png"/>
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png"/>
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png" />
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png" />
 
-<!-- PWA Service Worker Registration -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' })
-      .then(function(reg) {
-        console.log('[SW] Registered:', reg.scope);
-      })
-      .catch(function(err) {
-        console.log('[SW] Failed:', err);
+  <!-- Yaply Upgrade Prompt -->
+  <div class="yup-backdrop" id="yupBackdrop" onclick="if(event.target===this)YaplyUpgrade.hide()">
+    <div class="yup-sheet">
+      <div class="yup-handle"></div>
+      <div class="yup-icon free" id="yupIcon">⚡</div>
+      <div class="yup-title" id="yupTitle">Limit reached</div>
+      <div class="yup-sub" id="yupSub">You've hit your free limit.</div>
+
+      <div class="yup-meter" id="yupMeter">
+        <div class="yup-meter-row">
+          <div class="yup-meter-label" id="yupMeterLabel">Used today</div>
+          <div class="yup-meter-count" id="yupMeterCount">0 / 0</div>
+        </div>
+        <div class="yup-meter-track">
+          <div class="yup-meter-fill" id="yupMeterFill" style="width:100%;"></div>
+        </div>
+      </div>
+
+      <!-- Pro user: reset info -->
+      <div class="yup-reset" id="yupReset" style="display:none;">
+        🔄 <span><strong>Resets at midnight.</strong> Come back tomorrow for more.</span>
+      </div>
+
+      <!-- Free user: what they get -->
+      <div id="yupPerksWrap">
+        <div
+          style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,0.25);margin-bottom:9px;">
+          What you get with Pro</div>
+        <div class="yup-perks" id="yupPerks"></div>
+      </div>
+
+      <!-- Price options -->
+      <div class="yup-prices" id="yupPrices">
+        <div class="yup-price" id="yupWeekly" onclick="YaplyUpgrade.selectPlan('weekly')">
+          <div class="yup-price-amt">₹99</div>
+          <div class="yup-price-period">per week</div>
+          <div class="yup-price-tag">7 days</div>
+        </div>
+        <div class="yup-price selected" id="yupMonthly" onclick="YaplyUpgrade.selectPlan('monthly')">
+          <div class="yup-price-amt">₹399</div>
+          <div class="yup-price-period">per month</div>
+          <div class="yup-price-tag">Best value ✓</div>
+        </div>
+      </div>
+
+      <button class="yup-pay-btn" id="yupPayBtn" onclick="YaplyUpgrade.goUpgrade()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg>
+        <span id="yupPayText">Get Pro — ₹399/month</span>
+      </button>
+      <button class="yup-dismiss" id="yupDismiss" onclick="YaplyUpgrade.hide()">Maybe later</button>
+    </div>
+  </div>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(function (reg) {
+            console.log('[SW] Registered:', reg.scope);
+          })
+          .catch(function (err) {
+            console.log('[SW] Failed:', err);
+          });
       });
-  });
-}
-</script>
+    }
+  </script>
 
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --teal:#1A8A72;--teal-s:rgba(26,138,114,0.1);--teal-m:rgba(26,138,114,0.2);
-  --amber:#E8823A;--amber-s:rgba(232,130,58,0.1);
-  --sky:#3A6BC8;--sky-s:rgba(58,107,200,0.1);
-  --green:#28B06A;--green-s:rgba(40,176,106,0.1);--green-m:rgba(40,176,106,0.2);
-  --red:#D84C3E;--red-s:rgba(216,76,62,0.1);--red-m:rgba(216,76,62,0.2);
-  --purple:#8B5CF6;--purple-s:rgba(139,92,246,0.1);
-  --gold:#F0B429;
-  --bg:#070C18;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.07);
-  --border:rgba(255,255,255,0.08);--border-md:rgba(255,255,255,0.13);
-  --text:#F0F2F8;--muted:rgba(255,255,255,0.4);--muted2:rgba(255,255,255,0.25);
-}
-html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* ── BACKGROUND ── */
-.bg-fixed{position:fixed;inset:0;pointer-events:none;z-index:0;}
-.bg-orb{position:absolute;border-radius:50%;filter:blur(120px);}
-.bo1{width:700px;height:700px;background:rgba(26,138,114,.07);top:-200px;right:-150px;animation:orbDrift 20s ease-in-out infinite;}
-.bo2{width:500px;height:500px;background:rgba(58,107,200,.06);bottom:-100px;left:-100px;animation:orbDrift 25s 3s ease-in-out infinite reverse;}
-.bo3{width:300px;height:300px;background:rgba(139,92,246,.05);top:40%;left:30%;animation:orbDrift 18s 1s ease-in-out infinite;}
-@keyframes orbDrift{0%,100%{transform:translate(0,0);}33%{transform:translate(30px,-20px);}66%{transform:translate(-20px,15px);}}
+    :root {
+      --teal: #1A8A72;
+      --teal-s: rgba(26, 138, 114, 0.1);
+      --teal-m: rgba(26, 138, 114, 0.2);
+      --amber: #E8823A;
+      --amber-s: rgba(232, 130, 58, 0.1);
+      --sky: #3A6BC8;
+      --sky-s: rgba(58, 107, 200, 0.1);
+      --green: #28B06A;
+      --green-s: rgba(40, 176, 106, 0.1);
+      --green-m: rgba(40, 176, 106, 0.2);
+      --red: #D84C3E;
+      --red-s: rgba(216, 76, 62, 0.1);
+      --red-m: rgba(216, 76, 62, 0.2);
+      --purple: #8B5CF6;
+      --purple-s: rgba(139, 92, 246, 0.1);
+      --gold: #F0B429;
+      --bg: #070C18;
+      --surface: rgba(255, 255, 255, 0.04);
+      --surface2: rgba(255, 255, 255, 0.07);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-md: rgba(255, 255, 255, 0.13);
+      --text: #F0F2F8;
+      --muted: rgba(255, 255, 255, 0.4);
+      --muted2: rgba(255, 255, 255, 0.25);
+    }
 
-/* Grid */
-.bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+    html,
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-/* Floating SVG decorations */
-.bg-svg{position:fixed;pointer-events:none;z-index:0;}
-.bsvg1{top:12%;right:6%;opacity:.04;animation:svgFloat 12s ease-in-out infinite;}
-.bsvg2{bottom:20%;left:4%;opacity:.035;animation:svgFloat 15s 2s ease-in-out infinite reverse;}
-.bsvg3{top:55%;right:3%;opacity:.03;animation:svgFloat 10s 1s ease-in-out infinite;}
-@keyframes svgFloat{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-20px) rotate(4deg);}}
+    /* ── BACKGROUND ── */
+    .bg-fixed {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-/* ── NAV ── */
-.nav{
-  position:sticky;top:0;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:20px 28px;
-  background:rgba(7,12,24,.85);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  z-index:100;
-}
-.nav-left{display:flex;align-items:center;gap:10px;}
-.nav-back{display:flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .15s;}
-.nav-back:hover{background:var(--surface2);color:var(--text);}
-.nav-back svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
-.nav-logo{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:var(--text);}
-.nav-logo span{color:var(--teal);}
-.live-pill{
-  display:flex;align-items:center;gap:7px;
-  padding:5px 14px;border-radius:100px;
-  font-size:.65rem;font-weight:700;letter-spacing:.5px;
-  transition:all .3s;
-}
-.live-pill.offline{background:var(--red-s);border:1px solid var(--red-m);color:rgba(216,76,62,.8);}
-.live-pill.online{background:var(--red-s);border:1px solid var(--red-m);color:var(--red);}
-.live-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
-.live-dot.pulse{animation:livePulse 1s ease-in-out infinite;}
-@keyframes livePulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.7);}}
+    .bg-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+    }
 
-/* ── WRAPPER ── */
-.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 24px 80px;}
+    .bo1 {
+      width: 700px;
+      height: 700px;
+      background: rgba(26, 138, 114, .07);
+      top: -200px;
+      right: -150px;
+      animation: orbDrift 20s ease-in-out infinite;
+    }
 
-/* ── HERO ── */
-.hero{text-align:center;padding:44px 0 32px;}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:7px;
-  background:rgba(26,138,114,.08);border:1px solid var(--teal-m);
-  border-radius:100px;padding:5px 14px;
-  font-size:.62rem;font-weight:700;color:rgba(26,138,114,.9);
-  letter-spacing:1px;text-transform:uppercase;margin-bottom:18px;
-}
-.hb-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 2s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
-.hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin-bottom:12px;color:#fff;}
-.hero h1 .grad{background:linear-gradient(135deg,var(--teal) 0%,#4ADE80 50%,var(--sky) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;}
-.hero-sub{font-size:.9rem;color:var(--muted);max-width:460px;margin:0 auto;line-height:1.75;}
+    .bo2 {
+      width: 500px;
+      height: 500px;
+      background: rgba(58, 107, 200, .06);
+      bottom: -100px;
+      left: -100px;
+      animation: orbDrift 25s 3s ease-in-out infinite reverse;
+    }
 
-/* ── LANG BAR ── */
-.lang-bar{
-  display:flex;align-items:center;justify-content:center;gap:14px;
-  margin-bottom:24px;flex-wrap:wrap;
-}
-.lang-group{display:flex;flex-direction:column;gap:5px;}
-.lang-label{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);}
-.lang-select{
-  background:var(--surface2);border:1.5px solid var(--border);
-  color:var(--text);font-family:'Inter',sans-serif;font-size:.82rem;font-weight:600;
-  padding:9px 32px 9px 13px;border-radius:10px;
-  -webkit-appearance:none;appearance:none;cursor:pointer;
-  min-width:148px;outline:none;transition:border-color .2s;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.3)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 11px center;
-}
-.lang-select:focus{border-color:var(--teal);}
-.lang-select option{background:#0e1420;color:#fff;}
-.lang-arrow{font-size:1.1rem;color:var(--muted2);padding-top:20px;}
+    .bo3 {
+      width: 300px;
+      height: 300px;
+      background: rgba(139, 92, 246, .05);
+      top: 40%;
+      left: 30%;
+      animation: orbDrift 18s 1s ease-in-out infinite;
+    }
 
-/* ── MAIN CARD ── */
-.main-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:24px;overflow:hidden;
-  position:relative;margin-bottom:16px;
-}
-.main-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(26,138,114,.4),rgba(58,107,200,.3),transparent);}
+    @keyframes orbDrift {
 
-/* Mic section */
-.mic-section{
-  padding:36px 28px 24px;
-  display:flex;flex-direction:column;align-items:center;gap:20px;
-  border-bottom:1px solid var(--border);
-  position:relative;
-}
-/* Ambient glow behind mic */
-.mic-glow{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:260px;height:260px;border-radius:50%;
-  background:radial-gradient(circle,rgba(26,138,114,.06) 0%,transparent 70%);
-  transition:all .5s;pointer-events:none;
-}
-.mic-section.is-on .mic-glow{background:radial-gradient(circle,rgba(216,76,62,.08) 0%,transparent 70%);}
-.mic-section.is-speaking .mic-glow{background:radial-gradient(circle,rgba(40,176,106,.12) 0%,transparent 70%);}
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
 
-/* Ripple rings */
-.mic-wrap{position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center;z-index:1;}
-.ring{position:absolute;border-radius:50%;border:1.5px solid transparent;opacity:0;}
-.r1{width:108px;height:108px;}
-.r2{width:138px;height:138px;}
-.r3{width:174px;height:174px;}
-/* Idle listening */
-.is-on .r1{border-color:rgba(216,76,62,.5);animation:rippleOut 2.2s 0s ease-out infinite;}
-.is-on .r2{border-color:rgba(216,76,62,.35);animation:rippleOut 2.2s .5s ease-out infinite;}
-.is-on .r3{border-color:rgba(216,76,62,.2);animation:rippleOut 2.2s 1s ease-out infinite;}
-/* Speaking */
-.is-speaking .r1{border-color:rgba(40,176,106,.7);animation:rippleOut .8s 0s ease-out infinite;}
-.is-speaking .r2{border-color:rgba(40,176,106,.5);animation:rippleOut .8s .2s ease-out infinite;}
-.is-speaking .r3{border-color:rgba(40,176,106,.3);animation:rippleOut .8s .4s ease-out infinite;}
-@keyframes rippleOut{0%{transform:scale(.75);opacity:.9;}100%{transform:scale(1.6);opacity:0;}}
+      33% {
+        transform: translate(30px, -20px);
+      }
 
-/* Mic button */
-.mic-btn{
-  width:88px;height:88px;border-radius:50%;border:none;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);
-  position:relative;z-index:2;
-  background:linear-gradient(135deg,var(--teal),var(--sky));
-  box-shadow:0 8px 32px rgba(26,138,114,.3);
-}
-.mic-btn:hover{transform:scale(1.06);}
-.mic-btn.on{background:linear-gradient(135deg,var(--red),#C43830);box-shadow:0 8px 32px rgba(216,76,62,.4);}
-.mic-btn.speaking{background:linear-gradient(135deg,var(--green),var(--teal));box-shadow:0 8px 40px rgba(40,176,106,.5);animation:speakingPulse .7s ease-in-out infinite alternate;}
-@keyframes speakingPulse{from{box-shadow:0 8px 32px rgba(40,176,106,.4);}to{box-shadow:0 8px 48px rgba(40,176,106,.7);}}
-.mic-btn svg{width:32px;height:32px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;transition:all .3s;}
-.mic-btn.on .mic-ico-stop{display:flex;} .mic-btn.on .mic-ico-mic{display:none;}
-.mic-ico-stop{display:none;align-items:center;justify-content:center;}
-.mic-ico-stop svg{width:26px;height:26px;fill:#fff;stroke:none;}
+      66% {
+        transform: translate(-20px, 15px);
+      }
+    }
 
-/* Vol bars */
-.vol-bars{display:flex;align-items:flex-end;gap:3px;height:44px;}
-.vb{width:4px;border-radius:2px;background:linear-gradient(to top,var(--teal),rgba(26,138,114,.4));transition:height .08s ease;height:4px;}
-.mic-section.is-on .vb{background:linear-gradient(to top,var(--red),rgba(216,76,62,.4));}
-.mic-section.is-speaking .vb{background:linear-gradient(to top,var(--green),rgba(40,176,106,.4));}
+    /* Grid */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(255, 255, 255, .025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-/* Status label */
-.mic-label{font-size:.82rem;font-weight:600;color:var(--muted);text-align:center;transition:color .3s;}
-.mic-section.is-on .mic-label{color:rgba(216,76,62,.9);}
-.mic-section.is-speaking .mic-label{color:var(--green);}
+    /* Floating SVG decorations */
+    .bg-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-/* Processing pill */
-.proc-pill{
-  display:inline-flex;align-items:center;gap:7px;
-  padding:5px 14px;border-radius:100px;
-  background:var(--teal-s);border:1px solid var(--teal-m);
-  font-size:.7rem;font-weight:600;color:rgba(26,138,114,.9);
-  opacity:0;transition:opacity .3s;min-height:28px;
-}
-.proc-pill.show{opacity:1;}
-.pp-spin{width:11px;height:11px;border:1.5px solid rgba(26,138,114,.3);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
+    .bsvg1 {
+      top: 12%;
+      right: 6%;
+      opacity: .04;
+      animation: svgFloat 12s ease-in-out infinite;
+    }
 
-/* ── FEED ── */
-.feed-section{padding:0 0 0;}
-.feed-header{display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border);}
-.feed-title{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);flex:1;}
-.feed-clear{font-size:.62rem;font-weight:600;color:var(--muted2);cursor:pointer;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:none;transition:all .15s;}
-.feed-clear:hover{border-color:var(--border-md);color:var(--text);}
+    .bsvg2 {
+      bottom: 20%;
+      left: 4%;
+      opacity: .035;
+      animation: svgFloat 15s 2s ease-in-out infinite reverse;
+    }
 
-.feed{
-  display:flex;flex-direction:column;gap:0;
-  max-height:400px;overflow-y:auto;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
-}
-.feed::-webkit-scrollbar{width:3px;}
-.feed::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+    .bsvg3 {
+      top: 55%;
+      right: 3%;
+      opacity: .03;
+      animation: svgFloat 10s 1s ease-in-out infinite;
+    }
 
-.feed-empty{
-  padding:44px 24px;text-align:center;
-  display:flex;flex-direction:column;align-items:center;gap:12px;
-}
-.fe-ico{width:52px;height:52px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
-.fe-ico svg{width:22px;height:22px;stroke:var(--muted2);fill:none;stroke-width:1.5;}
-.fe-title{font-size:.82rem;font-weight:600;color:var(--muted);}
-.fe-sub{font-size:.72rem;color:var(--muted2);line-height:1.6;max-width:260px;}
+    @keyframes svgFloat {
 
-/* Message cards */
-.msg-card{
-  padding:14px 20px;border-bottom:1px solid var(--border);
-  animation:msgSlide .35s cubic-bezier(.22,1,.36,1) both;
-  transition:background .2s;position:relative;
-}
-.msg-card:hover{background:var(--surface2);}
-.msg-card.fresh{background:rgba(26,138,114,.04);}
-.msg-card:last-child{border-bottom:none;}
-@keyframes msgSlide{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
 
-.msg-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-.msg-tags{display:flex;align-items:center;gap:6px;}
-.msg-num{font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted2);}
-.msg-engine{font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:6px;border:1px solid rgba(58,107,200,.2);background:rgba(58,107,200,.06);color:rgba(58,107,200,.9);}
-.msg-lang{font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:6px;border:1px solid rgba(26,138,114,.2);background:rgba(26,138,114,.06);color:rgba(26,138,114,.9);}
-.msg-actions{display:flex;align-items:center;gap:5px;}
-.msg-time{font-size:.58rem;color:var(--muted2);}
-.msg-act-btn{width:25px;height:25px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.msg-act-btn:hover{border-color:var(--teal-m);background:var(--teal-s);}
-.msg-act-btn svg{width:10px;height:10px;stroke:var(--muted);fill:none;stroke-width:2;}
-.msg-act-btn.play{background:linear-gradient(135deg,var(--teal),var(--sky));border:none;}
-.msg-act-btn.play svg{stroke:#fff;}
-.msg-orig{font-size:.75rem;color:var(--muted2);font-style:italic;line-height:1.5;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);}
-.msg-trans{font-size:.9rem;color:var(--text);line-height:1.65;font-weight:500;}
+      50% {
+        transform: translateY(-20px) rotate(4deg);
+      }
+    }
 
-/* ── STATS ── */
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
-.stat-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:16px;padding:16px;text-align:center;
-  position:relative;overflow:hidden;transition:all .2s;
-}
-.stat-card:hover{border-color:var(--border-md);background:var(--surface2);}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-.sc1::before{background:linear-gradient(90deg,var(--teal),var(--sky));}
-.sc2::before{background:linear-gradient(90deg,var(--amber),var(--gold));}
-.sc3::before{background:linear-gradient(90deg,var(--purple),var(--sky));}
-.stat-num{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#fff,rgba(255,255,255,.6));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.stat-label{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-top:3px;}
+    /* ── NAV ── */
+    .nav {
+      position: sticky;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 28px;
+      background: rgba(7, 12, 24, .85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
 
-/* ── SESSION CARD ── */
-.session-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:16px;padding:16px 18px;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:10px;
-}
-.sess-info{font-size:.72rem;color:var(--muted);}
-.sess-btns{display:flex;gap:7px;}
-.sess-btn{padding:7px 14px;border-radius:8px;font-family:'Inter',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;border:none;}
-.sb-outline{background:none;border:1px solid var(--border);color:var(--muted);}
-.sb-outline:hover{border-color:var(--border-md);color:var(--text);}
-.sb-primary{background:var(--teal);color:#fff;}
-.sb-primary:hover{background:#158068;}
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(26,138,114,.95);color:#fff;padding:9px 18px;border-radius:100px;font-size:.72rem;font-weight:700;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3);}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-</style>
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: .72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 7px;
+      transition: all .15s;
+    }
+
+    .nav-back:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .nav-back svg {
+      width: 13px;
+      height: 13px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .nav-logo span {
+      color: var(--teal);
+    }
+
+    .live-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 14px;
+      border-radius: 100px;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .5px;
+      transition: all .3s;
+    }
+
+    .live-pill.offline {
+      background: var(--red-s);
+      border: 1px solid var(--red-m);
+      color: rgba(216, 76, 62, .8);
+    }
+
+    .live-pill.online {
+      background: var(--red-s);
+      border: 1px solid var(--red-m);
+      color: var(--red);
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .live-dot.pulse {
+      animation: livePulse 1s ease-in-out infinite;
+    }
+
+    @keyframes livePulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: .3;
+        transform: scale(.7);
+      }
+    }
+
+    /* ── WRAPPER ── */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 44px 0 32px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(26, 138, 114, .08);
+      border: 1px solid var(--teal-m);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: .62rem;
+      font-weight: 700;
+      color: rgba(26, 138, 114, .9);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .hb-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .3;
+      }
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.05;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .hero h1 .grad {
+      background: linear-gradient(135deg, var(--teal) 0%, #4ADE80 50%, var(--sky) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+    }
+
+    .hero-sub {
+      font-size: .9rem;
+      color: var(--muted);
+      max-width: 460px;
+      margin: 0 auto;
+      line-height: 1.75;
+    }
+
+    /* ── LANG BAR ── */
+    .lang-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .lang-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .lang-label {
+      font-size: .58rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+    }
+
+    .lang-select {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: .82rem;
+      font-weight: 600;
+      padding: 9px 32px 9px 13px;
+      border-radius: 10px;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+      min-width: 148px;
+      outline: none;
+      transition: border-color .2s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.3)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 11px center;
+    }
+
+    .lang-select:focus {
+      border-color: var(--teal);
+    }
+
+    .lang-select option {
+      background: #0e1420;
+      color: #fff;
+    }
+
+    .lang-arrow {
+      font-size: 1.1rem;
+      color: var(--muted2);
+      padding-top: 20px;
+    }
+
+    /* ── MAIN CARD ── */
+    .main-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .main-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(26, 138, 114, .4), rgba(58, 107, 200, .3), transparent);
+    }
+
+    /* Mic section */
+    .mic-section {
+      padding: 36px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    /* Ambient glow behind mic */
+    .mic-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(26, 138, 114, .06) 0%, transparent 70%);
+      transition: all .5s;
+      pointer-events: none;
+    }
+
+    .mic-section.is-on .mic-glow {
+      background: radial-gradient(circle, rgba(216, 76, 62, .08) 0%, transparent 70%);
+    }
+
+    .mic-section.is-speaking .mic-glow {
+      background: radial-gradient(circle, rgba(40, 176, 106, .12) 0%, transparent 70%);
+    }
+
+    /* Ripple rings */
+    .mic-wrap {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid transparent;
+      opacity: 0;
+    }
+
+    .r1 {
+      width: 108px;
+      height: 108px;
+    }
+
+    .r2 {
+      width: 138px;
+      height: 138px;
+    }
+
+    .r3 {
+      width: 174px;
+      height: 174px;
+    }
+
+    /* Idle listening */
+    .is-on .r1 {
+      border-color: rgba(216, 76, 62, .5);
+      animation: rippleOut 2.2s 0s ease-out infinite;
+    }
+
+    .is-on .r2 {
+      border-color: rgba(216, 76, 62, .35);
+      animation: rippleOut 2.2s .5s ease-out infinite;
+    }
+
+    .is-on .r3 {
+      border-color: rgba(216, 76, 62, .2);
+      animation: rippleOut 2.2s 1s ease-out infinite;
+    }
+
+    /* Speaking */
+    .is-speaking .r1 {
+      border-color: rgba(40, 176, 106, .7);
+      animation: rippleOut .8s 0s ease-out infinite;
+    }
+
+    .is-speaking .r2 {
+      border-color: rgba(40, 176, 106, .5);
+      animation: rippleOut .8s .2s ease-out infinite;
+    }
+
+    .is-speaking .r3 {
+      border-color: rgba(40, 176, 106, .3);
+      animation: rippleOut .8s .4s ease-out infinite;
+    }
+
+    @keyframes rippleOut {
+      0% {
+        transform: scale(.75);
+        opacity: .9;
+      }
+
+      100% {
+        transform: scale(1.6);
+        opacity: 0;
+      }
+    }
+
+    /* Mic button */
+    .mic-btn {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+      position: relative;
+      z-index: 2;
+      background: linear-gradient(135deg, var(--teal), var(--sky));
+      box-shadow: 0 8px 32px rgba(26, 138, 114, .3);
+    }
+
+    .mic-btn:hover {
+      transform: scale(1.06);
+    }
+
+    .mic-btn.on {
+      background: linear-gradient(135deg, var(--red), #C43830);
+      box-shadow: 0 8px 32px rgba(216, 76, 62, .4);
+    }
+
+    .mic-btn.speaking {
+      background: linear-gradient(135deg, var(--green), var(--teal));
+      box-shadow: 0 8px 40px rgba(40, 176, 106, .5);
+      animation: speakingPulse .7s ease-in-out infinite alternate;
+    }
+
+    @keyframes speakingPulse {
+      from {
+        box-shadow: 0 8px 32px rgba(40, 176, 106, .4);
+      }
+
+      to {
+        box-shadow: 0 8px 48px rgba(40, 176, 106, .7);
+      }
+    }
+
+    .mic-btn svg {
+      width: 32px;
+      height: 32px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      transition: all .3s;
+    }
+
+    .mic-btn.on .mic-ico-stop {
+      display: flex;
+    }
+
+    .mic-btn.on .mic-ico-mic {
+      display: none;
+    }
+
+    .mic-ico-stop {
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mic-ico-stop svg {
+      width: 26px;
+      height: 26px;
+      fill: #fff;
+      stroke: none;
+    }
+
+    /* Vol bars */
+    .vol-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 44px;
+    }
+
+    .vb {
+      width: 4px;
+      border-radius: 2px;
+      background: linear-gradient(to top, var(--teal), rgba(26, 138, 114, .4));
+      transition: height .08s ease;
+      height: 4px;
+    }
+
+    .mic-section.is-on .vb {
+      background: linear-gradient(to top, var(--red), rgba(216, 76, 62, .4));
+    }
+
+    .mic-section.is-speaking .vb {
+      background: linear-gradient(to top, var(--green), rgba(40, 176, 106, .4));
+    }
+
+    /* Status label */
+    .mic-label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+      transition: color .3s;
+    }
+
+    .mic-section.is-on .mic-label {
+      color: rgba(216, 76, 62, .9);
+    }
+
+    .mic-section.is-speaking .mic-label {
+      color: var(--green);
+    }
+
+    /* Processing pill */
+    .proc-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 14px;
+      border-radius: 100px;
+      background: var(--teal-s);
+      border: 1px solid var(--teal-m);
+      font-size: .7rem;
+      font-weight: 600;
+      color: rgba(26, 138, 114, .9);
+      opacity: 0;
+      transition: opacity .3s;
+      min-height: 28px;
+    }
+
+    .proc-pill.show {
+      opacity: 1;
+    }
+
+    .pp-spin {
+      width: 11px;
+      height: 11px;
+      border: 1.5px solid rgba(26, 138, 114, .3);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── FEED ── */
+    .feed-section {
+      padding: 0 0 0;
+    }
+
+    .feed-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .feed-title {
+      font-size: .62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      flex: 1;
+    }
+
+    .feed-clear {
+      font-size: .62rem;
+      font-weight: 600;
+      color: var(--muted2);
+      cursor: pointer;
+      padding: 3px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: none;
+      transition: all .15s;
+    }
+
+    .feed-clear:hover {
+      border-color: var(--border-md);
+      color: var(--text);
+    }
+
+    .feed {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-height: 400px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .feed::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .feed::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .feed-empty {
+      padding: 44px 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .fe-ico {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fe-ico svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--muted2);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    .fe-title {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .fe-sub {
+      font-size: .72rem;
+      color: var(--muted2);
+      line-height: 1.6;
+      max-width: 260px;
+    }
+
+    /* Message cards */
+    .msg-card {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      animation: msgSlide .35s cubic-bezier(.22, 1, .36, 1) both;
+      transition: background .2s;
+      position: relative;
+    }
+
+    .msg-card:hover {
+      background: var(--surface2);
+    }
+
+    .msg-card.fresh {
+      background: rgba(26, 138, 114, .04);
+    }
+
+    .msg-card:last-child {
+      border-bottom: none;
+    }
+
+    @keyframes msgSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .msg-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .msg-tags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .msg-num {
+      font-size: .58rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted2);
+    }
+
+    .msg-engine {
+      font-size: .58rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(58, 107, 200, .2);
+      background: rgba(58, 107, 200, .06);
+      color: rgba(58, 107, 200, .9);
+    }
+
+    .msg-lang {
+      font-size: .58rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(26, 138, 114, .2);
+      background: rgba(26, 138, 114, .06);
+      color: rgba(26, 138, 114, .9);
+    }
+
+    .msg-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .msg-time {
+      font-size: .58rem;
+      color: var(--muted2);
+    }
+
+    .msg-act-btn {
+      width: 25px;
+      height: 25px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+    }
+
+    .msg-act-btn:hover {
+      border-color: var(--teal-m);
+      background: var(--teal-s);
+    }
+
+    .msg-act-btn svg {
+      width: 10px;
+      height: 10px;
+      stroke: var(--muted);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .msg-act-btn.play {
+      background: linear-gradient(135deg, var(--teal), var(--sky));
+      border: none;
+    }
+
+    .msg-act-btn.play svg {
+      stroke: #fff;
+    }
+
+    .msg-orig {
+      font-size: .75rem;
+      color: var(--muted2);
+      font-style: italic;
+      line-height: 1.5;
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .msg-trans {
+      font-size: .9rem;
+      color: var(--text);
+      line-height: 1.65;
+      font-weight: 500;
+    }
+
+    /* ── STATS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all .2s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-md);
+      background: var(--surface2);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+    }
+
+    .sc1::before {
+      background: linear-gradient(90deg, var(--teal), var(--sky));
+    }
+
+    .sc2::before {
+      background: linear-gradient(90deg, var(--amber), var(--gold));
+    }
+
+    .sc3::before {
+      background: linear-gradient(90deg, var(--purple), var(--sky));
+    }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, rgba(255, 255, 255, .6));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: .58rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted2);
+      margin-top: 3px;
+    }
+
+    /* ── SESSION CARD ── */
+    .session-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .sess-info {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    .sess-btns {
+      display: flex;
+      gap: 7px;
+    }
+
+    .sess-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: .72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      border: none;
+    }
+
+    .sb-outline {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .sb-outline:hover {
+      border-color: var(--border-md);
+      color: var(--text);
+    }
+
+    .sb-primary {
+      background: var(--teal);
+      color: #fff;
+    }
+
+    .sb-primary:hover {
+      background: #158068;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: rgba(26, 138, 114, .95);
+      color: #fff;
+      padding: 9px 18px;
+      border-radius: 100px;
+      font-size: .72rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: all .3s;
+      z-index: 500;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Yaply Upgrade Prompt ── */
+    .yup-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: rgba(7, 16, 31, 0.88);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .yup-backdrop.show {
+      display: flex;
+      animation: yupIn .2s ease both;
+    }
+
+    @keyframes yupIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes yupUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(.98)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
+    }
+
+    .yup-sheet {
+      background: linear-gradient(180deg, #0f1f3a 0%, #0B1220 100%);
+      border: 1px solid rgba(37, 99, 255, 0.18);
+      border-bottom: none;
+      border-radius: 26px 26px 0 0;
+      padding: 10px 22px 40px;
+      width: 100%;
+      max-width: 480px;
+      animation: yupUp .3s cubic-bezier(.34, 1.05, .64, 1) both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .yup-sheet::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(37, 99, 255, 0.5), transparent);
+    }
+
+    .yup-handle {
+      width: 34px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 0 auto 18px;
+    }
+
+    .yup-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .yup-icon.free {
+      background: rgba(245, 185, 66, 0.1);
+      border: 1px solid rgba(245, 185, 66, 0.2);
+    }
+
+    .yup-icon.pro {
+      background: rgba(37, 99, 255, 0.1);
+      border: 1px solid rgba(37, 99, 255, 0.2);
+    }
+
+    .yup-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 6px;
+      letter-spacing: -.3px;
+    }
+
+    .yup-sub {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.4);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .yup-meter {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+
+    .yup-meter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+
+    .yup-meter-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .yup-meter-count {
+      font-size: 12px;
+      color: white;
+      font-weight: 700;
+    }
+
+    .yup-meter-track {
+      height: 5px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .yup-meter-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #EF4444, #F87171);
+    }
+
+    .yup-perks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .yup-perk {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .yup-perk-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(24, 194, 156, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+    }
+
+    .yup-prices {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .yup-price {
+      flex: 1;
+      padding: 11px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .yup-price.selected,
+    .yup-price:hover {
+      background: rgba(37, 99, 255, 0.12);
+      border-color: rgba(37, 99, 255, 0.4);
+    }
+
+    .yup-price-amt {
+      font-size: 17px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .yup-price-period {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.35);
+      margin-top: 2px;
+    }
+
+    .yup-price-tag {
+      font-size: 9px;
+      color: #18C29C;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .yup-reset {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 13px;
+      background: rgba(37, 99, 255, 0.06);
+      border: 1px solid rgba(37, 99, 255, 0.12);
+      border-radius: 11px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .yup-reset strong {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .yup-pay-btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 13px;
+      background: #2563FF;
+      color: white;
+      border: none;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      box-shadow: 0 8px 24px rgba(37, 99, 255, 0.3);
+      margin-bottom: 10px;
+    }
+
+    .yup-pay-btn:hover {
+      background: #1D4ED8;
+      transform: translateY(-1px);
+    }
+
+    .yup-dismiss {
+      width: 100%;
+      padding: 10px;
+      border-radius: 12px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.3);
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: color .2s;
+    }
+
+    .yup-dismiss:hover {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- Background -->
-<div class="bg-fixed">
-  <div class="bg-orb bo1"></div>
-  <div class="bg-orb bo2"></div>
-  <div class="bg-orb bo3"></div>
-</div>
-<div class="bg-grid"></div>
-
-<!-- Floating SVGs -->
-<div class="bg-svg bsvg1">
-  <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-</div>
-<div class="bg-svg bsvg2">
-  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-</div>
-<div class="bg-svg bsvg3">
-  <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-</div>
-
-<!-- Nav -->
-<nav class="nav">
-  <div class="nav-left">
-    <a href="/app" class="nav-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Dashboard</a>
-    <div style="width:1px;height:16px;background:var(--border);margin:0 4px;"></div>
-    <div style="width:26px;height:26px;border-radius:7px;background:var(--teal);display:flex;align-items:center;justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
-    <div class="nav-logo">Yaply <span>Live</span></div>
+  <!-- Background -->
+  <div class="bg-fixed">
+    <div class="bg-orb bo1"></div>
+    <div class="bg-orb bo2"></div>
+    <div class="bg-orb bo3"></div>
   </div>
-  <div class="live-pill offline" id="livePill">
-    <div class="live-dot" id="liveDot"></div>
-    <span id="liveTxt">OFFLINE</span>
+  <div class="bg-grid"></div>
+
+  <!-- Floating SVGs -->
+  <div class="bg-svg bsvg1">
+    <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".8">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
   </div>
-</nav>
-
-<div class="wrap">
-
-  <!-- Hero -->
-  <div class="hero">
-    <div class="hero-badge"><div class="hb-dot"></div>Real-Time · WebSocket · Auto-Detect</div>
-    <h1>Live Streaming<span class="grad">Translation.</span></h1>
-    <p class="hero-sub">No buttons. No waiting. Speak naturally — Yaply listens, detects every sentence, and translates instantly in real time.</p>
+  <div class="bg-svg bsvg2">
+    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".8">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+      <line x1="12" y1="19" x2="12" y2="23" />
+      <line x1="8" y1="23" x2="16" y2="23" />
+    </svg>
+  </div>
+  <div class="bg-svg bsvg3">
+    <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".8">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
   </div>
 
-  <!-- Lang bar -->
-  <div class="lang-bar">
-    <div class="lang-group">
-      <div class="lang-label">They Speak</div>
-      <select class="lang-select" id="srcLang" onchange="sendConfig()">
-        <option value="auto">Auto Detect</option>
-        <option value="en">English</option><option value="es">Spanish</option>
-        <option value="fr">French</option><option value="de">German</option>
-        <option value="hi">Hindi</option><option value="ja">Japanese</option>
-        <option value="zh">Chinese</option><option value="ar">Arabic</option>
-        <option value="pt">Portuguese</option><option value="ru">Russian</option>
-        <option value="it">Italian</option><option value="ko">Korean</option>
-      </select>
-    </div>
-    <div class="lang-arrow">→</div>
-    <div class="lang-group">
-      <div class="lang-label">You Hear</div>
-      <select class="lang-select" id="tgtLang" onchange="sendConfig()">
-        <option value="EN">English</option><option value="HI">Hindi</option>
-        <option value="ES">Spanish</option><option value="FR">French</option>
-        <option value="DE">German</option><option value="JA">Japanese</option>
-        <option value="ZH">Chinese</option><option value="AR">Arabic</option>
-        <option value="PT">Portuguese</option><option value="RU">Russian</option>
-        <option value="IT">Italian</option><option value="KO">Korean</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Main card -->
-  <div class="main-card">
-
-    <!-- Mic section -->
-    <div class="mic-section" id="micSection">
-      <div class="mic-glow"></div>
-
-      <div class="mic-wrap" id="micWrap">
-        <div class="ring r1"></div>
-        <div class="ring r2"></div>
-        <div class="ring r3"></div>
-        <button class="mic-btn" id="micBtn" onclick="toggle()">
-          <div class="mic-ico-mic">
-            <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </div>
-          <div class="mic-ico-stop">
-            <svg viewBox="0 0 24 24" width="24" height="24"><rect x="4" y="4" width="16" height="16" rx="2" fill="white"/></svg>
-          </div>
-        </button>
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-left">
+      <a href="/app" class="nav-back"><svg viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>Dashboard</a>
+      <div style="width:1px;height:16px;background:var(--border);margin:0 4px;"></div>
+      <div
+        style="width:26px;height:26px;border-radius:7px;background:var(--teal);display:flex;align-items:center;justify-content:center;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
       </div>
+      <div class="nav-logo">Yaply <span>Live</span></div>
+    </div>
+    <div class="live-pill offline" id="livePill">
+      <div class="live-dot" id="liveDot"></div>
+      <span id="liveTxt">OFFLINE</span>
+    </div>
+  </nav>
 
-      <!-- Volume bars -->
-      <div class="vol-bars" id="volBars">
-        <div class="vb" id="v1"></div><div class="vb" id="v2"></div>
-        <div class="vb" id="v3"></div><div class="vb" id="v4"></div>
-        <div class="vb" id="v5"></div><div class="vb" id="v6"></div>
-        <div class="vb" id="v7"></div><div class="vb" id="v8"></div>
-        <div class="vb" id="v9"></div><div class="vb" id="v10"></div>
-        <div class="vb" id="v11"></div><div class="vb" id="v12"></div>
-        <div class="vb" id="v13"></div><div class="vb" id="v14"></div>
-        <div class="vb" id="v15"></div>
+  <div class="wrap">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-badge">
+        <div class="hb-dot"></div>Real-Time · WebSocket · Auto-Detect
       </div>
+      <h1>Live Streaming<span class="grad">Translation.</span></h1>
+      <p class="hero-sub">No buttons. No waiting. Speak naturally — Yaply listens, detects every sentence, and
+        translates instantly in real time.</p>
+    </div>
 
-      <div class="mic-label" id="micLabel">Tap the mic to start live translation</div>
-      <div class="proc-pill" id="procPill">
-        <div class="pp-spin"></div>
-        <span id="procTxt">Processing...</span>
+    <!-- Lang bar -->
+    <div class="lang-bar">
+      <div class="lang-group">
+        <div class="lang-label">They Speak</div>
+        <select class="lang-select" id="srcLang" onchange="sendConfig()">
+          <option value="auto">Auto Detect</option>
+          <option value="en">English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="hi">Hindi</option>
+          <option value="ja">Japanese</option>
+          <option value="zh">Chinese</option>
+          <option value="ar">Arabic</option>
+          <option value="pt">Portuguese</option>
+          <option value="ru">Russian</option>
+          <option value="it">Italian</option>
+          <option value="ko">Korean</option>
+        </select>
+      </div>
+      <div class="lang-arrow">→</div>
+      <div class="lang-group">
+        <div class="lang-label">You Hear</div>
+        <select class="lang-select" id="tgtLang" onchange="sendConfig()">
+          <option value="EN">English</option>
+          <option value="HI">Hindi</option>
+          <option value="ES">Spanish</option>
+          <option value="FR">French</option>
+          <option value="DE">German</option>
+          <option value="JA">Japanese</option>
+          <option value="ZH">Chinese</option>
+          <option value="AR">Arabic</option>
+          <option value="PT">Portuguese</option>
+          <option value="RU">Russian</option>
+          <option value="IT">Italian</option>
+          <option value="KO">Korean</option>
+        </select>
       </div>
     </div>
 
-    <!-- Feed -->
-    <div class="feed-section">
-      <div class="feed-header">
-        <div class="feed-title">Live Translation Feed</div>
-        <button class="feed-clear" onclick="clearFeed()">Clear all</button>
+    <!-- Main card -->
+    <div class="main-card">
+
+      <!-- Mic section -->
+      <div class="mic-section" id="micSection">
+        <div class="mic-glow"></div>
+
+        <div class="mic-wrap" id="micWrap">
+          <div class="ring r1"></div>
+          <div class="ring r2"></div>
+          <div class="ring r3"></div>
+          <button class="mic-btn" id="micBtn" onclick="toggle()">
+            <div class="mic-ico-mic">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="23" />
+                <line x1="8" y1="23" x2="16" y2="23" />
+              </svg>
+            </div>
+            <div class="mic-ico-stop">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <rect x="4" y="4" width="16" height="16" rx="2" fill="white" />
+              </svg>
+            </div>
+          </button>
+        </div>
+
+        <!-- Volume bars -->
+        <div class="vol-bars" id="volBars">
+          <div class="vb" id="v1"></div>
+          <div class="vb" id="v2"></div>
+          <div class="vb" id="v3"></div>
+          <div class="vb" id="v4"></div>
+          <div class="vb" id="v5"></div>
+          <div class="vb" id="v6"></div>
+          <div class="vb" id="v7"></div>
+          <div class="vb" id="v8"></div>
+          <div class="vb" id="v9"></div>
+          <div class="vb" id="v10"></div>
+          <div class="vb" id="v11"></div>
+          <div class="vb" id="v12"></div>
+          <div class="vb" id="v13"></div>
+          <div class="vb" id="v14"></div>
+          <div class="vb" id="v15"></div>
+        </div>
+
+        <div class="mic-label" id="micLabel">Tap the mic to start live translation</div>
+        <div class="proc-pill" id="procPill">
+          <div class="pp-spin"></div>
+          <span id="procTxt">Processing...</span>
+        </div>
       </div>
-      <div class="feed" id="feed">
-        <div class="feed-empty" id="feedEmpty">
-          <div class="fe-ico">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+
+      <!-- Feed -->
+      <div class="feed-section">
+        <div class="feed-header">
+          <div class="feed-title">Live Translation Feed</div>
+          <button class="feed-clear" onclick="clearFeed()">Clear all</button>
+        </div>
+        <div class="feed" id="feed">
+          <div class="feed-empty" id="feedEmpty">
+            <div class="fe-ico">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+            </div>
+            <div class="fe-title">No translations yet</div>
+            <div class="fe-sub">Tap the mic and speak in any language. Every sentence translates automatically.</div>
           </div>
-          <div class="fe-title">No translations yet</div>
-          <div class="fe-sub">Tap the mic and speak in any language. Every sentence translates automatically.</div>
         </div>
       </div>
     </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card sc1">
+        <div class="stat-num" id="cntS">0</div>
+        <div class="stat-label">Sentences</div>
+      </div>
+      <div class="stat-card sc2">
+        <div class="stat-num" id="cntL">0</div>
+        <div class="stat-label">Languages</div>
+      </div>
+      <div class="stat-card sc3">
+        <div class="stat-num" id="cntT">—</div>
+        <div class="stat-label">Avg Speed</div>
+      </div>
+    </div>
+
+    <!-- Session -->
+    <div class="session-card">
+      <div class="sess-info" id="sessInfo">Session not started · Ready to translate</div>
+      <div class="sess-btns">
+        <button class="sess-btn sb-outline" onclick="exportSession()">Export</button>
+        <button class="sess-btn sb-primary" onclick="toggle()">Start Session</button>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card sc1">
-      <div class="stat-num" id="cntS">0</div>
-      <div class="stat-label">Sentences</div>
-    </div>
-    <div class="stat-card sc2">
-      <div class="stat-num" id="cntL">0</div>
-      <div class="stat-label">Languages</div>
-    </div>
-    <div class="stat-card sc3">
-      <div class="stat-num" id="cntT">—</div>
-      <div class="stat-label">Avg Speed</div>
-    </div>
-  </div>
+  <div class="toast" id="toast"></div>
+  <script src="/static/yaply-nav.js"></script>
+  <script>
+    let ws, audioCtx, processor, source, micStream, analyser;
+    let active = false, sentCount = 0, langSet = new Set();
+    let audioStore = {}, animFrame, startTimes = {};
+    let totalTime = 0, timeCount = 0, currentTranscript = '';
+    let sessionStart = null;
 
-  <!-- Session -->
-  <div class="session-card">
-    <div class="sess-info" id="sessInfo">Session not started · Ready to translate</div>
-    <div class="sess-btns">
-      <button class="sess-btn sb-outline" onclick="exportSession()">Export</button>
-      <button class="sess-btn sb-primary" onclick="toggle()">Start Session</button>
-    </div>
-  </div>
-
-</div>
-
-<div class="toast" id="toast"></div>
-<script src="/static/yaply-nav.js"></script>
-<script>
-let ws, audioCtx, processor, source, micStream, analyser;
-let active = false, sentCount = 0, langSet = new Set();
-let audioStore = {}, animFrame, startTimes = {};
-let totalTime = 0, timeCount = 0, currentTranscript = '';
-let sessionStart = null;
-
-async function toggle() {
-  if (!active) await start();
-  else stop();
-}
-
-async function start() {
-  try {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      showToast('Microphone not supported in this browser');
-      return;
+    async function toggle() {
+      if (!active) await start();
+      else stop();
     }
-    micStream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true, autoGainControl:true } });
 
-    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${proto}//${location.host}/stream`);
-    ws.binaryType = 'arraybuffer';
-    ws.onopen = () => { sendConfig(); };
-    ws.onmessage = e => handle(JSON.parse(e.data));
-    ws.onerror = () => showPill('Connection error');
-    ws.onclose = () => { if (active) stop(); };
+    async function start() {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          showToast('Microphone not supported in this browser');
+          return;
+        }
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
 
-    audioCtx = new AudioContext({ sampleRate:16000 });
-    source = audioCtx.createMediaStreamSource(micStream);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    source.connect(analyser);
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(`${proto}//${location.host}/stream`);
+        ws.binaryType = 'arraybuffer';
+        ws.onopen = () => { sendConfig(); };
+        ws.onmessage = e => handle(JSON.parse(e.data));
+        ws.onerror = () => showPill('Connection error');
+        ws.onclose = () => { if (active) stop(); };
 
-    processor = audioCtx.createScriptProcessor(4096, 1, 1);
-    source.connect(processor);
-    processor.connect(audioCtx.destination);
-    processor.onaudioprocess = e => {
-      if (!active || !ws || ws.readyState !== 1) return;
-      const f = e.inputBuffer.getChannelData(0);
-      const i16 = new Int16Array(f.length);
-      for (let i = 0; i < f.length; i++) i16[i] = Math.max(-32768, Math.min(32767, f[i] * 32768));
-      ws.send(i16.buffer);
-    };
+        audioCtx = new AudioContext({ sampleRate: 16000 });
+        source = audioCtx.createMediaStreamSource(micStream);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        source.connect(analyser);
 
-    active = true;
-    sessionStart = new Date();
-    setUIState('on');
-    document.getElementById('feedEmpty').style.display = 'none';
-    animVol();
-  } catch(e) {
-    showToast('Microphone access denied. Please allow mic access.');
-  }
-}
+        processor = audioCtx.createScriptProcessor(4096, 1, 1);
+        source.connect(processor);
+        processor.connect(audioCtx.destination);
+        processor.onaudioprocess = e => {
+          if (!active || !ws || ws.readyState !== 1) return;
+          const f = e.inputBuffer.getChannelData(0);
+          const i16 = new Int16Array(f.length);
+          for (let i = 0; i < f.length; i++) i16[i] = Math.max(-32768, Math.min(32767, f[i] * 32768));
+          ws.send(i16.buffer);
+        };
 
-function stop() {
-  active = false;
-  if (processor) { processor.disconnect(); processor = null; }
-  if (source) { source.disconnect(); source = null; }
-  if (audioCtx) { audioCtx.close(); audioCtx = null; }
-  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
-  if (ws?.readyState === 1) ws.close();
-  if (animFrame) cancelAnimationFrame(animFrame);
-  setUIState('off');
-  for (let i = 1; i <= 15; i++) document.getElementById('v' + i).style.height = '4px';
-}
-
-function setUIState(state) {
-  const sec = document.getElementById('micSection');
-  const btn = document.getElementById('micBtn');
-  const lbl = document.getElementById('micLabel');
-  const pill = document.getElementById('livePill');
-  const dot = document.getElementById('liveDot');
-  const txt = document.getElementById('liveTxt');
-  const sess = document.getElementById('sessInfo');
-
-  sec.className = 'mic-section' + (state === 'on' ? ' is-on' : state === 'speaking' ? ' is-speaking' : '');
-  btn.className = 'mic-btn' + (state === 'on' ? ' on' : state === 'speaking' ? ' speaking' : '');
-
-  if (state === 'off') {
-    lbl.textContent = 'Tap the mic to start live translation';
-    pill.className = 'live-pill offline';
-    dot.className = 'live-dot';
-    txt.textContent = 'OFFLINE';
-    sess.textContent = 'Session ended · ' + sentCount + ' sentences translated';
-    hidePill();
-  } else if (state === 'on') {
-    lbl.textContent = 'Listening... speak naturally';
-    pill.className = 'live-pill online';
-    dot.className = 'live-dot pulse';
-    txt.textContent = 'LIVE';
-    sess.textContent = 'Session started · ' + (sessionStart ? sessionStart.toLocaleTimeString() : '');
-  } else if (state === 'speaking') {
-    lbl.textContent = 'Speech detected — translating...';
-  }
-}
-
-function handle(msg) {
-  switch(msg.type) {
-    case 'volume': updateVol(msg.level); break;
-    case 'speaking':
-      if (msg.status) { setUIState('speaking'); startTimes[sentCount+1] = Date.now(); }
-      else { setUIState('on'); }
-      break;
-    case 'status': showPill(msg.message); break;
-    case 'transcript': currentTranscript = msg.text; break;
-    case 'translation':
-      sentCount++;
-      langSet.add(msg.lang);
-      document.getElementById('cntS').textContent = sentCount;
-      document.getElementById('cntL').textContent = langSet.size;
-      addMsg(msg.text, msg.engine, msg.lang, msg.id);
-      break;
-    case 'audio':
-      playAudio(msg.data, msg.id);
-      if (startTimes[msg.id]) {
-        const elapsed = ((Date.now() - startTimes[msg.id]) / 1000).toFixed(1);
-        totalTime += parseFloat(elapsed);
-        timeCount++;
-        document.getElementById('cntT').textContent = (totalTime / timeCount).toFixed(1) + 's';
+        active = true;
+        sessionStart = new Date();
+        setUIState('on');
+        document.getElementById('feedEmpty').style.display = 'none';
+        animVol();
+      } catch (e) {
+        showToast('Microphone access denied. Please allow mic access.');
       }
-      hidePill();
-      break;
-    case 'ready': hidePill(); break;
-    case 'error': showPill('⚠ ' + msg.message); setTimeout(hidePill, 4000); break;
-  }
-}
+    }
 
-function addMsg(translation, engine, lang, id) {
-  const feed = document.getElementById('feed');
-  const time = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-  const div = document.createElement('div');
-  div.className = 'msg-card fresh';
-  div.id = 'msg-' + id;
-  div.innerHTML = `
+    function stop() {
+      active = false;
+      if (processor) { processor.disconnect(); processor = null; }
+      if (source) { source.disconnect(); source = null; }
+      if (audioCtx) { audioCtx.close(); audioCtx = null; }
+      if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+      if (ws?.readyState === 1) ws.close();
+      if (animFrame) cancelAnimationFrame(animFrame);
+      setUIState('off');
+      for (let i = 1; i <= 15; i++) document.getElementById('v' + i).style.height = '4px';
+    }
+
+    function setUIState(state) {
+      const sec = document.getElementById('micSection');
+      const btn = document.getElementById('micBtn');
+      const lbl = document.getElementById('micLabel');
+      const pill = document.getElementById('livePill');
+      const dot = document.getElementById('liveDot');
+      const txt = document.getElementById('liveTxt');
+      const sess = document.getElementById('sessInfo');
+
+      sec.className = 'mic-section' + (state === 'on' ? ' is-on' : state === 'speaking' ? ' is-speaking' : '');
+      btn.className = 'mic-btn' + (state === 'on' ? ' on' : state === 'speaking' ? ' speaking' : '');
+
+      if (state === 'off') {
+        lbl.textContent = 'Tap the mic to start live translation';
+        pill.className = 'live-pill offline';
+        dot.className = 'live-dot';
+        txt.textContent = 'OFFLINE';
+        sess.textContent = 'Session ended · ' + sentCount + ' sentences translated';
+        hidePill();
+      } else if (state === 'on') {
+        lbl.textContent = 'Listening... speak naturally';
+        pill.className = 'live-pill online';
+        dot.className = 'live-dot pulse';
+        txt.textContent = 'LIVE';
+        sess.textContent = 'Session started · ' + (sessionStart ? sessionStart.toLocaleTimeString() : '');
+      } else if (state === 'speaking') {
+        lbl.textContent = 'Speech detected — translating...';
+      }
+    }
+
+    function handle(msg) {
+      switch (msg.type) {
+        case 'volume': updateVol(msg.level); break;
+        case 'speaking':
+          if (msg.status) { setUIState('speaking'); startTimes[sentCount + 1] = Date.now(); }
+          else { setUIState('on'); }
+          break;
+        case 'status': showPill(msg.message); break;
+        case 'transcript': currentTranscript = msg.text; break;
+        case 'translation':
+          sentCount++;
+          langSet.add(msg.lang);
+          document.getElementById('cntS').textContent = sentCount;
+          document.getElementById('cntL').textContent = langSet.size;
+          addMsg(msg.text, msg.engine, msg.lang, msg.id);
+          break;
+        case 'audio':
+          playAudio(msg.data, msg.id);
+          if (startTimes[msg.id]) {
+            const elapsed = ((Date.now() - startTimes[msg.id]) / 1000).toFixed(1);
+            totalTime += parseFloat(elapsed);
+            timeCount++;
+            document.getElementById('cntT').textContent = (totalTime / timeCount).toFixed(1) + 's';
+          }
+          hidePill();
+          break;
+        case 'ready': hidePill(); break;
+        case 'error': showPill('⚠ ' + msg.message); setTimeout(hidePill, 4000); break;
+      }
+    }
+
+    function addMsg(translation, engine, lang, id) {
+      const feed = document.getElementById('feed');
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const div = document.createElement('div');
+      div.className = 'msg-card fresh';
+      div.id = 'msg-' + id;
+      div.innerHTML = `
     <div class="msg-top">
       <div class="msg-tags">
         <span class="msg-num">#${sentCount}</span>
@@ -643,99 +1819,183 @@ function addMsg(translation, engine, lang, id) {
     ${currentTranscript ? `<div class="msg-orig">${currentTranscript}</div>` : ''}
     <div class="msg-trans" id="trans-${id}">${translation}</div>
   `;
-  feed.insertBefore(div, feed.firstChild);
-  setTimeout(() => div.classList.remove('fresh'), 2500);
-}
+      feed.insertBefore(div, feed.firstChild);
+      setTimeout(() => div.classList.remove('fresh'), 2500);
+    }
 
-function playAudio(b64, id) {
-  try {
-    const bytes = atob(b64);
-    const arr = new Uint8Array(bytes.length);
-    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-    const url = URL.createObjectURL(new Blob([arr], { type:'audio/mpeg' }));
-    audioStore[id] = url;
-    new Audio(url).play();
-  } catch(e) {}
-}
+    function playAudio(b64, id) {
+      try {
+        const bytes = atob(b64);
+        const arr = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        const url = URL.createObjectURL(new Blob([arr], { type: 'audio/mpeg' }));
+        audioStore[id] = url;
+        new Audio(url).play();
+      } catch (e) { }
+    }
 
-function replay(id) { if (audioStore[id]) new Audio(audioStore[id]).play(); }
+    function replay(id) { if (audioStore[id]) new Audio(audioStore[id]).play(); }
 
-function copyMsg(id) {
-  const el = document.getElementById('trans-' + id);
-  if (el) {
-    navigator.clipboard?.writeText(el.textContent);
-    showToast('Copied to clipboard');
-  }
-}
+    function copyMsg(id) {
+      const el = document.getElementById('trans-' + id);
+      if (el) {
+        navigator.clipboard?.writeText(el.textContent);
+        showToast('Copied to clipboard');
+      }
+    }
 
-function clearFeed() {
-  const feed = document.getElementById('feed');
-  const empty = document.getElementById('feedEmpty');
-  feed.innerHTML = '';
-  feed.appendChild(empty);
-  empty.style.display = 'flex';
-  sentCount = 0; langSet.clear();
-  document.getElementById('cntS').textContent = '0';
-  document.getElementById('cntL').textContent = '0';
-  document.getElementById('cntT').textContent = '—';
-}
+    function clearFeed() {
+      const feed = document.getElementById('feed');
+      const empty = document.getElementById('feedEmpty');
+      feed.innerHTML = '';
+      feed.appendChild(empty);
+      empty.style.display = 'flex';
+      sentCount = 0; langSet.clear();
+      document.getElementById('cntS').textContent = '0';
+      document.getElementById('cntL').textContent = '0';
+      document.getElementById('cntT').textContent = '—';
+    }
 
-function exportSession() {
-  const msgs = document.querySelectorAll('.msg-trans');
-  if (!msgs.length) { showToast('No translations to export'); return; }
-  const text = Array.from(msgs).map((el, i) => `${i+1}. ${el.textContent}`).join('\n');
-  const blob = new Blob([text], { type:'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'yaply-session.txt'; a.click();
-  showToast('Session exported');
-}
+    function exportSession() {
+      const msgs = document.querySelectorAll('.msg-trans');
+      if (!msgs.length) { showToast('No translations to export'); return; }
+      const text = Array.from(msgs).map((el, i) => `${i + 1}. ${el.textContent}`).join('\n');
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'yaply-session.txt'; a.click();
+      showToast('Session exported');
+    }
 
-function showPill(t) {
-  document.getElementById('procTxt').textContent = t;
-  document.getElementById('procPill').classList.add('show');
-}
-function hidePill() { document.getElementById('procPill').classList.remove('show'); }
+    function showPill(t) {
+      document.getElementById('procTxt').textContent = t;
+      document.getElementById('procPill').classList.add('show');
+    }
+    function hidePill() { document.getElementById('procPill').classList.remove('show'); }
 
-function sendConfig() {
-  if (ws?.readyState === 1) {
-    ws.send(JSON.stringify({ target_lang:document.getElementById('tgtLang').value, src_lang:document.getElementById('srcLang').value }));
-  }
-}
+    function sendConfig() {
+      if (ws?.readyState === 1) {
+        ws.send(JSON.stringify({ target_lang: document.getElementById('tgtLang').value, src_lang: document.getElementById('srcLang').value }));
+      }
+    }
 
-let volHistory = new Array(15).fill(4);
-function updateVol(level) {
-  volHistory.shift(); volHistory.push(level);
-  for (let i = 1; i <= 15; i++) {
-    const h = Math.max(4, volHistory[i-1] * 0.44);
-    document.getElementById('v' + i).style.height = h + 'px';
-  }
-}
+    let volHistory = new Array(15).fill(4);
+    function updateVol(level) {
+      volHistory.shift(); volHistory.push(level);
+      for (let i = 1; i <= 15; i++) {
+        const h = Math.max(4, volHistory[i - 1] * 0.44);
+        document.getElementById('v' + i).style.height = h + 'px';
+      }
+    }
 
-function animVol() {
-  if (!analyser) return;
-  const data = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteFrequencyData(data);
-  const step = Math.floor(data.length / 15);
-  for (let i = 1; i <= 15; i++) {
-    const val = data[(i-1) * step] / 255;
-    document.getElementById('v' + i).style.height = Math.max(4, val * 44) + 'px';
-  }
-  animFrame = requestAnimationFrame(animVol);
-}
+    function animVol() {
+      if (!analyser) return;
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(data);
+      const step = Math.floor(data.length / 15);
+      for (let i = 1; i <= 15; i++) {
+        const val = data[(i - 1) * step] / 255;
+        document.getElementById('v' + i).style.height = Math.max(4, val * 44) + 'px';
+      }
+      animFrame = requestAnimationFrame(animVol);
+    }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
 
-// Instead of repeating auth code everywhere
-// Just call:
-YaplyCore.requireAuth();   // redirect if not logged in
-YaplyCore.getUser();       // get current user
-YaplyCore.logout();        // logout from anywhere
+    // Instead of repeating auth code everywhere
+    // Just call:
+    YaplyCore.requireAuth();   // redirect if not logged in
+    YaplyCore.getUser();       // get current user
+    YaplyCore.logout();        // logout from anywhere
 
-</script>
+    // ── Yaply Upgrade Prompt ──
+    var YaplyUpgrade = (function () {
+      var _plan = 'monthly';
+      var _feature = '';
+
+      var PERKS = {
+        'plan': [{ i: '🗺️', t: '<b>15 AI trip plans</b> per month' }, { i: '🏙️', t: '<b>Multi-city planning</b> unlocked' }, { i: '🚪', t: '<b>Door-to-door</b> journey planner' }],
+        'multicity': [{ i: '🏙️', t: '<b>4 multi-city trips</b> per month' }, { i: '🗺️', t: '<b>15 AI trip plans</b> per month' }, { i: '🚪', t: '<b>Door-to-door</b> planner unlocked' }],
+        'translation': [{ i: '🌐', t: '<b>80 live translations</b> per day' }, { i: '🎙️', t: '<b>40 voice translations</b> per day' }, { i: '💬', t: '<b>Conversation Mode</b> unlocked' }],
+        'voice': [{ i: '🎙️', t: '<b>40 voice translations</b> per day' }, { i: '🌐', t: '<b>80 live translations</b> per day' }, { i: '💬', t: '<b>Conversation Mode</b> unlocked' }],
+        'identify': [{ i: '📸', t: '<b>15 place IDs</b> per day' }, { i: '🔍', t: '<b>20 text searches</b> per day' }, { i: '🗺️', t: 'Full tips, cost, best time' }],
+        'tool': [{ i: '🛡️', t: '<b>All 25+ safety tools</b> unlocked' }, { i: '⚡', t: '<b>50 tool uses</b> per day' }, { i: '💱', t: 'Price check, safe routes, medical SOS' }],
+        'ai_story': [{ i: '📖', t: '<b>5 AI travel stories</b> per month' }, { i: '📔', t: '<b>5 AI trip journals</b> per month' }, { i: '📄', t: '<b>Export diary</b> as PDF + TXT' }],
+        'journal': [{ i: '📔', t: '<b>5 AI journals</b> per month' }, { i: '📖', t: '<b>5 AI travel stories</b> per month' }, { i: '💾', t: '<b>100 diary entries</b> per trip' }],
+        'default': [{ i: '⚡', t: '<b>All Pro features</b> unlocked' }, { i: '🗺️', t: '<b>15 AI trip plans</b> per month' }, { i: '🌐', t: '<b>80 translations</b> per day' }],
+      };
+
+      var ICONS = { plan: '🗺️', multicity: '🏙️', translation: '🌐', voice: '🎙️', identify: '📸', tool: '🛡️', ai_story: '📖', journal: '📔', default: '⚡' };
+
+      function show(data) {
+        var isPro = data.is_pro || false;
+        var feature = data.feature || 'default';
+        var used = data.used || 0;
+        var limit = data.limit || 0;
+        var label = data.feature_label || 'This feature';
+        _feature = feature;
+
+        document.getElementById('yupIcon').textContent = ICONS[feature] || '⚡';
+        document.getElementById('yupIcon').className = 'yup-icon ' + (isPro ? 'pro' : 'free');
+        document.getElementById('yupMeterLabel').textContent = label;
+        document.getElementById('yupMeterCount').textContent = used + ' / ' + limit;
+        document.getElementById('yupMeterFill').style.width = '100%';
+
+        if (isPro) {
+          document.getElementById('yupTitle').textContent = 'Daily limit reached';
+          document.getElementById('yupSub').textContent = label + ' limit reached. Resets at midnight.';
+          document.getElementById('yupReset').style.display = 'flex';
+          document.getElementById('yupPerksWrap').style.display = 'none';
+          document.getElementById('yupPrices').style.display = 'none';
+          document.getElementById('yupPayBtn').style.display = 'none';
+          document.getElementById('yupDismiss').textContent = 'Got it';
+        } else {
+          document.getElementById('yupTitle').textContent = 'You\'ve hit your free limit';
+          document.getElementById('yupSub').textContent = 'Used ' + used + '/' + limit + ' free ' + label + '. Upgrade to keep going.';
+          document.getElementById('yupReset').style.display = 'none';
+          document.getElementById('yupPerksWrap').style.display = 'block';
+          document.getElementById('yupPrices').style.display = 'flex';
+          document.getElementById('yupPayBtn').style.display = 'flex';
+          document.getElementById('yupDismiss').textContent = 'Maybe later';
+
+          var perks = PERKS[feature] || PERKS['default'];
+          document.getElementById('yupPerks').innerHTML = perks.map(function (p) {
+            return '<div class="yup-perk"><div class="yup-perk-icon">' + p.i + '</div><span>' + p.t + '</span></div>';
+          }).join('');
+          selectPlan('monthly');
+        }
+
+        document.getElementById('yupBackdrop').classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function hide() {
+        document.getElementById('yupBackdrop').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+
+      function selectPlan(plan) {
+        _plan = plan;
+        document.getElementById('yupWeekly').classList.toggle('selected', plan === 'weekly');
+        document.getElementById('yupMonthly').classList.toggle('selected', plan === 'monthly');
+        document.getElementById('yupPayText').textContent = 'Get Pro — ' + (plan === 'weekly' ? '₹99/week' : '₹399/month');
+      }
+
+      function goUpgrade() {
+        hide();
+        window.location.href = '/pricing?period=' + _plan + '&from=' + _feature;
+      }
+
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hide(); });
+
+      return { show: show, hide: hide, selectPlan: selectPlan, goUpgrade: goUpgrade };
+    })();
+
+  </script>
 </body>
+
 </html>

@@ -1,31 +1,28 @@
 """
-app.py — Yaply COMPLETE Production App v4
+app.py — Yaply COMPLETE Production App v5
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Google OAuth FIXED (403 was missing route + limiter exempt)
-✅ All AI features: Plan, Multi-city, Journey, Discover, Visa, Weather, Currency...
-✅ All Safety features: Scam, Price, Safe Route, Medical, Laws, Flight Rights...
-✅ After Trip: Journal, Stats, Review, Bill Split, Next Trip...
-✅ Diary & Groups blueprints
-✅ WebSockets: /stream + /convo-ws
-✅ Rate limiting with proper exemptions
-✅ Security headers
-✅ JWT auth on all routes that need it
-✅ Input validation + sanitization
-✅ Production-ready for Render
+✅ Supabase PostgreSQL
+✅ check_feature_limit as proper decorator
+✅ All limits enforced (free + pro)
+✅ /api/me/status — full plan + usage
+✅ Post-signup flow: signup → onboarding → pricing → app
+✅ All AI features gated
+✅ Admin dashboard
+✅ Payment + promo system
 """
 
 # ── IMPORTS ──────────────────────────────────────────────────
-from diary import diary_bp, init_diary_db
 from groups import groups_bp, init_groups_db, register_socketio_events
 import os, io, base64, json, wave, struct, threading, time
 import requests as req
 from dotenv import load_dotenv
+from functools import wraps
 load_dotenv()
 
 # ── FLASK ─────────────────────────────────────────────────────
 from flask import (
     Flask, request, jsonify, render_template,
-    redirect, url_for, session, make_response, g
+    redirect, url_for, session, make_response, g, Response
 )
 from flask_cors import CORS
 
@@ -35,7 +32,6 @@ CORS(app, supports_credentials=True)
 
 # ── BLUEPRINTS ────────────────────────────────────────────────
 app.register_blueprint(groups_bp)
-app.register_blueprint(diary_bp)
 
 # ── SOCKETIO + SOCK ───────────────────────────────────────────
 from flask_socketio import SocketIO
@@ -63,13 +59,13 @@ limiter = Limiter(
     storage_uri="memory://"
 )
 
-# ── DATABASE + AUTH ───────────────────────────────────────────
+# ── DATABASE ──────────────────────────────────────────────────
 from database import (
-    init_db, log_action, get_user_plan, get_user_usage, check_limit, increment_usage,
-    create_payment, confirm_payment,  
-    admin_get_stats, admin_get_users, get_user_by_email, query_all,
-    get_promo_code, check_promo_redeemed, redeem_promo, query_all, execute,
-    query_one, execute as db_execute,
+    init_db, log_action, get_user_plan, get_user_usage,
+    create_payment, confirm_payment,
+    admin_get_stats, admin_get_users, get_user_by_email,
+    get_promo_code, check_promo_redeemed, redeem_promo,
+    query_all, query_one, execute,
     activate_pro, complete_onboarding, FREE_LIMITS, PRO_LIMITS,
     save_trip, get_trips, get_trip, update_trip, delete_trip,
     save_place, get_places, delete_place,
@@ -78,12 +74,14 @@ from database import (
     get_diary_trips, get_diary_trip, create_diary_trip, get_diary_entries,
     create_diary_entry, delete_diary_entry, toggle_diary_favorite, get_diary_stats
 )
-from auth import register_auth_routes, require_auth, decode_token, get_token_from_request, optional_auth, safe_user
+from auth import (
+    register_auth_routes, require_auth, decode_token,
+    get_token_from_request, optional_auth, safe_user
+)
 
 init_db()
 register_auth_routes(app)
 init_groups_db()
-
 
 # ── AI CLIENTS ────────────────────────────────────────────────
 from groq import Groq
@@ -94,9 +92,8 @@ if not _groq_key:
     raise RuntimeError("GROQ_API_KEY not set — app cannot start")
 groq_client = Groq(api_key=_groq_key)
 
-# Groq Model Constants
-SCOUT    = "meta-llama/llama-4-scout-17b-16e-instruct"
-MAVERICK = "meta-llama/llama-4-maverick-17b-128e-instruct"
+SCOUT     = "meta-llama/llama-4-scout-17b-16e-instruct"
+MAVERICK  = "meta-llama/llama-4-maverick-17b-128e-instruct"
 MODEL_70B = "llama-3.3-70b-versatile"
 
 try:
@@ -104,66 +101,6 @@ try:
     deepl_client = deepl.Translator(os.getenv("DEEPL_API_KEY", ""))
 except Exception:
     deepl_client = None
-
-# ══════════════════════════════════════════════════════════
-# LIMIT CHECK DECORATOR
-# ══════════════════════════════════════════════════════════
-
-def check_feature_limit(user_id, feature_key, increment=True):
-    """
-    feature_key examples:
-      'plan'        → checks plans_used_month vs plans_month
-      'translation' → checks translations_today vs translations_day
-      'voice'       → voice_today vs voice_day
-      'identify'    → identify_today vs identify_day
-      'multicity'   → multicity_used_month vs multicity_month
-      'ai_story'    → ai_story_used vs ai_story_month
-      'journal'     → journal_used_month vs ai_journal_month
-      'tool'        → tools_today vs tools_day
-      'camera_scan' → camera_scan_day (needs new col)
-      'packing'     → packing_day (needs new col)
-      'budget'      → budget_day (needs new col)
- 
-    Returns: (allowed:bool, used:int, limit:int, plan:str)
-    """
-    from database import get_user_plan, query_one, execute, FREE_LIMITS, PRO_LIMITS
- 
-    plan   = get_user_plan(user_id)
-    limits = PRO_LIMITS if plan == 'pro' else FREE_LIMITS
- 
-    # Map feature → (db_column, limit_key)
-    col_map = {
-        'plan':        ('plans_used_month',     'plans_month'),
-        'multicity':   ('multicity_used_month', 'multicity_month'),
-        'translation': ('translations_today',   'translations_day'),
-        'voice':       ('voice_today',          'voice_day'),
-        'identify':    ('identify_today',       'identify_photo_day'),
-        'tool':        ('tools_today',          'tools_day'),
-        'ai_story':    ('ai_story_used',        'ai_story_month'),
-        'journal':     ('journal_used_month',   'ai_journal_month'),
-    }
- 
-    if feature_key not in col_map:
-        return True, 0, 999, plan
- 
-    col, limit_key = col_map[feature_key]
-    limit = limits.get(limit_key, 0)
- 
-    # Pro-only feature (limit = 0 on free)
-    if limit == 0:
-        return False, 0, 0, plan
- 
-    user = query_one(f'SELECT {col} FROM users WHERE id=%s', (user_id,))
-    used = (user or {}).get(col, 0) or 0
- 
-    if used >= limit:
-        return False, used, limit, plan
- 
-    if increment:
-        execute(f'UPDATE users SET {col}={col}+1 WHERE id=%s', (user_id,))
- 
-    return True, used + (1 if increment else 0), limit, plan
- 
 
 # ── ENV KEYS ──────────────────────────────────────────────────
 WEATHER_KEY          = os.getenv("OPENWEATHER_API_KEY", "")
@@ -173,6 +110,12 @@ UNSPLASH_KEY         = os.getenv("UNSPLASH_ACCESS_KEY", "")
 GOOGLE_CLIENT_ID     = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
 GOOGLE_REDIRECT_URI  = os.getenv("GOOGLE_REDIRECT_URI", "https://www.yaply.live/auth/google/callback")
+
+# ── RAZORPAY ──────────────────────────────────────────────────
+import razorpay
+rzp_client = razorpay.Client(
+    auth=(os.getenv('RAZORPAY_KEY_ID'), os.getenv('RAZORPAY_KEY_SECRET'))
+)
 
 # ── SECURITY HEADERS ──────────────────────────────────────────
 @app.after_request
@@ -184,7 +127,110 @@ def add_security_headers(r):
     r.headers['Permissions-Policy']      = 'geolocation=(self), microphone=(self), camera=(self)'
     return r
 
-# ── LANGUAGE MAPS ─────────────────────────────────────────────
+
+# ════════════════════════════════════════════════════════════════
+#  HELPERS
+# ════════════════════════════════════════════════════════════════
+
+def clean(text, max_len=500):
+    if not text: return ""
+    return str(text).strip()[:max_len]
+
+def validate(data, required_fields, max_len=500):
+    if not data or not isinstance(data, dict):
+        return False, "Invalid request data"
+    for field in required_fields:
+        if field not in data:
+            return False, f"Missing field: {field}"
+        val = data[field]
+        if isinstance(val, str):
+            if len(val.strip()) == 0:
+                return False, f"{field} cannot be empty"
+            if len(val) > max_len:
+                return False, f"{field} too long (max {max_len} chars)"
+    return True, ""
+
+
+# ════════════════════════════════════════════════════════════════
+#  FEATURE LIMIT SYSTEM
+# ════════════════════════════════════════════════════════════════
+
+# Maps feature key → (db_column, limit_key, display_label)
+FEATURE_MAP = {
+    'plan':        ('plans_used_month',      'plans_month',        'AI Trip Plans'),
+    'multicity':   ('multicity_used_month',  'multicity_month',    'Multi-City Planning'),
+    'translation': ('translations_today',    'translations_day',   'Live Translation'),
+    'voice':       ('voice_today',           'voice_day',          'Voice Translation'),
+    'identify':    ('identify_today',        'identify_photo_day', 'Place Finder'),
+    'tool':        ('tools_today',           'tools_day',          'Safety Tools'),
+    'ai_story':    ('ai_story_used',         'ai_story_month',     'AI Travel Story'),
+    'journal':     ('journal_used_month',    'ai_journal_month',   'AI Trip Journal'),
+}
+
+def check_feature_limit(feature_key):
+    """
+    Decorator — use on any AI route to enforce plan limits.
+    Usage: @check_feature_limit('plan')
+    Returns 429 with limit_reached:true if blocked.
+    Does NOT increment — increment manually after success.
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if feature_key not in FEATURE_MAP:
+                return f(*args, **kwargs)
+
+            col, limit_key, label = FEATURE_MAP[feature_key]
+            plan   = get_user_plan(g.user_id)
+            limits = PRO_LIMITS if plan == 'pro' else FREE_LIMITS
+            limit  = limits.get(limit_key, 0)
+
+            # Pro-only feature — free user blocked
+            if limit == 0:
+                return jsonify({
+                    'success':        False,
+                    'limit_reached':  True,
+                    'is_pro':         False,
+                    'feature':        feature_key,
+                    'feature_label':  label,
+                    'used':           0,
+                    'limit':          0,
+                    'error':          f'{label} is a Pro-only feature. Upgrade to unlock.',
+                    'upgrade_prompt': True,
+                    'upgrade_url':    '/pricing',
+                }), 429
+
+            # Check current usage
+            row  = query_one(f'SELECT {col} FROM users WHERE id=%s', (g.user_id,))
+            used = (row or {}).get(col, 0) or 0
+
+            if used >= limit:
+                if plan == 'pro':
+                    msg = f"You've used all {limit} {label} for today. Resets at midnight."
+                else:
+                    msg = f"You've used your {limit} free {label}. Upgrade to Pro for more."
+                return jsonify({
+                    'success':        False,
+                    'limit_reached':  True,
+                    'is_pro':         plan == 'pro',
+                    'feature':        feature_key,
+                    'feature_label':  label,
+                    'used':           used,
+                    'limit':          limit,
+                    'error':          msg,
+                    'upgrade_prompt': plan != 'pro',
+                    'upgrade_url':    '/pricing',
+                }), 429
+
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
+
+# ════════════════════════════════════════════════════════════════
+#  LANGUAGE MAPS
+# ════════════════════════════════════════════════════════════════
+
 EDGE_VOICES = {
     'en':'en-US-JennyNeural','es':'es-ES-ElviraNeural','fr':'fr-FR-DeniseNeural',
     'de':'de-DE-KatjaNeural','ja':'ja-JP-NanamiNeural','zh':'zh-CN-XiaoxiaoNeural',
@@ -238,26 +284,8 @@ SLOW_LANGS = {'hi','ar','zh','ja','ko'}
 
 
 # ════════════════════════════════════════════════════════════════
-#  HELPERS
+#  AUDIO / AI HELPERS
 # ════════════════════════════════════════════════════════════════
-
-def validate(data, required_fields, max_len=500):
-    if not data or not isinstance(data, dict):
-        return False, "Invalid request data"
-    for field in required_fields:
-        if field not in data:
-            return False, f"Missing field: {field}"
-        val = data[field]
-        if isinstance(val, str):
-            if len(val.strip()) == 0:
-                return False, f"{field} cannot be empty"
-            if len(val) > max_len:
-                return False, f"{field} too long (max {max_len} chars)"
-    return True, ""
-
-def clean(text, max_len=500):
-    if not text: return ""
-    return str(text).strip()[:max_len]
 
 def get_rms(audio_bytes):
     try:
@@ -283,12 +311,9 @@ def audio_to_wav(raw_bytes, sample_rate=16000):
     n = normalize_audio(raw_bytes)
     buf = io.BytesIO()
     with wave.open(buf, 'wb') as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(sample_rate)
-        wf.writeframes(n)
-    buf.seek(0)
-    return buf.read()
+        wf.setnchannels(1); wf.setsampwidth(2)
+        wf.setframerate(sample_rate); wf.writeframes(n)
+    buf.seek(0); return buf.read()
 
 def is_valid(text):
     if not text: return False
@@ -303,26 +328,22 @@ def safe_send(ws, data):
 
 def groq_json(prompt, model=SCOUT, temp=0.3, max_tok=1000):
     models_to_try = [model]
-    if model == MODEL_70B:
-        models_to_try.append(SCOUT)
-
+    if model == MODEL_70B: models_to_try.append(SCOUT)
     last_error = None
     for m in models_to_try:
         try:
             response = groq_client.chat.completions.create(
                 model=m,
                 messages=[
-                    {"role": "system", "content":
-                     "Return ONLY valid JSON. No markdown. No backticks. No explanation."},
+                    {"role": "system", "content": "Return ONLY valid JSON. No markdown. No backticks. No explanation."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=temp,
-                max_tokens=max_tok
+                temperature=temp, max_tokens=max_tok
             )
             return clean_json(response.choices[0].message.content)
         except Exception as e:
             last_error = e
-            print(f"[Groq] {m} failed: {e}, trying fallback...")
+            print(f"[Groq] {m} failed: {e}")
             continue
     raise last_error
 
@@ -333,13 +354,10 @@ def clean_json(text):
         for part in parts:
             if '{' in part:
                 text = part
-                if text.startswith('json'):
-                    text = text[4:]
+                if text.startswith('json'): text = text[4:]
                 break
-    start = text.find('{')
-    end   = text.rfind('}') + 1
-    if start != -1 and end > start:
-        text = text[start:end]
+    start = text.find('{'); end = text.rfind('}') + 1
+    if start != -1 and end > start: text = text[start:end]
     return json.loads(text)
 
 def transcribe(wav_data, lang_hint=None):
@@ -359,10 +377,7 @@ def transcribe(wav_data, lang_hint=None):
     text     = result.text.strip()
     detected = getattr(result, 'language', 'unknown')
     segments = getattr(result, 'segments', [])
-    conf     = (
-        sum(abs(s.get('avg_logprob', -1)) for s in segments) / max(len(segments), 1)
-        if segments else 0.0
-    )
+    conf     = (sum(abs(s.get('avg_logprob', -1)) for s in segments) / max(len(segments), 1) if segments else 0.0)
     return text, detected, conf
 
 def translate(text, target_lang, src_lang=None):
@@ -405,9 +420,32 @@ def tts(text, lang_code):
             buf = io.BytesIO()
             async for chunk in communicate.stream():
                 if chunk['type'] == 'audio': buf.write(chunk['data'])
-            buf.seek(0)
-            return buf.read()
+            buf.seek(0); return buf.read()
     return asyncio.run(_run())
+
+
+# ════════════════════════════════════════════════════════════════
+#  ADMIN DECORATOR
+# ════════════════════════════════════════════════════════════════
+
+ADMIN_EMAIL = 'yaplytranslator@gmail.com'
+
+def require_admin(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = get_token_from_request()
+        if not token:
+            return jsonify({'success': False, 'error': 'No token'}), 401
+        payload = decode_token(token)
+        if not payload:
+            return jsonify({'success': False, 'error': 'Invalid token'}), 401
+        user = get_user_by_id(payload.get('user_id'))
+        if not user or user['email'].lower() != ADMIN_EMAIL.lower():
+            return jsonify({'success': False, 'error': 'Admin only'}), 403
+        g.user_id = user['id']
+        g.user    = user
+        return f(*args, **kwargs)
+    return decorated
 
 
 # ════════════════════════════════════════════════════════════════
@@ -421,88 +459,84 @@ def health(): return 'OK', 200
 def ping(): return 'pong', 200
 
 
-
-
 # ════════════════════════════════════════════════════════════════
 #  PAGE ROUTES
 # ════════════════════════════════════════════════════════════════
 
 @app.route('/')
-def landing():
-    return render_template('landing.html')
+def landing(): return render_template('landing.html')
 
 @app.route('/login')
 @limiter.exempt
-def login_page():
-    return render_template('auth.html', google_client_id=GOOGLE_CLIENT_ID)
+def login_page(): return render_template('auth.html', google_client_id=GOOGLE_CLIENT_ID)
 
 @app.route('/app')
 @limiter.exempt
 def main_app():
-    # Handle token from Google OAuth redirect
     token = request.args.get('token', '')
     name  = request.args.get('name', '')
-    return render_template('yaply-app.html',
-                           google_client_id=GOOGLE_CLIENT_ID,
-                           oauth_token=token,
-                           oauth_name=name)
+    return render_template('yaply-app.html', google_client_id=GOOGLE_CLIENT_ID, oauth_token=token, oauth_name=name)
+
+@app.route('/onboarding')
+def onboarding_page(): return render_template('onboarding.html')
+
+@app.route('/pricing')
+def pricing_page(): return render_template('pricing.html')
 
 @app.route('/plan')
-def plan_page():
-    return render_template('before_trip.html')
+def plan_page(): return render_template('before_trip.html')
 
 @app.route('/during')
-def during_page():
-    return render_template('during_trip.html')
+def during_page(): return render_template('during_trip.html')
 
 @app.route('/after')
-def after_page():
-    return render_template('after_trip.html')
+@app.route('/after-trip')
+def after_page(): return render_template('after_trip.html')
 
 @app.route('/tools')
-def tools_page():
-    return render_template('tools_extra.html')
+def tools_page(): return render_template('tools_extra.html')
 
 @app.route('/discover')
-def discover_page():
-    return render_template('discover.html')
-
-
+def discover_page(): return render_template('discover.html')
 
 @app.route('/translate')
-def translate_page():
-    return render_template('stream.html')
+def translate_page(): return render_template('stream.html')
 
 @app.route('/convo')
-def convo_page():
-    return render_template('convo.html')
+def convo_page(): return render_template('convo.html')
 
 @app.route('/camera')
-def camera_page():
-    return render_template('camera.html')
+def camera_page(): return render_template('camera.html')
 
 @app.route('/diary')
-def diary_page():
-    return render_template('yaply_diary.html')
+def diary_page(): return render_template('yaply_diary.html')
 
 @app.route('/groups')
 @app.route('/groups/<int:group_id>')
-def groups_page(group_id=None):
-    return render_template('yaply_groups.html')
+def groups_page(group_id=None): return render_template('yaply_groups.html')
 
 @app.route('/join/<code>')
 @limiter.exempt
-def join_group_magic(code):
-    """Magic link for group join — auto-redirects to groups page with code"""
-    return render_template('yaply_groups.html', join_code=code)
+def join_group_magic(code): return render_template('yaply_groups.html', join_code=code)
 
-@app.route('/after-trip')
-def after_trip_page():
-    return render_template('after_trip.html')
+@app.route('/me')
+def profile_page(): return render_template('profile.html')
+
+@app.route('/admin')
+def admin_page(): return render_template('yaply_admin.html')
+
+@app.route('/privacy')
+def privacy(): return render_template('privacy.html')
+
+@app.route('/terms')
+def terms(): return render_template('terms.html')
+
+@app.route('/offline')
+def offline(): return render_template('offline.html')
 
 
 # ════════════════════════════════════════════════════════════════
-#  AUTH API ROUTES
+#  AUTH + USER API
 # ════════════════════════════════════════════════════════════════
 
 @app.route('/api/me', methods=['GET'])
@@ -510,15 +544,103 @@ def after_trip_page():
 def api_me():
     return jsonify({'success': True, 'user': safe_user(g.user)})
 
+@app.route('/api/me/status')
+@require_auth
+def api_user_status():
+    """Full plan status + usage + limits — called on every page load."""
+    try:
+        usage_data = get_user_usage(g.user_id)
+        if not usage_data:
+            return jsonify({'success': False, 'error': 'User not found'})
+
+        plan   = usage_data['plan']
+        limits = usage_data['limits']
+        usage  = usage_data['usage']
+
+        remaining = {}
+        for feat, used_key in [
+            ('translations_day',   'translations_today'),
+            ('voice_day',          'voice_today'),
+            ('identify_photo_day', 'identify_today'),
+            ('tools_day',          'tools_today'),
+            ('plans_month',        'plans_used_month'),
+            ('multicity_month',    'multicity_used_month'),
+            ('ai_story_month',     'ai_story_used'),
+            ('ai_journal_month',   'journal_used_month'),
+        ]:
+            lim  = limits.get(feat, 0)
+            used = usage.get(used_key, 0)
+            remaining[feat] = max(0, lim - used)
+
+        return jsonify({
+            'success':         True,
+            'plan':            plan,
+            'is_pro':          plan == 'pro',
+            'pro_expires_at':  usage_data.get('pro_expires_at'),
+            'days_remaining':  usage_data.get('days_remaining', 0),
+            'onboarding_done': usage_data.get('onboarding_done', False),
+            'pro_expired':     bool(usage_data.get('pro_expires_at') and plan == 'free'),
+            'limits':          limits,
+            'usage':           usage,
+            'remaining':       remaining,
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/me/update', methods=['POST'])
+@require_auth
+def api_update_profile():
+    try:
+        data    = request.get_json() or {}
+        allowed = ['name', 'home_city', 'passport', 'currency']
+        updates = {k: data[k] for k in allowed if k in data and data[k]}
+        if updates: update_user(g.user_id, **updates)
+        user = get_user_by_id(g.user_id)
+        return jsonify({'success': True, 'user': safe_user(user)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/profile', methods=['GET'])
+@require_auth
+def api_profile():
+    return jsonify({'success': True, 'user': safe_user(g.user), 'stats': get_user_stats(g.user_id)})
+
 
 # ════════════════════════════════════════════════════════════════
-#  DATABASE / TRIP ROUTES
+#  ONBOARDING
+# ════════════════════════════════════════════════════════════════
+
+@app.route('/api/onboarding/complete', methods=['POST'])
+@require_auth
+def api_complete_onboarding():
+    try:
+        data         = request.get_json() or {}
+        name         = clean(data.get('name', ''), 50)
+        home_city    = clean(data.get('home_city', ''), 50)
+        passport     = clean(data.get('passport', 'India'), 30)
+        currency     = clean(data.get('currency', 'INR'), 3)
+        travel_style = clean(data.get('travel_style', ''), 20)
+        budget_style = clean(data.get('budget_style', ''), 20)
+
+        if not name:
+            return jsonify({'success': False, 'error': 'Name is required'})
+
+        complete_onboarding(g.user_id, name, home_city, passport, currency, travel_style, budget_style)
+        user = get_user_by_id(g.user_id)
+        log_action(g.user_id, 'onboarding_complete', request.remote_addr)
+
+        return jsonify({'success': True, 'user': safe_user(user), 'redirect': '/pricing'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+# ════════════════════════════════════════════════════════════════
+#  TRIP ROUTES
 # ════════════════════════════════════════════════════════════════
 
 @app.route('/api/trips', methods=['GET'])
 @require_auth
-def api_get_trips():
-    return jsonify({'success': True, 'trips': get_trips(g.user_id)})
+def api_get_trips(): return jsonify({'success': True, 'trips': get_trips(g.user_id)})
 
 @app.route('/api/trips', methods=['POST'])
 @require_auth
@@ -529,17 +651,16 @@ def api_save_trip():
         ok, err = validate(data, ['destination'])
         if not ok: return jsonify({'success': False, 'error': err})
         trip_id = save_trip(
-            user_id     = g.user_id,
-            destination = clean(data.get('destination', '')),
-            origin      = clean(data.get('origin', 'India')),
-            days        = min(max(int(data.get('days', 7)), 1), 365),
-            people      = min(max(int(data.get('people', 1)), 1), 50),
-            budget      = clean(data.get('budget', '80000')),
-            currency    = clean(data.get('currency', 'INR'), 3),
-            vibes       = clean(data.get('vibes', 'Adventure')),
-            passport    = clean(data.get('passport', 'India')),
-            plan_data   = data.get('plan_data'),
-            start_date   = clean(data.get('start_date', ''))
+            user_id=g.user_id, destination=clean(data.get('destination', '')),
+            origin=clean(data.get('origin', 'India')),
+            days=min(max(int(data.get('days', 7)), 1), 365),
+            people=min(max(int(data.get('people', 1)), 1), 50),
+            budget=clean(data.get('budget', '80000')),
+            currency=clean(data.get('currency', 'INR'), 3),
+            vibes=clean(data.get('vibes', 'Adventure')),
+            passport=clean(data.get('passport', 'India')),
+            plan_data=data.get('plan_data'),
+            start_date=clean(data.get('start_date', ''))
         )
         log_action(g.user_id, 'save_trip', request.remote_addr)
         return jsonify({'success': True, 'trip_id': trip_id})
@@ -568,10 +689,14 @@ def api_delete_trip(trip_id):
     delete_trip(trip_id, g.user_id)
     return jsonify({'success': True})
 
+
+# ════════════════════════════════════════════════════════════════
+#  PLACES + EXPENSES + JOURNAL
+# ════════════════════════════════════════════════════════════════
+
 @app.route('/api/places', methods=['GET'])
 @require_auth
-def api_get_places():
-    return jsonify({'success': True, 'places': get_places(g.user_id)})
+def api_get_places(): return jsonify({'success': True, 'places': get_places(g.user_id)})
 
 @app.route('/api/places', methods=['POST'])
 @require_auth
@@ -581,16 +706,13 @@ def api_save_place():
         ok, err = validate(data, ['name'])
         if not ok: return jsonify({'success': False, 'error': err})
         place_id = save_place(
-            user_id     = g.user_id,
-            name        = clean(data.get('name', '')),
-            city        = clean(data.get('city', '')),
-            country     = clean(data.get('country', '')),
-            continent   = clean(data.get('continent', '')),
-            description = clean(data.get('description', ''), 1000),
-            image_url   = clean(data.get('image_url', ''), 500),
-            emoji       = clean(data.get('emoji', '📍'), 5),
-            tags        = data.get('tags', []),
-            trip_id     = data.get('trip_id')
+            user_id=g.user_id, name=clean(data.get('name', '')),
+            city=clean(data.get('city', '')), country=clean(data.get('country', '')),
+            continent=clean(data.get('continent', '')),
+            description=clean(data.get('description', ''), 1000),
+            image_url=clean(data.get('image_url', ''), 500),
+            emoji=clean(data.get('emoji', '📍'), 5),
+            tags=data.get('tags', []), trip_id=data.get('trip_id')
         )
         return jsonify({'success': True, 'place_id': place_id})
     except Exception as e:
@@ -615,14 +737,11 @@ def api_add_expense(trip_id):
         ok, err = validate(data, ['title', 'amount'])
         if not ok: return jsonify({'success': False, 'error': err})
         exp_id = add_expense(
-            trip_id      = trip_id,
-            user_id      = g.user_id,
-            title        = clean(data.get('title', '')),
-            amount       = float(data.get('amount', 0)),
-            category     = clean(data.get('category', 'Other')),
-            currency     = clean(data.get('currency', 'INR'), 3),
-            paid_by      = clean(data.get('paid_by', '')),
-            split_with   = data.get('split_with', [])
+            trip_id=trip_id, user_id=g.user_id,
+            title=clean(data.get('title', '')), amount=float(data.get('amount', 0)),
+            category=clean(data.get('category', 'Other')),
+            currency=clean(data.get('currency', 'INR'), 3),
+            paid_by=clean(data.get('paid_by', '')), split_with=data.get('split_with', [])
         )
         return jsonify({'success': True, 'expense_id': exp_id})
     except Exception as e:
@@ -649,15 +768,6 @@ def api_save_journal_route(trip_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
-@app.route('/api/profile', methods=['GET'])
-@require_auth
-def api_profile():
-    return jsonify({
-        'success': True,
-        'user':    safe_user(g.user),
-        'stats':   get_user_stats(g.user_id)
-    })
-
 
 # ════════════════════════════════════════════════════════════════
 #  AI — TRIP PLANNER
@@ -673,197 +783,51 @@ def api_plan():
         ok, err = validate(data, ['destination'])
         if not ok: return jsonify({'success': False, 'error': err})
 
-        destination  = clean(data.get('destination', ''))
-        origin       = clean(data.get('origin', 'India'))
-        days         = min(max(int(data.get('days', 5)), 1), 60)
-        budget       = clean(data.get('budget', '50000'))
-        vibe         = clean(data.get('vibe', 'adventure'))
-        people       = min(max(int(data.get('people', 1)), 1), 20)
-        currency     = clean(data.get('currency', 'INR'), 3)
-        passport     = clean(data.get('passport', 'India'))
-        travel_mode  = clean(data.get('travel_mode', 'smart'), 20).lower()
+        destination = clean(data.get('destination', ''))
+        origin      = clean(data.get('origin', 'India'))
+        days        = min(max(int(data.get('days', 5)), 1), 60)
+        budget      = clean(data.get('budget', '50000'))
+        vibe        = clean(data.get('vibe', 'adventure'))
+        people      = min(max(int(data.get('people', 1)), 1), 20)
+        currency    = clean(data.get('currency', 'INR'), 3)
+        passport    = clean(data.get('passport', 'India'))
+        travel_mode = clean(data.get('travel_mode', 'smart'), 20).lower()
 
-        # ── Detect if same country trip (no flights needed) ──
-        origin_country      = origin.split(',')[-1].strip().lower() if ',' in origin else origin.lower()
-        dest_country        = destination.split(',')[-1].strip().lower() if ',' in destination else destination.lower()
-        is_domestic         = origin_country in dest_country or dest_country in origin_country
-        is_international    = not is_domestic
+        origin_country = origin.split(',')[-1].strip().lower() if ',' in origin else origin.lower()
+        dest_country   = destination.split(',')[-1].strip().lower() if ',' in destination else destination.lower()
+        is_domestic    = origin_country in dest_country or dest_country in origin_country
 
-        # ── Build transport instructions based on mode ──
-        if travel_mode == 'flight' or (travel_mode == 'smart' and is_international):
-            transport_instruction = f"""
-TRANSPORT MODE: Flight
-- Include flight information and costs
-- Show budget_breakdown.flights with estimated cost in {currency}
-- Include best_airlines recommendations
-- Include flight_duration
-- Include best_time_to_book"""
-
+        if travel_mode == 'flight' or (travel_mode == 'smart' and not is_domestic):
+            transport_instruction = f"TRANSPORT MODE: Flight\n- Include flight info and costs in {currency}\n- Include best_airlines, flight_duration, best_time_to_book"
         elif travel_mode == 'train':
-            transport_instruction = f"""
-TRANSPORT MODE: Train / Rail
-- This user is travelling BY TRAIN, not by flight
-- DO NOT include any flight prices or airline info
-- budget_breakdown.flights should be "Not applicable"
-- Instead include: budget_breakdown.train with cost in {currency}
-- Include train_info: {{
-    "operator": "train operator name (e.g. Indian Railways)",
-    "train_name": "specific train if known",
-    "class_options": ["Sleeper", "3AC", "2AC", "1AC"],
-    "estimated_cost": "{currency} X",
-    "duration": "X hours",
-    "booking_tip": "how to book",
-    "journey_tips": ["tip1", "tip2"]
-  }}
-- Include how to reach railway station from origin city"""
-
+            transport_instruction = f"TRANSPORT MODE: Train\n- NO flights\n- budget_breakdown.flights = 'Not applicable'\n- Include train_info with operator, class_options, cost in {currency}, duration, booking_tip"
         elif travel_mode == 'bus':
-            transport_instruction = f"""
-TRANSPORT MODE: Bus
-- This user is travelling BY BUS, not by flight
-- DO NOT include any flight prices or airline info
-- budget_breakdown.flights should be "Not applicable"
-- Instead include: budget_breakdown.bus with cost in {currency}
-- Include bus_info: {{
-    "operators": ["operator1", "operator2"],
-    "type": "AC Sleeper / Volvo / Express",
-    "estimated_cost": "{currency} X",
-    "duration": "X hours",
-    "booking_tip": "how to book (RedBus, AbhiBus etc)",
-    "journey_tips": ["tip1", "tip2"]
-  }}"""
-
+            transport_instruction = f"TRANSPORT MODE: Bus\n- NO flights\n- budget_breakdown.flights = 'Not applicable'\n- Include bus_info with operators, type, cost in {currency}, duration, booking_tip"
         elif travel_mode == 'road':
-            transport_instruction = f"""
-TRANSPORT MODE: Road Trip / Self Drive / Cab
-- This user is travelling BY ROAD (car, cab, self-drive)
-- DO NOT include any flight prices
-- budget_breakdown.flights should be "Not applicable"
-- Include budget_breakdown.road with fuel + toll cost in {currency}
-- Include road_info: {{
-    "distance_km": "approximate km",
-    "drive_duration": "X hours",
-    "fuel_cost": "{currency} X",
-    "toll_cost": "{currency} X",
-    "cab_option": "{currency} X via Uber/Ola",
-    "road_tips": ["tip1", "tip2"],
-    "stops_enroute": ["interesting stop 1", "stop 2"]
-  }}"""
-
-        else:  # smart mode
+            transport_instruction = f"TRANSPORT MODE: Road\n- NO flights\n- Include road_info with distance_km, drive_duration, fuel_cost in {currency}, toll_cost, cab_option, stops_enroute"
+        else:
             if is_domestic:
-                transport_instruction = f"""
-TRANSPORT MODE: Smart (Domestic trip detected — {origin} to {destination})
-- Recommend the BEST transport option for this DOMESTIC route
-- If distance < 500km: recommend train or bus (NOT flight)
-- If distance 500-1000km: recommend train or flight based on cost
-- If distance > 1000km: recommend flight
-- Show the recommended transport in budget_breakdown
-- If recommending train/bus: set budget_breakdown.flights = "Not applicable for this route"
-- Include transport_recommendation: {{
-    "mode": "train/bus/flight/road",
-    "reason": "why this is best for this route",
-    "estimated_cost": "{currency} X",
-    "duration": "X hours"
-  }}"""
+                transport_instruction = f"TRANSPORT MODE: Smart Domestic ({origin} to {destination})\n- If <500km: recommend train/bus not flight\n- If 500-1000km: train or flight based on cost\n- If >1000km: flight\n- Include transport_recommendation with mode, reason, cost, duration"
             else:
-                transport_instruction = f"""
-TRANSPORT MODE: Smart (International trip — {origin} to {destination})
-- This is an international trip — include flight information
-- Show budget_breakdown.flights with estimated cost in {currency}"""
+                transport_instruction = f"TRANSPORT MODE: Smart International\n- Include flight info in {currency}"
 
-        # ── Build the full prompt ──
         prompt = f"""You are a world-class travel planner. Create a detailed {days}-day trip plan.
-
-TRIP DETAILS:
-- FROM: {origin}
-- TO: {destination}  
-- Duration: {days} days
-- People: {people}
-- Total Budget: {currency} {budget}
-- Travel Style: {vibe}
-- Passport: {passport}
-
+TRIP: FROM {origin} TO {destination} | {days} days | {people} people | {currency} {budget} | Style: {vibe} | Passport: {passport}
 {transport_instruction}
+RULES: All prices in {currency}. Budget realistic. Activities match {vibe} style. Hidden gems must be genuinely lesser-known.
+Return ONLY valid JSON with: destination, origin, days, travel_mode, language, currency, timezone, best_time_to_visit,
+budget_breakdown, flight_info, train_info, bus_info, road_info, transport_recommendation,
+itinerary (day/title/morning/afternoon/evening/lunch/dinner/accommodation),
+hidden_gems, local_transport, sim_internet, cultural_guide, vaccinations, packing_list,
+emergency_numbers, visa_info, payment_info, must_have_apps, power_plug, what_to_buy, what_to_avoid, local_phrases, tips"""
 
-CRITICAL RULES:
-1. ALL prices MUST be in {currency} only
-2. Budget must be realistic for {currency} {budget} total for {people} people
-3. Activities and restaurants must match the {vibe} travel style
-4. Hidden gems must be genuinely lesser-known places
-5. Budget breakdown must add up to approximately {currency} {budget}
+        result = groq_json(prompt, model=MODEL_70B, temp=0.3, max_tok=6000)
 
-Return ONLY valid JSON with this structure:
-{{
-  "destination": "{destination}",
-  "origin": "{origin}",
-  "days": {days},
-  "travel_mode": "{travel_mode}",
-  "language": "local language",
-  "currency": "local currency",
-  "timezone": "timezone",
-  "best_time_to_visit": "best months",
-  "budget_breakdown": {{
-    "flights": "{currency} X or Not applicable",
-    "train": "{currency} X (if train mode)",
-    "bus": "{currency} X (if bus mode)",
-    "road": "{currency} X (if road mode)",
-    "accommodation": "{currency} X",
-    "food": "{currency} X",
-    "transport": "{currency} X (local transport only)",
-    "activities": "{currency} X",
-    "miscellaneous": "{currency} X"
-  }},
-  "flight_info": null or {{"estimated_cost":"{currency} X","best_airlines":["a1"],"flight_duration":"Xh","best_time_to_book":"X weeks"}},
-  "train_info": null or {{"operator":"name","class_options":["3AC"],"estimated_cost":"{currency} X","duration":"Xh","booking_tip":"tip"}},
-  "bus_info": null or {{"operators":["name"],"type":"AC Sleeper","estimated_cost":"{currency} X","duration":"Xh","booking_tip":"tip"}},
-  "road_info": null or {{"distance_km":"X","drive_duration":"Xh","fuel_cost":"{currency} X","toll_cost":"{currency} X"}},
-  "transport_recommendation": null or {{"mode":"train","reason":"why","estimated_cost":"{currency} X","duration":"Xh"}},
-  "itinerary": [
-    {{
-      "day": 1,
-      "title": "Day title",
-      "morning": {{"activity": "name", "location": "place", "duration": "2h", "cost": "{currency} X", "tip": "insider tip"}},
-      "afternoon": {{"activity": "name", "location": "place", "duration": "2h", "cost": "{currency} X", "tip": "tip"}},
-      "evening": {{"activity": "name", "location": "place", "duration": "2h", "cost": "{currency} X", "tip": "tip"}},
-      "lunch": {{"restaurant": "name", "cuisine": "type", "cost": "{currency} X"}},
-      "dinner": {{"restaurant": "name", "cuisine": "type", "cost": "{currency} X"}},
-      "accommodation": {{"name": "hotel", "area": "area", "cost": "{currency} X/night"}}
-    }}
-  ],
-  "hidden_gems": [{{"name":"place","description":"why special","location":"area","best_time":"when","cost":"{currency} X"}}],
-  "local_transport": {{
-    "airport_to_city": {{"options":["opt1"],"cost":"{currency} X","duration":"30min"}},
-    "within_city": [{{"type":"Metro","cost":"{currency} X/ride","tip":"tip"}}],
-    "useful_apps": ["app1"]
-  }},
-  "sim_internet": {{"best_option":"option","cost":"{currency} X","data":"XGB","where_to_buy":"location"}},
-  "cultural_guide": {{"dos":["do1","do2","do3"],"donts":["dont1","dont2","dont3"],"dress_code":"advice","tipping":"culture","greetings":"how"}},
-  "vaccinations": {{"required":["v1"],"recommended":["v2"],"note":"advice"}},
-  "packing_list": ["item1","item2","item3"],
-  "emergency_numbers": {{"police":"number","ambulance":"number","fire":"number","tourist_helpline":"number"}},
-  "visa_info": {{"required":true,"type":"tourist","validity":"30 days","cost":"{currency} X"}},
-  "payment_info": {{"preferred":"card/cash","atm_availability":"common","notify_bank":true,"forex_tips":"advice"}},
-  "must_have_apps": [{{"name":"app","purpose":"what","platform":"iOS/Android"}}],
-  "power_plug": {{"type":"type","voltage":"220V","adapter_needed":true}},
-  "what_to_buy": ["item1","item2"],
-  "what_to_avoid": ["item1"],
-  "local_phrases": [{{"phrase":"Hello","translation":"local","pronunciation":"how"}}],
-  "tips": ["tip1","tip2","tip3"]
-}}"""
+        # Increment AFTER success
+        execute('UPDATE users SET plans_used_month=plans_used_month+1 WHERE id=%s', (g.user_id,))
 
-        result = groq_json(
-            prompt,
-            model=MODEL_70B,
-            temp=0.3,
-            max_tok=6000
-        )
-        
-        increment_usage(g.user_id, 'plan')
-        # Save to trip if trip_id provided
         trip_id = data.get('trip_id')
-        if trip_id:
-            update_trip(trip_id, g.user_id, plan_data=result, status='active')
+        if trip_id: update_trip(trip_id, g.user_id, plan_data=result, status='active')
 
         log_action(g.user_id, 'plan_trip', request.remote_addr)
         return jsonify({'success': True, 'plan': result})
@@ -900,22 +864,10 @@ def multi_city_plan():
         city_list  = ', '.join(c['name'] for c in cities)
 
         prompt = (
-            "You are the world's best multi-city trip planner.\n\n"
             "Plan an epic multi-city trip:\n"
-            "- Origin: " + str(origin) + "\n"
-            "- Cities in order: " + str(city_list) + "\n"
-            "- Cities data: " + str(json.dumps(cities)) + "\n"
-            "- Total days: " + str(total_days) + "\n"
-            "- Total budget: " + str(currency) + " " + str(total_budget) + " for " + str(people) + " people\n"
-            "- Travel style: " + str(vibe) + "\n"
-            "- Start date: " + str(start_date if start_date else 'flexible') + "\n"
-            "- Passport: " + str(passport) + "\n\n"
-            "RULES:\n"
-            "1. ALL prices in " + str(currency) + " only\n"
-            "2. Plan each city with full day-by-day itinerary\n"
-            "3. Include transit between every city with costs\n"
-            "4. Budget must sum to approximately " + str(total_budget) + "\n"
-            "5. Activities must match the " + str(vibe) + " travel style\n\n"
+            f"Origin: {origin} | Cities: {city_list} | {total_days} days | {currency} {total_budget} for {people} | Style: {vibe} | Passport: {passport}\n"
+            f"Cities data: {json.dumps(cities)}\n"
+            f"RULES: All prices in {currency}. Plan each city with full itinerary. Include transit between every city.\n"
             "Return ONLY valid JSON with: trip_title, origin, total_days, total_budget, currency, cities_count, "
             "route_overview, smart_suggestions, budget_split, cities (array with full itinerary per city), "
             "transit_plans, sim_strategy, packing_for_route, money_saving_tips"
@@ -927,12 +879,14 @@ def multi_city_plan():
                 {"role": "system", "content": "Return ONLY valid JSON. No markdown. No backticks."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3,
-            max_tokens=8000
+            temperature=0.3, max_tokens=8000
         )
         plan = clean_json(response.choices[0].message.content)
+
+        # Increment AFTER success
+        execute('UPDATE users SET multicity_used_month=multicity_used_month+1 WHERE id=%s', (g.user_id,))
+
         log_action(g.user_id, 'multi_city_plan', request.remote_addr)
-        increment_usage(g.user_id, 'multicity')
         return jsonify({'success': True, 'plan': plan})
     except Exception as e:
         import traceback; traceback.print_exc()
@@ -955,112 +909,26 @@ def api_journey():
         if not origin or not destination:
             return jsonify({'success': False, 'error': 'Origin and destination required'})
 
-        # Build mode-specific instruction
         if travel_mode == 'train':
-            mode_instruction = """
-TRAVEL MODE: Train only.
-- nearest_airports should be nearest TRAIN STATIONS not airports
-- Use field name nearest_airports but fill with train stations
-- Include train operators, classes, IRCTC booking info
-- NO flight options"""
+            mode_instruction = "TRAVEL MODE: Train only. nearest_airports = train stations. Include train operators, IRCTC. NO flights."
         elif travel_mode == 'bus':
-            mode_instruction = """
-TRAVEL MODE: Bus only.
-- nearest_airports should be nearest BUS STANDS/TERMINALS not airports
-- Use field name nearest_airports but fill with bus terminals
-- Include bus operators like RSRTC, GSRTC, RedBus options
-- NO flight options
-- distance_from_origin should be in KM — label it clearly as km not price"""
+            mode_instruction = "TRAVEL MODE: Bus only. nearest_airports = bus terminals. Include bus operators. NO flights."
         elif travel_mode == 'road':
-            mode_instruction = """
-TRAVEL MODE: Road/Drive only.
-- Include road distance, drive time, fuel cost, toll cost
-- nearest_airports field = major highway toll plazas or fuel stops
-- NO flight options"""
+            mode_instruction = "TRAVEL MODE: Road only. Include distance, drive time, fuel cost, toll. NO flights."
         else:
-            mode_instruction = """
-TRAVEL MODE: Best option (could be flight, train or bus).
-- nearest_airports = actual airports near origin
-- Include flight options if international or long distance
-- Include train as alternative if domestic"""
+            mode_instruction = "TRAVEL MODE: Best option. Include flights if international/long distance, train as alternative if domestic."
 
         result = groq_json(
             f"""Complete door-to-door journey planner.
-FROM: {origin}
-TO: {destination}
-CURRENCY: {currency}
-
+FROM: {origin} TO: {destination} CURRENCY: {currency}
 {mode_instruction}
-
-Return ONLY valid JSON:
-{{
-  "origin": "{origin}",
-  "destination": "{destination}",
-  "nearest_airports": [
-    {{
-      "name": "hub name",
-      "city": "city",
-      "code": "code if airport, blank if bus/train",
-      "distance_from_origin": "X km from {origin}"
-    }}
-  ],
-  "recommended_route": {{
-    "step1": "Step 1 description with transport and cost",
-    "step2": "Step 2 description",
-    "step3": "Step 3 description",
-    "step4": "Step 4 description if needed",
-    "total_duration": "X hours",
-    "total_cost": "{currency} X"
-  }},
-  "flight_options": [
-    {{
-      "airline": "operator name",
-      "mode": "{travel_mode}",
-      "duration": "X hours",
-      "price": "{currency} X",
-      "stops": 0,
-      "class": "class type",
-      "recommended": true
-    }}
-  ],
-  "alternative_routes": [],
-  "important_notes": ["note1", "note2"],
-  "documents_needed": ["doc1", "doc2"]
-}}""",
-            model=MODEL_70B,
-            temp=0.3,
-            max_tok=3000
+Return ONLY valid JSON with: origin, destination, nearest_airports (name/city/code/distance_from_origin),
+recommended_route (step1/step2/step3/step4/total_duration/total_cost),
+flight_options (airline/mode/duration/price/stops/class/recommended),
+alternative_routes, important_notes, documents_needed""",
+            model=MODEL_70B, temp=0.3, max_tok=3000
         )
         return jsonify({'success': True, 'journey': result})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-# ── SIM GUIDE ─────────────────────────────────────────────────
-
-@app.route('/api/sim-guide', methods=['POST'])
-@require_auth
-@limiter.limit("20 per hour")
-def sim_guide():
-    try:
-        data        = request.get_json() or {}
-        destination = clean(data.get('destination', ''))
-        origin      = clean(data.get('origin', 'India'))
-        days        = int(data.get('days', 7))
-        data_needs  = clean(data.get('data_needs', 'moderate'))
-        countries   = data.get('countries', [destination])
-        if not destination:
-            return jsonify({'success': False, 'error': 'Destination required'})
-
-        countries_str = ', '.join(countries) if isinstance(countries, list) else destination
-        result = groq_json(
-            f"""Expert SIM card guide for traveller from {origin} visiting {countries_str} for {days} days. Data usage: {data_needs}.
-Return JSON: top_recommendation (name/provider/type/cost/data/validity/where_to_buy/activation/coverage),
-all_options, esim_options (Airalo/Holafly/Nomad), airport_buying_guide, roaming_option (Jio/Airtel/Vi),
-connectivity_tips, data_saving_tips, offline_essentials, budget_summary""",
-            model=SCOUT, temp=0.2, max_tok=1000
-        )
-        return jsonify({'success': True, 'guide': result})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -1076,34 +944,23 @@ def api_weather():
         city = clean((request.get_json() or {}).get('city', ''))
         if not city: return jsonify({'success': False, 'error': 'City required'})
         if not WEATHER_KEY: return jsonify({'success': False, 'error': 'Weather API key not configured'})
-        url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={WEATHER_KEY}&units=metric&cnt=40"
+        url  = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={WEATHER_KEY}&units=metric&cnt=40"
         r    = req.get(url, timeout=10)
         data = r.json()
-        if data.get('cod') != '200':
-            return jsonify({'success': False, 'error': 'City not found'})
+        if data.get('cod') != '200': return jsonify({'success': False, 'error': 'City not found'})
         daily = {}
         for item in data['list']:
             date = item['dt_txt'].split(' ')[0]
             if date not in daily:
-                daily[date] = {
-                    'date': date,
-                    'temp_max': item['main']['temp_max'],
-                    'temp_min': item['main']['temp_min'],
-                    'description': item['weather'][0]['description'],
-                    'icon': item['weather'][0]['icon'],
-                    'humidity': item['main']['humidity'],
-                    'wind': item['wind']['speed']
-                }
+                daily[date] = {'date': date, 'temp_max': item['main']['temp_max'], 'temp_min': item['main']['temp_min'],
+                               'description': item['weather'][0]['description'], 'icon': item['weather'][0]['icon'],
+                               'humidity': item['main']['humidity'], 'wind': item['wind']['speed']}
             else:
                 daily[date]['temp_max'] = max(daily[date]['temp_max'], item['main']['temp_max'])
                 daily[date]['temp_min'] = min(daily[date]['temp_min'], item['main']['temp_min'])
-        increment_usage(g.user_id, 'tool')
-        return jsonify({
-            'success': True,
-            'city': data['city']['name'],
-            'country': data['city']['country'],
-            'forecast': list(daily.values())[:7]
-        })
+        # Increment AFTER success
+        execute('UPDATE users SET tools_today=tools_today+1 WHERE id=%s', (g.user_id,))
+        return jsonify({'success': True, 'city': data['city']['name'], 'country': data['city']['country'], 'forecast': list(daily.values())[:7]})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -1119,19 +976,10 @@ def api_currency():
         amount = float(data.get('amount', 1))
         from_c = clean(data.get('from', 'INR'), 3).upper()
         to_c   = clean(data.get('to', 'USD'), 3).upper()
-        if not EXCHANGE_KEY:
-            return jsonify({'success': False, 'error': 'Exchange API key not configured'})
-        r = req.get(
-            f"https://v6.exchangerate-api.com/v6/{EXCHANGE_KEY}/pair/{from_c}/{to_c}/{amount}",
-            timeout=10
-        ).json()
-        if r.get('result') != 'success':
-            return jsonify({'success': False, 'error': 'Currency not found'})
-        return jsonify({
-            'success': True, 'from': from_c, 'to': to_c,
-            'amount': amount, 'converted': round(r['conversion_result'], 2),
-            'rate': r['conversion_rate']
-        })
+        if not EXCHANGE_KEY: return jsonify({'success': False, 'error': 'Exchange API key not configured'})
+        r = req.get(f"https://v6.exchangerate-api.com/v6/{EXCHANGE_KEY}/pair/{from_c}/{to_c}/{amount}", timeout=10).json()
+        if r.get('result') != 'success': return jsonify({'success': False, 'error': 'Currency not found'})
+        return jsonify({'success': True, 'from': from_c, 'to': to_c, 'amount': amount, 'converted': round(r['conversion_result'], 2), 'rate': r['conversion_rate']})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -1144,7 +992,7 @@ def api_currency():
 @check_feature_limit('tool')
 def api_visa():
     try:
-        data = request.get_json() or {}
+        data        = request.get_json() or {}
         passport    = clean(data.get('passport', 'India'))
         destination = clean(data.get('destination', ''))
         if not destination: return jsonify({'success': False, 'error': 'Destination required'})
@@ -1152,13 +1000,13 @@ def api_visa():
             f"""Visa requirements for {passport} passport holder visiting {destination}.
 Return JSON: visa_required, visa_type, validity, cost, processing_days, apply_online, apply_url, documents, tips, visa_on_arrival, visa_free_days"""
         )
-        increment_usage(g.user_id, 'tool')
+        execute('UPDATE users SET tools_today=tools_today+1 WHERE id=%s', (g.user_id,))
         return jsonify({'success': True, 'visa': result})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
 
-# ── DISCOVER / IDENTIFY ───────────────────────────────────────
+# ── PLACE FINDER (PHOTO) ─────────────────────────────────────
 
 @app.route('/api/identify', methods=['POST'])
 @require_auth
@@ -1169,8 +1017,7 @@ def api_identify():
         data         = request.get_json() or {}
         image_base64 = data.get('image', '')
         if not image_base64: return jsonify({'success': False, 'error': 'No image provided'})
-        if len(image_base64) > 5 * 1024 * 1024:
-            return jsonify({'success': False, 'error': 'Image too large (max 5MB)'})
+        if len(image_base64) > 5 * 1024 * 1024: return jsonify({'success': False, 'error': 'Image too large (max 5MB)'})
 
         response = groq_client.chat.completions.create(
             model=SCOUT,
@@ -1187,12 +1034,15 @@ def api_identify():
             temperature=0.1, max_tokens=1500
         )
         result = clean_json(response.choices[0].message.content)
+        execute('UPDATE users SET identify_today=identify_today+1 WHERE id=%s', (g.user_id,))
         log_action(g.user_id, 'identify_place', request.remote_addr)
-        increment_usage(g.user_id, 'identify')
         return jsonify({'success': True, 'result': result})
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)})
+
+
+# ── PLACE FINDER (TEXT) ──────────────────────────────────────
 
 @app.route('/api/identify-text', methods=['POST'])
 @require_auth
@@ -1202,11 +1052,10 @@ def api_identify_text():
         description = clean((request.get_json() or {}).get('description', ''), 300)
         if not description: return jsonify({'success': False, 'error': 'Description required'})
         result = groq_json(
-            f"""Someone saw this place on social media: "{description}". Identify the exact location.
+            f"""Someone saw this place: "{description}". Identify the exact location.
 Return JSON: place_name, city, country, continent, confidence, place_type, description, tags,
 best_time, climate, budget_level, avg_daily_cost, language, currency, nearest_airport, airport_code,
-why_famous, nearby (name/distance/type/icon/description), similar_places (name/country/why_similar/emoji),
-travel_tips, best_food""",
+why_famous, nearby, similar_places, travel_tips, best_food""",
             model=SCOUT, temp=0.2, max_tok=1000
         )
         return jsonify({'success': True, 'result': result})
@@ -1230,7 +1079,7 @@ scams (name/category/severity/how_it_works/red_flags/how_to_avoid/what_to_say/ic
 general_rules, safe_alternatives, emergency_if_robbed""",
             model=SCOUT, temp=0.2, max_tok=1000
         )
-        increment_usage(g.user_id, 'tool')
+        execute('UPDATE users SET tools_today=tools_today+1 WHERE id=%s', (g.user_id,))
         return jsonify({'success': True, 'data': result})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -1244,7 +1093,7 @@ def api_price_check():
         ok, err = validate(data, ['item', 'destination'])
         if not ok: return jsonify({'success': False, 'error': err})
         result = groq_json(
-            f"""Price check: "{clean(data.get('item',''),100)}" costs {clean(data.get('currency','INR'),3)} {clean(data.get('price',''),20)} in {clean(data.get('destination',''))}.
+            f"""Price check: "{clean(data.get('item',''),100)}" at {clean(data.get('destination',''))} for {clean(data.get('currency','INR'),3)} {clean(data.get('price',''),20)}.
 Return JSON: verdict, verdict_color, fair_price_range, local_price, tourist_price, overpaying_by,
 verdict_explanation, negotiation_tips, walk_away_price, local_phrase_to_say"""
         )
@@ -1286,46 +1135,20 @@ immediate_actions, medicines_to_ask, emergency_number, medical_phrases"""
 @app.route('/api/safety-check', methods=['POST'])
 @require_auth
 @limiter.limit("20 per hour")
+@check_feature_limit('tool')
 def api_safety_check():
     try:
         destination = clean((request.get_json() or {}).get('destination', ''))
-        if not destination:
-            return jsonify({'success': False, 'error': 'Destination required'})
-
+        if not destination: return jsonify({'success': False, 'error': 'Destination required'})
         result = groq_json(
-            f"""You are a travel safety expert with deep knowledge of every city worldwide.
-Provide SPECIFIC and ACCURATE safety information for: {destination}
-
-CRITICAL RULES:
-- safety_score MUST be specific to {destination} — not a generic number
-- Tokyo should score ~85, Bangkok ~65, Cairo ~55, London ~75, Mexico City ~50
-- Base score on: actual crime rates, tourist incidents, political stability
-- Every field must be specific to {destination} — no generic answers
-
-Return ONLY this JSON:
-{{
-  "destination": "{destination}",
-  "safety_score": <number 1-100 specific to {destination}>,
-  "safety_level": "<Safe/Moderate/Caution/High Risk> for {destination}",
-  "crime_index": "<Low/Medium/High> based on actual {destination} crime data",
-  "tourist_safety": "<specific assessment for tourists in {destination}>",
-  "water_safe": <true/false for {destination} tap water>,
-  "water_advice": "<specific water advice for {destination}>",
-  "food_safety": "<Safe/Mostly Safe/Be Careful — specific to {destination}>",
-  "health_risks": ["<actual health risk in {destination}>", "<risk 2>"],
-  "scams_to_avoid": ["<real scam tourists face in {destination}>", "<scam 2>", "<scam 3>"],
-  "safe_areas": ["<actually safe neighbourhood in {destination}>", "<area 2>"],
-  "avoid_areas": ["<area to actually avoid in {destination}>"],
-  "emergency_embassy": "<Indian embassy address in {destination}>",
-  "embassy_phone": "<actual embassy phone number>",
-  "travel_advisory": "<current advisory level for {destination}>",
-  "solo_female_safety": "<specific assessment for solo female travellers in {destination}>",
-  "best_safety_tips": ["<tip specific to {destination}>", "<tip 2>", "<tip 3>", "<tip 4>", "<tip 5>"]
-}}""",
-            model=SCOUT,
-            temp=0.3,
-            max_tok=1200
+            f"""Travel safety expert. Specific safety info for {destination}.
+Return JSON: destination, safety_score (1-100 specific to {destination}), safety_level, crime_index,
+tourist_safety, water_safe, water_advice, food_safety, health_risks, scams_to_avoid,
+safe_areas, avoid_areas, emergency_embassy, embassy_phone, travel_advisory,
+solo_female_safety, best_safety_tips""",
+            model=SCOUT, temp=0.3, max_tok=1200
         )
+        execute('UPDATE users SET tools_today=tools_today+1 WHERE id=%s', (g.user_id,))
         return jsonify({'success': True, 'data': result})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -1338,10 +1161,9 @@ def api_local_laws():
         destination = clean((request.get_json() or {}).get('destination', ''))
         if not destination: return jsonify({'success': False, 'error': 'Destination required'})
         result = groq_json(
-            f"""Legal travel expert. Important laws and rules for tourists in {destination}.
+            f"""Important laws for tourists in {destination}.
 Return JSON: strict_laws (law/penalty/severity/icon), photography_rules, dress_code_rules,
-alcohol_rules, drug_laws, customs_limits (cash/cigarettes/alcohol/prohibited_items),
-good_to_know, legal_tip""",
+alcohol_rules, drug_laws, customs_limits, good_to_know, legal_tip""",
             model=SCOUT, temp=0.1, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
@@ -1406,12 +1228,10 @@ def api_emergency_card():
         blood_group = clean(data.get('blood_group', ''))
         allergies   = clean(data.get('allergies', 'none'))
         destination = clean(data.get('destination', ''))
-        if not name or not destination:
-            return jsonify({'success': False, 'error': 'Name and destination required'})
+        if not name or not destination: return jsonify({'success': False, 'error': 'Name and destination required'})
         result = groq_json(
-            f"""Emergency card for {name} (blood group: {blood_group}, allergies: {allergies}) visiting {destination}.
-Return JSON: emergency_numbers, indian_embassy (address/phone/emergency_phone/email),
-nearest_hospitals, medical_phrases (english/local/pronunciation),
+            f"""Emergency card for {name} (blood: {blood_group}, allergies: {allergies}) visiting {destination}.
+Return JSON: emergency_numbers, indian_embassy, nearest_hospitals, medical_phrases,
 what_to_do_if_robbed, what_to_do_if_sick, what_to_do_if_lost""",
             model=SCOUT, temp=0.1, max_tok=1000
         )
@@ -1422,6 +1242,29 @@ what_to_do_if_robbed, what_to_do_if_sick, what_to_do_if_lost""",
 
 # ── PLANNING TOOLS ────────────────────────────────────────────
 
+@app.route('/api/sim-guide', methods=['POST'])
+@require_auth
+@limiter.limit("20 per hour")
+def sim_guide():
+    try:
+        data        = request.get_json() or {}
+        destination = clean(data.get('destination', ''))
+        origin      = clean(data.get('origin', 'India'))
+        days        = int(data.get('days', 7))
+        data_needs  = clean(data.get('data_needs', 'moderate'))
+        countries   = data.get('countries', [destination])
+        if not destination: return jsonify({'success': False, 'error': 'Destination required'})
+        countries_str = ', '.join(countries) if isinstance(countries, list) else destination
+        result = groq_json(
+            f"""SIM card guide for traveller from {origin} visiting {countries_str} for {days} days. Data: {data_needs}.
+Return JSON: top_recommendation, all_options, esim_options, airport_buying_guide,
+roaming_option, connectivity_tips, data_saving_tips, offline_essentials, budget_summary""",
+            model=SCOUT, temp=0.2, max_tok=1000
+        )
+        return jsonify({'success': True, 'guide': result})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route('/api/jetlag', methods=['POST'])
 @require_auth
 @limiter.limit("20 per hour")
@@ -1431,10 +1274,9 @@ def api_jetlag():
         from_city   = clean(data.get('from_city', ''))
         to_city     = clean(data.get('to_city', ''))
         travel_date = clean(data.get('travel_date', 'upcoming'))
-        if not from_city or not to_city:
-            return jsonify({'success': False, 'error': 'Both cities required'})
+        if not from_city or not to_city: return jsonify({'success': False, 'error': 'Both cities required'})
         result = groq_json(
-            f"""Jet lag recovery plan for {from_city} to {to_city} on {travel_date}.
+            f"""Jet lag plan for {from_city} to {to_city} on {travel_date}.
 Return JSON: from_timezone, to_timezone, time_difference, jet_lag_severity, recovery_days,
 direction, symptoms, before_flight, during_flight, after_arrival, sleep_schedule, avoid, recovery_tip""",
             model=SCOUT, temp=0.2, max_tok=1000
@@ -1448,9 +1290,9 @@ direction, symptoms, before_flight, during_flight, after_arrival, sleep_schedule
 @limiter.limit("20 per hour")
 def api_festivals():
     try:
-        data         = request.get_json() or {}
-        destination  = clean(data.get('destination', ''))
-        travel_date  = clean(data.get('travel_date', 'this month'))
+        data        = request.get_json() or {}
+        destination = clean(data.get('destination', ''))
+        travel_date = clean(data.get('travel_date', 'this month'))
         if not destination: return jsonify({'success': False, 'error': 'Destination required'})
         result = groq_json(
             f"""Festivals and events in {destination} around {travel_date}.
@@ -1476,9 +1318,8 @@ def api_budget_plan():
         if not destination: return jsonify({'success': False, 'error': 'Destination required'})
         result = groq_json(
             f"""Budget plan for {people} people in {destination} for {days} days. Total: {currency} {budget}.
-Return JSON: total_budget, per_person, per_day, budget_tier, breakdown (flights/accommodation/food/transport/activities/shopping),
-daily_budget (budget_day/comfort_day/splurge_day), money_saving_tips, hidden_costs,
-free_things, worth_splurging, budget_verdict""",
+Return JSON: total_budget, per_person, per_day, budget_tier, breakdown,
+daily_budget, money_saving_tips, hidden_costs, free_things, worth_splurging, budget_verdict""",
             model=SCOUT, temp=0.2, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
@@ -1496,7 +1337,6 @@ def api_passport_check():
         from datetime import datetime as dt
         expiry            = dt.strptime(data['expiry_date'], '%Y-%m-%d')
         travel            = dt.strptime(data['travel_date'], '%Y-%m-%d')
-        days_remaining    = (expiry - dt.now()).days
         days_after_travel = (expiry - travel).days
         destination       = clean(data.get('destination', ''))
         result = groq_json(
@@ -1518,12 +1358,11 @@ def api_luggage_check():
         airline     = clean(data.get('airline', ''))
         cabin_class = clean(data.get('cabin_class', 'Economy'))
         destination = clean(data.get('destination', ''))
-        if not airline or not destination:
-            return jsonify({'success': False, 'error': 'Airline and destination required'})
+        if not airline or not destination: return jsonify({'success': False, 'error': 'Airline and destination required'})
         result = groq_json(
-            f"""Luggage allowance for {airline} to {destination} in {cabin_class} class.
-Return JSON: airline, cabin_class, carry_on (weight/dimensions/pieces), checked_baggage (weight/dimensions/pieces/extra_cost),
-prohibited_items, liquid_rules, duty_free_allowance (alcohol/cigarettes/cash/gifts), packing_tips, pro_tip""",
+            f"""Luggage for {airline} to {destination} in {cabin_class}.
+Return JSON: airline, cabin_class, carry_on, checked_baggage, prohibited_items,
+liquid_rules, duty_free_allowance, packing_tips, pro_tip""",
             model=SCOUT, temp=0.1, max_tok=1000
         )
         return jsonify({'success': True, 'data': result})
@@ -1564,7 +1403,7 @@ closing, best_memory, lesson_learned, quote, would_return, rating, tags""",
         )
         trip_id = data.get('trip_id')
         if trip_id: save_journal(trip_id, g.user_id, result)
-        increment_usage(g.user_id, 'journal')
+        execute('UPDATE users SET journal_used_month=journal_used_month+1 WHERE id=%s', (g.user_id,))
         return jsonify({'success': True, 'data': result})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -1651,11 +1490,11 @@ def api_split_bill():
         balances = {p: 0 for p in people}
         total    = 0
         for exp in expenses:
-            amount         = float(exp.get('amount', 0))
-            paid_by        = exp.get('paid_by', people[0] if people else '')
-            split_between  = exp.get('split_between', people) or people
-            total         += amount
-            share          = amount / max(len(split_between), 1)
+            amount        = float(exp.get('amount', 0))
+            paid_by       = exp.get('paid_by', people[0] if people else '')
+            split_between = exp.get('split_between', people) or people
+            total        += amount
+            share         = amount / max(len(split_between), 1)
             if paid_by in balances: balances[paid_by] += amount
             for p in split_between:
                 if p in balances: balances[p] -= share
@@ -1664,22 +1503,16 @@ def api_split_bill():
         neg = sorted([(k, v) for k, v in balances.items() if v < -0.01], key=lambda x: x[1])
         i = j = 0
         while i < len(pos) and j < len(neg):
-            creditor, credit = pos[i]
-            debtor, debt     = neg[j]
-            amount           = min(credit, -debt)
-            if amount > 0.01:
-                settlements.append({'from': debtor, 'to': creditor, 'amount': round(amount, 2), 'currency': currency})
-            pos[i] = (creditor, credit - amount)
-            neg[j] = (debtor, debt + amount)
+            creditor, credit = pos[i]; debtor, debt = neg[j]
+            amount = min(credit, -debt)
+            if amount > 0.01: settlements.append({'from': debtor, 'to': creditor, 'amount': round(amount, 2), 'currency': currency})
+            pos[i] = (creditor, credit - amount); neg[j] = (debtor, debt + amount)
             if pos[i][1] < 0.01: i += 1
             if neg[j][1] > -0.01: j += 1
         return jsonify({'success': True, 'data': {
-            'total': round(total, 2),
-            'per_person': round(total / max(len(people), 1), 2),
+            'total': round(total, 2), 'per_person': round(total / max(len(people), 1), 2),
             'balances': {k: round(v, 2) for k, v in balances.items()},
-            'settlements': settlements,
-            'currency': currency,
-            'all_settled': len(settlements) == 0
+            'settlements': settlements, 'currency': currency, 'all_settled': len(settlements) == 0
         }})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -1691,68 +1524,10 @@ def api_currency_leftover():
     try:
         data = request.get_json() or {}
         result = groq_json(
-            f"""Options for {clean(data.get('currency',''),10)} {clean(data.get('amount',''),20)} leftover currency. Home:{clean(data.get('home_currency','INR'),3)}.
+            f"""Options for {clean(data.get('currency',''),10)} {clean(data.get('amount',''),20)} leftover. Home:{clean(data.get('home_currency','INR'),3)}.
 Return JSON: options (option/description/estimated_value/rating/pros/cons), best_option, tips"""
         )
         return jsonify({'success': True, 'data': result})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-# ── GROUPS API ────────────────────────────────────────────────
-
-@app.route('/api/groups/join', methods=['POST'])
-@require_auth
-@limiter.limit("10 per hour")
-def api_join_group():
-    try:
-        data = request.get_json() or {}
-        code = clean(data.get('code', ''), 10).upper()
-        if not code: return jsonify({'success': False, 'error': 'Group code required'})
-        # This delegates to the groups blueprint
-        # but we handle the response here
-        import sqlite3
-        db_path = os.path.join(os.path.dirname(__file__), 'yaply.db')
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cur  = conn.cursor()
-        group = cur.execute('SELECT * FROM travel_groups WHERE code = ?', [code]).fetchone()
-        if not group:
-            conn.close()
-            return jsonify({'success': False, 'error': 'Group not found. Check the code and try again.'})
-        # Add member if not already
-        existing = cur.execute(
-            'SELECT * FROM group_members WHERE group_id = ? AND user_id = ?',
-            [group['id'], g.user_id]
-        ).fetchone()
-        if not existing:
-            cur.execute(
-                'INSERT INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)',
-                [group['id'], g.user_id, 'member']
-            )
-            conn.commit()
-        conn.close()
-        return jsonify({'success': True, 'group_id': group['id'], 'group_name': group['name']})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-@app.route('/api/groups/sos-broadcast', methods=['POST'])
-@require_auth
-def api_sos_broadcast():
-    try:
-        data     = request.get_json() or {}
-        sos_type = clean(data.get('sos_type', 'emergency'))
-        lat      = float(data.get('lat', 0))
-        lng      = float(data.get('lng', 0))
-        # Broadcast via socketio to all group members
-        socketio.emit('sos_alert', {
-            'user_id':  g.user_id,
-            'sos_type': sos_type,
-            'lat':      lat,
-            'lng':      lng,
-            'message':  f'SOS Alert — {sos_type}'
-        }, broadcast=True)
-        return jsonify({'success': True, 'message': 'SOS broadcast sent'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -1780,8 +1555,7 @@ Return JSON: destination_type, theme (primary_color/secondary_color/gradient_sta
 def api_place_photo():
     try:
         place_name = clean((request.get_json() or {}).get('place_name', ''))
-        if not UNSPLASH_KEY or not place_name:
-            return jsonify({'success': False, 'error': 'No key or place'})
+        if not UNSPLASH_KEY or not place_name: return jsonify({'success': False, 'error': 'No key or place'})
         r = req.get(
             "https://api.unsplash.com/search/photos",
             params={'query': f"{place_name} travel landmark", 'per_page': 5, 'orientation': 'landscape', 'client_id': UNSPLASH_KEY},
@@ -1794,14 +1568,56 @@ def api_place_photo():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/api/places-autocomplete')
+@limiter.limit("60 per hour")
+def places_autocomplete():
+    try:
+        q   = request.args.get('q', '')
+        key = os.getenv('GOOGLE_PLACES_API_KEY', '')
+        if not q or not key: return jsonify({'success': False, 'predictions': []})
+        r = req.get('https://maps.googleapis.com/maps/api/place/autocomplete/json',
+            params={'input': q, 'types': '(cities)', 'key': key, 'language': 'en'}, timeout=8)
+        data = r.json()
+        if data.get('status') == 'OK': return jsonify({'success': True, 'predictions': data.get('predictions', [])})
+        return jsonify({'success': False, 'predictions': []})
+    except Exception as e:
+        return jsonify({'success': False, 'predictions': [], 'error': str(e)})
+
+@app.route('/api/nearby-stations')
+@require_auth
+@limiter.limit("30 per hour")
+def nearby_stations():
+    try:
+        location   = request.args.get('location', '')
+        place_type = request.args.get('type', 'train_station')
+        key        = os.getenv('GOOGLE_PLACES_API_KEY', '')
+        if not location or not key: return jsonify({'success': False, 'stations': []})
+        geo = req.get('https://maps.googleapis.com/maps/api/geocode/json',
+            params={'address': location, 'key': key}, timeout=8).json()
+        if not geo.get('results'): return jsonify({'success': False, 'stations': []})
+        loc = geo['results'][0]['geometry']['location']
+        lat, lng = loc['lat'], loc['lng']
+        places = req.get('https://maps.googleapis.com/maps/api/place/nearbysearch/json',
+            params={'location': f"{lat},{lng}", 'radius': 50000, 'type': place_type, 'key': key, 'language': 'en'}, timeout=8).json()
+        import math
+        stations = []
+        for p in places.get('results', [])[:6]:
+            plat = p['geometry']['location']['lat']; plng = p['geometry']['location']['lng']
+            dist_km = round(math.sqrt((plat-lat)**2 + (plng-lng)**2) * 111, 1)
+            stations.append({'name': p.get('name',''), 'address': p.get('vicinity',''), 'distance': f"{dist_km} km", 'rating': p.get('rating', 0), 'place_id': p.get('place_id','')})
+        stations.sort(key=lambda x: float(x['distance'].replace(' km', '')))
+        return jsonify({'success': True, 'stations': stations})
+    except Exception as e:
+        return jsonify({'success': False, 'stations': [], 'error': str(e)})
+
 
 # ── CAMERA SCAN ───────────────────────────────────────────────
 
 def _translate_blocks_batch(blocks, target_lang, src_lang=None):
     if not blocks: return []
-    texts       = [b['text'] for b in blocks]
-    tgt         = target_lang.lower()[:2] if len(target_lang) >= 2 else target_lang
-    deepl_code  = DEEPL_LANGS.get(tgt) or DEEPL_LANGS.get(target_lang)
+    texts      = [b['text'] for b in blocks]
+    tgt        = target_lang.lower()[:2] if len(target_lang) >= 2 else target_lang
+    deepl_code = DEEPL_LANGS.get(tgt) or DEEPL_LANGS.get(target_lang)
     trans_texts = []
     if deepl_code and deepl_client:
         try:
@@ -1820,7 +1636,7 @@ def _translate_blocks_batch(blocks, target_lang, src_lang=None):
             r = groq_client.chat.completions.create(
                 model=SCOUT,
                 messages=[
-                    {'role': 'system', 'content': f'Translate each segment to {lang_name}. Keep [|||] separators exactly. Return ONLY translations separated by [|||].'},
+                    {'role': 'system', 'content': f'Translate each segment to {lang_name}. Keep [|||] separators exactly. Return ONLY translations.'},
                     {'role': 'user', 'content': combined}
                 ], temperature=0.1, max_tokens=1500
             )
@@ -1829,14 +1645,7 @@ def _translate_blocks_batch(blocks, target_lang, src_lang=None):
         except Exception as e:
             print(f"[Groq batch] {e}")
             trans_texts = texts
-    return [
-        {
-            'original':   b['text'],
-            'translated': trans_texts[i].strip() if i < len(trans_texts) else b['text'],
-            'vertices':   b['vertices']
-        }
-        for i, b in enumerate(blocks)
-    ]
+    return [{'original': b['text'], 'translated': trans_texts[i].strip() if i < len(trans_texts) else b['text'], 'vertices': b['vertices']} for i, b in enumerate(blocks)]
 
 @app.route('/scan', methods=['POST'])
 @require_auth
@@ -1848,8 +1657,7 @@ def scan():
         target_lang = clean(data.get('target_lang', 'EN'), 5).upper()
         if ',' in image_data: image_data = image_data.split(',')[1]
         if not image_data: return jsonify({'success': False, 'error': 'No image provided'})
-        if len(image_data) > 5 * 1024 * 1024:
-            return jsonify({'success': False, 'error': 'Image too large (max 5MB)'})
+        if len(image_data) > 5 * 1024 * 1024: return jsonify({'success': False, 'error': 'Image too large'})
 
         vision_result = [None]; groq_result = [None]
         vision_done   = threading.Event(); groq_done = threading.Event()
@@ -1857,18 +1665,15 @@ def scan():
         def run_vision():
             try:
                 if not GOOGLE_VISION_KEY: vision_done.set(); return
-                r      = req.post(
-                    f"https://vision.googleapis.com/v1/images:annotate?key={GOOGLE_VISION_KEY}",
-                    json={"requests": [{"image": {"content": image_data}, "features": [{"type": "DOCUMENT_TEXT_DETECTION"}]}]},
-                    timeout=8
-                )
+                r      = req.post(f"https://vision.googleapis.com/v1/images:annotate?key={GOOGLE_VISION_KEY}",
+                    json={"requests": [{"image": {"content": image_data}, "features": [{"type": "DOCUMENT_TEXT_DETECTION"}]}]}, timeout=8)
                 resp0     = r.json().get('responses', [{}])[0]
                 full_text = resp0.get('fullTextAnnotation', {}).get('text', '')
                 if not full_text:
-                    anns      = resp0.get('textAnnotations', [])
+                    anns = resp0.get('textAnnotations', [])
                     full_text = anns[0].get('description', '') if anns else ''
-                pages     = resp0.get('fullTextAnnotation', {}).get('pages', [])
-                lang      = 'unknown'
+                pages  = resp0.get('fullTextAnnotation', {}).get('pages', [])
+                lang   = 'unknown'
                 if pages:
                     langs = pages[0].get('property', {}).get('detectedLanguages', [])
                     if langs: lang = langs[0].get('languageCode', 'unknown')
@@ -1887,16 +1692,8 @@ def scan():
                         verts    = block.get('boundingBox', {}).get('vertices', [])
                         vertices = [[v.get('x', 0), v.get('y', 0)] for v in verts]
                         if vertices: raw_blocks.append({'text': block_text, 'vertices': vertices})
-                if not raw_blocks and resp0.get('textAnnotations'):
-                    for ann in resp0['textAnnotations'][1:]:
-                        t    = ann.get('description', '').strip()
-                        verts = ann.get('boundingPoly', {}).get('vertices', [])
-                        vts  = [[v.get('x', 0), v.get('y', 0)] for v in verts]
-                        if t and vts: raw_blocks.append({'text': t, 'vertices': vts})
-                if full_text.strip():
-                    vision_result[0] = (full_text.strip(), lang, raw_blocks)
-            except Exception as e:
-                print(f"[Vision] {e}")
+                if full_text.strip(): vision_result[0] = (full_text.strip(), lang, raw_blocks)
+            except Exception as e: print(f"[Vision] {e}")
             vision_done.set()
 
         def run_groq_vision():
@@ -1909,10 +1706,8 @@ def scan():
                     ]}], temperature=0.0, max_tokens=800
                 )
                 text = response.choices[0].message.content.strip()
-                if text and text != 'NO_TEXT':
-                    groq_result[0] = (text, 'unknown', [])
-            except Exception as e:
-                print(f"[Groq Vision] {e}")
+                if text and text != 'NO_TEXT': groq_result[0] = (text, 'unknown', [])
+            except Exception as e: print(f"[Groq Vision] {e}")
             groq_done.set()
 
         threading.Thread(target=run_vision, daemon=True).start()
@@ -1926,25 +1721,17 @@ def scan():
             if groq_done.is_set() and groq_result[0]:
                 extracted_text, detected_lang, raw_blocks = groq_result[0]; break
             time.sleep(0.05)
-
         if not extracted_text:
             vision_done.wait(2); groq_done.wait(2)
-            if vision_result[0]:   extracted_text, detected_lang, raw_blocks = vision_result[0]
-            elif groq_result[0]:   extracted_text, detected_lang, raw_blocks = groq_result[0]
-
+            if vision_result[0]:  extracted_text, detected_lang, raw_blocks = vision_result[0]
+            elif groq_result[0]:  extracted_text, detected_lang, raw_blocks = groq_result[0]
         if not extracted_text:
             return jsonify({'success': False, 'error': 'No text found. Try pointing at clearer text.'})
 
         translated_text, engine = translate(extracted_text, target_lang, detected_lang)
         text_blocks             = _translate_blocks_batch(raw_blocks, target_lang, detected_lang)
-        return jsonify({
-            'success':          True,
-            'original_text':    extracted_text,
-            'translated_text':  translated_text,
-            'detected_lang':    detected_lang,
-            'engine':           engine,
-            'text_blocks':      text_blocks
-        })
+        return jsonify({'success': True, 'original_text': extracted_text, 'translated_text': translated_text,
+                        'detected_lang': detected_lang, 'engine': engine, 'text_blocks': text_blocks})
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)})
@@ -1959,10 +1746,480 @@ def api_retranslate_blocks():
         target_lang = clean(data.get('target_lang', 'EN'), 5).upper()
         src_lang    = data.get('src_lang', None)
         if not blocks: return jsonify({'success': False, 'error': 'No blocks provided'})
-        text_blocks = _translate_blocks_batch(blocks, target_lang, src_lang)
-        return jsonify({'success': True, 'text_blocks': text_blocks})
+        return jsonify({'success': True, 'text_blocks': _translate_blocks_batch(blocks, target_lang, src_lang)})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+
+# ── GROUPS ────────────────────────────────────────────────────
+
+@app.route('/api/groups/sos-broadcast', methods=['POST'])
+@require_auth
+def api_sos_broadcast():
+    try:
+        data     = request.get_json() or {}
+        sos_type = clean(data.get('sos_type', 'emergency'))
+        lat      = float(data.get('lat', 0))
+        lng      = float(data.get('lng', 0))
+        socketio.emit('sos_alert', {'user_id': g.user_id, 'sos_type': sos_type, 'lat': lat, 'lng': lng, 'message': f'SOS Alert — {sos_type}'}, broadcast=True)
+        return jsonify({'success': True, 'message': 'SOS broadcast sent'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+# ── DIARY ─────────────────────────────────────────────────────
+
+@app.route('/api/diary/trips', methods=['GET'])
+@require_auth
+def api_diary_trips():
+    return jsonify({'success': True, 'trips': get_diary_trips(g.user_id)})
+
+@app.route('/api/diary/trips/<int:trip_id>', methods=['GET'])
+@require_auth
+def api_diary_trip(trip_id):
+    trip = get_diary_trip(trip_id, g.user_id)
+    if not trip: return jsonify({'success': False, 'error': 'Trip not found'})
+    return jsonify({'success': True, 'trip': trip})
+
+@app.route('/api/diary/trips', methods=['POST'])
+@require_auth
+def api_create_diary_trip():
+    try:
+        data        = request.get_json() or {}
+        destination = clean(data.get('destination', 'My Trip'))
+        currency    = clean(data.get('currency', 'INR'), 3)
+        start_date  = data.get('start_date', '')
+        trip_id     = create_diary_trip(g.user_id, destination, currency, start_date)
+        return jsonify({'success': True, 'trip_id': trip_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/diary/entries', methods=['GET'])
+@require_auth
+def api_diary_entries():
+    try:
+        trip_id    = request.args.get('trip_id', type=int)
+        entry_type = request.args.get('type')
+        search     = request.args.get('search')
+        limit      = request.args.get('limit', 100, type=int)
+        entries    = get_diary_entries(g.user_id, trip_id, entry_type, search, limit)
+        return jsonify({'success': True, 'entries': entries})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/diary/entries', methods=['POST'])
+@require_auth
+@limiter.limit("60 per hour")
+def api_create_diary_entry():
+    try:
+        data       = request.get_json() or {}
+        entry_id   = create_diary_entry(
+            g.user_id, data.get('trip_id'), clean(data.get('type', 'note'), 20),
+            clean(data.get('text', ''), 2000), clean(data.get('mood', ''), 10),
+            clean(data.get('location', ''), 100), data.get('tags', [])[:10],
+            data.get('photos', [])[:5], float(data.get('amount', 0) or 0),
+            clean(data.get('currency', 'INR'), 3), int(data.get('day_number', 1) or 1)
+        )
+        entries = get_diary_entries(g.user_id, data.get('trip_id'), limit=1)
+        entry   = next((e for e in entries if e['id'] == entry_id), None)
+        log_action(g.user_id, 'diary_entry', request.remote_addr)
+        return jsonify({'success': True, 'entry': entry, 'entry_id': entry_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/diary/entries/<int:entry_id>', methods=['DELETE'])
+@require_auth
+def api_delete_diary_entry(entry_id):
+    delete_diary_entry(entry_id, g.user_id)
+    return jsonify({'success': True})
+
+@app.route('/api/diary/entries/<int:entry_id>/favorite', methods=['POST'])
+@require_auth
+def api_diary_favorite(entry_id):
+    try:
+        is_fav = toggle_diary_favorite(entry_id, g.user_id)
+        return jsonify({'success': True, 'is_favorite': is_fav})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/diary/stats', methods=['GET'])
+@require_auth
+def api_diary_stats():
+    try:
+        trip_id = request.args.get('trip_id', type=int)
+        stats   = get_diary_stats(g.user_id, trip_id)
+        return jsonify({'success': True, **stats})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/diary/expenses', methods=['GET'])
+@require_auth
+def api_diary_expenses():
+    try:
+        trip_id = request.args.get('trip_id', type=int)
+        entries = get_diary_entries(g.user_id, trip_id, entry_type='expense')
+        total   = sum(e.get('amount', 0) for e in entries)
+        by_cat  = {}
+        for e in entries:
+            cat = e.get('location') or 'Other'
+            by_cat[cat] = by_cat.get(cat, 0) + (e.get('amount') or 0)
+        by_category = [{'category': k, 'total': v} for k, v in sorted(by_cat.items(), key=lambda x: -x[1])]
+        return jsonify({'success': True, 'total': round(total, 2), 'by_category': by_category, 'entries': entries})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/diary/ai-journal', methods=['POST'])
+@require_auth
+@limiter.limit("5 per hour")
+@check_feature_limit('ai_story')
+def api_diary_ai_journal():
+    try:
+        data    = request.get_json() or {}
+        trip_id = data.get('trip_id')
+        style   = clean(data.get('style', 'storytelling'), 20)
+        entries = get_diary_entries(g.user_id, trip_id, limit=50)
+        if not entries: return jsonify({'success': False, 'error': 'No diary entries yet'})
+        entries_text = '\n'.join([
+            f"Day {e.get('day_number',1)} [{e.get('type','note').upper()}] {e.get('location','')} — {e.get('text','')} {('₹'+str(e.get('amount',''))) if e.get('amount') else ''}"
+            for e in entries[:20]
+        ])
+        result = groq_json(
+            f"""Transform these travel diary entries into a beautiful literary travel journal.
+Style: {style}. Entries: {entries_text}
+Return JSON: title, tagline, opening, chapters (day/chapter_title/story/highlight/mood/emoji),
+closing, best_memory, lesson_learned, quote, would_return, rating""",
+            model=MODEL_70B, temp=0.7, max_tok=3000
+        )
+        execute('UPDATE users SET ai_story_used=ai_story_used+1 WHERE id=%s', (g.user_id,))
+        log_action(g.user_id, 'ai_journal', request.remote_addr)
+        return jsonify({'success': True, 'journal': result})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/diary/export', methods=['GET'])
+@require_auth
+def api_diary_export():
+    try:
+        trip_id = request.args.get('trip_id', type=int)
+        entries = get_diary_entries(g.user_id, trip_id, limit=500)
+        lines   = []
+        for e in entries:
+            lines.append(f"[Day {e.get('day_number',1)}] [{e.get('type','note').upper()}] {e.get('created_at','')}")
+            if e.get('location'): lines.append(f"📍 {e['location']}")
+            if e.get('mood'):     lines.append(f"Mood: {e['mood']}")
+            lines.append(e.get('text', ''))
+            if e.get('amount'):   lines.append(f"💰 ₹{e['amount']}")
+            lines.append('─' * 40)
+        return Response('\n'.join(lines), mimetype='text/plain',
+            headers={'Content-Disposition': 'attachment; filename=yaply_diary.txt'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+# ── PAYMENT + PROMO ───────────────────────────────────────────
+
+@app.route('/api/payment/create-order', methods=['POST'])
+@require_auth
+def create_payment_order():
+    try:
+        data        = request.get_json() or {}
+        plan        = data.get('plan', 'monthly')
+        promo_code  = (data.get('promo_code') or '').upper().strip()
+        base_amounts = {'weekly': 9900, 'monthly': 39900}
+        amount      = base_amounts.get(plan, 39900)
+        discount_amount = 0
+        promo_data  = None
+
+        if promo_code:
+            promo_data = get_promo_code(promo_code)
+            if promo_data and not check_promo_redeemed(g.user_id, promo_code):
+                discount_pct    = promo_data['discount_pct']
+                discount_amount = int(amount * discount_pct / 100)
+                amount          = amount - discount_amount
+
+        amount = max(amount, 100)
+        order  = rzp_client.order.create({
+            'amount': amount, 'currency': 'INR',
+            'receipt': f'yaply_{g.user_id}_{plan}',
+            'notes': {'user_id': str(g.user_id), 'plan': plan, 'promo_code': promo_code or ''}
+        })
+        create_payment(user_id=g.user_id, razorpay_order_id=order['id'], amount=amount,
+                       plan=plan, promo_code=promo_code or None, discount_amount=discount_amount)
+        return jsonify({
+            'success': True, 'order_id': order['id'], 'amount': amount,
+            'original_amount': base_amounts.get(plan, 39900),
+            'discount_amount': discount_amount, 'currency': 'INR',
+            'key': os.getenv('RAZORPAY_KEY_ID'), 'promo_applied': bool(promo_code and promo_data),
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/payment/verify', methods=['POST'])
+@require_auth
+def verify_payment():
+    try:
+        data       = request.get_json() or {}
+        order_id   = data.get('razorpay_order_id')
+        payment_id = data.get('razorpay_payment_id')
+        signature  = data.get('razorpay_signature')
+        plan       = data.get('plan', 'monthly')
+        promo_code = (data.get('promo_code') or '').upper().strip()
+
+        rzp_client.utility.verify_payment_signature({
+            'razorpay_order_id': order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        })
+        expires_at = activate_pro(g.user_id, plan)
+        confirm_payment(order_id, payment_id, signature, expires_at)
+
+        if promo_code:
+            promo = get_promo_code(promo_code)
+            if promo and not check_promo_redeemed(g.user_id, promo_code):
+                redeem_promo(g.user_id, promo_code, discount_amount=promo['discount_pct'], pro_months=promo['pro_months'])
+
+        log_action(g.user_id, f'payment_success_{plan}', request.remote_addr)
+        user = get_user_by_id(g.user_id)
+        return jsonify({'success': True, 'message': '🎉 Pro activated!', 'plan': plan, 'pro_expires_at': str(user.get('pro_expires_at', ''))})
+    except Exception as e:
+        log_action(g.user_id if hasattr(g, 'user_id') else 0, 'payment_failed', request.remote_addr)
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/promo/validate', methods=['POST'])
+def validate_promo():
+    try:
+        code  = (request.get_json() or {}).get('code', '').upper().strip()
+        promo = get_promo_code(code)
+        if not promo: return jsonify({'success': False, 'error': 'Invalid code'})
+        return jsonify({
+            'success': True, 'discount': promo['discount_pct'], 'pro_months': promo['pro_months'],
+            'uses_left': promo['max_uses'] - promo['uses'],
+            'expires': promo['expires_at'].isoformat() if hasattr(promo['expires_at'], 'isoformat') else promo['expires_at'],
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/promo/apply', methods=['POST'])
+@require_auth
+def apply_promo():
+    try:
+        code  = (request.get_json() or {}).get('code', '').upper().strip()
+        promo = get_promo_code(code)
+        if not promo: return jsonify({'success': False, 'error': 'Invalid promo code'})
+        if check_promo_redeemed(g.user_id, code): return jsonify({'success': False, 'error': 'You have already used this code'})
+        from datetime import datetime, timedelta
+        days    = int(promo['pro_months']) * 30
+        expires = datetime.utcnow() + timedelta(days=days)
+        execute("UPDATE users SET plan_type='pro', is_pro=TRUE, pro_expires_at=%s WHERE id=%s", (expires, g.user_id))
+        redeem_promo(g.user_id, code, discount_amount=promo['discount_pct'], pro_months=promo['pro_months'])
+        log_action(g.user_id, 'promo_redeemed_' + code, request.remote_addr)
+        return jsonify({'success': True, 'message': f"🎉 {promo['pro_months']} months Pro activated at {promo['discount_pct']}% off!", 'pro_months': promo['pro_months'], 'discount': promo['discount_pct']})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+# ── ADMIN ─────────────────────────────────────────────────────
+
+@app.route('/api/admin/stats')
+@require_admin
+def admin_stats():
+    try:
+        stats        = admin_get_stats()
+        top_dests    = query_all("SELECT destination, COUNT(*) as count FROM trips WHERE deleted_at IS NULL GROUP BY destination ORDER BY count DESC LIMIT 10")
+        feature_rows = query_all("SELECT action, COUNT(*) as count FROM usage_logs GROUP BY action ORDER BY count DESC LIMIT 20")
+        stats['top_destinations'] = [{'destination': r['destination'], 'count': r['count']} for r in top_dests]
+        stats['feature_usage']    = {r['action']: r['count'] for r in feature_rows}
+        return jsonify({'success': True, 'stats': stats})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/users')
+@require_admin
+def admin_users():
+    try:
+        return jsonify({'success': True, 'users': admin_get_users()})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/trips')
+@require_admin
+def admin_trips():
+    try:
+        rows = query_all("SELECT t.*, u.name as user_name, u.email as user_email FROM trips t LEFT JOIN users u ON u.id = t.user_id WHERE t.deleted_at IS NULL ORDER BY t.created_at DESC LIMIT 200")
+        trips = []
+        for r in rows:
+            t = dict(r); t.pop('plan_data', None)
+            for k, v in t.items():
+                if hasattr(v, 'isoformat'): t[k] = v.isoformat()
+            trips.append(t)
+        return jsonify({'success': True, 'trips': trips})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/upgrade-pro', methods=['POST'])
+@require_admin
+def admin_upgrade_pro():
+    try:
+        email = (request.get_json() or {}).get('email', '').lower()
+        if not email: return jsonify({'success': False, 'error': 'Email required'})
+        user = get_user_by_email(email)
+        if not user: return jsonify({'success': False, 'error': 'User not found'})
+        activate_pro(user['id'], 'monthly')
+        return jsonify({'success': True, 'message': email + ' upgraded to Pro ✅'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/activity')
+@require_admin
+def admin_activity():
+    try:
+        rows = query_all("SELECT l.*, u.name as user_name, u.email as user_email FROM usage_logs l LEFT JOIN users u ON u.id = l.user_id ORDER BY l.created_at DESC LIMIT 200")
+        logs = []
+        for r in rows:
+            row = dict(r)
+            for k, v in row.items():
+                if hasattr(v, 'isoformat'): row[k] = v.isoformat()
+            logs.append(row)
+        return jsonify({'success': True, 'logs': logs})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/promos')
+@require_admin
+def admin_promos():
+    try:
+        promos       = query_all('SELECT * FROM promo_codes ORDER BY created_at DESC')
+        redemptions  = query_all("SELECT pr.code, u.name, u.email, pr.redeemed_at FROM promo_redemptions pr JOIN users u ON u.id = pr.user_id ORDER BY pr.redeemed_at DESC")
+        for p in promos:
+            for k, v in p.items():
+                if hasattr(v, 'isoformat'): p[k] = v.isoformat()
+        for r in redemptions:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        return jsonify({'success': True, 'promos': promos, 'redemptions': redemptions})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/revenue')
+@require_admin
+def admin_revenue():
+    try:
+        daily  = query_all("SELECT DATE(paid_at) as date, COUNT(*) as transactions, SUM(amount)/100.0 as revenue, COUNT(*) FILTER (WHERE plan='weekly') as weekly, COUNT(*) FILTER (WHERE plan='monthly') as monthly FROM payments WHERE status='paid' AND paid_at > NOW() - INTERVAL '30 days' GROUP BY DATE(paid_at) ORDER BY date DESC")
+        totals = query_one("SELECT COALESCE(SUM(amount)/100.0,0) as total_revenue, COALESCE(SUM(amount) FILTER (WHERE paid_at > NOW() - INTERVAL '30 days')/100.0,0) as mrr, COALESCE(SUM(amount) FILTER (WHERE DATE(paid_at)=CURRENT_DATE)/100.0,0) as today, COALESCE(SUM(amount) FILTER (WHERE paid_at > NOW() - INTERVAL '7 days')/100.0,0) as week, COUNT(*) as total_payments, COUNT(*) FILTER (WHERE plan='weekly') as weekly_count, COUNT(*) FILTER (WHERE plan='monthly') as monthly_count, COUNT(*) FILTER (WHERE DATE(paid_at)=CURRENT_DATE) as payments_today FROM payments WHERE status='paid'")
+        recent = query_all("SELECT p.*, u.name as user_name, u.email as user_email FROM payments p LEFT JOIN users u ON u.id = p.user_id WHERE p.status='paid' ORDER BY p.paid_at DESC LIMIT 50")
+        for r in daily + recent:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        if totals:
+            for k, v in totals.items():
+                if hasattr(v, 'isoformat'): totals[k] = v.isoformat()
+        return jsonify({'success': True, 'daily': daily, 'totals': totals or {}, 'recent': recent})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/funnel')
+@require_admin
+def admin_funnel():
+    try:
+        row     = query_one("SELECT COUNT(*) as total_users, COUNT(*) FILTER (WHERE onboarding_done=TRUE) as onboarded, COUNT(*) FILTER (WHERE id IN (SELECT DISTINCT user_id FROM trips WHERE deleted_at IS NULL)) as planned, COUNT(*) FILTER (WHERE id IN (SELECT DISTINCT user_id FROM payments WHERE status='paid')) as paid, COUNT(*) FILTER (WHERE plan_type='pro') as pro_now FROM users WHERE deleted_at IS NULL")
+        signups = query_all("SELECT DATE(created_at) as date, COUNT(*) as count FROM users WHERE deleted_at IS NULL AND created_at > NOW() - INTERVAL '14 days' GROUP BY DATE(created_at) ORDER BY date ASC")
+        for r in signups:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        return jsonify({'success': True, 'funnel': dict(row or {}), 'signups': signups})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/retention')
+@require_admin
+def admin_retention():
+    try:
+        d1  = query_one("SELECT COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 1) as cohort, COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 1 AND last_active_at > NOW() - INTERVAL '1 day') as retained FROM users WHERE deleted_at IS NULL")
+        d7  = query_one("SELECT COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 7) as cohort, COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 7 AND last_active_at > NOW() - INTERVAL '7 days') as retained FROM users WHERE deleted_at IS NULL")
+        d30 = query_one("SELECT COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 30) as cohort, COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 30 AND last_active_at > NOW() - INTERVAL '30 days') as retained FROM users WHERE deleted_at IS NULL")
+        churn = query_all("SELECT u.name, u.email, u.pro_expires_at, u.pro_plan FROM users u WHERE u.plan_type='free' AND u.pro_expires_at IS NOT NULL AND u.pro_expires_at > NOW() - INTERVAL '30 days' AND u.pro_expires_at < NOW() ORDER BY u.pro_expires_at DESC LIMIT 20")
+        for r in churn:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        def pct(ret, coh): return round(ret/coh*100, 1) if coh else 0
+        return jsonify({'success': True, 'retention': {
+            'd1':  {'cohort': d1['cohort'] or 0,  'retained': d1['retained'] or 0,  'pct': pct(d1['retained'] or 0,  d1['cohort'] or 0)},
+            'd7':  {'cohort': d7['cohort'] or 0,  'retained': d7['retained'] or 0,  'pct': pct(d7['retained'] or 0,  d7['cohort'] or 0)},
+            'd30': {'cohort': d30['cohort'] or 0, 'retained': d30['retained'] or 0, 'pct': pct(d30['retained'] or 0, d30['cohort'] or 0)},
+        }, 'churn': churn})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/errors')
+@require_admin
+def admin_errors():
+    try:
+        errors        = query_all("SELECT action, error, COUNT(*) as count, MAX(created_at) as last_seen, COUNT(DISTINCT user_id) as affected_users FROM usage_logs WHERE success=FALSE AND created_at > NOW() - INTERVAL '7 days' GROUP BY action, error ORDER BY count DESC LIMIT 50")
+        recent_errors = query_all("SELECT l.*, u.email as user_email FROM usage_logs l LEFT JOIN users u ON u.id = l.user_id WHERE l.success=FALSE AND l.created_at > NOW() - INTERVAL '24 hours' ORDER BY l.created_at DESC LIMIT 30")
+        total_today   = query_one("SELECT COUNT(*) as c FROM usage_logs WHERE success=FALSE AND DATE(created_at)=CURRENT_DATE")
+        for r in errors + recent_errors:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        return jsonify({'success': True, 'errors': errors, 'recent': recent_errors, 'total_today': (total_today or {}).get('c', 0)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/geographic')
+@require_admin
+def admin_geographic():
+    try:
+        cities       = query_all("SELECT home_city, COUNT(*) as count FROM users WHERE deleted_at IS NULL AND home_city != '' GROUP BY home_city ORDER BY count DESC LIMIT 20")
+        passports    = query_all("SELECT passport, COUNT(*) as count FROM users WHERE deleted_at IS NULL AND passport != '' GROUP BY passport ORDER BY count DESC LIMIT 20")
+        destinations = query_all("SELECT destination, COUNT(*) as count FROM trips WHERE deleted_at IS NULL GROUP BY destination ORDER BY count DESC LIMIT 20")
+        return jsonify({'success': True, 'cities': cities, 'passports': passports, 'destinations': destinations})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/export-users')
+@require_admin
+def admin_export_users():
+    try:
+        import csv, io as sio
+        users  = query_all("SELECT u.id, u.name, u.email, u.plan_type, u.is_pro, u.pro_expires_at, u.home_city, u.passport, u.travel_style, u.budget_style, u.onboarding_done, u.created_at, u.last_active_at, COUNT(t.id) as trip_count FROM users u LEFT JOIN trips t ON t.user_id=u.id AND t.deleted_at IS NULL WHERE u.deleted_at IS NULL GROUP BY u.id ORDER BY u.created_at DESC")
+        output = sio.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['ID','Name','Email','Plan','Is Pro','Pro Expires','City','Passport','Travel Style','Budget Style','Onboarding Done','Joined','Last Active','Trips'])
+        for u in users:
+            writer.writerow([u.get('id',''), u.get('name',''), u.get('email',''), u.get('plan_type',''), u.get('is_pro',''), u.get('pro_expires_at',''), u.get('home_city',''), u.get('passport',''), u.get('travel_style',''), u.get('budget_style',''), u.get('onboarding_done',''), u.get('created_at',''), u.get('last_active_at',''), u.get('trip_count',0)])
+        return Response(output.getvalue(), mimetype='text/csv', headers={'Content-Disposition': 'attachment;filename=yaply_users.csv'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+# ── PWA + STATIC ──────────────────────────────────────────────
+
+@app.route('/manifest.json')
+def manifest():
+    return jsonify({
+        "name": "Yaply — AI Travel OS", "short_name": "Yaply",
+        "description": "India's first AI Travel Operating System.",
+        "start_url": "/app", "scope": "/", "display": "standalone",
+        "orientation": "portrait", "background_color": "#F7F9FC", "theme_color": "#2563FF",
+        "icons": [
+            {"src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+            {"src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
+        ],
+        "shortcuts": [
+            {"name": "Plan a Trip", "url": "/plan", "description": "Start planning"},
+            {"name": "Live Translate", "url": "/translate", "description": "Live translation"},
+        ]
+    })
+
+@app.route('/sw.js')
+def service_worker():
+    response = make_response(open(os.path.join(app.root_path, 'static', 'sw.js')).read())
+    response.headers['Content-Type'] = 'application/javascript'
+    response.headers['Service-Worker-Allowed'] = '/'
+    return response
+
+@app.route('/.well-known/assetlinks.json')
+def assetlinks():
+    return jsonify([{"relation": ["delegate_permission/common.handle_all_urls"], "target": {"namespace": "android_app", "package_name": "live.yaply.app", "sha256_cert_fingerprints": ["28:A2:F6:0F:1A:F0:D6:B2:D8:C9:BD:B1:CD:35:5B:A1:8B:24:BB:09:17:5B:6D:E7:E0:50:7B:59:B1:CA:79:5D"]}}])
 
 
 # ── OFFLINE DOWNLOAD ──────────────────────────────────────────
@@ -1982,299 +2239,53 @@ def download_itinerary():
         response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
     except Exception as e:
-        print(f"Download error: {e}")
         return jsonify({'success': False, 'error': str(e)})
-
 
 def _slot(emoji, label, slot):
     if not slot or not slot.get('activity'): return ''
-    tip_html = (
-        '<div style="font-size:11px;color:#1A8A72;margin-top:4px;font-style:italic;border-left:2px solid #1A8A72;padding-left:8px;">&#128161; ' + slot.get('tip', '') + '</div>'
-        if slot.get('tip') else ''
-    )
-    return (
-        '<div style="background:#F7F6F2;border-radius:10px;padding:12px;margin-bottom:8px;">'
-        '<div style="font-size:10px;font-weight:700;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">' + emoji + ' ' + label + '</div>'
-        '<div style="font-weight:700;font-size:14px;">' + slot.get('activity', '') + '</div>'
-        '<div style="font-size:12px;color:#1A8A72;margin-top:2px;">📍 ' + slot.get('location', '') + '</div>'
-        '<div style="font-size:12px;font-weight:700;color:#28B06A;margin-top:4px;">💰 ' + slot.get('cost', '') + ' · ⏱ ' + slot.get('duration', '') + '</div>'
-        + tip_html + '</div>'
-    )
+    tip_html = (f'<div style="font-size:11px;color:#1A8A72;margin-top:4px;font-style:italic;border-left:2px solid #1A8A72;padding-left:8px;">💡 {slot.get("tip","")}</div>' if slot.get('tip') else '')
+    return (f'<div style="background:#F7F6F2;border-radius:10px;padding:12px;margin-bottom:8px;"><div style="font-size:10px;font-weight:700;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">{emoji} {label}</div><div style="font-weight:700;font-size:14px;">{slot.get("activity","")}</div><div style="font-size:12px;color:#1A8A72;margin-top:2px;">📍 {slot.get("location","")}</div><div style="font-size:12px;font-weight:700;color:#28B06A;margin-top:4px;">💰 {slot.get("cost","")} · ⏱ {slot.get("duration","")}</div>{tip_html}</div>')
 
 def _meal(emoji, label, meal):
     if not meal or not meal.get('restaurant'): return ''
-    return (
-        '<div style="background:#FFF7ED;border-radius:10px;padding:10px 12px;margin-bottom:8px;">'
-        '<div style="font-size:10px;font-weight:700;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">' + emoji + ' ' + label + '</div>'
-        '<div style="font-weight:700;font-size:14px;">' + meal.get('restaurant', '') + '</div>'
-        '<div style="font-size:12px;color:#6B6860;">🍽️ ' + meal.get('cuisine', '') + ' · 💰 ' + meal.get('cost', '') + '</div>'
-        '</div>'
-    )
+    return (f'<div style="background:#FFF7ED;border-radius:10px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:10px;font-weight:700;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">{emoji} {label}</div><div style="font-weight:700;font-size:14px;">{meal.get("restaurant","")}</div><div style="font-size:12px;color:#6B6860;">🍽️ {meal.get("cuisine","")} · 💰 {meal.get("cost","")}</div></div>')
 
 def _stay(stay):
     if not stay or not stay.get('name'): return ''
-    return (
-        '<div style="background:#EFF6FF;border-radius:10px;padding:10px 12px;margin-bottom:8px;">'
-        '<div style="font-size:10px;font-weight:700;color:#3A6BC8;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">🏨 Stay</div>'
-        '<div style="font-weight:700;font-size:14px;">' + stay.get('name', '') + '</div>'
-        '<div style="font-size:12px;color:#6B6860;">📍 ' + stay.get('area', '') + ' · 💰 ' + stay.get('cost', '') + '/night</div>'
-        '</div>'
-    )
+    return (f'<div style="background:#EFF6FF;border-radius:10px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:10px;font-weight:700;color:#3A6BC8;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">🏨 Stay</div><div style="font-weight:700;font-size:14px;">{stay.get("name","")}</div><div style="font-size:12px;color:#6B6860;">📍 {stay.get("area","")} · 💰 {stay.get("cost","")}/night</div></div>')
 
 def _build_single_city_html(plan):
     destination = plan.get('destination', 'Your Trip')
     days        = plan.get('days', 0)
-    currency    = plan.get('currency', '')
     itinerary   = plan.get('itinerary', [])
     packing     = plan.get('packing_list', [])
     phrases     = plan.get('local_phrases', [])
     gems        = plan.get('hidden_gems', [])
     emergency   = plan.get('emergency_numbers', {})
     tips        = plan.get('tips', [])
-    visa        = plan.get('visa_info', {})
-    flight      = plan.get('flight_info', {})
-    sim         = plan.get('sim_internet', {})
     cultural    = plan.get('cultural_guide', {})
-    budget_tips = plan.get('budget_tips', [])
 
     day_cards_html = ''
     for day in itinerary:
-        day_cards_html += (
-            '<div style="background:white;border-radius:16px;padding:20px;margin-bottom:12px;border-left:4px solid #1A8A72;box-shadow:0 2px 8px rgba(0,0,0,0.06);">'
-            '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">'
-            '<div style="width:36px;height:36px;border-radius:50%;background:#1A8A72;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0;">' + str(day.get('day', '')) + '</div>'
-            '<div style="font-weight:700;font-size:16px;">' + day.get('title', '') + '</div>'
-            '</div>'
-            + _slot('🌅', 'Morning', day.get('morning'))
-            + _meal('☀️', 'Lunch', day.get('lunch'))
-            + _slot('☀️', 'Afternoon', day.get('afternoon'))
-            + _slot('🌆', 'Evening', day.get('evening'))
-            + _meal('🌙', 'Dinner', day.get('dinner'))
-            + _stay(day.get('accommodation'))
-            + '</div>'
-        )
+        day_cards_html += (f'<div style="background:white;border-radius:16px;padding:20px;margin-bottom:12px;border-left:4px solid #1A8A72;box-shadow:0 2px 8px rgba(0,0,0,0.06);"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;"><div style="width:36px;height:36px;border-radius:50%;background:#1A8A72;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0;">{day.get("day","")}</div><div style="font-weight:700;font-size:16px;">{day.get("title","")}</div></div>'
+            + _slot('🌅','Morning',day.get('morning')) + _meal('☀️','Lunch',day.get('lunch'))
+            + _slot('☀️','Afternoon',day.get('afternoon')) + _slot('🌆','Evening',day.get('evening'))
+            + _meal('🌙','Dinner',day.get('dinner')) + _stay(day.get('accommodation')) + '</div>')
 
-    packing_html = ''.join(
-        f'<span style="display:inline-block;background:#EFF6FF;color:#1A8A72;border-radius:20px;padding:4px 12px;font-size:12px;margin:3px;font-weight:500;">{item}</span>'
-        for item in packing
-    )
-    phrase_html = ''.join(
-        f'<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #F0EBE0;flex-wrap:wrap;">'
-        f'<span style="font-weight:600;min-width:120px;font-size:13px;">{p.get("phrase","")}</span>'
-        f'<span style="color:#1A8A72;font-size:14px;font-weight:600;">{p.get("translation","")}</span>'
-        f'<span style="color:#6B6860;font-size:12px;font-style:italic;">({p.get("pronunciation","")})</span>'
-        f'</div>'
-        for p in phrases
-    )
-    gems_html = ''.join(
-        f'<div style="background:#F7F6F2;border-radius:12px;padding:14px;margin-bottom:10px;">'
-        f'<div style="font-weight:700;font-size:14px;margin-bottom:4px;">💎 {g.get("name","")}</div>'
-        f'<div style="font-size:12px;color:#3D3730;">{g.get("description","")}</div>'
-        f'<div style="font-size:11px;color:#6B6860;margin-top:6px;">📍 {g.get("location","")} · ⏰ {g.get("best_time","")} · 💰 {g.get("cost","")}</div>'
-        f'</div>'
-        for g in gems
-    )
-    cultural = plan.get('cultural_guide', {})
-    dos      = ''.join(f'<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">✅ {d}</li>' for d in cultural.get('dos', []))
-    donts    = ''.join(f'<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">❌ {d}</li>' for d in cultural.get('donts', []))
-    em_html  = ''.join(
-        f'<div style="background:#FEF2F2;border-radius:10px;padding:12px;text-align:center;">'
-        f'<div style="font-size:20px;font-weight:700;color:#D84C3E;">{num}</div>'
-        f'<div style="font-size:11px;color:#6B6860;margin-top:2px;">{k.replace("_"," ").title()}</div>'
-        f'</div>'
-        for k, num in emergency.items()
-    )
-    tips_html  = ''.join(f'<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">🎯 {t}</li>' for t in tips)
-    btips_html = ''.join(f'<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">💡 {t}</li>' for t in budget_tips)
+    packing_html = ''.join(f'<span style="display:inline-block;background:#EFF6FF;color:#1A8A72;border-radius:20px;padding:4px 12px;font-size:12px;margin:3px;font-weight:500;">{item}</span>' for item in packing)
+    phrase_html  = ''.join(f'<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #F0EBE0;flex-wrap:wrap;"><span style="font-weight:600;min-width:120px;font-size:13px;">{p.get("phrase","")}</span><span style="color:#1A8A72;font-size:14px;font-weight:600;">{p.get("translation","")}</span><span style="color:#6B6860;font-size:12px;font-style:italic;">({p.get("pronunciation","")})</span></div>' for p in phrases)
+    gems_html    = ''.join(f'<div style="background:#F7F6F2;border-radius:12px;padding:14px;margin-bottom:10px;"><div style="font-weight:700;font-size:14px;margin-bottom:4px;">💎 {g.get("name","")}</div><div style="font-size:12px;color:#3D3730;">{g.get("description","")}</div></div>' for g in gems)
+    dos          = ''.join(f'<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">✅ {d}</li>' for d in cultural.get('dos', []))
+    donts        = ''.join(f'<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">❌ {d}</li>' for d in cultural.get('donts', []))
+    em_html      = ''.join(f'<div style="background:#FEF2F2;border-radius:10px;padding:12px;text-align:center;"><div style="font-size:20px;font-weight:700;color:#D84C3E;">{num}</div><div style="font-size:11px;color:#6B6860;margin-top:2px;">{k.replace("_"," ").title()}</div></div>' for k, num in emergency.items())
+    tips_html    = ''.join(f'<li style="padding:6px 0;font-size:13px;border-bottom:1px solid #F0EBE0;">🎯 {t}</li>' for t in tips)
 
-    return f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{destination} — Yaply Offline Itinerary</title>
-<style>
-*{{margin:0;padding:0;box-sizing:border-box}}
-body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#F7F6F2;color:#2C2B28}}
-.header{{background:linear-gradient(135deg,#2563FF,#0B1220);color:white;padding:32px 24px;text-align:center}}
-.container{{max-width:800px;margin:0 auto;padding:20px 16px 60px}}
-.section{{background:white;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}}
-.section-title{{font-size:15px;font-weight:800;color:#2563FF;margin-bottom:14px}}
-.info-grid{{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
-.info-item{{background:#F7F6F2;border-radius:10px;padding:12px}}
-.info-label{{font-size:10px;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}}
-.info-value{{font-size:13px;font-weight:700}}
-ul{{padding:0;list-style:none}}
-.offline-note{{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#1D4ED8;text-align:center}}
-.footer{{text-align:center;padding:24px;color:#6B6860;font-size:12px}}
-</style>
-</head>
-<body>
-<div class="header">
-  <div style="font-size:11px;opacity:.6;letter-spacing:2px;margin-bottom:4px;">YAPLY · AI TRAVEL OS</div>
-  <h1 style="font-size:28px;font-weight:800;letter-spacing:-1px;">✈️ {destination}</h1>
-  <div style="opacity:.8;font-size:13px;margin-top:6px;">{days}-Day Complete Itinerary</div>
-  <div style="margin-top:8px;">
-    <span style="background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:12px;margin:3px;display:inline-block;">📅 {days} Days</span>
-    <span style="background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:12px;margin:3px;display:inline-block;">💰 {currency}</span>
-    <span style="background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:12px;margin:3px;display:inline-block;">📱 Offline Ready</span>
-  </div>
-</div>
-<div class="container">
-  <div class="offline-note">📱 Works completely offline — save to your phone before you travel.</div>
-  <div class="section">
-    <div class="section-title">ℹ️ Trip Essentials</div>
-    <div class="info-grid">
-      <div class="info-item"><div class="info-label">Best Time</div><div class="info-value">{plan.get("best_time_to_visit","")}</div></div>
-      <div class="info-item"><div class="info-label">Language</div><div class="info-value">{plan.get("language","")}</div></div>
-      <div class="info-item"><div class="info-label">Timezone</div><div class="info-value">{plan.get("timezone","")}</div></div>
-      <div class="info-item"><div class="info-label">Currency</div><div class="info-value">{plan.get("currency","")}</div></div>
-    </div>
-  </div>
-  {"<div class='section'><div class='section-title'>✈️ Flight Info</div><div class='info-grid'><div class='info-item'><div class='info-label'>Cost</div><div class='info-value'>" + flight.get("estimated_cost","") + "</div></div><div class='info-item'><div class='info-label'>Duration</div><div class='info-value'>" + flight.get("flight_duration","") + "</div></div></div></div>" if flight else ""}
-  {"<div class='section'><div class='section-title'>🛂 Visa</div><div class='info-grid'><div class='info-item'><div class='info-label'>Required</div><div class='info-value'>" + ("Yes" if visa.get("required") else "No") + "</div></div><div class='info-item'><div class='info-label'>Cost</div><div class='info-value'>" + visa.get("cost","") + "</div></div></div></div>" if visa else ""}
-  <div style="font-size:14px;font-weight:800;color:#2C2B28;margin-bottom:12px;">📅 Day by Day Itinerary</div>
-  {day_cards_html}
-  {"<div class='section'><div class='section-title'>💎 Hidden Gems</div>" + gems_html + "</div>" if gems_html else ""}
-  {"<div class='section'><div class='section-title'>💬 Essential Phrases</div>" + phrase_html + "</div>" if phrase_html else ""}
-  {"<div class='section'><div class='section-title'>🌍 Cultural Guide</div><div style='display:grid;grid-template-columns:1fr 1fr;gap:16px;'><div><div style='font-size:11px;font-weight:700;color:#28B06A;margin-bottom:8px;'>DOS</div><ul>" + dos + "</ul></div><div><div style='font-size:11px;font-weight:700;color:#D84C3E;margin-bottom:8px;'>DON'TS</div><ul>" + donts + "</ul></div></div></div>" if cultural else ""}
-  {"<div class='section'><div class='section-title'>🚨 Emergency Numbers</div><div style='display:grid;grid-template-columns:1fr 1fr;gap:9px;'>" + em_html + "</div></div>" if em_html else ""}
-  {"<div class='section'><div class='section-title'>🎒 Packing List</div>" + packing_html + "</div>" if packing_html else ""}
-  {"<div class='section'><div class='section-title'>🎯 Pro Tips</div><ul>" + tips_html + "</ul></div>" if tips_html else ""}
-  {"<div class='section'><div class='section-title'>💡 Budget Tips</div><ul>" + btips_html + "</ul></div>" if btips_html else ""}
-</div>
-<div class="footer">Generated by <strong>Yaply</strong> — Your Complete Travel OS — <a href="https://yaply.live" style="color:#2563FF;">yaply.live</a></div>
-</body>
-</html>'''
-
+    return f'''<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{destination} — Yaply</title><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{font-family:-apple-system,sans-serif;background:#F7F6F2;color:#2C2B28}}.header{{background:linear-gradient(135deg,#2563FF,#0B1220);color:white;padding:32px 24px;text-align:center}}.container{{max-width:800px;margin:0 auto;padding:20px 16px 60px}}.section{{background:white;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}}.section-title{{font-size:15px;font-weight:800;color:#2563FF;margin-bottom:14px}}.info-grid{{display:grid;grid-template-columns:1fr 1fr;gap:10px}}.info-item{{background:#F7F6F2;border-radius:10px;padding:12px}}.info-label{{font-size:10px;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}}.info-value{{font-size:13px;font-weight:700}}ul{{padding:0;list-style:none}}.footer{{text-align:center;padding:24px;color:#6B6860;font-size:12px}}</style></head><body><div class="header"><div style="font-size:11px;opacity:.6;letter-spacing:2px;margin-bottom:4px;">YAPLY · AI TRAVEL OS</div><h1 style="font-size:28px;font-weight:800;letter-spacing:-1px;">✈️ {destination}</h1><div style="opacity:.8;font-size:13px;margin-top:6px;">{days}-Day Itinerary</div></div><div class="container"><div style="font-size:14px;font-weight:800;color:#2C2B28;margin-bottom:12px;">📅 Day by Day</div>{day_cards_html}{"<div class='section'><div class='section-title'>💎 Hidden Gems</div>" + gems_html + "</div>" if gems_html else ""}{"<div class='section'><div class='section-title'>💬 Local Phrases</div>" + phrase_html + "</div>" if phrase_html else ""}{"<div class='section'><div class='section-title'>🌍 Cultural Guide</div><div style='display:grid;grid-template-columns:1fr 1fr;gap:16px;'><div><div style='font-size:11px;font-weight:700;color:#28B06A;margin-bottom:8px;'>DOS</div><ul>" + dos + "</ul></div><div><div style='font-size:11px;font-weight:700;color:#D84C3E;margin-bottom:8px;'>DON'TS</div><ul>" + donts + "</ul></div></div></div>" if cultural else ""}{"<div class='section'><div class='section-title'>🚨 Emergency Numbers</div><div style='display:grid;grid-template-columns:1fr 1fr;gap:9px;'>" + em_html + "</div></div>" if em_html else ""}{"<div class='section'><div class='section-title'>🎒 Packing</div>" + packing_html + "</div>" if packing_html else ""}{"<div class='section'><div class='section-title'>🎯 Tips</div><ul>" + tips_html + "</ul></div>" if tips_html else ""}</div><div class="footer">Generated by <strong>Yaply</strong> — <a href="https://yaply.live" style="color:#2563FF;">yaply.live</a></div></body></html>'''
 
 def _build_multi_city_html(plan):
-    title    = plan.get('trip_title', 'Multi-City Trip')
-    cities   = plan.get('cities', [])
-    transits = plan.get('transit_plans', [])
-    currency = plan.get('currency', 'INR')
-    sim      = plan.get('sim_strategy', {})
-    packing  = plan.get('packing_for_route', {})
-    suggs    = plan.get('smart_suggestions', [])
-    budget   = plan.get('budget_split', {})
-    MC_COLS  = ['#2563FF', '#FF7A59', '#18C29C', '#F5B942', '#8B5CF6', '#0EA5E9']
-
-    sugg_html   = ''.join(f'<li style="padding:6px 0;font-size:13px;border-bottom:1px solid rgba(37,99,255,.1);">🧠 {s}</li>' for s in suggs)
-    budget_html = ''.join(
-        f'<div style="background:#F7F6F2;border-radius:10px;padding:12px;">'
-        f'<div style="font-size:10px;color:#6B6860;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">{k.replace("_"," ").title()}</div>'
-        f'<div style="font-size:13px;font-weight:700;color:#2563FF;">{currency} {int(v or 0)}</div>'
-        f'</div>'
-        for k, v in budget.items()
-    )
-
-    cities_html = ''
-    for idx, city in enumerate(cities):
-        col       = MC_COLS[idx % len(MC_COLS)]
-        itinerary = city.get('itinerary', [])
-        gems      = city.get('hidden_gems', [])
-        tips      = city.get('local_tips', [])
-
-        day_html = ''
-        for day in itinerary:
-            day_html += (
-                '<div style="background:#F7F6F2;border-radius:12px;padding:12px;margin-bottom:8px;">'
-                '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
-                f'<div style="width:26px;height:26px;border-radius:50%;background:{col};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0;">' + str(day.get('day', '')) + '</div>'
-                '<div style="font-size:14px;font-weight:700;">' + (day.get('day_label') or day.get('theme') or f'Day {day.get("day","")}') + '</div>'
-                '</div>'
-                + _slot('🌅', 'Morning', day.get('morning'))
-                + _meal('☀️', 'Lunch', day.get('lunch'))
-                + _slot('☀️', 'Afternoon', day.get('afternoon'))
-                + _slot('🌆', 'Evening', day.get('evening'))
-                + _meal('🌙', 'Dinner', day.get('dinner'))
-                + '</div>'
-            )
-
-        gems_html = ''.join(
-            f'<div style="background:#F7F6F2;border-radius:10px;padding:11px;margin-bottom:7px;">'
-            f'<div style="font-weight:700;font-size:13px;">💎 {g.get("name","")}</div>'
-            f'<div style="font-size:12px;color:#3D3730;margin-top:3px;">{g.get("why") or g.get("description","")}</div>'
-            f'</div>'
-            for g in gems
-        )
-        tips_html = ''.join(
-            f'<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid #F0EBE0;">'
-            f'<div style="width:20px;height:20px;border-radius:50%;background:#2C2B28;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{i+1}</div>'
-            f'<div style="font-size:13px;">{tip}</div>'
-            f'</div>'
-            for i, tip in enumerate(tips)
-        )
-
-        cities_html += (
-            f'<div style="background:white;border-radius:16px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);">'
-            f'<div style="background:{col};padding:18px 20px;">'
-            f'<div style="font-size:11px;color:rgba(255,255,255,.6);letter-spacing:1px;margin-bottom:4px;">CITY {idx+1}</div>'
-            f'<div style="font-size:20px;font-weight:800;color:white;">{city.get("city","")} , {city.get("country","")}</div>'
-            f'<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px;">{city.get("days","")} days · {currency} {int(city.get("city_budget",0))} · {city.get("best_area_to_stay","")}</div>'
-            f'</div>'
-            f'<div style="padding:16px 18px;">'
-            + (f'<div style="background:#F7F6F2;border-radius:10px;padding:10px;margin-bottom:12px;font-size:12px;">🌤️ {city.get("weather_note","")}</div>' if city.get('weather_note') else '')
-            + (f'<div style="font-size:11px;font-weight:700;color:#6B6860;text-transform:uppercase;margin-bottom:8px;">Daily Plan</div>' + day_html if day_html else '')
-            + (f'<div style="font-size:11px;font-weight:700;color:#6B6860;text-transform:uppercase;margin:10px 0 8px;">Hidden Gems</div>' + gems_html if gems_html else '')
-            + (f'<div style="font-size:11px;font-weight:700;color:#6B6860;text-transform:uppercase;margin:10px 0 8px;">Local Tips</div>' + tips_html if tips_html else '')
-            + '</div></div>'
-        )
-
-        transit = next((t for t in transits if t.get('from') and city.get('city', '') in t.get('from', '')), None)
-        if transit and idx < len(cities) - 1:
-            opts     = transit.get('options', [])
-            opt_html = ''.join(
-                f'<div style="background:{"#EFF6FF" if opt.get("recommended") else "#F7F6F2"};border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">'
-                f'<div style="flex:1;"><div style="font-size:13px;font-weight:700;">{opt.get("mode","")} · {opt.get("operator","")}</div>'
-                f'<div style="font-size:11px;color:#6B6860;">⏱ {opt.get("duration","")} · {opt.get("comfort","")}</div></div>'
-                + ('<span style="background:#2563FF;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">BEST</span>' if opt.get('recommended') else '')
-                + f'<div style="font-size:14px;font-weight:800;color:#2563FF;">{currency} {opt.get("total_cost",opt.get("cost","?"))}</div>'
-                f'</div>'
-                for opt in opts[:3]
-            )
-            cities_html += (
-                f'<div style="background:white;border-radius:12px;border:1.5px solid #EFEDE8;padding:14px 16px;margin-bottom:12px;">'
-                f'<div style="font-size:12px;font-weight:700;margin-bottom:8px;">✈️ {transit.get("from","")} → {transit.get("to","")}</div>'
-                + opt_html
-                + (f'<div style="background:#EFEDE8;border-radius:8px;padding:8px 10px;font-size:12px;margin-top:6px;">💡 {transit.get("transit_tip","")}</div>' if transit.get('transit_tip') else '')
-                + '</div>'
-            )
-
-    return f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{title} — Yaply Offline</title>
-<style>
-*{{margin:0;padding:0;box-sizing:border-box}}
-body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#F7F6F2;color:#2C2B28}}
-.header{{background:linear-gradient(135deg,#0B1220,#1a2a4a);color:white;padding:28px 24px;text-align:center}}
-.container{{max-width:800px;margin:0 auto;padding:20px 16px 60px}}
-.section{{background:white;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}}
-.section-title{{font-size:15px;font-weight:800;color:#2563FF;margin-bottom:14px}}
-.offline-note{{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#1D4ED8;text-align:center}}
-.footer{{text-align:center;padding:24px;color:#6B6860;font-size:12px}}
-</style>
-</head>
-<body>
-<div class="header">
-  <div style="font-size:11px;opacity:.5;letter-spacing:2px;margin-bottom:6px;">YAPLY · AI TRAVEL OS</div>
-  <h1 style="font-size:22px;font-weight:800;letter-spacing:-1px;">🗺️ {title}</h1>
-  <div style="opacity:.6;font-size:13px;margin-top:6px;">{plan.get("total_days","")} days · {len(cities)} cities · {currency} {plan.get("total_budget","")}</div>
-</div>
-<div class="container">
-  <div class="offline-note">📱 Works completely offline — save to your phone before you travel.</div>
-  {"<div class='section'><div class='section-title'>🧠 Smart Suggestions</div><ul style='padding:0;list-style:none;'>" + sugg_html + "</ul></div>" if sugg_html else ""}
-  {"<div class='section'><div class='section-title'>💰 Budget Split</div><div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;'>" + budget_html + "</div></div>" if budget_html else ""}
-  {cities_html}
-  {"<div class='section'><div class='section-title'>📱 SIM Strategy</div><div style='background:#EFF6FF;border-radius:10px;padding:10px 12px;font-size:13px;color:#2563FF;'>" + sim.get("recommendation","") + "</div></div>" if sim.get("recommendation") else ""}
-  {"<div class='section'><div class='section-title'>🎒 Packing for This Route</div><div style='font-size:13px;margin-bottom:10px;'>🌡️ " + packing.get("weather_variation","") + "</div><div>" + "".join(f'<span style="display:inline-block;background:#EFF6FF;color:#2563FF;border-radius:20px;padding:4px 12px;font-size:12px;margin:3px;font-weight:500;">{item}</span>' for item in packing.get("key_items",[])) + "</div></div>" if packing.get("key_items") else ""}
-</div>
-<div class="footer">Generated by <strong>Yaply</strong> — <a href="https://yaply.live" style="color:#2563FF;">yaply.live</a></div>
-</body>
-</html>'''
+    title  = plan.get('trip_title', 'Multi-City Trip')
+    cities = plan.get('cities', [])
+    return f'<!DOCTYPE html><html><head><meta charset="UTF-8"><title>{title} — Yaply</title></head><body><h1>{title}</h1><p>Multi-city itinerary — {len(cities)} cities</p></body></html>'
 
 
 # ════════════════════════════════════════════════════════════════
@@ -2348,9 +2359,9 @@ def convo_ws(ws):
             if isinstance(msg, str):
                 try:
                     cfg = json.loads(msg)
-                    if 'lang_a'   in cfg: lang_a  = cfg['lang_a'].lower()[:2]
-                    if 'lang_b'   in cfg: lang_b  = cfg['lang_b'].lower()[:2]
-                    if 'speaker'  in cfg:
+                    if 'lang_a'  in cfg: lang_a  = cfg['lang_a'].lower()[:2]
+                    if 'lang_b'  in cfg: lang_b  = cfg['lang_b'].lower()[:2]
+                    if 'speaker' in cfg:
                         active_speaker = cfg['speaker']
                         audio_buffer = bytearray(); silent_chunks = 0; speaking = False
                         safe_send(ws, {'type': 'speaker_changed', 'speaker': active_speaker})
@@ -2363,7 +2374,7 @@ def convo_ws(ws):
                 silent_chunks = 0; audio_buffer.extend(chunk)
             elif speaking:
                 silent_chunks += 1; audio_buffer.extend(chunk)
-                src           = lang_a if active_speaker == 'A' else lang_b
+                src            = lang_a if active_speaker == 'A' else lang_b
                 silence_needed = 5 if src in SLOW_LANGS else 3
                 if silent_chunks >= silence_needed:
                     if len(audio_buffer) >= MIN_BYTES:
@@ -2389,1141 +2400,13 @@ def convo_ws(ws):
             print(f"[Convo] {e}"); break
 
 
-@app.route('/api/places-autocomplete')
-@limiter.limit("60 per hour")
-def places_autocomplete():
-    try:
-        q   = request.args.get('q', '')
-        key = os.getenv('GOOGLE_PLACES_API_KEY', '')
-        if not q or not key:
-            return jsonify({'success': False, 'predictions': []})
-        r = req.get(
-            'https://maps.googleapis.com/maps/api/place/autocomplete/json',
-            params={
-                'input':    q,
-                'types':    '(cities)',
-                'key':      key,
-                'language': 'en',
-            },
-            timeout=8
-        )
-        data = r.json()
-        if data.get('status') == 'OK':
-            return jsonify({'success': True, 'predictions': data.get('predictions', [])})
-        return jsonify({'success': False, 'predictions': []})
-    except Exception as e:
-        return jsonify({'success': False, 'predictions': [], 'error': str(e)})
-
-
-# ── Nearby stations/airports via Google Places ──
-@app.route('/api/nearby-stations')
-@require_auth
-@limiter.limit("30 per hour")
-def nearby_stations():
-    try:
-        location   = request.args.get('location', '')
-        place_type = request.args.get('type', 'train_station')
-        key        = os.getenv('GOOGLE_PLACES_API_KEY', '')
-
-        if not location or not key:
-            return jsonify({'success': False, 'stations': []})
-
-        # First geocode the location to get lat/lng
-        geo = req.get(
-            'https://maps.googleapis.com/maps/api/geocode/json',
-            params={'address': location, 'key': key},
-            timeout=8
-        ).json()
-
-        if not geo.get('results'):
-            return jsonify({'success': False, 'stations': []})
-
-        loc = geo['results'][0]['geometry']['location']
-        lat, lng = loc['lat'], loc['lng']
-
-        # Now find nearby stations
-        places = req.get(
-            'https://maps.googleapis.com/maps/api/place/nearbysearch/json',
-            params={
-                'location': f"{lat},{lng}",
-                'radius':   50000,  # 50km radius
-                'type':     place_type,
-                'key':      key,
-                'language': 'en',
-            },
-            timeout=8
-        ).json()
-
-        stations = []
-        for p in places.get('results', [])[:6]:
-            # Calculate approximate distance
-            import math
-            plat = p['geometry']['location']['lat']
-            plng = p['geometry']['location']['lng']
-            dist_km = round(math.sqrt((plat-lat)**2 + (plng-lng)**2) * 111, 1)
-
-            stations.append({
-                'name':     p.get('name', ''),
-                'address':  p.get('vicinity', ''),
-                'distance': f"{dist_km} km",
-                'rating':   p.get('rating', 0),
-                'place_id': p.get('place_id', ''),
-            })
-
-        # Sort by distance
-        stations.sort(key=lambda x: float(x['distance'].replace(' km', '')))
-
-        return jsonify({'success': True, 'stations': stations})
-
-    except Exception as e:
-        return jsonify({'success': False, 'stations': [], 'error': str(e)})
-    
-
-# ══════════════════════════════════════════════════════════
-# ADD THESE ROUTES TO YOUR app.py
-# ══════════════════════════════════════════════════════════
-
-# ── PWA Manifest ──
-@app.route('/manifest.json')
-def manifest():
-    return jsonify({
-        "name": "Yaply — AI Travel OS",
-        "short_name": "Yaply",
-        "description": "India's first AI Travel Operating System. Plan trips, translate live, stay safe.",
-        "start_url": "/app",
-        "scope": "/",
-        "display": "standalone",
-        "orientation": "portrait",
-        "background_color": "#F7F9FC",
-        "theme_color": "#2563FF",
-        "lang": "en-IN",
-        "categories": ["travel", "lifestyle", "utilities"],
-        "icons": [
-            {"src": "/static/icons/icon-48.png",  "sizes": "48x48",   "type": "image/png"},
-            {"src": "/static/icons/icon-72.png",  "sizes": "72x72",   "type": "image/png"},
-            {"src": "/static/icons/icon-96.png",  "sizes": "96x96",   "type": "image/png"},
-            {"src": "/static/icons/icon-144.png", "sizes": "144x144", "type": "image/png"},
-            {"src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
-            {"src": "/static/icons/icon-256.png", "sizes": "256x256", "type": "image/png"},
-            {"src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
-        ],
-        "shortcuts": [
-            {"name": "Plan a Trip",    "url": "/plan",      "description": "Start planning"},
-            {"name": "Live Translate", "url": "/translate", "description": "Live translation"},
-        ]
-    })
-
-# ── Service Worker ──
-@app.route('/sw.js')
-def service_worker():
-    response = make_response(
-        open(os.path.join(app.root_path, 'static', 'sw.js')).read()
-    )
-    response.headers['Content-Type'] = 'application/javascript'
-    response.headers['Service-Worker-Allowed'] = '/'
-    return response
-
-# ── Privacy Policy ──
-@app.route('/privacy')
-def privacy():
-    return render_template('privacy.html')
-
-# ── Terms of Service ──
-@app.route('/terms')
-def terms():
-    return render_template('terms.html')
-
-# ── Offline page ──
-@app.route('/offline')
-def offline():
-    return render_template('offline.html')
-
-# ── Digital Asset Links (for TWA Play Store verification) ──
-@app.route('/.well-known/assetlinks.json')
-def assetlinks():
-    return jsonify([{
-        "relation": ["delegate_permission/common.handle_all_urls"],
-        "target": {
-            "namespace": "android_app",
-            "package_name": "live.yaply.app",
-            "sha256_cert_fingerprints": [
-                "28:A2:F6:0F:1A:F0:D6:B2:D8:C9:BD:B1:CD:35:5B:A1:8B:24:BB:09:17:5B:6D:E7:E0:50:7B:59:B1:CA:79:5D"
-            ]
-        }
-    }])
-
-# ══════════════════════════════════════════════════════════
-# ADD THESE ROUTES TO YOUR app.py
-# ══════════════════════════════════════════════════════════
-
-ADMIN_EMAIL = 'yaplytranslator@gmail.com'
-
-def require_admin(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = get_token_from_request()
-        if not token:
-            return jsonify({'success': False, 'error': 'No token'}), 401
-        payload = decode_token(token)
-        if not payload:
-            return jsonify({'success': False, 'error': 'Invalid token'}), 401
-        user = get_user_by_id(payload.get('user_id'))
-        if not user or user['email'].lower() != ADMIN_EMAIL.lower():
-            return jsonify({'success': False, 'error': 'Admin only'}), 403
-        g.user_id = user['id']
-        g.user    = user
-        return f(*args, **kwargs)
-    return decorated
-
-# ── Admin page ──
-@app.route('/admin')
-def admin_page():
-    return render_template('yaply_admin.html')
-
-# ── Admin stats ──
-@app.route('/api/admin/stats')
-@require_admin
-def admin_stats():
-    try:
-        stats = admin_get_stats()
-        top_dests = query_all(
-            """SELECT destination, COUNT(*) as count FROM trips
-               WHERE deleted_at IS NULL
-               GROUP BY destination ORDER BY count DESC LIMIT 10"""
-        )
-        feature_rows = query_all(
-            """SELECT action, COUNT(*) as count FROM usage_logs
-               GROUP BY action ORDER BY count DESC LIMIT 20"""
-        )
-        stats['top_destinations'] = [{'destination': r['destination'], 'count': r['count']} for r in top_dests]
-        stats['feature_usage']    = {r['action']: r['count'] for r in feature_rows}
-        return jsonify({'success': True, 'stats': stats})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Admin users ──
-@app.route('/api/admin/users')
-@require_admin
-def admin_users():
-    try:
-        users = admin_get_users()
-        return jsonify({'success': True, 'users': users})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Admin trips ──
-@app.route('/api/admin/trips')
-@require_admin
-def admin_trips():
-    try:
-        rows = query_all(
-            """SELECT t.*, u.name as user_name, u.email as user_email
-               FROM trips t
-               LEFT JOIN users u ON u.id = t.user_id
-               WHERE t.deleted_at IS NULL
-               ORDER BY t.created_at DESC
-               LIMIT 200"""
-        )
-        trips = []
-        for r in rows:
-            t = dict(r)
-            t.pop('plan_data', None)
-            for k, v in t.items():
-                if hasattr(v, 'isoformat'):
-                    t[k] = v.isoformat()
-            trips.append(t)
-        return jsonify({'success': True, 'trips': trips})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Admin upgrade pro ──
-@app.route('/api/admin/upgrade-pro', methods=['POST'])
-@require_admin
-def admin_upgrade_pro():
-    try:
-        email = (request.get_json() or {}).get('email', '').lower()
-        if not email:
-            return jsonify({'success': False, 'error': 'Email required'})
-        user = get_user_by_email(email)
-        if not user:
-            return jsonify({'success': False, 'error': 'User not found'})
-        activate_pro(user['id'], 'monthly')
-        return jsonify({'success': True, 'message': email + ' upgraded to Pro ✅'})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-    
-# ── Get diary trips ──
-@app.route('/api/diary/trips', methods=['GET'])
-@require_auth
-def api_diary_trips():
-    try:
-        trips = get_diary_trips(g.user_id)
-        return jsonify({'success': True, 'trips': trips})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Get single diary trip ──
-@app.route('/api/diary/trips/<int:trip_id>', methods=['GET'])
-@require_auth
-def api_diary_trip(trip_id):
-    try:
-        trip = get_diary_trip(trip_id, g.user_id)
-        if not trip:
-            return jsonify({'success': False, 'error': 'Trip not found'})
-        return jsonify({'success': True, 'trip': trip})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Create diary trip ──
-@app.route('/api/diary/trips', methods=['POST'])
-@require_auth
-def api_create_diary_trip():
-    try:
-        data        = request.get_json() or {}
-        destination = clean(data.get('destination', 'My Trip'))
-        currency    = clean(data.get('currency', 'INR'), 3)
-        start_date  = data.get('start_date', '')
-        trip_id     = create_diary_trip(g.user_id, destination, currency, start_date)
-        return jsonify({'success': True, 'trip_id': trip_id})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Get diary entries ──
-@app.route('/api/diary/entries', methods=['GET'])
-@require_auth
-def api_diary_entries():
-    try:
-        trip_id    = request.args.get('trip_id', type=int)
-        entry_type = request.args.get('type')
-        search     = request.args.get('search')
-        limit      = request.args.get('limit', 100, type=int)
-        entries    = get_diary_entries(g.user_id, trip_id, entry_type, search, limit)
-        return jsonify({'success': True, 'entries': entries})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Create diary entry ──
-@app.route('/api/diary/entries', methods=['POST'])
-@require_auth
-@limiter.limit("60 per hour")
-def api_create_diary_entry():
-    try:
-        data       = request.get_json() or {}
-        trip_id    = data.get('trip_id')
-        entry_type = clean(data.get('type', 'note'), 20)
-        text       = clean(data.get('text', ''), 2000)
-        mood       = clean(data.get('mood', ''), 10)
-        location   = clean(data.get('location', ''), 100)
-        tags       = data.get('tags', [])[:10]
-        photos     = data.get('photos', [])[:5]
-        amount     = float(data.get('amount', 0) or 0)
-        currency   = clean(data.get('currency', 'INR'), 3)
-        day_number = int(data.get('day_number', 1) or 1)
-
-        entry_id = create_diary_entry(
-            g.user_id, trip_id, entry_type, text, mood,
-            location, tags, photos, amount, currency, day_number
-        )
-
-        # Return the full entry
-        entries = get_diary_entries(g.user_id, trip_id, limit=1)
-        entry   = next((e for e in entries if e['id'] == entry_id), None)
-        log_action(g.user_id, 'diary_entry', request.remote_addr)
-        return jsonify({'success': True, 'entry': entry, 'entry_id': entry_id})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Delete diary entry ──
-@app.route('/api/diary/entries/<int:entry_id>', methods=['DELETE'])
-@require_auth
-def api_delete_diary_entry(entry_id):
-    try:
-        delete_diary_entry(entry_id, g.user_id)
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Toggle favorite ──
-@app.route('/api/diary/entries/<int:entry_id>/favorite', methods=['POST'])
-@require_auth
-def api_diary_favorite(entry_id):
-    try:
-        is_fav = toggle_diary_favorite(entry_id, g.user_id)
-        return jsonify({'success': True, 'is_favorite': is_fav})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Diary stats ──
-@app.route('/api/diary/stats', methods=['GET'])
-@require_auth
-def api_diary_stats():
-    try:
-        trip_id = request.args.get('trip_id', type=int)
-        stats   = get_diary_stats(g.user_id, trip_id)
-        return jsonify({'success': True, **stats})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Expense summary ──
-@app.route('/api/diary/expenses', methods=['GET'])
-@require_auth
-def api_diary_expenses():
-    try:
-        trip_id = request.args.get('trip_id', type=int)
-        entries = get_diary_entries(g.user_id, trip_id, entry_type='expense')
-        total   = sum(e.get('amount', 0) for e in entries)
-        by_cat  = {}
-        for e in entries:
-            cat = e.get('location') or 'Other'
-            by_cat[cat] = by_cat.get(cat, 0) + (e.get('amount') or 0)
-        by_category = [{'category': k, 'total': v} for k, v in sorted(by_cat.items(), key=lambda x: -x[1])]
-        return jsonify({'success': True, 'total': round(total, 2), 'by_category': by_category, 'entries': entries})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── AI Journal ──
-@app.route('/api/diary/ai-journal', methods=['POST'])
-@require_auth
-@limiter.limit("5 per hour")
-def api_diary_ai_journal():
-    try:
-        data    = request.get_json() or {}
-        trip_id = data.get('trip_id')
-        style   = clean(data.get('style', 'storytelling'), 20)
-
-        entries = get_diary_entries(g.user_id, trip_id, limit=50)
-        if not entries:
-            return jsonify({'success': False, 'error': 'No diary entries yet'})
-
-        entries_text = '\n'.join([
-            f"Day {e.get('day_number',1)} [{e.get('type','note').upper()}] {e.get('location','')} — {e.get('text','')} {('₹'+str(e.get('amount',''))) if e.get('amount') else ''}"
-            for e in entries[:20]
-        ])
-
-        result = groq_json(
-            f"""Transform these real travel diary entries into a beautiful literary travel journal.
-Style: {style}. Entries: {entries_text}
-
-Return JSON: title, tagline, opening, chapters (array of: day, chapter_title, story, highlight, mood, emoji),
-closing, best_memory, lesson_learned, quote, would_return, rating""",
-            model=MODEL_70B, temp=0.7, max_tok=3000
-        )
-        log_action(g.user_id, 'ai_journal', request.remote_addr)
-        return jsonify({'success': True, 'journal': result})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Export diary ──
-@app.route('/api/diary/export', methods=['GET'])
-@require_auth
-def api_diary_export():
-    try:
-        trip_id = request.args.get('trip_id', type=int)
-        entries = get_diary_entries(g.user_id, trip_id, limit=500)
-        lines   = []
-        for e in entries:
-            lines.append(f"[Day {e.get('day_number',1)}] [{e.get('type','note').upper()}] {e.get('created_at','')}")
-            if e.get('location'): lines.append(f"📍 {e['location']}")
-            if e.get('mood'):     lines.append(f"Mood: {e['mood']}")
-            lines.append(e.get('text', ''))
-            if e.get('amount'):   lines.append(f"💰 ₹{e['amount']}")
-            lines.append('─' * 40)
-
-        text = '\n'.join(lines)
-        from flask import Response
-        return Response(
-            text,
-            mimetype='text/plain',
-            headers={'Content-Disposition': 'attachment; filename=yaply_diary.txt'}
-        )
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-import razorpay
-
-rzp_client = razorpay.Client(
-    auth=(
-        os.getenv('RAZORPAY_KEY_ID'),
-        os.getenv('RAZORPAY_KEY_SECRET')
-    )
-)
-
-
-@app.route('/pricing')
-def pricing_page():
-    return render_template('pricing.html')
-
-
-
-# ── Profile page ──
-@app.route('/me')
-def profile_page():
-    return render_template('profile.html')
-
-# ── Update profile ──
-@app.route('/api/me/update', methods=['POST'])
-@require_auth
-def api_update_profile():
-    try:
-        data = request.get_json() or {}
-        allowed = ['name', 'home_city', 'passport', 'currency']
-        updates = {k: data[k] for k in allowed if k in data and data[k]}
-        if updates:
-            update_user(g.user_id, **updates)
-        user = get_user_by_id(g.user_id)
-        return jsonify({'success': True, 'user': safe_user(user)})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ── Admin activity ──
-@app.route('/api/admin/activity')
-@require_admin
-def admin_activity():
-    try:
-        rows = query_all(
-            """SELECT l.*, u.name as user_name, u.email as user_email
-               FROM usage_logs l
-               LEFT JOIN users u ON u.id = l.user_id
-               ORDER BY l.created_at DESC
-               LIMIT 200"""
-        )
-        logs = []
-        for r in rows:
-            row = dict(r)
-            for k, v in row.items():
-                if hasattr(v, 'isoformat'):
-                    row[k] = v.isoformat()
-            logs.append(row)
-        return jsonify({'success': True, 'logs': logs})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-@app.route('/api/promo/apply', methods=['POST'])
-@require_auth
-def apply_promo():
-    try:
-        code = (request.get_json() or {}).get('code', '').upper().strip()
-
-        # Get promo
-        promo = get_promo_code(code)
-        if not promo:
-            return jsonify({'success': False, 'error': 'Invalid promo code'})
-
-        # Check already used
-        if check_promo_redeemed(g.user_id, code):
-            return jsonify({'success': False, 'error': 'You have already used this code'})
-
-        # Activate pro for pro_months duration
-        from datetime import datetime, timedelta
-        days = int(promo['pro_months']) * 30
-        expires = datetime.utcnow() + timedelta(days=days)
-        execute(
-            """UPDATE users SET plan_type='pro', is_pro=TRUE,
-               pro_expires_at=%s WHERE id=%s""",
-            (expires, g.user_id)
-        )
-
-        # Record redemption + increment uses
-        redeem_promo(g.user_id, code,
-                     discount_amount=promo['discount_pct'],
-                     pro_months=promo['pro_months'])
-
-        log_action(g.user_id, 'promo_redeemed_' + code, request.remote_addr)
-
-        return jsonify({
-            'success': True,
-            'message': '🎉 ' + str(promo['pro_months']) + ' months Pro activated at ' + str(promo['discount_pct']) + '% off!',
-            'pro_months': promo['pro_months'],
-            'discount':   promo['discount_pct']
-        })
-
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-# ══════════════════════════════════════════════════════════
-# ONBOARDING ROUTES
-# ══════════════════════════════════════════════════════════
-
-def clean(val, maxlen=100):
-    return str(val or '').strip()[:maxlen]
-
-@app.route('/onboarding')
-def onboarding_page():
-    return render_template('onboarding.html')
-
-@app.route('/api/onboarding/complete', methods=['POST'])
-@require_auth
-def api_complete_onboarding():
-    try:
-        data = request.get_json() or {}
-        name         = clean(data.get('name', ''), 50)
-        home_city    = clean(data.get('home_city', ''), 50)
-        passport     = clean(data.get('passport', 'India'), 30)
-        currency     = clean(data.get('currency', 'INR'), 3)
-        travel_style = clean(data.get('travel_style', ''), 20)
-        budget_style = clean(data.get('budget_style', ''), 20)
-
-        if not name:
-            return jsonify({'success': False, 'error': 'Name is required'})
-
-        complete_onboarding(
-            g.user_id, name, home_city, passport,
-            currency, travel_style, budget_style
-        )
-
-        user = get_user_by_id(g.user_id)
-        log_action(g.user_id, 'onboarding_complete', request.remote_addr)
-
-        return jsonify({
-            'success':  True,
-            'user':     safe_user(user),
-            'redirect': '/app'
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-# ══════════════════════════════════════════════════════════
-# USER STATUS ROUTE
-# ══════════════════════════════════════════════════════════
-
-@app.route('/api/me/status')
-@require_auth
-def api_user_status():
-    """Returns full plan status, usage, and limits for the frontend."""
-    try:
-        from database import get_user_usage
-        usage_data = get_user_usage(g.user_id)
-        if not usage_data:
-            return jsonify({'success': False, 'error': 'User not found'})
- 
-        plan   = usage_data['plan']
-        limits = usage_data['limits']
-        usage  = usage_data['usage']
- 
-        # Build remaining counts for each feature
-        remaining = {}
-        for feat, used_key in [
-            ('translations_day',  'translations_today'),
-            ('voice_day',         'voice_today'),
-            ('identify_photo_day','identify_today'),
-            ('tools_day',         'tools_today'),
-            ('plans_month',       'plans_used_month'),
-            ('multicity_month',   'multicity_used_month'),
-            ('ai_story_month',    'ai_story_used'),
-            ('ai_journal_month',  'journal_used_month'),
-        ]:
-            lim = limits.get(feat, 0)
-            used = usage.get(used_key, 0)
-            remaining[feat] = max(0, lim - used)
- 
-        return jsonify({
-            'success':        True,
-            'plan':           plan,
-            'is_pro':         plan == 'pro',
-            'pro_expires_at': usage_data.get('pro_expires_at'),
-            'days_remaining': usage_data.get('days_remaining', 0),
-            'onboarding_done': usage_data.get('onboarding_done', False),
-            'pro_expired':    bool(
-                usage_data.get('pro_expires_at') and
-                plan == 'free' and
-                usage_data.get('pro_expires_at')
-            ),
-            'limits':         limits,
-            'usage':          usage,
-            'remaining':      remaining,
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ══════════════════════════════════════════════════════════
-# NEW ADMIN ROUTES — paste these into app.py
-# Add to imports: from database import query_one, query_all, execute
-# ══════════════════════════════════════════════════════════
-
-@app.route('/api/admin/revenue')
-@require_admin
-def admin_revenue():
-    try:
-        # Daily revenue last 30 days
-        daily = query_all(
-            """SELECT DATE(paid_at) as date,
-               COUNT(*) as transactions,
-               SUM(amount)/100.0 as revenue,
-               COUNT(*) FILTER (WHERE plan='weekly') as weekly,
-               COUNT(*) FILTER (WHERE plan='monthly') as monthly
-               FROM payments WHERE status='paid'
-               AND paid_at > NOW() - INTERVAL '30 days'
-               GROUP BY DATE(paid_at)
-               ORDER BY date DESC"""
-        )
-        # Totals
-        totals = query_one(
-            """SELECT
-               COALESCE(SUM(amount)/100.0, 0) as total_revenue,
-               COALESCE(SUM(amount) FILTER (WHERE paid_at > NOW() - INTERVAL '30 days')/100.0, 0) as mrr,
-               COALESCE(SUM(amount) FILTER (WHERE DATE(paid_at)=CURRENT_DATE)/100.0, 0) as today,
-               COALESCE(SUM(amount) FILTER (WHERE paid_at > NOW() - INTERVAL '7 days')/100.0, 0) as week,
-               COUNT(*) as total_payments,
-               COUNT(*) FILTER (WHERE plan='weekly') as weekly_count,
-               COUNT(*) FILTER (WHERE plan='monthly') as monthly_count,
-               COUNT(*) FILTER (WHERE DATE(paid_at)=CURRENT_DATE) as payments_today
-               FROM payments WHERE status='paid'"""
-        )
-        # Recent payments with user info
-        recent = query_all(
-            """SELECT p.*, u.name as user_name, u.email as user_email
-               FROM payments p
-               LEFT JOIN users u ON u.id = p.user_id
-               WHERE p.status='paid'
-               ORDER BY p.paid_at DESC LIMIT 50"""
-        )
-        for r in daily:
-            for k, v in r.items():
-                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
-        for r in recent:
-            for k, v in r.items():
-                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
-        if totals:
-            for k, v in totals.items():
-                if hasattr(v, 'isoformat'): totals[k] = v.isoformat()
-        return jsonify({
-            'success': True,
-            'daily': daily,
-            'totals': totals or {},
-            'recent': recent
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-@app.route('/api/admin/funnel')
-@require_admin
-def admin_funnel():
-    try:
-        row = query_one(
-            """SELECT
-               COUNT(*) as total_users,
-               COUNT(*) FILTER (WHERE onboarding_done=TRUE) as onboarded,
-               COUNT(*) FILTER (WHERE id IN (SELECT DISTINCT user_id FROM trips WHERE deleted_at IS NULL)) as planned,
-               COUNT(*) FILTER (WHERE id IN (SELECT DISTINCT user_id FROM payments WHERE status='paid')) as paid,
-               COUNT(*) FILTER (WHERE plan_type='pro') as pro_now
-               FROM users WHERE deleted_at IS NULL"""
-        )
-        # Daily signups last 14 days
-        signups = query_all(
-            """SELECT DATE(created_at) as date, COUNT(*) as count
-               FROM users WHERE deleted_at IS NULL
-               AND created_at > NOW() - INTERVAL '14 days'
-               GROUP BY DATE(created_at)
-               ORDER BY date ASC"""
-        )
-        for r in signups:
-            for k, v in r.items():
-                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
-        return jsonify({'success': True, 'funnel': dict(row or {}), 'signups': signups})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-@app.route('/api/admin/retention')
-@require_admin
-def admin_retention():
-    try:
-        # D1, D7, D30 retention: users who signed up N days ago and were active since
-        d1 = query_one(
-            """SELECT
-               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 1) as cohort,
-               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 1
-                 AND last_active_at > NOW() - INTERVAL '1 day') as retained
-               FROM users WHERE deleted_at IS NULL"""
-        )
-        d7 = query_one(
-            """SELECT
-               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 7) as cohort,
-               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 7
-                 AND last_active_at > NOW() - INTERVAL '7 days') as retained
-               FROM users WHERE deleted_at IS NULL"""
-        )
-        d30 = query_one(
-            """SELECT
-               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 30) as cohort,
-               COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE - 30
-                 AND last_active_at > NOW() - INTERVAL '30 days') as retained
-               FROM users WHERE deleted_at IS NULL"""
-        )
-        # Churn: pro users whose subscription expired in last 30 days
-        churn = query_all(
-            """SELECT u.name, u.email, u.pro_expires_at, u.pro_plan
-               FROM users u
-               WHERE u.plan_type='free'
-               AND u.pro_expires_at IS NOT NULL
-               AND u.pro_expires_at > NOW() - INTERVAL '30 days'
-               AND u.pro_expires_at < NOW()
-               ORDER BY u.pro_expires_at DESC
-               LIMIT 20"""
-        )
-        for r in churn:
-            for k, v in r.items():
-                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
-        def safe_pct(retained, cohort):
-            if not cohort: return 0
-            return round(retained / cohort * 100, 1)
-        return jsonify({
-            'success': True,
-            'retention': {
-                'd1':  {'cohort': d1['cohort'] or 0,  'retained': d1['retained'] or 0,  'pct': safe_pct(d1['retained'] or 0,  d1['cohort'] or 0)},
-                'd7':  {'cohort': d7['cohort'] or 0,  'retained': d7['retained'] or 0,  'pct': safe_pct(d7['retained'] or 0,  d7['cohort'] or 0)},
-                'd30': {'cohort': d30['cohort'] or 0, 'retained': d30['retained'] or 0, 'pct': safe_pct(d30['retained'] or 0, d30['cohort'] or 0)},
-            },
-            'churn': churn
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-@app.route('/api/admin/errors')
-@require_admin
-def admin_errors():
-    try:
-        errors = query_all(
-            """SELECT action, error, COUNT(*) as count,
-               MAX(created_at) as last_seen,
-               COUNT(DISTINCT user_id) as affected_users
-               FROM usage_logs
-               WHERE success=FALSE AND created_at > NOW() - INTERVAL '7 days'
-               GROUP BY action, error
-               ORDER BY count DESC LIMIT 50"""
-        )
-        recent_errors = query_all(
-            """SELECT l.*, u.email as user_email
-               FROM usage_logs l
-               LEFT JOIN users u ON u.id = l.user_id
-               WHERE l.success=FALSE
-               AND l.created_at > NOW() - INTERVAL '24 hours'
-               ORDER BY l.created_at DESC LIMIT 30"""
-        )
-        total_errors_today = query_one(
-            """SELECT COUNT(*) as c FROM usage_logs
-               WHERE success=FALSE AND DATE(created_at)=CURRENT_DATE"""
-        )
-        for r in errors:
-            for k, v in r.items():
-                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
-        for r in recent_errors:
-            for k, v in r.items():
-                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
-        return jsonify({
-            'success': True,
-            'errors': errors,
-            'recent': recent_errors,
-            'total_today': (total_errors_today or {}).get('c', 0)
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-@app.route('/api/admin/geographic')
-@require_admin
-def admin_geographic():
-    try:
-        # Home cities
-        cities = query_all(
-            """SELECT home_city, COUNT(*) as count
-               FROM users
-               WHERE deleted_at IS NULL AND home_city != ''
-               GROUP BY home_city ORDER BY count DESC LIMIT 20"""
-        )
-        # Passport countries (where users are from)
-        passports = query_all(
-            """SELECT passport, COUNT(*) as count
-               FROM users
-               WHERE deleted_at IS NULL AND passport != ''
-               GROUP BY passport ORDER BY count DESC LIMIT 20"""
-        )
-        # Top destination countries from trips
-        destinations = query_all(
-            """SELECT destination, COUNT(*) as count
-               FROM trips WHERE deleted_at IS NULL
-               GROUP BY destination ORDER BY count DESC LIMIT 20"""
-        )
-        return jsonify({
-            'success': True,
-            'cities': cities,
-            'passports': passports,
-            'destinations': destinations
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-@app.route('/api/admin/export-users')
-@require_admin
-def admin_export_users():
-    try:
-        import csv, io
-        users = query_all(
-            """SELECT u.id, u.name, u.email, u.plan_type, u.is_pro,
-               u.pro_expires_at, u.home_city, u.passport, u.travel_style,
-               u.budget_style, u.onboarding_done, u.created_at, u.last_active_at,
-               COUNT(t.id) as trip_count
-               FROM users u
-               LEFT JOIN trips t ON t.user_id=u.id AND t.deleted_at IS NULL
-               WHERE u.deleted_at IS NULL
-               GROUP BY u.id ORDER BY u.created_at DESC"""
-        )
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(['ID','Name','Email','Plan','Is Pro','Pro Expires',
-                         'City','Passport','Travel Style','Budget Style',
-                         'Onboarding Done','Joined','Last Active','Trips'])
-        for u in users:
-            writer.writerow([
-                u.get('id',''), u.get('name',''), u.get('email',''),
-                u.get('plan_type',''), u.get('is_pro',''),
-                u.get('pro_expires_at',''), u.get('home_city',''),
-                u.get('passport',''), u.get('travel_style',''),
-                u.get('budget_style',''), u.get('onboarding_done',''),
-                u.get('created_at',''), u.get('last_active_at',''),
-                u.get('trip_count',0)
-            ])
-        from flask import Response
-        return Response(
-            output.getvalue(),
-            mimetype='text/csv',
-            headers={'Content-Disposition': 'attachment;filename=yaply_users.csv'}
-        )
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# ══════════════════════════════════════════════════════════
-# create_payment_order route 
-# ══════════════════════════════════════════════════════════
-
-@app.route('/api/payment/create-order', methods=['POST'])
-@require_auth
-def create_payment_order():
-    try:
-        data       = request.get_json() or {}
-        plan       = data.get('plan', 'monthly')
-        promo_code = (data.get('promo_code') or '').upper().strip()
-
-        base_amounts = {
-            'weekly':  9900,   # ₹99 in paise
-            'monthly': 39900,  # ₹399 in paise
-        }
-        amount = base_amounts.get(plan, 39900)
-        discount_amount = 0
-        promo_data = None
-
-        # Apply promo discount if code provided
-        if promo_code:
-            promo_data = get_promo_code(promo_code)
-            if promo_data:
-                # Check not already redeemed
-                if not check_promo_redeemed(g.user_id, promo_code):
-                    discount_pct    = promo_data['discount_pct']
-                    discount_amount = int(amount * discount_pct / 100)
-                    amount          = amount - discount_amount
-
-        # Minimum ₹1 (100 paise) for Razorpay
-        amount = max(amount, 100)
-
-        order = rzp_client.order.create({
-            'amount':   amount,
-            'currency': 'INR',
-            'receipt':  f'yaply_{g.user_id}_{plan}',
-            'notes': {
-                'user_id':    str(g.user_id),
-                'plan':       plan,
-                'promo_code': promo_code or '',
-            }
-        })
-
-        # Store payment record in DB
-        create_payment(
-            user_id=g.user_id,
-            razorpay_order_id=order['id'],
-            amount=amount,
-            plan=plan,
-            promo_code=promo_code or None,
-            discount_amount=discount_amount
-        )
-
-        return jsonify({
-            'success':         True,
-            'order_id':        order['id'],
-            'amount':          amount,
-            'original_amount': base_amounts.get(plan, 39900),
-            'discount_amount': discount_amount,
-            'currency':        'INR',
-            'key':             os.getenv('RAZORPAY_KEY_ID'),
-            'promo_applied':   bool(promo_code and promo_data),
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-# ══════════════════════════════════════════════════════════
-#  verify_payment route 
-# ══════════════════════════════════════════════════════════
-
-@app.route('/api/payment/verify', methods=['POST'])
-@require_auth
-def verify_payment():
-    try:
-        data       = request.get_json() or {}
-        order_id   = data.get('razorpay_order_id')
-        payment_id = data.get('razorpay_payment_id')
-        signature  = data.get('razorpay_signature')
-        plan       = data.get('plan', 'monthly')
-        promo_code = (data.get('promo_code') or '').upper().strip()
-
-        # Verify Razorpay signature
-        rzp_client.utility.verify_payment_signature({
-            'razorpay_order_id':   order_id,
-            'razorpay_payment_id': payment_id,
-            'razorpay_signature':  signature
-        })
-
-        # Activate Pro
-        expires_at = activate_pro(g.user_id, plan)
-
-        # Confirm payment in DB
-        confirm_payment(order_id, payment_id, signature, expires_at)
-
-        # Apply promo redemption if used
-        if promo_code:
-            promo = get_promo_code(promo_code)
-            if promo and not check_promo_redeemed(g.user_id, promo_code):
-                redeem_promo(
-                    g.user_id, promo_code,
-                    discount_amount=promo['discount_pct'],
-                    pro_months=promo['pro_months']
-                )
-
-        log_action(g.user_id, f'payment_success_{plan}', request.remote_addr)
-
-        user = get_user_by_id(g.user_id)
-        return jsonify({
-            'success':       True,
-            'message':       '🎉 Pro activated!',
-            'plan':          plan,
-            'pro_expires_at': str(user.get('pro_expires_at', '')),
-        })
-
-    except Exception as e:
-        log_action(
-            g.user_id if hasattr(g, 'user_id') else 0,
-            'payment_failed', request.remote_addr
-        )
-        return jsonify({'success': False, 'error': str(e)})
-
-
-
-@app.route('/api/promo/validate', methods=['POST'])
-def validate_promo():
-    try:
-        code  = (request.get_json() or {}).get('code', '').upper().strip()
-        promo = get_promo_code(code)
-        if not promo:
-            return jsonify({'success': False, 'error': 'Invalid code'})
-        return jsonify({
-            'success':    True,
-            'discount':   promo['discount_pct'],
-            'pro_months': promo['pro_months'],
-            'uses_left':  promo['max_uses'] - promo['uses'],
-            'expires':    promo['expires_at'].isoformat() if hasattr(promo['expires_at'], 'isoformat') else promo['expires_at'],
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-@app.route('/api/admin/promos')
-@require_admin
-def admin_promos():
-    try:
-        promos = query_all(
-            'SELECT * FROM promo_codes ORDER BY created_at DESC'
-        )
-        redemptions = query_all(
-            """SELECT pr.code, u.name, u.email, pr.redeemed_at
-               FROM promo_redemptions pr
-               JOIN users u ON u.id = pr.user_id
-               ORDER BY pr.redeemed_at DESC"""
-        )
-        # Serialize datetimes
-        for p in promos:
-            for k, v in p.items():
-                if hasattr(v, 'isoformat'): p[k] = v.isoformat()
-        for r in redemptions:
-            for k, v in r.items():
-                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
-
-        return jsonify({
-            'success': True,
-            'promos': promos,
-            'redemptions': redemptions
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-
-def limit_response(feature_key, used, limit, plan, feature_label=None):
-    """
-    Standard blocked response — frontend reads this and shows upgrade sheet.
-    """
-    labels = {
-        'plan':        'AI Trip Plans',
-        'multicity':   'Multi-City Planning',
-        'translation': 'Live Translation',
-        'voice':       'Voice Translation',
-        'identify':    'Place Finder',
-        'tool':        'Safety Tools',
-        'ai_story':    'AI Travel Story',
-        'journal':     'AI Trip Journal',
-    }
-    name = feature_label or labels.get(feature_key, 'This feature')
- 
-    if plan == 'pro':
-        msg = f"You've used all {limit} {name} for today. Resets at midnight."
-        return jsonify({
-            'success':       False,
-            'limit_reached': True,
-            'is_pro':        True,
-            'feature':       feature_key,
-            'feature_label': name,
-            'used':          used,
-            'limit':         limit,
-            'error':         msg,
-            'message':       msg,
-        }), 429
-    else:
-        msg = f"You've used your {limit} free {name}. Upgrade to Pro for more."
-        return jsonify({
-            'success':        False,
-            'limit_reached':  True,
-            'is_pro':         False,
-            'feature':        feature_key,
-            'feature_label':  name,
-            'used':           used,
-            'limit':          limit,
-            'error':          msg,
-            'message':        msg,
-            'upgrade_prompt': True,
-            'upgrade_url':    '/pricing',
-        }), 429
-         
 # ════════════════════════════════════════════════════════════════
 #  ERROR HANDLERS
 # ════════════════════════════════════════════════════════════════
 
 @app.errorhandler(404)
 def not_found(e):
-    if request.path.startswith('/api/'):
-        return jsonify({'success': False, 'error': 'Endpoint not found'}), 404
+    if request.path.startswith('/api/'): return jsonify({'success': False, 'error': 'Endpoint not found'}), 404
     return render_template('landing.html'), 404
 
 @app.errorhandler(429)
@@ -3532,15 +2415,9 @@ def rate_limited(e):
 
 @app.errorhandler(500)
 def server_error(e):
-    return jsonify({'success': False, 'error': 'Server error. Our team has been notified.'}), 500
+    return jsonify({'success': False, 'error': 'Server error.'}), 500
 
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5004))
-    socketio.run(
-        app,
-        debug=True,
-        host='0.0.0.0',
-        port=port,
-        allow_unsafe_werkzeug=True
-    )
+    socketio.run(app, debug=True, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)

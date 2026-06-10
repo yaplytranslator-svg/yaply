@@ -11,63 +11,120 @@
     rel="stylesheet" />
   <script src="/static/yaply-core.js"></script>
 
-<!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════════════
      PWA HEAD SNIPPET
      Add this inside <head> tag of ALL your HTML pages:
      landing.html, auth.html, yaply-app.html,
      before_trip.html, during_trip.html, after_trip.html
 ══════════════════════════════════════════════════════════ -->
 
-<!-- PWA Meta Tags -->
-<meta name="application-name" content="Yaply"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="Yaply"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#2563FF"/>
-<meta name="msapplication-TileColor" content="#2563FF"/>
-<meta name="msapplication-TileImage" content="/static/icons/icon-144.png"/>
+  <!-- PWA Meta Tags -->
+  <meta name="application-name" content="Yaply" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Yaply" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#2563FF" />
+  <meta name="msapplication-TileColor" content="#2563FF" />
+  <meta name="msapplication-TileImage" content="/static/icons/icon-144.png" />
 
-<!-- SEO Meta -->
-<meta name="description" content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere."/>
-<meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel"/>
-<meta name="author" content="Yaply Technologies"/>
+  <!-- SEO Meta -->
+  <meta name="description"
+    content="India's first AI Travel OS. Plan trips in 15 seconds, translate live in 50+ languages, stay safe anywhere." />
+  <meta name="keywords" content="travel app, AI travel, trip planner, translation, India travel" />
+  <meta name="author" content="Yaply Technologies" />
 
-<!-- Open Graph (WhatsApp/Facebook preview) -->
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://www.yaply.live"/>
-<meta property="og:title" content="Yaply — AI Travel OS"/>
-<meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere."/>
-<meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+  <!-- Open Graph (WhatsApp/Facebook preview) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.yaply.live" />
+  <meta property="og:title" content="Yaply — AI Travel OS" />
+  <meta property="og:description" content="Plan trips in 15 seconds. Translate live. Stay safe anywhere." />
+  <meta property="og:image" content="https://www.yaply.live/static/icons/icon-512.png" />
 
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Yaply — AI Travel OS"/>
-<meta name="twitter:description" content="India's first AI Travel Operating System"/>
-<meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png"/>
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Yaply — AI Travel OS" />
+  <meta name="twitter:description" content="India's first AI Travel Operating System" />
+  <meta name="twitter:image" content="https://www.yaply.live/static/icons/icon-512.png" />
 
-<!-- PWA Manifest -->
-<link rel="manifest" href="/manifest.json"/>
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
 
-<!-- Icons -->
-<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png"/>
-<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png"/>
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png"/>
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png" />
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png" />
 
-<!-- PWA Service Worker Registration -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' })
-      .then(function(reg) {
-        console.log('[SW] Registered:', reg.scope);
-      })
-      .catch(function(err) {
-        console.log('[SW] Failed:', err);
+
+  <!-- Yaply Upgrade Prompt -->
+  <div class="yup-backdrop" id="yupBackdrop" onclick="if(event.target===this)YaplyUpgrade.hide()">
+    <div class="yup-sheet">
+      <div class="yup-handle"></div>
+      <div class="yup-icon free" id="yupIcon">⚡</div>
+      <div class="yup-title" id="yupTitle">Limit reached</div>
+      <div class="yup-sub" id="yupSub">You've hit your free limit.</div>
+
+      <div class="yup-meter" id="yupMeter">
+        <div class="yup-meter-row">
+          <div class="yup-meter-label" id="yupMeterLabel">Used today</div>
+          <div class="yup-meter-count" id="yupMeterCount">0 / 0</div>
+        </div>
+        <div class="yup-meter-track">
+          <div class="yup-meter-fill" id="yupMeterFill" style="width:100%;"></div>
+        </div>
+      </div>
+
+      <!-- Pro user: reset info -->
+      <div class="yup-reset" id="yupReset" style="display:none;">
+        🔄 <span><strong>Resets at midnight.</strong> Come back tomorrow for more.</span>
+      </div>
+
+      <!-- Free user: what they get -->
+      <div id="yupPerksWrap">
+        <div
+          style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,0.25);margin-bottom:9px;">
+          What you get with Pro</div>
+        <div class="yup-perks" id="yupPerks"></div>
+      </div>
+
+      <!-- Price options -->
+      <div class="yup-prices" id="yupPrices">
+        <div class="yup-price" id="yupWeekly" onclick="YaplyUpgrade.selectPlan('weekly')">
+          <div class="yup-price-amt">₹99</div>
+          <div class="yup-price-period">per week</div>
+          <div class="yup-price-tag">7 days</div>
+        </div>
+        <div class="yup-price selected" id="yupMonthly" onclick="YaplyUpgrade.selectPlan('monthly')">
+          <div class="yup-price-amt">₹399</div>
+          <div class="yup-price-period">per month</div>
+          <div class="yup-price-tag">Best value ✓</div>
+        </div>
+      </div>
+
+      <button class="yup-pay-btn" id="yupPayBtn" onclick="YaplyUpgrade.goUpgrade()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg>
+        <span id="yupPayText">Get Pro — ₹399/month</span>
+      </button>
+      <button class="yup-dismiss" id="yupDismiss" onclick="YaplyUpgrade.hide()">Maybe later</button>
+    </div>
+  </div>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(function (reg) {
+            console.log('[SW] Registered:', reg.scope);
+          })
+          .catch(function (err) {
+            console.log('[SW] Failed:', err);
+          });
       });
-  });
-}
-</script>
+    }
+  </script>
 
   <style>
     *,
@@ -1095,6 +1152,282 @@ if ('serviceWorker' in navigator) {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* ── Yaply Upgrade Prompt ── */
+    .yup-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: rgba(7, 16, 31, 0.88);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .yup-backdrop.show {
+      display: flex;
+      animation: yupIn .2s ease both;
+    }
+
+    @keyframes yupIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes yupUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(.98)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
+    }
+
+    .yup-sheet {
+      background: linear-gradient(180deg, #0f1f3a 0%, #0B1220 100%);
+      border: 1px solid rgba(37, 99, 255, 0.18);
+      border-bottom: none;
+      border-radius: 26px 26px 0 0;
+      padding: 10px 22px 40px;
+      width: 100%;
+      max-width: 480px;
+      animation: yupUp .3s cubic-bezier(.34, 1.05, .64, 1) both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .yup-sheet::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(37, 99, 255, 0.5), transparent);
+    }
+
+    .yup-handle {
+      width: 34px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 0 auto 18px;
+    }
+
+    .yup-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .yup-icon.free {
+      background: rgba(245, 185, 66, 0.1);
+      border: 1px solid rgba(245, 185, 66, 0.2);
+    }
+
+    .yup-icon.pro {
+      background: rgba(37, 99, 255, 0.1);
+      border: 1px solid rgba(37, 99, 255, 0.2);
+    }
+
+    .yup-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 6px;
+      letter-spacing: -.3px;
+    }
+
+    .yup-sub {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.4);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .yup-meter {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+
+    .yup-meter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+
+    .yup-meter-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .yup-meter-count {
+      font-size: 12px;
+      color: white;
+      font-weight: 700;
+    }
+
+    .yup-meter-track {
+      height: 5px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .yup-meter-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #EF4444, #F87171);
+    }
+
+    .yup-perks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .yup-perk {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .yup-perk-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(24, 194, 156, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+    }
+
+    .yup-prices {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .yup-price {
+      flex: 1;
+      padding: 11px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .yup-price.selected,
+    .yup-price:hover {
+      background: rgba(37, 99, 255, 0.12);
+      border-color: rgba(37, 99, 255, 0.4);
+    }
+
+    .yup-price-amt {
+      font-size: 17px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .yup-price-period {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.35);
+      margin-top: 2px;
+    }
+
+    .yup-price-tag {
+      font-size: 9px;
+      color: #18C29C;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .yup-reset {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 13px;
+      background: rgba(37, 99, 255, 0.06);
+      border: 1px solid rgba(37, 99, 255, 0.12);
+      border-radius: 11px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .yup-reset strong {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .yup-pay-btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 13px;
+      background: #2563FF;
+      color: white;
+      border: none;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      box-shadow: 0 8px 24px rgba(37, 99, 255, 0.3);
+      margin-bottom: 10px;
+    }
+
+    .yup-pay-btn:hover {
+      background: #1D4ED8;
+      transform: translateY(-1px);
+    }
+
+    .yup-dismiss {
+      width: 100%;
+      padding: 10px;
+      border-radius: 12px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.3);
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: color .2s;
+    }
+
+    .yup-dismiss:hover {
+      color: rgba(255, 255, 255, 0.6);
+    }
   </style>
 </head>
 
@@ -1719,6 +2052,90 @@ if ('serviceWorker' in navigator) {
     YaplyCore.requireAuth();   // redirect if not logged in
     YaplyCore.getUser();       // get current user
     YaplyCore.logout();        // logout from anywhere
+
+
+    // ── Yaply Upgrade Prompt ──
+    var YaplyUpgrade = (function () {
+      var _plan = 'monthly';
+      var _feature = '';
+
+      var PERKS = {
+        'plan': [{ i: '🗺️', t: '<b>15 AI trip plans</b> per month' }, { i: '🏙️', t: '<b>Multi-city planning</b> unlocked' }, { i: '🚪', t: '<b>Door-to-door</b> journey planner' }],
+        'multicity': [{ i: '🏙️', t: '<b>4 multi-city trips</b> per month' }, { i: '🗺️', t: '<b>15 AI trip plans</b> per month' }, { i: '🚪', t: '<b>Door-to-door</b> planner unlocked' }],
+        'translation': [{ i: '🌐', t: '<b>80 live translations</b> per day' }, { i: '🎙️', t: '<b>40 voice translations</b> per day' }, { i: '💬', t: '<b>Conversation Mode</b> unlocked' }],
+        'voice': [{ i: '🎙️', t: '<b>40 voice translations</b> per day' }, { i: '🌐', t: '<b>80 live translations</b> per day' }, { i: '💬', t: '<b>Conversation Mode</b> unlocked' }],
+        'identify': [{ i: '📸', t: '<b>15 place IDs</b> per day' }, { i: '🔍', t: '<b>20 text searches</b> per day' }, { i: '🗺️', t: 'Full tips, cost, best time' }],
+        'tool': [{ i: '🛡️', t: '<b>All 25+ safety tools</b> unlocked' }, { i: '⚡', t: '<b>50 tool uses</b> per day' }, { i: '💱', t: 'Price check, safe routes, medical SOS' }],
+        'ai_story': [{ i: '📖', t: '<b>5 AI travel stories</b> per month' }, { i: '📔', t: '<b>5 AI trip journals</b> per month' }, { i: '📄', t: '<b>Export diary</b> as PDF + TXT' }],
+        'journal': [{ i: '📔', t: '<b>5 AI journals</b> per month' }, { i: '📖', t: '<b>5 AI travel stories</b> per month' }, { i: '💾', t: '<b>100 diary entries</b> per trip' }],
+        'default': [{ i: '⚡', t: '<b>All Pro features</b> unlocked' }, { i: '🗺️', t: '<b>15 AI trip plans</b> per month' }, { i: '🌐', t: '<b>80 translations</b> per day' }],
+      };
+
+      var ICONS = { plan: '🗺️', multicity: '🏙️', translation: '🌐', voice: '🎙️', identify: '📸', tool: '🛡️', ai_story: '📖', journal: '📔', default: '⚡' };
+
+      function show(data) {
+        var isPro = data.is_pro || false;
+        var feature = data.feature || 'default';
+        var used = data.used || 0;
+        var limit = data.limit || 0;
+        var label = data.feature_label || 'This feature';
+        _feature = feature;
+
+        document.getElementById('yupIcon').textContent = ICONS[feature] || '⚡';
+        document.getElementById('yupIcon').className = 'yup-icon ' + (isPro ? 'pro' : 'free');
+        document.getElementById('yupMeterLabel').textContent = label;
+        document.getElementById('yupMeterCount').textContent = used + ' / ' + limit;
+        document.getElementById('yupMeterFill').style.width = '100%';
+
+        if (isPro) {
+          document.getElementById('yupTitle').textContent = 'Daily limit reached';
+          document.getElementById('yupSub').textContent = label + ' limit reached. Resets at midnight.';
+          document.getElementById('yupReset').style.display = 'flex';
+          document.getElementById('yupPerksWrap').style.display = 'none';
+          document.getElementById('yupPrices').style.display = 'none';
+          document.getElementById('yupPayBtn').style.display = 'none';
+          document.getElementById('yupDismiss').textContent = 'Got it';
+        } else {
+          document.getElementById('yupTitle').textContent = 'You\'ve hit your free limit';
+          document.getElementById('yupSub').textContent = 'Used ' + used + '/' + limit + ' free ' + label + '. Upgrade to keep going.';
+          document.getElementById('yupReset').style.display = 'none';
+          document.getElementById('yupPerksWrap').style.display = 'block';
+          document.getElementById('yupPrices').style.display = 'flex';
+          document.getElementById('yupPayBtn').style.display = 'flex';
+          document.getElementById('yupDismiss').textContent = 'Maybe later';
+
+          var perks = PERKS[feature] || PERKS['default'];
+          document.getElementById('yupPerks').innerHTML = perks.map(function (p) {
+            return '<div class="yup-perk"><div class="yup-perk-icon">' + p.i + '</div><span>' + p.t + '</span></div>';
+          }).join('');
+          selectPlan('monthly');
+        }
+
+        document.getElementById('yupBackdrop').classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function hide() {
+        document.getElementById('yupBackdrop').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+
+      function selectPlan(plan) {
+        _plan = plan;
+        document.getElementById('yupWeekly').classList.toggle('selected', plan === 'weekly');
+        document.getElementById('yupMonthly').classList.toggle('selected', plan === 'monthly');
+        document.getElementById('yupPayText').textContent = 'Get Pro — ' + (plan === 'weekly' ? '₹99/week' : '₹399/month');
+      }
+
+      function goUpgrade() {
+        hide();
+        window.location.href = '/pricing?period=' + _plan + '&from=' + _feature;
+      }
+
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hide(); });
+
+      return { show: show, hide: hide, selectPlan: selectPlan, goUpgrade: goUpgrade };
+    })();
 
   </script>
 </body>

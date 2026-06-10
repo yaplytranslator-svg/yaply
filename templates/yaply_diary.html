@@ -1,1002 +1,2659 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1"/>
-<title>Yaply — Travel Diary</title>
-<link rel="icon" href="/static/favicon.png"/>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{font-size:16px;-webkit-text-size-adjust:100%;}
-body{font-family:'DM Sans',sans-serif;background:#FAFAF8;color:#1C1917;min-height:100vh;overscroll-behavior:none;padding-bottom:100px;}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1" />
+  <title>Yaply — Travel Diary</title>
+  <link rel="icon" href="/static/favicon.png" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-:root{
-  --teal:#1A8A72;--teal-d:#0d6b57;--teal-g:rgba(26,138,114,0.08);--teal-g2:rgba(26,138,114,0.15);
-  --coral:#FF7A59;--coral-g:rgba(255,122,89,0.08);
-  --gold:#C49A3C;--gold-g:rgba(196,154,60,0.1);
-  --blue:#2563FF;--blue-g:rgba(37,99,255,0.07);
-  --purple:#8B5CF6;--purple-g:rgba(139,92,246,0.08);
-  --red:#EF4444;
-  --ink:#1C1917;--ink2:#3D3A34;--ink3:#78716C;
-  --paper:#FAFAF8;--paper2:#F5F4F0;--paper3:#EAE8E2;
-  --white:#FFFFFF;
-  --border:rgba(60,55,45,0.1);--border2:rgba(60,55,45,0.16);
-  --shadow:0 1px 4px rgba(28,26,23,0.07);
-  --shadow-md:0 4px 16px rgba(28,26,23,0.10);
-  --shadow-lg:0 8px 32px rgba(28,26,23,0.14);
-  --r:12px;--r-lg:18px;--r-xl:22px;
-  --font-head:'Instrument Serif',serif;
-  --font-body:'DM Sans',sans-serif;
-  --font-mono:'DM Mono',monospace;
-}
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
 
-/* Grain */
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.7;}
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #FAFAF8;
+      color: #1C1917;
+      min-height: 100vh;
+      overscroll-behavior: none;
+      padding-bottom: 100px;
+    }
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
-@keyframes scaleIn{from{opacity:0;transform:scale(0.94)}to{opacity:1;transform:scale(1)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes popIn{from{opacity:0;transform:scale(0.7)}to{opacity:1;transform:scale(1)}}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    :root {
+      --teal: #1A8A72;
+      --teal-d: #0d6b57;
+      --teal-g: rgba(26, 138, 114, 0.08);
+      --teal-g2: rgba(26, 138, 114, 0.15);
+      --coral: #FF7A59;
+      --coral-g: rgba(255, 122, 89, 0.08);
+      --gold: #C49A3C;
+      --gold-g: rgba(196, 154, 60, 0.1);
+      --blue: #2563FF;
+      --blue-g: rgba(37, 99, 255, 0.07);
+      --purple: #8B5CF6;
+      --purple-g: rgba(139, 92, 246, 0.08);
+      --red: #EF4444;
+      --ink: #1C1917;
+      --ink2: #3D3A34;
+      --ink3: #78716C;
+      --paper: #FAFAF8;
+      --paper2: #F5F4F0;
+      --paper3: #EAE8E2;
+      --white: #FFFFFF;
+      --border: rgba(60, 55, 45, 0.1);
+      --border2: rgba(60, 55, 45, 0.16);
+      --shadow: 0 1px 4px rgba(28, 26, 23, 0.07);
+      --shadow-md: 0 4px 16px rgba(28, 26, 23, 0.10);
+      --shadow-lg: 0 8px 32px rgba(28, 26, 23, 0.14);
+      --r: 12px;
+      --r-lg: 18px;
+      --r-xl: 22px;
+      --font-head: 'Instrument Serif', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
 
-.au{animation:fadeUp .45s ease both;opacity:0;}
-.d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}
-.d4{animation-delay:.2s}.d5{animation-delay:.25s}
+    /* Grain */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: .7;
+    }
 
-/* ── Page ── */
-.page{max-width:480px;margin:0 auto;}
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px)
+      }
 
-/* ── Top Nav ── */
-.top-nav{
-  position:sticky;top:0;z-index:100;
-  background:rgba(250,250,248,0.92);
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
-  border-bottom:1px solid var(--border);
-  padding:0 18px;height:56px;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.nav-back{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:500;color:var(--ink3);text-decoration:none;transition:color .2s;}
-.nav-back:hover{color:var(--ink);}
-.nav-back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;}
-.nav-title{font-family:var(--font-head);font-size:17px;color:var(--ink);letter-spacing:-.2px;}
-.nav-actions{display:flex;gap:6px;}
-.nav-btn{display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1px solid var(--border2);background:none;font-family:var(--font-body);font-size:12px;font-weight:500;color:var(--ink3);cursor:pointer;transition:all .2s;}
-.nav-btn:hover{background:var(--paper2);color:var(--ink);}
-.nav-btn.primary{background:var(--teal);color:white;border-color:var(--teal);}
-.nav-btn.primary:hover{background:var(--teal-d);}
-.nav-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
 
-/* ── Hero ── */
-.diary-hero{
-  margin:16px 18px 0;
-  background:linear-gradient(145deg,#0d6b57 0%,#1A8A72 50%,#22a085 100%);
-  border-radius:var(--r-xl);padding:22px;
-  position:relative;overflow:hidden;
-}
-.hero-pattern{position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 18px,rgba(255,255,255,0.03) 18px,rgba(255,255,255,0.03) 19px);pointer-events:none;}
-.hero-orb{position:absolute;bottom:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.06);pointer-events:none;}
-.hero-z{position:relative;z-index:1;}
-.hero-eyebrow{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
-.hero-dest{font-family:var(--font-head);font-style:italic;font-size:24px;color:white;letter-spacing:-.3px;margin-bottom:16px;}
-.hero-stats{display:flex;gap:0;}
-.hero-stat{flex:1;text-align:center;}
-.hero-stat+.hero-stat{border-left:1px solid rgba(255,255,255,0.15);}
-.hero-stat-val{font-family:var(--font-mono);font-size:20px;font-weight:700;color:white;margin-bottom:3px;}
-.hero-stat-lbl{font-size:9px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.8px;}
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px)
+      }
 
-/* Trip selector pills */
-.trip-pills{display:flex;gap:6px;overflow-x:auto;padding:12px 18px 0;scrollbar-width:none;}
-.trip-pills::-webkit-scrollbar{display:none}
-.trip-pill{flex-shrink:0;display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:100px;border:1.5px solid var(--border2);background:var(--white);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .2s;white-space:nowrap;}
-.trip-pill:hover{border-color:var(--teal);color:var(--teal);}
-.trip-pill.active{background:var(--teal);border-color:var(--teal);color:white;}
-.trip-pill-add{background:transparent;border-style:dashed;color:var(--teal);}
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
 
-/* ── Mood strip ── */
-.mood-strip{margin:12px 18px 0;background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;}
-.mood-label{font-size:12px;color:var(--ink3);}
-.mood-pills{display:flex;gap:4px;}
-.mood-pill{width:34px;height:34px;border-radius:10px;border:1.5px solid transparent;background:none;font-size:18px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
-.mood-pill:hover{transform:scale(1.15);}
-.mood-pill.active{background:var(--teal-g);border-color:var(--teal);transform:scale(1.1);}
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.94)
+      }
 
-/* ── Composer ── */
-.composer{
-  margin:12px 18px 0;
-  background:var(--white);
-  border:1.5px solid var(--border);
-  border-radius:var(--r-xl);
-  overflow:hidden;
-  box-shadow:var(--shadow);
-  transition:all .3s;
-}
-.composer:focus-within{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-g),var(--shadow);}
-.composer-top{padding:14px 16px 0;display:flex;align-items:center;gap:10px;}
-.comp-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-d));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-style:italic;font-size:15px;color:white;font-weight:600;flex-shrink:0;overflow:hidden;}
-.comp-avatar img{width:100%;height:100%;object-fit:cover;}
-.comp-meta{flex:1;}
-.comp-name{font-size:13px;font-weight:600;color:var(--ink);}
-.comp-date{font-size:11px;color:var(--ink3);margin-top:1px;}
-.comp-loc-btn{display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:100px;border:1px solid var(--border2);background:var(--paper2);font-size:11px;font-weight:500;color:var(--ink3);cursor:pointer;transition:all .2s;white-space:nowrap;}
-.comp-loc-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-g);}
-.comp-loc-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;}
-.comp-textarea{width:100%;padding:12px 16px;border:none;outline:none;resize:none;font-family:var(--font-head);font-size:15px;font-style:italic;color:var(--ink);background:transparent;line-height:1.75;min-height:88px;}
-.comp-textarea::placeholder{color:var(--ink3);opacity:.55;font-style:italic;}
-.comp-photos{padding:0 16px 8px;display:flex;gap:7px;flex-wrap:wrap;}
-.photo-thumb{position:relative;width:62px;height:62px;border-radius:10px;overflow:hidden;border:1px solid var(--border);animation:popIn .25s cubic-bezier(.34,1.56,.64,1) both;}
-.photo-thumb img{width:100%;height:100%;object-fit:cover;}
-.photo-remove{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(28,26,23,0.7);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:9px;font-weight:700;}
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
 
-/* Expense input */
-.exp-input-row{padding:0 16px 10px;display:flex;gap:8px;align-items:center;}
-.exp-input{padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-family:var(--font-mono);font-size:14px;font-weight:600;outline:none;width:130px;transition:border-color .2s;}
-.exp-input:focus{border-color:var(--gold);}
-.exp-cat-select{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-family:var(--font-body);font-size:13px;outline:none;-webkit-appearance:none;background:var(--paper2);}
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
 
-/* Toolbar */
-.comp-toolbar{padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:4px;}
-.type-row{display:flex;background:var(--paper2);border-radius:8px;padding:2px;gap:1px;overflow-x:auto;scrollbar-width:none;}
-.type-row::-webkit-scrollbar{display:none}
-.type-btn{padding:5px 10px;border-radius:6px;border:none;background:none;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .15s;font-family:var(--font-body);white-space:nowrap;}
-.type-btn.active{background:var(--white);color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
-.toolbar-sep{flex:1;}
-.tool-btn{width:34px;height:34px;border-radius:8px;border:none;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;color:var(--ink3);}
-.tool-btn:hover{background:var(--paper2);color:var(--teal);}
-.tool-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;}
-.save-btn{padding:8px 18px;border-radius:8px;border:none;background:var(--teal);color:white;font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;}
-.save-btn:hover{background:var(--teal-d);transform:translateY(-1px);}
-.save-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
-.save-btn svg{width:13px;height:13px;stroke:white;fill:none;stroke-width:2;}
+    @keyframes shake {
 
-/* ── Search + Filter ── */
-.search-wrap{margin:14px 18px 0;position:relative;}
-.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:var(--ink3);fill:none;stroke-width:2;pointer-events:none;}
-.search-input{width:100%;padding:10px 12px 10px 36px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);font-family:var(--font-body);font-size:13px;color:var(--ink);outline:none;transition:all .2s;}
-.search-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-g);}
-.filter-row{display:flex;gap:5px;overflow-x:auto;padding:10px 18px 0;scrollbar-width:none;}
-.filter-row::-webkit-scrollbar{display:none}
-.filter-chip{flex-shrink:0;padding:6px 13px;border-radius:100px;border:1.5px solid var(--border2);background:none;font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px;}
-.filter-chip:hover{border-color:var(--teal);color:var(--teal);}
-.filter-chip.active{background:var(--teal);border-color:var(--teal);color:white;}
+      0%,
+      100% {
+        transform: translateX(0)
+      }
 
-/* ── Expense Summary ── */
-.exp-summary{margin:14px 18px 0;background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow);}
-.exp-sum-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.exp-sum-title{font-family:var(--font-head);font-size:15px;color:var(--ink);}
-.exp-sum-total{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--teal);}
-.exp-cats{padding:12px 16px;display:flex;flex-direction:column;gap:8px;}
-.exp-cat-row{display:flex;align-items:center;gap:10px;}
-.exp-cat-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0;}
-.exp-cat-name{font-size:13px;color:var(--ink2);flex:1;}
-.exp-cat-track{width:80px;height:4px;background:var(--paper3);border-radius:2px;overflow:hidden;}
-.exp-cat-fill{height:100%;border-radius:2px;transition:width 1s ease;}
-.exp-cat-amt{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--ink);width:60px;text-align:right;}
+      25% {
+        transform: translateX(-6px)
+      }
 
-/* ── Timeline ── */
-.timeline{padding:18px 18px 0;position:relative;}
-.timeline::before{content:'';position:absolute;left:33px;top:18px;bottom:0;width:1.5px;background:linear-gradient(to bottom,var(--teal-g2),transparent);}
-.day-group{margin-bottom:26px;}
-.day-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-.day-dot{width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:white;flex-shrink:0;z-index:1;box-shadow:0 0 0 4px var(--paper);}
-.day-info{flex:1;}
-.day-title{font-family:var(--font-head);font-size:14px;font-weight:600;color:var(--ink);}
-.day-sub{font-size:11px;color:var(--ink3);}
+      75% {
+        transform: translateX(6px)
+      }
+    }
 
-/* Entry card */
-.entry-card{
-  margin-left:44px;margin-bottom:10px;
-  background:var(--white);border:1px solid var(--border);
-  border-radius:var(--r-lg);overflow:hidden;
-  box-shadow:var(--shadow);
-  animation:slideIn .35s ease both;
-  transition:all .2s;
-}
-.entry-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);}
-.entry-stripe{height:3px;}
-.stripe-note   {background:linear-gradient(90deg,var(--teal),#34d399);}
-.stripe-food   {background:linear-gradient(90deg,var(--coral),#f97316);}
-.stripe-expense{background:linear-gradient(90deg,var(--gold),#f59e0b);}
-.stripe-place  {background:linear-gradient(90deg,#3A6BC8,#818cf8);}
-.stripe-memory {background:linear-gradient(90deg,var(--purple),#a78bfa);}
+    @keyframes pulse {
 
-.entry-top{padding:11px 14px 8px;display:flex;align-items:flex-start;gap:9px;}
-.entry-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-.ei-note   {background:var(--teal-g);}
-.ei-food   {background:var(--coral-g);}
-.ei-expense{background:var(--gold-g);}
-.ei-place  {background:var(--blue-g);}
-.ei-memory {background:var(--purple-g);}
-.entry-meta{flex:1;}
-.entry-time{font-size:10px;color:var(--ink3);margin-bottom:2px;}
-.entry-loc{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--teal);font-weight:600;}
-.entry-loc svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2;}
-.entry-fav{font-size:14px;cursor:pointer;transition:transform .2s;}
-.entry-fav:hover{transform:scale(1.2);}
+      0%,
+      100% {
+        opacity: 1
+      }
 
-.entry-body{padding:0 14px 12px;}
-.entry-text{font-family:var(--font-head);font-style:italic;font-size:14px;color:var(--ink2);line-height:1.78;margin-bottom:8px;}
-.exp-display{display:flex;align-items:center;justify-content:space-between;background:var(--gold-g);border:1px solid rgba(196,154,60,0.2);border-radius:10px;padding:10px 13px;margin-bottom:8px;}
-.exp-cat-badge{font-size:11px;color:var(--ink3);}
-.exp-amount-big{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--gold);}
-.photo-grid{display:grid;gap:3px;border-radius:10px;overflow:hidden;margin-bottom:8px;}
-.photo-grid.g1{grid-template-columns:1fr;}
-.photo-grid.g2{grid-template-columns:1fr 1fr;}
-.photo-grid.g3{grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;}
-.photo-grid.g3 .pg-item:first-child{grid-row:span 2;}
-.pg-item{aspect-ratio:1;overflow:hidden;cursor:pointer;}
-.pg-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
-.pg-item:hover img{transform:scale(1.04);}
+      50% {
+        opacity: .4
+      }
+    }
 
-.entry-actions{padding:8px 14px;border-top:1px solid var(--border);display:flex;gap:2px;}
-.ea-btn{flex:1;padding:7px;border-radius:7px;border:none;background:none;font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px;}
-.ea-btn:hover{background:var(--paper2);color:var(--teal);}
-.ea-btn.liked{color:var(--coral);}
-.ea-btn.del:hover{background:var(--coral-g);color:var(--coral);}
-.ea-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;}
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.7)
+      }
 
-/* ── Empty state ── */
-.empty-state{text-align:center;padding:48px 24px;margin-left:44px;}
-.empty-icon{font-size:40px;display:block;margin-bottom:14px;opacity:.35;}
-.empty-title{font-family:var(--font-head);font-style:italic;font-size:18px;color:var(--ink3);margin-bottom:6px;}
-.empty-sub{font-size:13px;color:var(--ink3);opacity:.65;line-height:1.6;}
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
 
-/* ── FAB ── */
-.fab{position:fixed;bottom:84px;right:calc(50% - 220px);width:52px;height:52px;border-radius:50%;background:var(--teal);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 24px rgba(26,138,114,0.4);transition:all .25s cubic-bezier(.34,1.56,.64,1);z-index:99;}
-.fab:hover{transform:scale(1.1) rotate(45deg);}
-.fab svg{width:22px;height:22px;stroke:white;fill:none;stroke-width:2;}
-@media(max-width:480px){.fab{right:18px;}}
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0
+      }
 
-/* ── Bottom nav ── */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(250,250,248,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:10px 0 20px;z-index:100;}
-.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;text-decoration:none;transition:opacity .2s;opacity:.4;}
-.bn-item.active{opacity:1;}
-.bn-icon{font-size:20px;}
-.bn-label{font-size:9px;font-weight:600;color:var(--ink2);letter-spacing:.5px;text-transform:uppercase;}
+      100% {
+        background-position: -200% 0
+      }
+    }
 
-/* ── Toast ── */
-.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--ink);color:white;padding:9px 20px;border-radius:100px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none;}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    .au {
+      animation: fadeUp .45s ease both;
+      opacity: 0;
+    }
 
-/* ── Modals ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(28,26,23,0.5);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .3s;}
-.modal-overlay.show{opacity:1;pointer-events:all;}
-.modal-sheet{background:var(--white);border-radius:24px 24px 0 0;padding:20px 20px 40px;width:100%;max-height:80vh;overflow-y:auto;transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.2,.64,1);}
-.modal-overlay.show .modal-sheet{transform:translateY(0);}
-.modal-handle{width:36px;height:4px;background:var(--paper3);border-radius:2px;margin:0 auto 20px;}
-.modal-title{font-family:var(--font-head);font-size:20px;color:var(--ink);margin-bottom:16px;}
-.loc-item{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--paper2);border-radius:var(--r);cursor:pointer;border:1.5px solid transparent;transition:all .2s;margin-bottom:6px;}
-.loc-item:hover{border-color:var(--teal);background:var(--teal-g);}
-.loc-icon{font-size:18px;}
-.loc-name{font-size:14px;font-weight:600;color:var(--ink);}
-.loc-sub{font-size:11px;color:var(--ink3);}
+    .d1 {
+      animation-delay: .05s
+    }
 
-/* Skeleton */
-.skel{background:linear-gradient(90deg,var(--paper2) 25%,var(--paper3) 50%,var(--paper2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px;}
+    .d2 {
+      animation-delay: .1s
+    }
 
-/* AI Journal modal */
-.aj-chapter{margin-bottom:22px;}
-.aj-ch-title{font-family:var(--font-head);font-size:15px;font-weight:600;color:var(--teal);margin-bottom:8px;}
-.aj-ch-story{font-family:var(--font-head);font-style:italic;font-size:14px;line-height:1.8;color:var(--ink2);margin-bottom:8px;}
-.aj-highlight{padding:8px 12px;background:var(--teal-g);border-radius:8px;font-size:12px;color:var(--teal);}
-</style>
+    .d3 {
+      animation-delay: .15s
+    }
+
+    .d4 {
+      animation-delay: .2s
+    }
+
+    .d5 {
+      animation-delay: .25s
+    }
+
+    /* ── Page ── */
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Top Nav ── */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(250, 250, 248, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 18px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink3);
+      text-decoration: none;
+      transition: color .2s;
+    }
+
+    .nav-back:hover {
+      color: var(--ink);
+    }
+
+    .nav-back svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .nav-title {
+      font-family: var(--font-head);
+      font-size: 17px;
+      color: var(--ink);
+      letter-spacing: -.2px;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border2);
+      background: none;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink3);
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--paper2);
+      color: var(--ink);
+    }
+
+    .nav-btn.primary {
+      background: var(--teal);
+      color: white;
+      border-color: var(--teal);
+    }
+
+    .nav-btn.primary:hover {
+      background: var(--teal-d);
+    }
+
+    .nav-btn svg {
+      width: 13px;
+      height: 13px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ── Hero ── */
+    .diary-hero {
+      margin: 16px 18px 0;
+      background: linear-gradient(145deg, #0d6b57 0%, #1A8A72 50%, #22a085 100%);
+      border-radius: var(--r-xl);
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(255, 255, 255, 0.03) 18px, rgba(255, 255, 255, 0.03) 19px);
+      pointer-events: none;
+    }
+
+    .hero-orb {
+      position: absolute;
+      bottom: -50px;
+      right: -50px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      pointer-events: none;
+    }
+
+    .hero-z {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 6px;
+    }
+
+    .hero-dest {
+      font-family: var(--font-head);
+      font-style: italic;
+      font-size: 24px;
+      color: white;
+      letter-spacing: -.3px;
+      margin-bottom: 16px;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 0;
+    }
+
+    .hero-stat {
+      flex: 1;
+      text-align: center;
+    }
+
+    .hero-stat+.hero-stat {
+      border-left: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .hero-stat-val {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 3px;
+    }
+
+    .hero-stat-lbl {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.45);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+
+    /* Trip selector pills */
+    .trip-pills {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 12px 18px 0;
+      scrollbar-width: none;
+    }
+
+    .trip-pills::-webkit-scrollbar {
+      display: none
+    }
+
+    .trip-pill {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border2);
+      background: var(--white);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink3);
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+
+    .trip-pill:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    .trip-pill.active {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: white;
+    }
+
+    .trip-pill-add {
+      background: transparent;
+      border-style: dashed;
+      color: var(--teal);
+    }
+
+    /* ── Mood strip ── */
+    .mood-strip {
+      margin: 12px 18px 0;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mood-label {
+      font-size: 12px;
+      color: var(--ink3);
+    }
+
+    .mood-pills {
+      display: flex;
+      gap: 4px;
+    }
+
+    .mood-pill {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1.5px solid transparent;
+      background: none;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mood-pill:hover {
+      transform: scale(1.15);
+    }
+
+    .mood-pill.active {
+      background: var(--teal-g);
+      border-color: var(--teal);
+      transform: scale(1.1);
+    }
+
+    /* ── Composer ── */
+    .composer {
+      margin: 12px 18px 0;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: all .3s;
+    }
+
+    .composer:focus-within {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px var(--teal-g), var(--shadow);
+    }
+
+    .composer-top {
+      padding: 14px 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .comp-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-d));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-head);
+      font-style: italic;
+      font-size: 15px;
+      color: white;
+      font-weight: 600;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .comp-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .comp-meta {
+      flex: 1;
+    }
+
+    .comp-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .comp-date {
+      font-size: 11px;
+      color: var(--ink3);
+      margin-top: 1px;
+    }
+
+    .comp-loc-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      border-radius: 100px;
+      border: 1px solid var(--border2);
+      background: var(--paper2);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink3);
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+
+    .comp-loc-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+      background: var(--teal-g);
+    }
+
+    .comp-loc-btn svg {
+      width: 11px;
+      height: 11px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .comp-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-style: italic;
+      color: var(--ink);
+      background: transparent;
+      line-height: 1.75;
+      min-height: 88px;
+    }
+
+    .comp-textarea::placeholder {
+      color: var(--ink3);
+      opacity: .55;
+      font-style: italic;
+    }
+
+    .comp-photos {
+      padding: 0 16px 8px;
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .photo-thumb {
+      position: relative;
+      width: 62px;
+      height: 62px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      animation: popIn .25s cubic-bezier(.34, 1.56, .64, 1) both;
+    }
+
+    .photo-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-remove {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(28, 26, 23, 0.7);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    /* Expense input */
+    .exp-input-row {
+      padding: 0 16px 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .exp-input {
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+      width: 130px;
+      transition: border-color .2s;
+    }
+
+    .exp-input:focus {
+      border-color: var(--gold);
+    }
+
+    .exp-cat-select {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 13px;
+      outline: none;
+      -webkit-appearance: none;
+      background: var(--paper2);
+    }
+
+    /* Toolbar */
+    .comp-toolbar {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .type-row {
+      display: flex;
+      background: var(--paper2);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 1px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .type-row::-webkit-scrollbar {
+      display: none
+    }
+
+    .type-btn {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: none;
+      background: none;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink3);
+      cursor: pointer;
+      transition: all .15s;
+      font-family: var(--font-body);
+      white-space: nowrap;
+    }
+
+    .type-btn.active {
+      background: var(--white);
+      color: var(--teal);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .toolbar-sep {
+      flex: 1;
+    }
+
+    .tool-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: none;
+      background: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .15s;
+      color: var(--ink3);
+    }
+
+    .tool-btn:hover {
+      background: var(--paper2);
+      color: var(--teal);
+    }
+
+    .tool-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .save-btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: none;
+      background: var(--teal);
+      color: white;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .save-btn:hover {
+      background: var(--teal-d);
+      transform: translateY(-1px);
+    }
+
+    .save-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .save-btn svg {
+      width: 13px;
+      height: 13px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ── Search + Filter ── */
+    .search-wrap {
+      margin: 14px 18px 0;
+      position: relative;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 14px;
+      stroke: var(--ink3);
+      fill: none;
+      stroke-width: 2;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      transition: all .2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px var(--teal-g);
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      padding: 10px 18px 0;
+      scrollbar-width: none;
+    }
+
+    .filter-row::-webkit-scrollbar {
+      display: none
+    }
+
+    .filter-chip {
+      flex-shrink: 0;
+      padding: 6px 13px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border2);
+      background: none;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink3);
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .filter-chip:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    .filter-chip.active {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: white;
+    }
+
+    /* ── Expense Summary ── */
+    .exp-summary {
+      margin: 14px 18px 0;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .exp-sum-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .exp-sum-title {
+      font-family: var(--font-head);
+      font-size: 15px;
+      color: var(--ink);
+    }
+
+    .exp-sum-total {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--teal);
+    }
+
+    .exp-cats {
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .exp-cat-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .exp-cat-icon {
+      font-size: 14px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .exp-cat-name {
+      font-size: 13px;
+      color: var(--ink2);
+      flex: 1;
+    }
+
+    .exp-cat-track {
+      width: 80px;
+      height: 4px;
+      background: var(--paper3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .exp-cat-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+
+    .exp-cat-amt {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+      width: 60px;
+      text-align: right;
+    }
+
+    /* ── Timeline ── */
+    .timeline {
+      padding: 18px 18px 0;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 33px;
+      top: 18px;
+      bottom: 0;
+      width: 1.5px;
+      background: linear-gradient(to bottom, var(--teal-g2), transparent);
+    }
+
+    .day-group {
+      margin-bottom: 26px;
+    }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .day-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: white;
+      flex-shrink: 0;
+      z-index: 1;
+      box-shadow: 0 0 0 4px var(--paper);
+    }
+
+    .day-info {
+      flex: 1;
+    }
+
+    .day-title {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .day-sub {
+      font-size: 11px;
+      color: var(--ink3);
+    }
+
+    /* Entry card */
+    .entry-card {
+      margin-left: 44px;
+      margin-bottom: 10px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: slideIn .35s ease both;
+      transition: all .2s;
+    }
+
+    .entry-card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .entry-stripe {
+      height: 3px;
+    }
+
+    .stripe-note {
+      background: linear-gradient(90deg, var(--teal), #34d399);
+    }
+
+    .stripe-food {
+      background: linear-gradient(90deg, var(--coral), #f97316);
+    }
+
+    .stripe-expense {
+      background: linear-gradient(90deg, var(--gold), #f59e0b);
+    }
+
+    .stripe-place {
+      background: linear-gradient(90deg, #3A6BC8, #818cf8);
+    }
+
+    .stripe-memory {
+      background: linear-gradient(90deg, var(--purple), #a78bfa);
+    }
+
+    .entry-top {
+      padding: 11px 14px 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+    }
+
+    .entry-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .ei-note {
+      background: var(--teal-g);
+    }
+
+    .ei-food {
+      background: var(--coral-g);
+    }
+
+    .ei-expense {
+      background: var(--gold-g);
+    }
+
+    .ei-place {
+      background: var(--blue-g);
+    }
+
+    .ei-memory {
+      background: var(--purple-g);
+    }
+
+    .entry-meta {
+      flex: 1;
+    }
+
+    .entry-time {
+      font-size: 10px;
+      color: var(--ink3);
+      margin-bottom: 2px;
+    }
+
+    .entry-loc {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      color: var(--teal);
+      font-weight: 600;
+    }
+
+    .entry-loc svg {
+      width: 9px;
+      height: 9px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .entry-fav {
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform .2s;
+    }
+
+    .entry-fav:hover {
+      transform: scale(1.2);
+    }
+
+    .entry-body {
+      padding: 0 14px 12px;
+    }
+
+    .entry-text {
+      font-family: var(--font-head);
+      font-style: italic;
+      font-size: 14px;
+      color: var(--ink2);
+      line-height: 1.78;
+      margin-bottom: 8px;
+    }
+
+    .exp-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--gold-g);
+      border: 1px solid rgba(196, 154, 60, 0.2);
+      border-radius: 10px;
+      padding: 10px 13px;
+      margin-bottom: 8px;
+    }
+
+    .exp-cat-badge {
+      font-size: 11px;
+      color: var(--ink3);
+    }
+
+    .exp-amount-big {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .photo-grid {
+      display: grid;
+      gap: 3px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .photo-grid.g1 {
+      grid-template-columns: 1fr;
+    }
+
+    .photo-grid.g2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .photo-grid.g3 {
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+
+    .photo-grid.g3 .pg-item:first-child {
+      grid-row: span 2;
+    }
+
+    .pg-item {
+      aspect-ratio: 1;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .pg-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .3s;
+    }
+
+    .pg-item:hover img {
+      transform: scale(1.04);
+    }
+
+    .entry-actions {
+      padding: 8px 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 2px;
+    }
+
+    .ea-btn {
+      flex: 1;
+      padding: 7px;
+      border-radius: 7px;
+      border: none;
+      background: none;
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink3);
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .ea-btn:hover {
+      background: var(--paper2);
+      color: var(--teal);
+    }
+
+    .ea-btn.liked {
+      color: var(--coral);
+    }
+
+    .ea-btn.del:hover {
+      background: var(--coral-g);
+      color: var(--coral);
+    }
+
+    .ea-btn svg {
+      width: 12px;
+      height: 12px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      margin-left: 44px;
+    }
+
+    .empty-icon {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 14px;
+      opacity: .35;
+    }
+
+    .empty-title {
+      font-family: var(--font-head);
+      font-style: italic;
+      font-size: 18px;
+      color: var(--ink3);
+      margin-bottom: 6px;
+    }
+
+    .empty-sub {
+      font-size: 13px;
+      color: var(--ink3);
+      opacity: .65;
+      line-height: 1.6;
+    }
+
+    /* ── FAB ── */
+    .fab {
+      position: fixed;
+      bottom: 84px;
+      right: calc(50% - 220px);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--teal);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(26, 138, 114, 0.4);
+      transition: all .25s cubic-bezier(.34, 1.56, .64, 1);
+      z-index: 99;
+    }
+
+    .fab:hover {
+      transform: scale(1.1) rotate(45deg);
+    }
+
+    .fab svg {
+      width: 22px;
+      height: 22px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    @media(max-width:480px) {
+      .fab {
+        right: 18px;
+      }
+    }
+
+    /* ── Bottom nav ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: rgba(250, 250, 248, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      padding: 10px 0 20px;
+      z-index: 100;
+    }
+
+    .bn-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .2s;
+      opacity: .4;
+    }
+
+    .bn-item.active {
+      opacity: 1;
+    }
+
+    .bn-icon {
+      font-size: 20px;
+    }
+
+    .bn-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--ink2);
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 88px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: var(--ink);
+      color: white;
+      padding: 9px 20px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      transition: all .3s;
+      z-index: 500;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Modals ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 26, 23, 0.5);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-sheet {
+      background: var(--white);
+      border-radius: 24px 24px 0 0;
+      padding: 20px 20px 40px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform .4s cubic-bezier(.34, 1.2, .64, 1);
+    }
+
+    .modal-overlay.show .modal-sheet {
+      transform: translateY(0);
+    }
+
+    .modal-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--paper3);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    .modal-title {
+      font-family: var(--font-head);
+      font-size: 20px;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+
+    .loc-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 13px;
+      background: var(--paper2);
+      border-radius: var(--r);
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: all .2s;
+      margin-bottom: 6px;
+    }
+
+    .loc-item:hover {
+      border-color: var(--teal);
+      background: var(--teal-g);
+    }
+
+    .loc-icon {
+      font-size: 18px;
+    }
+
+    .loc-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .loc-sub {
+      font-size: 11px;
+      color: var(--ink3);
+    }
+
+    /* Skeleton */
+    .skel {
+      background: linear-gradient(90deg, var(--paper2) 25%, var(--paper3) 50%, var(--paper2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+
+    /* AI Journal modal */
+    .aj-chapter {
+      margin-bottom: 22px;
+    }
+
+    .aj-ch-title {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+
+    .aj-ch-story {
+      font-family: var(--font-head);
+      font-style: italic;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--ink2);
+      margin-bottom: 8px;
+    }
+
+    .aj-highlight {
+      padding: 8px 12px;
+      background: var(--teal-g);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--teal);
+    }
+
+    /* ── Yaply Upgrade Prompt ── */
+    .yup-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: rgba(7, 16, 31, 0.88);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .yup-backdrop.show {
+      display: flex;
+      animation: yupIn .2s ease both;
+    }
+
+    @keyframes yupIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes yupUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(.98)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
+    }
+
+    .yup-sheet {
+      background: linear-gradient(180deg, #0f1f3a 0%, #0B1220 100%);
+      border: 1px solid rgba(37, 99, 255, 0.18);
+      border-bottom: none;
+      border-radius: 26px 26px 0 0;
+      padding: 10px 22px 40px;
+      width: 100%;
+      max-width: 480px;
+      animation: yupUp .3s cubic-bezier(.34, 1.05, .64, 1) both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .yup-sheet::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(37, 99, 255, 0.5), transparent);
+    }
+
+    .yup-handle {
+      width: 34px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 0 auto 18px;
+    }
+
+    .yup-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .yup-icon.free {
+      background: rgba(245, 185, 66, 0.1);
+      border: 1px solid rgba(245, 185, 66, 0.2);
+    }
+
+    .yup-icon.pro {
+      background: rgba(37, 99, 255, 0.1);
+      border: 1px solid rgba(37, 99, 255, 0.2);
+    }
+
+    .yup-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 6px;
+      letter-spacing: -.3px;
+    }
+
+    .yup-sub {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.4);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .yup-meter {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+
+    .yup-meter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+
+    .yup-meter-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .yup-meter-count {
+      font-size: 12px;
+      color: white;
+      font-weight: 700;
+    }
+
+    .yup-meter-track {
+      height: 5px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .yup-meter-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #EF4444, #F87171);
+    }
+
+    .yup-perks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .yup-perk {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .yup-perk-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(24, 194, 156, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+    }
+
+    .yup-prices {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .yup-price {
+      flex: 1;
+      padding: 11px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .yup-price.selected,
+    .yup-price:hover {
+      background: rgba(37, 99, 255, 0.12);
+      border-color: rgba(37, 99, 255, 0.4);
+    }
+
+    .yup-price-amt {
+      font-size: 17px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .yup-price-period {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.35);
+      margin-top: 2px;
+    }
+
+    .yup-price-tag {
+      font-size: 9px;
+      color: #18C29C;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .yup-reset {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 13px;
+      background: rgba(37, 99, 255, 0.06);
+      border: 1px solid rgba(37, 99, 255, 0.12);
+      border-radius: 11px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .yup-reset strong {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .yup-pay-btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 13px;
+      background: #2563FF;
+      color: white;
+      border: none;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      box-shadow: 0 8px 24px rgba(37, 99, 255, 0.3);
+      margin-bottom: 10px;
+    }
+
+    .yup-pay-btn:hover {
+      background: #1D4ED8;
+      transform: translateY(-1px);
+    }
+
+    .yup-dismiss {
+      width: 100%;
+      padding: 10px;
+      border-radius: 12px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.3);
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: color .2s;
+    }
+
+    .yup-dismiss:hover {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  </style>
 </head>
 
 <body>
-<div class="page">
+  <div class="page">
 
-<!-- NAV -->
-<nav class="top-nav">
-  <a href="/app" class="nav-back">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    Back
-  </a>
-  <div class="nav-title">Travel Diary</div>
-  <div class="nav-actions">
-    <button class="nav-btn" onclick="openExportModal()">
-      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Export
-    </button>
-    <button class="nav-btn primary" onclick="scrollToComposer()">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      New
-    </button>
-  </div>
-</nav>
+    <!-- NAV -->
+    <nav class="top-nav">
+      <a href="/app" class="nav-back">
+        <svg viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        Back
+      </a>
+      <div class="nav-title">Travel Diary</div>
+      <div class="nav-actions">
+        <button class="nav-btn" onclick="openExportModal()">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Export
+        </button>
+        <button class="nav-btn primary" onclick="scrollToComposer()">
+          <svg viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          New
+        </button>
+      </div>
+    </nav>
 
-<!-- HERO -->
-<div class="diary-hero au">
-  <div class="hero-pattern"></div>
-  <div class="hero-orb"></div>
-  <div class="hero-z">
-    <div class="hero-eyebrow">✈️ My Travel Diary</div>
-    <div class="hero-dest" id="heroDest">Loading...</div>
-    <div class="hero-stats">
-      <div class="hero-stat"><div class="hero-stat-val" id="heroEntries">0</div><div class="hero-stat-lbl">Entries</div></div>
-      <div class="hero-stat"><div class="hero-stat-val" id="heroDay">Day 1</div><div class="hero-stat-lbl">of Trip</div></div>
-      <div class="hero-stat"><div class="hero-stat-val" id="heroSpent">₹0</div><div class="hero-stat-lbl">Spent</div></div>
+    <!-- HERO -->
+    <div class="diary-hero au">
+      <div class="hero-pattern"></div>
+      <div class="hero-orb"></div>
+      <div class="hero-z">
+        <div class="hero-eyebrow">✈️ My Travel Diary</div>
+        <div class="hero-dest" id="heroDest">Loading...</div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-val" id="heroEntries">0</div>
+            <div class="hero-stat-lbl">Entries</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-val" id="heroDay">Day 1</div>
+            <div class="hero-stat-lbl">of Trip</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-val" id="heroSpent">₹0</div>
+            <div class="hero-stat-lbl">Spent</div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- TRIP PILLS -->
-<div class="trip-pills au d1" id="tripPills">
-  <div class="skel" style="height:32px;width:100px;border-radius:100px;flex-shrink:0;"></div>
-</div>
-
-<!-- MOOD -->
-<div class="mood-strip au d2">
-  <span class="mood-label">How are you feeling?</span>
-  <div class="mood-pills">
-    <button class="mood-pill active" onclick="setMood(this,'😊')">😊</button>
-    <button class="mood-pill" onclick="setMood(this,'🤩')">🤩</button>
-    <button class="mood-pill" onclick="setMood(this,'😌')">😌</button>
-    <button class="mood-pill" onclick="setMood(this,'😴')">😴</button>
-    <button class="mood-pill" onclick="setMood(this,'😤')">😤</button>
-  </div>
-</div>
-
-<!-- COMPOSER -->
-<div class="composer au d3" id="composer">
-  <div class="composer-top">
-    <div class="comp-avatar" id="compAvatar">Y</div>
-    <div class="comp-meta">
-      <div class="comp-name" id="compName">You</div>
-      <div class="comp-date" id="compDate"></div>
+    <!-- TRIP PILLS -->
+    <div class="trip-pills au d1" id="tripPills">
+      <div class="skel" style="height:32px;width:100px;border-radius:100px;flex-shrink:0;"></div>
     </div>
-    <button class="comp-loc-btn" onclick="openLocModal()">
-      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      <span id="selLoc">Add location</span>
-    </button>
-  </div>
-  <textarea class="comp-textarea" id="entryText" placeholder="What happened today? A moment, a meal, a feeling…" oninput="autoResize(this)" rows="3"></textarea>
-  <div class="comp-photos" id="photoPreview"></div>
-  <div class="exp-input-row" id="expRow" style="display:none;">
-    <input class="exp-input" type="number" id="expAmount" placeholder="₹ Amount"/>
-    <select class="exp-cat-select" id="expCat">
-      <option value="Food">🍜 Food</option>
-      <option value="Transport">🚌 Transport</option>
-      <option value="Stay">🏨 Stay</option>
-      <option value="Shopping">🛍️ Shopping</option>
-      <option value="Entertainment">🎭 Entertainment</option>
-      <option value="Other">💼 Other</option>
-    </select>
-  </div>
-  <div class="comp-toolbar">
-    <div class="type-row">
-      <button class="type-btn active" onclick="setType(this,'note')">Note</button>
-      <button class="type-btn" onclick="setType(this,'food')">🍜 Food</button>
-      <button class="type-btn" onclick="setType(this,'expense')">💰 Expense</button>
-      <button class="type-btn" onclick="setType(this,'place')">📍 Place</button>
-      <button class="type-btn" onclick="setType(this,'memory')">✨ Memory</button>
+
+    <!-- MOOD -->
+    <div class="mood-strip au d2">
+      <span class="mood-label">How are you feeling?</span>
+      <div class="mood-pills">
+        <button class="mood-pill active" onclick="setMood(this,'😊')">😊</button>
+        <button class="mood-pill" onclick="setMood(this,'🤩')">🤩</button>
+        <button class="mood-pill" onclick="setMood(this,'😌')">😌</button>
+        <button class="mood-pill" onclick="setMood(this,'😴')">😴</button>
+        <button class="mood-pill" onclick="setMood(this,'😤')">😤</button>
+      </div>
     </div>
-    <div class="toolbar-sep"></div>
-    <button class="tool-btn" onclick="document.getElementById('photoIn').click()" title="Add photo">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-    </button>
-    <button class="save-btn" id="saveBtn" onclick="saveEntry()">
-      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      Save
-    </button>
-  </div>
-</div>
-<input type="file" id="photoIn" accept="image/*" multiple style="display:none;" onchange="handlePhotos(this)"/>
 
-<!-- EXPENSE SUMMARY -->
-<div class="exp-summary au d4" id="expSummary" style="display:none;">
-  <div class="exp-sum-head">
-    <div class="exp-sum-title">💰 Trip Expenses</div>
-    <div class="exp-sum-total" id="expTotal">₹0</div>
-  </div>
-  <div class="exp-cats" id="expCats"></div>
-</div>
+    <!-- COMPOSER -->
+    <div class="composer au d3" id="composer">
+      <div class="composer-top">
+        <div class="comp-avatar" id="compAvatar">Y</div>
+        <div class="comp-meta">
+          <div class="comp-name" id="compName">You</div>
+          <div class="comp-date" id="compDate"></div>
+        </div>
+        <button class="comp-loc-btn" onclick="openLocModal()">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <span id="selLoc">Add location</span>
+        </button>
+      </div>
+      <textarea class="comp-textarea" id="entryText" placeholder="What happened today? A moment, a meal, a feeling…"
+        oninput="autoResize(this)" rows="3"></textarea>
+      <div class="comp-photos" id="photoPreview"></div>
+      <div class="exp-input-row" id="expRow" style="display:none;">
+        <input class="exp-input" type="number" id="expAmount" placeholder="₹ Amount" />
+        <select class="exp-cat-select" id="expCat">
+          <option value="Food">🍜 Food</option>
+          <option value="Transport">🚌 Transport</option>
+          <option value="Stay">🏨 Stay</option>
+          <option value="Shopping">🛍️ Shopping</option>
+          <option value="Entertainment">🎭 Entertainment</option>
+          <option value="Other">💼 Other</option>
+        </select>
+      </div>
+      <div class="comp-toolbar">
+        <div class="type-row">
+          <button class="type-btn active" onclick="setType(this,'note')">Note</button>
+          <button class="type-btn" onclick="setType(this,'food')">🍜 Food</button>
+          <button class="type-btn" onclick="setType(this,'expense')">💰 Expense</button>
+          <button class="type-btn" onclick="setType(this,'place')">📍 Place</button>
+          <button class="type-btn" onclick="setType(this,'memory')">✨ Memory</button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <button class="tool-btn" onclick="document.getElementById('photoIn').click()" title="Add photo">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+        </button>
+        <button class="save-btn" id="saveBtn" onclick="saveEntry()">
+          <svg viewBox="0 0 24 24">
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+          Save
+        </button>
+      </div>
+    </div>
+    <input type="file" id="photoIn" accept="image/*" multiple style="display:none;" onchange="handlePhotos(this)" />
 
-<!-- AI JOURNAL BUTTON -->
-<div style="padding:12px 18px 0;" class="au d4">
-  <button onclick="generateAIJournal()" id="aiJournalBtn"
-    style="width:100%;padding:12px;background:linear-gradient(135deg,#0d6b57,#1A8A72);color:white;border:none;border-radius:var(--r-lg);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;box-shadow:0 4px 16px rgba(26,138,114,0.25);">
-    ✨ Generate AI Travel Story
+    <!-- EXPENSE SUMMARY -->
+    <div class="exp-summary au d4" id="expSummary" style="display:none;">
+      <div class="exp-sum-head">
+        <div class="exp-sum-title">💰 Trip Expenses</div>
+        <div class="exp-sum-total" id="expTotal">₹0</div>
+      </div>
+      <div class="exp-cats" id="expCats"></div>
+    </div>
+
+    <!-- AI JOURNAL BUTTON -->
+    <div style="padding:12px 18px 0;" class="au d4">
+      <button onclick="generateAIJournal()" id="aiJournalBtn"
+        style="width:100%;padding:12px;background:linear-gradient(135deg,#0d6b57,#1A8A72);color:white;border:none;border-radius:var(--r-lg);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;box-shadow:0 4px 16px rgba(26,138,114,0.25);">
+        ✨ Generate AI Travel Story
+      </button>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-wrap au d4">
+      <svg viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input class="search-input" type="text" placeholder="Search your diary…" oninput="searchEntries(this.value)" />
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-row au d5">
+      <button class="filter-chip active" onclick="filterBy(this,'all')">All</button>
+      <button class="filter-chip" onclick="filterBy(this,'note')">📝 Notes</button>
+      <button class="filter-chip" onclick="filterBy(this,'food')">🍜 Food</button>
+      <button class="filter-chip" onclick="filterBy(this,'expense')">💰 Expenses</button>
+      <button class="filter-chip" onclick="filterBy(this,'place')">📍 Places</button>
+      <button class="filter-chip" onclick="filterBy(this,'memory')">✨ Memories</button>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="timeline au d5" id="timeline">
+      <div class="empty-state">
+        <span class="empty-icon">📖</span>
+        <div class="empty-title">Your diary awaits.</div>
+        <div class="empty-sub">Start writing your first entry above.<br />Every moment worth remembering.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="scrollToComposer()">
+    <svg viewBox="0 0 24 24">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
   </button>
-</div>
 
-<!-- SEARCH -->
-<div class="search-wrap au d4">
-  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  <input class="search-input" type="text" placeholder="Search your diary…" oninput="searchEntries(this.value)"/>
-</div>
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="/plan" class="bn-item">
+      <div class="bn-icon">✈️</div>
+      <div class="bn-label">Plan</div>
+    </a>
+    <a href="/translate" class="bn-item">
+      <div class="bn-icon">🎙️</div>
+      <div class="bn-label">Translate</div>
+    </a>
+    <a href="/diary" class="bn-item active">
+      <div class="bn-icon">📖</div>
+      <div class="bn-label">Diary</div>
+    </a>
+    <a href="/after" class="bn-item">
+      <div class="bn-icon">💰</div>
+      <div class="bn-label">After</div>
+    </a>
+    <a href="/me" class="bn-item">
+      <div class="bn-icon">👤</div>
+      <div class="bn-label">Profile</div>
+    </a>
+  </nav>
 
-<!-- FILTERS -->
-<div class="filter-row au d5">
-  <button class="filter-chip active" onclick="filterBy(this,'all')">All</button>
-  <button class="filter-chip" onclick="filterBy(this,'note')">📝 Notes</button>
-  <button class="filter-chip" onclick="filterBy(this,'food')">🍜 Food</button>
-  <button class="filter-chip" onclick="filterBy(this,'expense')">💰 Expenses</button>
-  <button class="filter-chip" onclick="filterBy(this,'place')">📍 Places</button>
-  <button class="filter-chip" onclick="filterBy(this,'memory')">✨ Memories</button>
-</div>
-
-<!-- TIMELINE -->
-<div class="timeline au d5" id="timeline">
-  <div class="empty-state">
-    <span class="empty-icon">📖</span>
-    <div class="empty-title">Your diary awaits.</div>
-    <div class="empty-sub">Start writing your first entry above.<br/>Every moment worth remembering.</div>
-  </div>
-</div>
-
-</div>
-
-<!-- FAB -->
-<button class="fab" onclick="scrollToComposer()">
-  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-</button>
-
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <a href="/plan" class="bn-item"><div class="bn-icon">✈️</div><div class="bn-label">Plan</div></a>
-  <a href="/translate" class="bn-item"><div class="bn-icon">🎙️</div><div class="bn-label">Translate</div></a>
-  <a href="/diary" class="bn-item active"><div class="bn-icon">📖</div><div class="bn-label">Diary</div></a>
-  <a href="/after" class="bn-item"><div class="bn-icon">💰</div><div class="bn-label">After</div></a>
-  <a href="/me" class="bn-item"><div class="bn-icon">👤</div><div class="bn-label">Profile</div></a>
-</nav>
-
-<!-- LOCATION MODAL -->
-<div class="modal-overlay" id="locModal" onclick="if(event.target===this)closeLocModal()">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">📍 Where are you?</div>
-    <div id="locList"></div>
-    <div style="margin-top:10px;">
-      <input id="customLoc" type="text" placeholder="Type a custom location…"
-        style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r);font-family:var(--font-body);font-size:14px;outline:none;"
-        onkeydown="if(event.key==='Enter')setCustomLoc()"/>
+  <!-- LOCATION MODAL -->
+  <div class="modal-overlay" id="locModal" onclick="if(event.target===this)closeLocModal()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">📍 Where are you?</div>
+      <div id="locList"></div>
+      <div style="margin-top:10px;">
+        <input id="customLoc" type="text" placeholder="Type a custom location…"
+          style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r);font-family:var(--font-body);font-size:14px;outline:none;"
+          onkeydown="if(event.key==='Enter')setCustomLoc()" />
+      </div>
     </div>
   </div>
-</div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
 
-<script>
-var _token   = localStorage.getItem('yaply_token') || '';
-var _headers = {'Content-Type':'application/json','Authorization':'Bearer '+_token};
-var _entries = [];
-var _tripId  = null;
-var _activeFilter = 'all';
-var _searchQ = '';
-var _mood    = '😊';
-var _type    = 'note';
-var _loc     = '';
-var _photos  = [];
+  <!-- Yaply Upgrade Prompt -->
+  <div class="yup-backdrop" id="yupBackdrop" onclick="if(event.target===this)YaplyUpgrade.hide()">
+    <div class="yup-sheet">
+      <div class="yup-handle"></div>
+      <div class="yup-icon free" id="yupIcon">⚡</div>
+      <div class="yup-title" id="yupTitle">Limit reached</div>
+      <div class="yup-sub" id="yupSub">You've hit your free limit.</div>
 
-var TYPE_CFG = {
-  note:    {icon:'📝',stripe:'stripe-note',   ei:'ei-note'},
-  food:    {icon:'🍜',stripe:'stripe-food',   ei:'ei-food'},
-  expense: {icon:'💰',stripe:'stripe-expense',ei:'ei-expense'},
-  place:   {icon:'📍',stripe:'stripe-place',  ei:'ei-place'},
-  memory:  {icon:'✨',stripe:'stripe-memory', ei:'ei-memory'},
-};
+      <div class="yup-meter" id="yupMeter">
+        <div class="yup-meter-row">
+          <div class="yup-meter-label" id="yupMeterLabel">Used today</div>
+          <div class="yup-meter-count" id="yupMeterCount">0 / 0</div>
+        </div>
+        <div class="yup-meter-track">
+          <div class="yup-meter-fill" id="yupMeterFill" style="width:100%;"></div>
+        </div>
+      </div>
 
-var PLACEHOLDERS = {
-  note:    'What happened today? A moment, a meal, a feeling…',
-  food:    'What did you eat? How was it? Where exactly?',
-  expense: 'What did you spend on?',
-  place:   'Describe this place. What makes it special?',
-  memory:  'A moment you never want to forget…',
-};
+      <!-- Pro user: reset info -->
+      <div class="yup-reset" id="yupReset" style="display:none;">
+        🔄 <span><strong>Resets at midnight.</strong> Come back tomorrow for more.</span>
+      </div>
 
-// ── INIT ──
-document.addEventListener('DOMContentLoaded', async function() {
-  var params = new URLSearchParams(window.location.search);
-  if (params.get('token')) {
-    localStorage.setItem('yaply_token', params.get('token'));
-    _token = params.get('token');
-    _headers['Authorization'] = 'Bearer ' + _token;
-    window.history.replaceState({}, '', '/diary');
-  }
-  if (!_token) { window.location.href = '/login'; return; }
+      <!-- Free user: what they get -->
+      <div id="yupPerksWrap">
+        <div
+          style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,0.25);margin-bottom:9px;">
+          What you get with Pro</div>
+        <div class="yup-perks" id="yupPerks"></div>
+      </div>
 
-  setComposerDate();
-  loadUserInfo();
-  await loadTrips();
-  await loadEntries();
-  await loadStats();
-  await loadExpenses();
-});
+      <!-- Price options -->
+      <div class="yup-prices" id="yupPrices">
+        <div class="yup-price" id="yupWeekly" onclick="YaplyUpgrade.selectPlan('weekly')">
+          <div class="yup-price-amt">₹99</div>
+          <div class="yup-price-period">per week</div>
+          <div class="yup-price-tag">7 days</div>
+        </div>
+        <div class="yup-price selected" id="yupMonthly" onclick="YaplyUpgrade.selectPlan('monthly')">
+          <div class="yup-price-amt">₹399</div>
+          <div class="yup-price-period">per month</div>
+          <div class="yup-price-tag">Best value ✓</div>
+        </div>
+      </div>
 
-async function api(method, path, body) {
-  try {
-    var opts = {method:method,headers:_headers};
-    var url  = path;
-    if (body && method === 'GET') {
-      url += '?' + new URLSearchParams(body).toString();
-    } else if (body) {
-      opts.body = JSON.stringify(body);
-    }
-    var r = await fetch(url, opts);
-    return await r.json();
-  } catch(e) { return {success:false,error:'Network error'}; }
-}
+      <button class="yup-pay-btn" id="yupPayBtn" onclick="YaplyUpgrade.goUpgrade()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg>
+        <span id="yupPayText">Get Pro — ₹399/month</span>
+      </button>
+      <button class="yup-dismiss" id="yupDismiss" onclick="YaplyUpgrade.hide()">Maybe later</button>
+    </div>
+  </div>
 
-// ── USER ──
-async function loadUserInfo() {
-  try {
-    var r = await api('GET', '/api/me');
-    if (r.success && r.user) {
-      var name = r.user.name || 'You';
-      document.getElementById('compName').textContent = name.split(' ')[0];
-      var initials = name.split(' ').map(function(n){return n[0];}).join('').toUpperCase().slice(0,2);
-      var av = document.getElementById('compAvatar');
-      if (r.user.avatar) {
-        av.innerHTML = '<img src="'+r.user.avatar+'" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>';
-      } else {
-        av.textContent = initials;
+  <script>
+    var _token = localStorage.getItem('yaply_token') || '';
+    var _headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token };
+    var _entries = [];
+    var _tripId = null;
+    var _activeFilter = 'all';
+    var _searchQ = '';
+    var _mood = '😊';
+    var _type = 'note';
+    var _loc = '';
+    var _photos = [];
+
+    var TYPE_CFG = {
+      note: { icon: '📝', stripe: 'stripe-note', ei: 'ei-note' },
+      food: { icon: '🍜', stripe: 'stripe-food', ei: 'ei-food' },
+      expense: { icon: '💰', stripe: 'stripe-expense', ei: 'ei-expense' },
+      place: { icon: '📍', stripe: 'stripe-place', ei: 'ei-place' },
+      memory: { icon: '✨', stripe: 'stripe-memory', ei: 'ei-memory' },
+    };
+
+    var PLACEHOLDERS = {
+      note: 'What happened today? A moment, a meal, a feeling…',
+      food: 'What did you eat? How was it? Where exactly?',
+      expense: 'What did you spend on?',
+      place: 'Describe this place. What makes it special?',
+      memory: 'A moment you never want to forget…',
+    };
+
+    // ── INIT ──
+    document.addEventListener('DOMContentLoaded', async function () {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('token')) {
+        localStorage.setItem('yaply_token', params.get('token'));
+        _token = params.get('token');
+        _headers['Authorization'] = 'Bearer ' + _token;
+        window.history.replaceState({}, '', '/diary');
       }
-    }
-  } catch(e) {}
-}
+      if (!_token) { window.location.href = '/login'; return; }
 
-// ── TRIPS ──
-async function loadTrips() {
-  var r = await api('GET', '/api/diary/trips');
-  var pills = document.getElementById('tripPills');
-
-  // Also check Yaply trips for auto-import
-  var yapTrips = await api('GET', '/api/trips');
-  var destName = 'My Trip';
-
-  if (r.success && r.trips && r.trips.length) {
-    _tripId  = r.trips[0].id;
-    destName = r.trips[0].destination;
-    pills.innerHTML = r.trips.map(function(t,i) {
-      return '<div class="trip-pill'+(i===0?' active':'')+'" onclick="selectTrip('+t.id+',\''+t.destination.replace(/'/g,"\\'")+'\',this)">'+getFlag(t.destination)+' '+t.destination+'</div>';
-    }).join('') + '<div class="trip-pill trip-pill-add" onclick="createNewTrip()">+ New</div>';
-  } else {
-    // Auto-create from latest Yaply trip
-    if (yapTrips.success && yapTrips.trips && yapTrips.trips.length) {
-      var latest = yapTrips.trips[0];
-      destName   = latest.destination;
-      var cr = await api('POST', '/api/diary/trips', {
-        destination: destName,
-        currency:    latest.currency || 'INR',
-        start_date:  latest.start_date || ''
-      });
-      if (cr.success) {
-        _tripId = cr.trip_id;
-      }
-    } else {
-      var cr = await api('POST', '/api/diary/trips', {destination: 'My Trip', currency: 'INR'});
-      if (cr.success) _tripId = cr.trip_id;
-    }
-    pills.innerHTML = '<div class="trip-pill active">'+getFlag(destName)+' '+destName+'</div><div class="trip-pill trip-pill-add" onclick="createNewTrip()">+ New</div>';
-  }
-  document.getElementById('heroDest').textContent = destName;
-}
-
-function selectTrip(id, dest, el) {
-  _tripId = id;
-  document.querySelectorAll('.trip-pill').forEach(function(p){p.classList.remove('active');});
-  el.classList.add('active');
-  document.getElementById('heroDest').textContent = dest;
-  loadEntries();
-  loadStats();
-  loadExpenses();
-}
-
-async function createNewTrip() {
-  var dest = prompt('Trip destination:');
-  if (!dest) return;
-  var r = await api('POST', '/api/diary/trips', {destination: dest, currency:'INR'});
-  if (r.success) {
-    _tripId = r.trip_id;
-    await loadTrips();
-    showToast(dest + ' diary created ✅');
-  }
-}
-
-// ── LOAD ENTRIES ──
-async function loadEntries() {
-  var params = {limit:100};
-  if (_tripId) params.trip_id = _tripId;
-  if (_activeFilter !== 'all') params.type = _activeFilter;
-  if (_searchQ) params.search = _searchQ;
-  var r = await api('GET', '/api/diary/entries', params);
-  if (r.success) {
-    _entries = r.entries || [];
-    renderTimeline();
-  }
-}
-
-// ── STATS ──
-async function loadStats() {
-  var params = {};
-  if (_tripId) params.trip_id = _tripId;
-  var r = await api('GET', '/api/diary/stats', params);
-  if (r.success) {
-    document.getElementById('heroEntries').textContent = r.total_entries || 0;
-    document.getElementById('heroDay').textContent     = 'Day ' + (r.days_logged || 1);
-    var spent = r.total_spent || 0;
-    document.getElementById('heroSpent').textContent   = '₹' + Math.round(spent).toLocaleString();
-  }
-}
-
-// ── EXPENSES ──
-async function loadExpenses() {
-  var params = {};
-  if (_tripId) params.trip_id = _tripId;
-  var r = await api('GET', '/api/diary/expenses', params);
-  if (!r.success || !r.total) {
-    document.getElementById('expSummary').style.display = 'none';
-    return;
-  }
-  document.getElementById('expSummary').style.display = 'block';
-  document.getElementById('expTotal').textContent = '₹' + Math.round(r.total).toLocaleString();
-  var CAT_COLORS = {'Food':'#E8673A','Transport':'#3A6BC8','Stay':'#1A8A72','Shopping':'#C49A3C','Entertainment':'#8B5CF6','Other':'#78716C'};
-  var CAT_ICONS  = {'Food':'🍜','Transport':'🚌','Stay':'🏨','Shopping':'🛍️','Entertainment':'🎭','Other':'💼'};
-  document.getElementById('expCats').innerHTML = (r.by_category||[]).map(function(c) {
-    var pct = Math.round(c.total / r.total * 100);
-    var col = CAT_COLORS[c.category] || '#78716C';
-    return '<div class="exp-cat-row">'+
-      '<span class="exp-cat-icon">'+(CAT_ICONS[c.category]||'💼')+'</span>'+
-      '<span class="exp-cat-name">'+c.category+'</span>'+
-      '<div class="exp-cat-track"><div class="exp-cat-fill" style="width:'+pct+'%;background:'+col+';"></div></div>'+
-      '<span class="exp-cat-amt">₹'+Math.round(c.total).toLocaleString()+'</span>'+
-    '</div>';
-  }).join('');
-}
-
-// ── SAVE ENTRY ──
-async function saveEntry() {
-  var text   = document.getElementById('entryText').value.trim();
-  var amount = parseFloat(document.getElementById('expAmount').value) || 0;
-  if (!text && _type !== 'expense') { shakeComp(); return; }
-  if (_type === 'expense' && !amount) { shakeComp(); showToast('Enter an amount'); return; }
-
-  var btn = document.getElementById('saveBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳';
-
-  var payload = {
-    trip_id:    _tripId,
-    type:       _type,
-    text:       text,
-    mood:       _mood,
-    location:   _type === 'expense' ? document.getElementById('expCat').value : _loc,
-    tags:       [],
-    photos:     _photos.slice(),
-    day_number: 1,
-  };
-  if (_type === 'expense') { payload.amount = amount; payload.currency = '₹'; }
-
-  var r = await api('POST', '/api/diary/entries', payload);
-  btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Save';
-
-  if (r.success) {
-    document.getElementById('entryText').value = '';
-    document.getElementById('entryText').style.height = '';
-    document.getElementById('expAmount').value = '';
-    _photos = []; _loc = '';
-    document.getElementById('selLoc').textContent = 'Add location';
-    renderPhotoPreview();
-    if (r.entry) _entries.unshift(r.entry);
-    renderTimeline();
-    await loadStats();
-    if (_type === 'expense') await loadExpenses();
-    showToast('Saved ✓');
-  } else {
-    showToast(r.error || 'Could not save');
-  }
-}
-
-// ── DELETE ──
-async function deleteEntry(id) {
-  if (!confirm('Delete this entry?')) return;
-  var r = await api('DELETE', '/api/diary/entries/' + id);
-  if (r.success) {
-    _entries = _entries.filter(function(e){return e.id!==id;});
-    renderTimeline();
-    await loadStats();
-    await loadExpenses();
-    showToast('Deleted');
-  }
-}
-
-// ── FAVORITE ──
-async function toggleFav(id, el) {
-  var r = await api('POST', '/api/diary/entries/'+id+'/favorite');
-  if (r.success) {
-    _entries = _entries.map(function(e){
-      if(e.id===id){e.is_favorite=r.is_favorite?1:0;}
-      return e;
+      setComposerDate();
+      loadUserInfo();
+      await loadTrips();
+      await loadEntries();
+      await loadStats();
+      await loadExpenses();
     });
-    el.textContent = r.is_favorite ? '❤️' : '🤍';
-  }
-}
 
-// ── RENDER TIMELINE ──
-function renderTimeline() {
-  var tl = document.getElementById('timeline');
-  if (!_entries.length) {
-    tl.innerHTML = '<div class="empty-state"><span class="empty-icon">📖</span><div class="empty-title">Your diary awaits.</div><div class="empty-sub">Start writing your first entry above.<br/>Every moment worth remembering.</div></div>';
-    return;
-  }
-  var groups = {};
-  _entries.forEach(function(e) {
-    var d = (e.created_at||'').split('T')[0] || (e.created_at||'').split(' ')[0] || 'Today';
-    if (!groups[d]) groups[d] = [];
-    groups[d].push(e);
-  });
-  var dates = Object.keys(groups).sort(function(a,b){return new Date(b)-new Date(a);});
-  tl.innerHTML = dates.map(function(date, di) {
-    var dayEntries = groups[date];
-    var dayNum     = e_dayNum(date);
-    var dateLabel  = date === 'Today' ? 'Today' : safeDate(date);
-    return '<div class="day-group">'+
-      '<div class="day-header">'+
-        '<div class="day-dot">D'+dayNum+'</div>'+
-        '<div class="day-info">'+
-          '<div class="day-title">'+dateLabel+'</div>'+
-          '<div class="day-sub">'+dayEntries.length+' entr'+(dayEntries.length===1?'y':'ies')+'</div>'+
-        '</div>'+
-      '</div>'+
-      dayEntries.map(function(e,ei){return buildCard(e,(di*10+ei)*40);}).join('')+
-    '</div>';
-  }).join('');
-}
+    async function api(method, path, body) {
+      try {
+        var opts = { method: method, headers: _headers };
+        var url = path;
+        if (body && method === 'GET') {
+          url += '?' + new URLSearchParams(body).toString();
+        } else if (body) {
+          opts.body = JSON.stringify(body);
+        }
+        var r = await fetch(url, opts);
+        return await r.json();
+      } catch (e) { return { success: false, error: 'Network error' }; }
+    }
 
-function e_dayNum(dateStr) {
-  try {
-    var d    = new Date(dateStr);
-    var now  = new Date();
-    var diff = Math.floor((now - d) / 86400000);
-    return Math.max(1, diff + 1);
-  } catch(e){ return 1; }
-}
+    // ── USER ──
+    async function loadUserInfo() {
+      try {
+        var r = await api('GET', '/api/me');
+        if (r.success && r.user) {
+          var name = r.user.name || 'You';
+          document.getElementById('compName').textContent = name.split(' ')[0];
+          var initials = name.split(' ').map(function (n) { return n[0]; }).join('').toUpperCase().slice(0, 2);
+          var av = document.getElementById('compAvatar');
+          if (r.user.avatar) {
+            av.innerHTML = '<img src="' + r.user.avatar + '" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>';
+          } else {
+            av.textContent = initials;
+          }
+        }
+      } catch (e) { }
+    }
 
-function safeDate(str) {
-  try {
-    return new Date(str).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  } catch(e){ return str; }
-}
+    // ── TRIPS ──
+    async function loadTrips() {
+      var r = await api('GET', '/api/diary/trips');
+      var pills = document.getElementById('tripPills');
 
-function buildCard(e, delay) {
-  var cfg  = TYPE_CFG[e.type] || TYPE_CFG.note;
-  var time = (e.created_at||'').split('T')[1]||'';
-  if (time) time = time.slice(0,5);
-  var photos = [];
-  try { photos = typeof e.photos==='string' ? JSON.parse(e.photos) : (e.photos||[]); } catch(x){}
-  var photoHtml = '';
-  if (photos.length) {
-    var gc = photos.length===1?'g1':photos.length===2?'g2':'g3';
-    photoHtml = '<div class="photo-grid '+gc+'">'+
-      photos.slice(0,3).map(function(src){ return '<div class="pg-item"><img src="'+src+'" loading="lazy"/></div>'; }).join('')+
-    '</div>';
-  }
-  var expHtml = '';
-  if (e.type === 'expense' && e.amount) {
-    expHtml = '<div class="exp-display">'+
-      '<div class="exp-cat-badge">'+(e.location||'Expense')+'</div>'+
-      '<div class="exp-amount-big">₹ '+parseFloat(e.amount).toLocaleString()+'</div>'+
-    '</div>';
-  }
-  return '<div class="entry-card" style="animation-delay:'+delay+'ms;">'+
-    '<div class="entry-stripe '+cfg.stripe+'"></div>'+
-    '<div class="entry-top">'+
-      '<div class="entry-icon '+cfg.ei+'">'+cfg.icon+'</div>'+
-      '<div class="entry-meta">'+
-        '<div class="entry-time">'+time+(e.mood?' &bull; '+e.mood:'')+'</div>'+
-        (e.location?'<div class="entry-loc"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'+e.location+'</div>':'')+''+
-      '</div>'+
-      '<span class="entry-fav" onclick="toggleFav('+e.id+',this)">'+(e.is_favorite?'❤️':'🤍')+'</span>'+
-    '</div>'+
-    '<div class="entry-body">'+
-      (e.text?'<div class="entry-text">'+e.text+'</div>':'')+
-      expHtml+photoHtml+
-    '</div>'+
-    '<div class="entry-actions">'+
-      '<button class="ea-btn" onclick="copyEntry('+e.id+')"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>'+
-      '<button class="ea-btn" onclick="shareEntry('+e.id+')"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>'+
-      '<button class="ea-btn del" onclick="deleteEntry('+e.id+')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Delete</button>'+
-    '</div>'+
-  '</div>';
-}
+      // Also check Yaply trips for auto-import
+      var yapTrips = await api('GET', '/api/trips');
+      var destName = 'My Trip';
 
-// ── ACTIONS ──
-function copyEntry(id) {
-  var e = _entries.find(function(e){return e.id===id;});
-  if (e && navigator.clipboard) {
-    navigator.clipboard.writeText(e.text||'');
-    showToast('Copied ✓');
-  }
-}
+      if (r.success && r.trips && r.trips.length) {
+        _tripId = r.trips[0].id;
+        destName = r.trips[0].destination;
+        pills.innerHTML = r.trips.map(function (t, i) {
+          return '<div class="trip-pill' + (i === 0 ? ' active' : '') + '" onclick="selectTrip(' + t.id + ',\'' + t.destination.replace(/'/g, "\\'") + '\',this)">' + getFlag(t.destination) + ' ' + t.destination + '</div>';
+        }).join('') + '<div class="trip-pill trip-pill-add" onclick="createNewTrip()">+ New</div>';
+      } else {
+        // Auto-create from latest Yaply trip
+        if (yapTrips.success && yapTrips.trips && yapTrips.trips.length) {
+          var latest = yapTrips.trips[0];
+          destName = latest.destination;
+          var cr = await api('POST', '/api/diary/trips', {
+            destination: destName,
+            currency: latest.currency || 'INR',
+            start_date: latest.start_date || ''
+          });
+          if (cr.success) {
+            _tripId = cr.trip_id;
+          }
+        } else {
+          var cr = await api('POST', '/api/diary/trips', { destination: 'My Trip', currency: 'INR' });
+          if (cr.success) _tripId = cr.trip_id;
+        }
+        pills.innerHTML = '<div class="trip-pill active">' + getFlag(destName) + ' ' + destName + '</div><div class="trip-pill trip-pill-add" onclick="createNewTrip()">+ New</div>';
+      }
+      document.getElementById('heroDest').textContent = destName;
+    }
 
-function shareEntry(id) {
-  var e = _entries.find(function(e){return e.id===id;});
-  if (!e) return;
-  var msg = e.text + (e.location?' 📍 '+e.location:'') + '\n\nWritten on Yaply Travel Diary · yaply.live';
-  if (navigator.share) { navigator.share({text:msg}); }
-  else { navigator.clipboard.writeText(msg); showToast('Copied to share!'); }
-}
+    function selectTrip(id, dest, el) {
+      _tripId = id;
+      document.querySelectorAll('.trip-pill').forEach(function (p) { p.classList.remove('active'); });
+      el.classList.add('active');
+      document.getElementById('heroDest').textContent = dest;
+      loadEntries();
+      loadStats();
+      loadExpenses();
+    }
 
-// ── COMPOSER HELPERS ──
-function setComposerDate() {
-  var now = new Date();
-  document.getElementById('compDate').textContent = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
-}
+    async function createNewTrip() {
+      var dest = prompt('Trip destination:');
+      if (!dest) return;
+      var r = await api('POST', '/api/diary/trips', { destination: dest, currency: 'INR' });
+      if (r.success) {
+        _tripId = r.trip_id;
+        await loadTrips();
+        showToast(dest + ' diary created ✅');
+      }
+    }
 
-function setMood(el, mood) {
-  document.querySelectorAll('.mood-pill').forEach(function(p){p.classList.remove('active');});
-  el.classList.add('active');
-  _mood = mood;
-}
+    // ── LOAD ENTRIES ──
+    async function loadEntries() {
+      var params = { limit: 100 };
+      if (_tripId) params.trip_id = _tripId;
+      if (_activeFilter !== 'all') params.type = _activeFilter;
+      if (_searchQ) params.search = _searchQ;
+      var r = await api('GET', '/api/diary/entries', params);
+      if (r.success) {
+        _entries = r.entries || [];
+        renderTimeline();
+      }
+    }
 
-function setType(el, type) {
-  document.querySelectorAll('.type-btn').forEach(function(b){b.classList.remove('active');});
-  el.classList.add('active');
-  _type = type;
-  document.getElementById('expRow').style.display = type==='expense'?'flex':'none';
-  document.getElementById('entryText').placeholder = PLACEHOLDERS[type]||PLACEHOLDERS.note;
-}
+    // ── STATS ──
+    async function loadStats() {
+      var params = {};
+      if (_tripId) params.trip_id = _tripId;
+      var r = await api('GET', '/api/diary/stats', params);
+      if (r.success) {
+        document.getElementById('heroEntries').textContent = r.total_entries || 0;
+        document.getElementById('heroDay').textContent = 'Day ' + (r.days_logged || 1);
+        var spent = r.total_spent || 0;
+        document.getElementById('heroSpent').textContent = '₹' + Math.round(spent).toLocaleString();
+      }
+    }
 
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
-}
+    // ── EXPENSES ──
+    async function loadExpenses() {
+      var params = {};
+      if (_tripId) params.trip_id = _tripId;
+      var r = await api('GET', '/api/diary/expenses', params);
+      if (!r.success || !r.total) {
+        document.getElementById('expSummary').style.display = 'none';
+        return;
+      }
+      document.getElementById('expSummary').style.display = 'block';
+      document.getElementById('expTotal').textContent = '₹' + Math.round(r.total).toLocaleString();
+      var CAT_COLORS = { 'Food': '#E8673A', 'Transport': '#3A6BC8', 'Stay': '#1A8A72', 'Shopping': '#C49A3C', 'Entertainment': '#8B5CF6', 'Other': '#78716C' };
+      var CAT_ICONS = { 'Food': '🍜', 'Transport': '🚌', 'Stay': '🏨', 'Shopping': '🛍️', 'Entertainment': '🎭', 'Other': '💼' };
+      document.getElementById('expCats').innerHTML = (r.by_category || []).map(function (c) {
+        var pct = Math.round(c.total / r.total * 100);
+        var col = CAT_COLORS[c.category] || '#78716C';
+        return '<div class="exp-cat-row">' +
+          '<span class="exp-cat-icon">' + (CAT_ICONS[c.category] || '💼') + '</span>' +
+          '<span class="exp-cat-name">' + c.category + '</span>' +
+          '<div class="exp-cat-track"><div class="exp-cat-fill" style="width:' + pct + '%;background:' + col + ';"></div></div>' +
+          '<span class="exp-cat-amt">₹' + Math.round(c.total).toLocaleString() + '</span>' +
+          '</div>';
+      }).join('');
+    }
 
-function scrollToComposer() {
-  document.getElementById('composer').scrollIntoView({behavior:'smooth',block:'center'});
-  setTimeout(function(){document.getElementById('entryText').focus();},400);
-}
+    // ── SAVE ENTRY ──
+    async function saveEntry() {
+      var text = document.getElementById('entryText').value.trim();
+      var amount = parseFloat(document.getElementById('expAmount').value) || 0;
+      if (!text && _type !== 'expense') { shakeComp(); return; }
+      if (_type === 'expense' && !amount) { shakeComp(); showToast('Enter an amount'); return; }
 
-function shakeComp() {
-  var c = document.getElementById('composer');
-  c.style.animation = 'shake .35s ease';
-  setTimeout(function(){c.style.animation='';},400);
-}
+      var btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳';
 
-// ── PHOTOS ──
-function handlePhotos(input) {
-  Array.from(input.files).forEach(function(file) {
-    var r = new FileReader();
-    r.onload = function(e) { _photos.push(e.target.result); renderPhotoPreview(); };
-    r.readAsDataURL(file);
-  });
-  input.value = '';
-}
+      var payload = {
+        trip_id: _tripId,
+        type: _type,
+        text: text,
+        mood: _mood,
+        location: _type === 'expense' ? document.getElementById('expCat').value : _loc,
+        tags: [],
+        photos: _photos.slice(),
+        day_number: 1,
+      };
+      if (_type === 'expense') { payload.amount = amount; payload.currency = '₹'; }
 
-function renderPhotoPreview() {
-  document.getElementById('photoPreview').innerHTML = _photos.map(function(src,i) {
-    return '<div class="photo-thumb"><img src="'+src+'"/><button class="photo-remove" onclick="removePhoto('+i+')">✕</button></div>';
-  }).join('');
-}
+      var r = await api('POST', '/api/diary/entries', payload);
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Save';
 
-function removePhoto(i) {
-  _photos.splice(i,1);
-  renderPhotoPreview();
-}
+      if (r.success) {
+        document.getElementById('entryText').value = '';
+        document.getElementById('entryText').style.height = '';
+        document.getElementById('expAmount').value = '';
+        _photos = []; _loc = '';
+        document.getElementById('selLoc').textContent = 'Add location';
+        renderPhotoPreview();
+        if (r.entry) _entries.unshift(r.entry);
+        renderTimeline();
+        await loadStats();
+        if (_type === 'expense') await loadExpenses();
+        showToast('Saved ✓');
+      } else {
+        showToast(r.error || 'Could not save');
+      }
+    }
 
-// ── LOCATION MODAL ──
-var DEFAULT_LOCS = [
-  {name:'Airport',sub:'International terminal',icon:'✈️'},
-  {name:'Hotel',sub:'Your accommodation',icon:'🏨'},
-  {name:'Restaurant',sub:'Local food spot',icon:'🍽️'},
-  {name:'Museum',sub:'Cultural attraction',icon:'🏛️'},
-  {name:'Beach',sub:'Coastal area',icon:'🏖️'},
-  {name:'Market',sub:'Local market',icon:'🛍️'},
-  {name:'Street',sub:'City street',icon:'🏙️'},
-  {name:'Transport',sub:'Train/Bus/Taxi',icon:'🚌'},
-];
+    // ── DELETE ──
+    async function deleteEntry(id) {
+      if (!confirm('Delete this entry?')) return;
+      var r = await api('DELETE', '/api/diary/entries/' + id);
+      if (r.success) {
+        _entries = _entries.filter(function (e) { return e.id !== id; });
+        renderTimeline();
+        await loadStats();
+        await loadExpenses();
+        showToast('Deleted');
+      }
+    }
 
-function openLocModal() {
-  document.getElementById('locList').innerHTML = DEFAULT_LOCS.map(function(l){
-    return '<div class="loc-item" onclick="setLoc(\''+l.name+'\')"><span class="loc-icon">'+l.icon+'</span><div><div class="loc-name">'+l.name+'</div><div class="loc-sub">'+l.sub+'</div></div></div>';
-  }).join('');
-  document.getElementById('locModal').classList.add('show');
-}
+    // ── FAVORITE ──
+    async function toggleFav(id, el) {
+      var r = await api('POST', '/api/diary/entries/' + id + '/favorite');
+      if (r.success) {
+        _entries = _entries.map(function (e) {
+          if (e.id === id) { e.is_favorite = r.is_favorite ? 1 : 0; }
+          return e;
+        });
+        el.textContent = r.is_favorite ? '❤️' : '🤍';
+      }
+    }
 
-function setLoc(name) {
-  _loc = name;
-  document.getElementById('selLoc').textContent = name;
-  closeLocModal();
-}
+    // ── RENDER TIMELINE ──
+    function renderTimeline() {
+      var tl = document.getElementById('timeline');
+      if (!_entries.length) {
+        tl.innerHTML = '<div class="empty-state"><span class="empty-icon">📖</span><div class="empty-title">Your diary awaits.</div><div class="empty-sub">Start writing your first entry above.<br/>Every moment worth remembering.</div></div>';
+        return;
+      }
+      var groups = {};
+      _entries.forEach(function (e) {
+        var d = (e.created_at || '').split('T')[0] || (e.created_at || '').split(' ')[0] || 'Today';
+        if (!groups[d]) groups[d] = [];
+        groups[d].push(e);
+      });
+      var dates = Object.keys(groups).sort(function (a, b) { return new Date(b) - new Date(a); });
+      tl.innerHTML = dates.map(function (date, di) {
+        var dayEntries = groups[date];
+        var dayNum = e_dayNum(date);
+        var dateLabel = date === 'Today' ? 'Today' : safeDate(date);
+        return '<div class="day-group">' +
+          '<div class="day-header">' +
+          '<div class="day-dot">D' + dayNum + '</div>' +
+          '<div class="day-info">' +
+          '<div class="day-title">' + dateLabel + '</div>' +
+          '<div class="day-sub">' + dayEntries.length + ' entr' + (dayEntries.length === 1 ? 'y' : 'ies') + '</div>' +
+          '</div>' +
+          '</div>' +
+          dayEntries.map(function (e, ei) { return buildCard(e, (di * 10 + ei) * 40); }).join('') +
+          '</div>';
+      }).join('');
+    }
 
-function setCustomLoc() {
-  var val = document.getElementById('customLoc').value.trim();
-  if (val) { setLoc(val); document.getElementById('customLoc').value = ''; }
-}
+    function e_dayNum(dateStr) {
+      try {
+        var d = new Date(dateStr);
+        var now = new Date();
+        var diff = Math.floor((now - d) / 86400000);
+        return Math.max(1, diff + 1);
+      } catch (e) { return 1; }
+    }
 
-function closeLocModal() {
-  document.getElementById('locModal').classList.remove('show');
-}
+    function safeDate(str) {
+      try {
+        return new Date(str).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+      } catch (e) { return str; }
+    }
 
-// ── FILTER + SEARCH ──
-function filterBy(el, filter) {
-  document.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active');});
-  el.classList.add('active');
-  _activeFilter = filter;
-  loadEntries();
-}
+    function buildCard(e, delay) {
+      var cfg = TYPE_CFG[e.type] || TYPE_CFG.note;
+      var time = (e.created_at || '').split('T')[1] || '';
+      if (time) time = time.slice(0, 5);
+      var photos = [];
+      try { photos = typeof e.photos === 'string' ? JSON.parse(e.photos) : (e.photos || []); } catch (x) { }
+      var photoHtml = '';
+      if (photos.length) {
+        var gc = photos.length === 1 ? 'g1' : photos.length === 2 ? 'g2' : 'g3';
+        photoHtml = '<div class="photo-grid ' + gc + '">' +
+          photos.slice(0, 3).map(function (src) { return '<div class="pg-item"><img src="' + src + '" loading="lazy"/></div>'; }).join('') +
+          '</div>';
+      }
+      var expHtml = '';
+      if (e.type === 'expense' && e.amount) {
+        expHtml = '<div class="exp-display">' +
+          '<div class="exp-cat-badge">' + (e.location || 'Expense') + '</div>' +
+          '<div class="exp-amount-big">₹ ' + parseFloat(e.amount).toLocaleString() + '</div>' +
+          '</div>';
+      }
+      return '<div class="entry-card" style="animation-delay:' + delay + 'ms;">' +
+        '<div class="entry-stripe ' + cfg.stripe + '"></div>' +
+        '<div class="entry-top">' +
+        '<div class="entry-icon ' + cfg.ei + '">' + cfg.icon + '</div>' +
+        '<div class="entry-meta">' +
+        '<div class="entry-time">' + time + (e.mood ? ' &bull; ' + e.mood : '') + '</div>' +
+        (e.location ? '<div class="entry-loc"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + e.location + '</div>' : '') + '' +
+        '</div>' +
+        '<span class="entry-fav" onclick="toggleFav(' + e.id + ',this)">' + (e.is_favorite ? '❤️' : '🤍') + '</span>' +
+        '</div>' +
+        '<div class="entry-body">' +
+        (e.text ? '<div class="entry-text">' + e.text + '</div>' : '') +
+        expHtml + photoHtml +
+        '</div>' +
+        '<div class="entry-actions">' +
+        '<button class="ea-btn" onclick="copyEntry(' + e.id + ')"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>' +
+        '<button class="ea-btn" onclick="shareEntry(' + e.id + ')"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>' +
+        '<button class="ea-btn del" onclick="deleteEntry(' + e.id + ')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Delete</button>' +
+        '</div>' +
+        '</div>';
+    }
 
-function searchEntries(q) {
-  _searchQ = q.toLowerCase();
-  clearTimeout(window._st);
-  window._st = setTimeout(loadEntries, 350);
-}
+    // ── ACTIONS ──
+    function copyEntry(id) {
+      var e = _entries.find(function (e) { return e.id === id; });
+      if (e && navigator.clipboard) {
+        navigator.clipboard.writeText(e.text || '');
+        showToast('Copied ✓');
+      }
+    }
 
-// ── AI JOURNAL ──
-async function generateAIJournal() {
-  if (!_entries.length) { showToast('Write some entries first!'); return; }
-  var btn = document.getElementById('aiJournalBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Writing your story...';
+    function shareEntry(id) {
+      var e = _entries.find(function (e) { return e.id === id; });
+      if (!e) return;
+      var msg = e.text + (e.location ? ' 📍 ' + e.location : '') + '\n\nWritten on Yaply Travel Diary · yaply.live';
+      if (navigator.share) { navigator.share({ text: msg }); }
+      else { navigator.clipboard.writeText(msg); showToast('Copied to share!'); }
+    }
 
-  var r = await api('POST', '/api/diary/ai-journal', {trip_id: _tripId, style: 'storytelling'});
-  btn.disabled = false;
-  btn.textContent = '✨ Generate AI Travel Story';
+    // ── COMPOSER HELPERS ──
+    function setComposerDate() {
+      var now = new Date();
+      document.getElementById('compDate').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
 
-  if (r.success) {
-    showAIJournal(r.journal);
-  } else {
-    showToast(r.error || 'Could not generate story');
-  }
-}
+    function setMood(el, mood) {
+      document.querySelectorAll('.mood-pill').forEach(function (p) { p.classList.remove('active'); });
+      el.classList.add('active');
+      _mood = mood;
+    }
 
-function showAIJournal(j) {
-  var chapters = (j.chapters||[]).map(function(ch){
-    return '<div class="aj-chapter">'+
-      '<div class="aj-ch-title">Day '+(ch.day||'')+(ch.emoji?' '+ch.emoji:'')+' — '+(ch.chapter_title||'')+'</div>'+
-      '<div class="aj-ch-story">'+(ch.story||'')+'</div>'+
-      '<div class="aj-highlight">✨ '+(ch.highlight||'')+'</div>'+
-    '</div>';
-  }).join('');
+    function setType(el, type) {
+      document.querySelectorAll('.type-btn').forEach(function (b) { b.classList.remove('active'); });
+      el.classList.add('active');
+      _type = type;
+      document.getElementById('expRow').style.display = type === 'expense' ? 'flex' : 'none';
+      document.getElementById('entryText').placeholder = PLACEHOLDERS[type] || PLACEHOLDERS.note;
+    }
 
-  var html = '<div class="modal-overlay show" id="ajModal" onclick="if(event.target===this)this.remove()">'+
-    '<div class="modal-sheet" style="max-height:90vh;">'+
-      '<div class="modal-handle"></div>'+
-      '<div style="font-family:var(--font-head);font-style:italic;font-size:22px;color:var(--ink);margin-bottom:4px;">'+(j.title||'My Journey')+'</div>'+
-      '<div style="font-size:13px;color:var(--ink3);margin-bottom:20px;">'+(j.tagline||'')+'</div>'+
-      chapters+
-      (j.closing?'<div style="background:var(--paper2);border-radius:12px;padding:14px;margin-top:16px;font-family:var(--font-head);font-style:italic;font-size:13px;line-height:1.7;">'+j.closing+'</div>':'')+
-      (j.quote?'<div style="margin-top:12px;text-align:center;font-size:12px;color:var(--ink3);font-style:italic;">"'+j.quote+'"</div>':'')+
-      '<button onclick="document.getElementById(\'ajModal\').remove()" style="width:100%;margin-top:16px;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">Close ✕</button>'+
-      '<button onclick="shareAIJournal()" style="width:100%;margin-top:8px;padding:12px;background:transparent;border:1.5px solid var(--teal);color:var(--teal);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">💚 Share on WhatsApp</button>'+
-    '</div></div>';
-  document.body.insertAdjacentHTML('beforeend', html);
-}
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+    }
 
-function shareAIJournal() {
-  var msg = 'Just wrote my travel story with Yaply AI ✈️ yaply.live';
-  window.open('https://wa.me/?text='+encodeURIComponent(msg));
-}
+    function scrollToComposer() {
+      document.getElementById('composer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(function () { document.getElementById('entryText').focus(); }, 400);
+    }
 
-// ── EXPORT ──
-async function openExportModal() {
-  if (!_entries.length) { showToast('No entries to export yet'); return; }
-  var url = '/api/diary/export?token=' + _token;
-  if (_tripId) url += '&trip_id=' + _tripId;
-  window.open(url, '_blank');
-  showToast('Diary exported!');
-}
+    function shakeComp() {
+      var c = document.getElementById('composer');
+      c.style.animation = 'shake .35s ease';
+      setTimeout(function () { c.style.animation = ''; }, 400);
+    }
 
-// ── HELPERS ──
-function getFlag(dest) {
-  var FLAGS = {'japan':'🇯🇵','tokyo':'🇯🇵','thailand':'🇹🇭','bali':'🇮🇩','france':'🇫🇷','paris':'🇫🇷','dubai':'🇦🇪','singapore':'🇸🇬','india':'🇮🇳','goa':'🇮🇳','london':'🇬🇧','usa':'🇺🇸','italy':'🇮🇹','spain':'🇪🇸','nepal':'🇳🇵'};
-  var d = (dest||'').toLowerCase();
-  for (var k in FLAGS) { if (d.includes(k)) return FLAGS[k]; }
-  return '🌍';
-}
+    // ── PHOTOS ──
+    function handlePhotos(input) {
+      Array.from(input.files).forEach(function (file) {
+        var r = new FileReader();
+        r.onload = function (e) { _photos.push(e.target.result); renderPhotoPreview(); };
+        r.readAsDataURL(file);
+      });
+      input.value = '';
+    }
 
-function showToast(msg) {
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(function(){el.classList.remove('show');},2600);
-}
-</script>
+    function renderPhotoPreview() {
+      document.getElementById('photoPreview').innerHTML = _photos.map(function (src, i) {
+        return '<div class="photo-thumb"><img src="' + src + '"/><button class="photo-remove" onclick="removePhoto(' + i + ')">✕</button></div>';
+      }).join('');
+    }
+
+    function removePhoto(i) {
+      _photos.splice(i, 1);
+      renderPhotoPreview();
+    }
+
+    // ── LOCATION MODAL ──
+    var DEFAULT_LOCS = [
+      { name: 'Airport', sub: 'International terminal', icon: '✈️' },
+      { name: 'Hotel', sub: 'Your accommodation', icon: '🏨' },
+      { name: 'Restaurant', sub: 'Local food spot', icon: '🍽️' },
+      { name: 'Museum', sub: 'Cultural attraction', icon: '🏛️' },
+      { name: 'Beach', sub: 'Coastal area', icon: '🏖️' },
+      { name: 'Market', sub: 'Local market', icon: '🛍️' },
+      { name: 'Street', sub: 'City street', icon: '🏙️' },
+      { name: 'Transport', sub: 'Train/Bus/Taxi', icon: '🚌' },
+    ];
+
+    function openLocModal() {
+      document.getElementById('locList').innerHTML = DEFAULT_LOCS.map(function (l) {
+        return '<div class="loc-item" onclick="setLoc(\'' + l.name + '\')"><span class="loc-icon">' + l.icon + '</span><div><div class="loc-name">' + l.name + '</div><div class="loc-sub">' + l.sub + '</div></div></div>';
+      }).join('');
+      document.getElementById('locModal').classList.add('show');
+    }
+
+    function setLoc(name) {
+      _loc = name;
+      document.getElementById('selLoc').textContent = name;
+      closeLocModal();
+    }
+
+    function setCustomLoc() {
+      var val = document.getElementById('customLoc').value.trim();
+      if (val) { setLoc(val); document.getElementById('customLoc').value = ''; }
+    }
+
+    function closeLocModal() {
+      document.getElementById('locModal').classList.remove('show');
+    }
+
+    // ── FILTER + SEARCH ──
+    function filterBy(el, filter) {
+      document.querySelectorAll('.filter-chip').forEach(function (c) { c.classList.remove('active'); });
+      el.classList.add('active');
+      _activeFilter = filter;
+      loadEntries();
+    }
+
+    function searchEntries(q) {
+      _searchQ = q.toLowerCase();
+      clearTimeout(window._st);
+      window._st = setTimeout(loadEntries, 350);
+    }
+
+    // ── AI JOURNAL ──
+    async function generateAIJournal() {
+      if (!_entries.length) { showToast('Write some entries first!'); return; }
+      var btn = document.getElementById('aiJournalBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Writing your story...';
+
+      var r = await api('POST', '/api/diary/ai-journal', { trip_id: _tripId, style: 'storytelling' });
+      btn.disabled = false;
+      btn.textContent = '✨ Generate AI Travel Story';
+      if (r.limit_reached) { YaplyUpgrade.show(r); return; }
+
+      if (r.success) {
+        showAIJournal(r.journal);
+      } else {
+        showToast(r.error || 'Could not generate story');
+      }
+    }
+
+    function showAIJournal(j) {
+      var chapters = (j.chapters || []).map(function (ch) {
+        return '<div class="aj-chapter">' +
+          '<div class="aj-ch-title">Day ' + (ch.day || '') + (ch.emoji ? ' ' + ch.emoji : '') + ' — ' + (ch.chapter_title || '') + '</div>' +
+          '<div class="aj-ch-story">' + (ch.story || '') + '</div>' +
+          '<div class="aj-highlight">✨ ' + (ch.highlight || '') + '</div>' +
+          '</div>';
+      }).join('');
+
+      var html = '<div class="modal-overlay show" id="ajModal" onclick="if(event.target===this)this.remove()">' +
+        '<div class="modal-sheet" style="max-height:90vh;">' +
+        '<div class="modal-handle"></div>' +
+        '<div style="font-family:var(--font-head);font-style:italic;font-size:22px;color:var(--ink);margin-bottom:4px;">' + (j.title || 'My Journey') + '</div>' +
+        '<div style="font-size:13px;color:var(--ink3);margin-bottom:20px;">' + (j.tagline || '') + '</div>' +
+        chapters +
+        (j.closing ? '<div style="background:var(--paper2);border-radius:12px;padding:14px;margin-top:16px;font-family:var(--font-head);font-style:italic;font-size:13px;line-height:1.7;">' + j.closing + '</div>' : '') +
+        (j.quote ? '<div style="margin-top:12px;text-align:center;font-size:12px;color:var(--ink3);font-style:italic;">"' + j.quote + '"</div>' : '') +
+        '<button onclick="document.getElementById(\'ajModal\').remove()" style="width:100%;margin-top:16px;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">Close ✕</button>' +
+        '<button onclick="shareAIJournal()" style="width:100%;margin-top:8px;padding:12px;background:transparent;border:1.5px solid var(--teal);color:var(--teal);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">💚 Share on WhatsApp</button>' +
+        '</div></div>';
+      document.body.insertAdjacentHTML('beforeend', html);
+    }
+
+    function shareAIJournal() {
+      var msg = 'Just wrote my travel story with Yaply AI ✈️ yaply.live';
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg));
+    }
+
+    // ── EXPORT ──
+    async function openExportModal() {
+      if (!_entries.length) { showToast('No entries to export yet'); return; }
+      var url = '/api/diary/export?token=' + _token;
+      if (_tripId) url += '&trip_id=' + _tripId;
+      window.open(url, '_blank');
+      showToast('Diary exported!');
+    }
+
+    // ── HELPERS ──
+    function getFlag(dest) {
+      var FLAGS = { 'japan': '🇯🇵', 'tokyo': '🇯🇵', 'thailand': '🇹🇭', 'bali': '🇮🇩', 'france': '🇫🇷', 'paris': '🇫🇷', 'dubai': '🇦🇪', 'singapore': '🇸🇬', 'india': '🇮🇳', 'goa': '🇮🇳', 'london': '🇬🇧', 'usa': '🇺🇸', 'italy': '🇮🇹', 'spain': '🇪🇸', 'nepal': '🇳🇵' };
+      var d = (dest || '').toLowerCase();
+      for (var k in FLAGS) { if (d.includes(k)) return FLAGS[k]; }
+      return '🌍';
+    }
+
+    function showToast(msg) {
+      var el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(function () { el.classList.remove('show'); }, 2600);
+    }
+
+    // ── Yaply Upgrade Prompt ──
+    var YaplyUpgrade = (function () {
+      var _plan = 'monthly';
+      var _feature = '';
+
+      var PERKS = {
+        'plan': [{ i: '🗺️', t: '<b>15 AI trip plans</b> per month' }, { i: '🏙️', t: '<b>Multi-city planning</b> unlocked' }, { i: '🚪', t: '<b>Door-to-door</b> journey planner' }],
+        'multicity': [{ i: '🏙️', t: '<b>4 multi-city trips</b> per month' }, { i: '🗺️', t: '<b>15 AI trip plans</b> per month' }, { i: '🚪', t: '<b>Door-to-door</b> planner unlocked' }],
+        'translation': [{ i: '🌐', t: '<b>80 live translations</b> per day' }, { i: '🎙️', t: '<b>40 voice translations</b> per day' }, { i: '💬', t: '<b>Conversation Mode</b> unlocked' }],
+        'voice': [{ i: '🎙️', t: '<b>40 voice translations</b> per day' }, { i: '🌐', t: '<b>80 live translations</b> per day' }, { i: '💬', t: '<b>Conversation Mode</b> unlocked' }],
+        'identify': [{ i: '📸', t: '<b>15 place IDs</b> per day' }, { i: '🔍', t: '<b>20 text searches</b> per day' }, { i: '🗺️', t: 'Full tips, cost, best time' }],
+        'tool': [{ i: '🛡️', t: '<b>All 25+ safety tools</b> unlocked' }, { i: '⚡', t: '<b>50 tool uses</b> per day' }, { i: '💱', t: 'Price check, safe routes, medical SOS' }],
+        'ai_story': [{ i: '📖', t: '<b>5 AI travel stories</b> per month' }, { i: '📔', t: '<b>5 AI trip journals</b> per month' }, { i: '📄', t: '<b>Export diary</b> as PDF + TXT' }],
+        'journal': [{ i: '📔', t: '<b>5 AI journals</b> per month' }, { i: '📖', t: '<b>5 AI travel stories</b> per month' }, { i: '💾', t: '<b>100 diary entries</b> per trip' }],
+        'default': [{ i: '⚡', t: '<b>All Pro features</b> unlocked' }, { i: '🗺️', t: '<b>15 AI trip plans</b> per month' }, { i: '🌐', t: '<b>80 translations</b> per day' }],
+      };
+
+      var ICONS = { plan: '🗺️', multicity: '🏙️', translation: '🌐', voice: '🎙️', identify: '📸', tool: '🛡️', ai_story: '📖', journal: '📔', default: '⚡' };
+
+      function show(data) {
+        var isPro = data.is_pro || false;
+        var feature = data.feature || 'default';
+        var used = data.used || 0;
+        var limit = data.limit || 0;
+        var label = data.feature_label || 'This feature';
+        _feature = feature;
+
+        document.getElementById('yupIcon').textContent = ICONS[feature] || '⚡';
+        document.getElementById('yupIcon').className = 'yup-icon ' + (isPro ? 'pro' : 'free');
+        document.getElementById('yupMeterLabel').textContent = label;
+        document.getElementById('yupMeterCount').textContent = used + ' / ' + limit;
+        document.getElementById('yupMeterFill').style.width = '100%';
+
+        if (isPro) {
+          document.getElementById('yupTitle').textContent = 'Daily limit reached';
+          document.getElementById('yupSub').textContent = label + ' limit reached. Resets at midnight.';
+          document.getElementById('yupReset').style.display = 'flex';
+          document.getElementById('yupPerksWrap').style.display = 'none';
+          document.getElementById('yupPrices').style.display = 'none';
+          document.getElementById('yupPayBtn').style.display = 'none';
+          document.getElementById('yupDismiss').textContent = 'Got it';
+        } else {
+          document.getElementById('yupTitle').textContent = 'You\'ve hit your free limit';
+          document.getElementById('yupSub').textContent = 'Used ' + used + '/' + limit + ' free ' + label + '. Upgrade to keep going.';
+          document.getElementById('yupReset').style.display = 'none';
+          document.getElementById('yupPerksWrap').style.display = 'block';
+          document.getElementById('yupPrices').style.display = 'flex';
+          document.getElementById('yupPayBtn').style.display = 'flex';
+          document.getElementById('yupDismiss').textContent = 'Maybe later';
+
+          var perks = PERKS[feature] || PERKS['default'];
+          document.getElementById('yupPerks').innerHTML = perks.map(function (p) {
+            return '<div class="yup-perk"><div class="yup-perk-icon">' + p.i + '</div><span>' + p.t + '</span></div>';
+          }).join('');
+          selectPlan('monthly');
+        }
+
+        document.getElementById('yupBackdrop').classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function hide() {
+        document.getElementById('yupBackdrop').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+
+      function selectPlan(plan) {
+        _plan = plan;
+        document.getElementById('yupWeekly').classList.toggle('selected', plan === 'weekly');
+        document.getElementById('yupMonthly').classList.toggle('selected', plan === 'monthly');
+        document.getElementById('yupPayText').textContent = 'Get Pro — ' + (plan === 'weekly' ? '₹99/week' : '₹399/month');
+      }
+
+      function goUpgrade() {
+        hide();
+        window.location.href = '/pricing?period=' + _plan + '&from=' + _feature;
+      }
+
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hide(); });
+
+      return { show: show, hide: hide, selectPlan: selectPlan, goUpgrade: goUpgrade };
+    })();
+
+  </script>
 </body>
+
 </html>
