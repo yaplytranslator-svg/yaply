@@ -4204,7 +4204,7 @@
 
         <!-- Actions -->
         <div class="result-actions">
-          <button class="res-btn" onclick="saveTrip()">
+          <button class="res-btn" id="saveTripBtn" onclick="saveTrip()">
             <svg viewBox="0 0 24 24">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
@@ -4247,6 +4247,7 @@
         <div id="hiddenGemsSection" style="padding:16px 18px;"></div>
         <div id="phrasesSection" style="padding:16px 18px;border-top:1px solid var(--border);"></div>
         <div id="tipsSection" style="padding:16px 18px;border-top:1px solid var(--border);"></div>
+        <div id="emergencySection" style="padding:16px 18px;border-top:1px solid var(--border);"></div>
 
         <!-- Group prompt -->
         <div class="group-prompt" id="groupPrompt" style="display:none;"
@@ -5754,11 +5755,12 @@
       document.getElementById('results').classList.remove('show');
 
       var steps = [
-        'Creating day-by-day itinerary...',
+        'Generating your itinerary...',
         'Planning ' + _getModeLabel(selectedTransportMode) + ' journey...',
         'Checking visa requirements...',
-        'Calculating smart budget...',
-        'Finding hidden gems...'
+        'Building budget breakdown...',
+        'Finding hidden gems...',
+        'Almost ready...'
       ];
       var si = 0;
       var stepInt = setInterval(function () {
@@ -5767,8 +5769,8 @@
           el.classList.toggle('active', i === si);
         });
         var titleEl = document.getElementById('loadingTitle');
-        if (titleEl) titleEl.textContent = steps[si] || 'Almost done...';
-        si = (si + 1) % steps.length;
+        if (titleEl) titleEl.textContent = steps[Math.min(si, steps.length - 1)];
+        si++;
       }, 2500);
 
       try {
@@ -5797,6 +5799,9 @@
 
         if (data.success) {
           currentPlan = data.plan;
+          _tripSaved = false;
+          var saveBtnEl = document.getElementById('saveTripBtn');
+          if (saveBtnEl) { saveBtnEl.disabled = false; saveBtnEl.innerHTML = '<svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save'; saveBtnEl.style.color = ''; saveBtnEl.style.borderColor = ''; }
           currentPlan._meta = {
             destination: dest,
             origin: origin,
@@ -5929,6 +5934,9 @@
       if (banner) {
         banner.style.display = mode === 'smart' ? 'flex' : 'none';
       }
+      // Clear any previous transport banner so re-generating with different mode works
+      var prevBanner = document.getElementById('transportBanner');
+      if (prevBanner) prevBanner.remove();
     }
 
     function _getModeLabel(mode) {
@@ -5943,12 +5951,10 @@
     }
 
 
-    window._lastVibe = document.getElementById('vibe')?.value || 'adventure';
-    renderPlan(result, currency);
     // ── RENDER PLAN ────────────────────────────────
     function renderPlan(plan, currency) {
       var dest = plan.destination || '';
-      var vibe = (plan.travel_style || window._lastVibe || 'adventure').toLowerCase();
+      var vibe = (plan.travel_style || (currentPlan && currentPlan._meta && currentPlan._meta.vibes) || 'adventure').toLowerCase().split(' + ')[0].trim();
 
       // Vibe config — colors, emoji, mood
       var VIBE_CONFIG = {
@@ -6218,6 +6224,28 @@
               '<div style="font-size:13px;color:var(--text2);line-height:1.6;">' + t + '</div>' +
               '</div>';
           }).join('');
+      }
+
+      // ── EMERGENCY NUMBERS ──
+      var emergNums = plan.emergency_numbers || {};
+      var emergEl = document.getElementById('emergencySection');
+      if (emergEl && Object.keys(emergNums).length) {
+        var numOrder = ['police', 'ambulance', 'fire', 'tourist_helpline'];
+        var numColors = { police: '#3B82F6', ambulance: '#EF4444', fire: '#F97316', tourist_helpline: '#18C29C' };
+        var numIcons = { police: '🚔', ambulance: '🚑', fire: '🚒', tourist_helpline: '📞' };
+        var allKeys = numOrder.concat(Object.keys(emergNums).filter(function (k) { return numOrder.indexOf(k) === -1; }));
+        emergEl.innerHTML =
+          '<div style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px;">🆘 Emergency Numbers</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+          allKeys.filter(function (k) { return emergNums[k]; }).slice(0, 4).map(function (k) {
+            var col = numColors[k] || '#6B7280';
+            return '<div style="background:' + col + '11;border:1px solid ' + col + '33;border-radius:14px;padding:13px;text-align:center;">' +
+              '<div style="font-size:20px;margin-bottom:4px;">' + (numIcons[k] || '📞') + '</div>' +
+              '<div style="font-family:var(--font-mono);font-size:18px;font-weight:800;color:' + col + ';">' + emergNums[k] + '</div>' +
+              '<div style="font-size:10px;color:var(--muted2);margin-top:2px;text-transform:capitalize;">' + k.replace(/_/g, ' ') + '</div>' +
+              '</div>';
+          }).join('') +
+          '</div>';
       }
     }
 
@@ -6615,25 +6643,6 @@
     // ── JOURNEY ────────────────────────────────────
 
     var GPLACES_KEY = 'YOUR_GOOGLE_PLACES_API_KEY_HERE';
-
-    // ════════════════════════════════════════════════════════
-    //  TRANSPORT MODE STATE
-    // ════════════════════════════════════════════════════════
-    var selectedTransportMode = 'smart';
-    var jMode = 'any';
-
-    function setTransportMode(btn, mode) {
-      document.querySelectorAll('.tm-btn').forEach(function (b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      selectedTransportMode = mode;
-
-      var banner = document.getElementById('smartModeBanner');
-      if (mode === 'smart') {
-        banner.classList.remove('hidden');
-      } else {
-        banner.classList.add('hidden');
-      }
-    }
 
     function setJMode(btn, mode) {
       document.querySelectorAll('.mode-pill').forEach(function (b) { b.classList.remove('active'); });
@@ -7061,7 +7070,8 @@
           showToast(data.error || 'Could not identify place');
         }
       } catch (e) {
-        showToast('Connection error');
+        console.error('[identifyPlace]', e);
+        showToast('Connection error — try again');
       }
 
       drop.classList.remove('scanning');
@@ -7082,7 +7092,10 @@
         if (data.limit_reached) { YaplyUpgrade.show(data); return; }
         if (data.success) { renderPlaceResult(data); }
         else { showToast(data.error || 'Could not identify place'); }
-      } catch (e) { showToast('Connection error'); }
+      } catch (e) {
+        console.error('[identifyByText]', e);
+        showToast('Connection error — try again');
+      }
     }
 
     // ══════════════════════════════════════════════════════
@@ -7090,8 +7103,8 @@
     // ══════════════════════════════════════════════════════
 
     function renderPlaceResult(data) {
-      var p = data.result || data.place || data;
-      window._lastIdentifiedPlace = p; // For debugging
+      var p = data.result || data.place || data.data || data;
+      window._lastIdentifiedPlace = p;
       var wrap = document.getElementById('placeResult');
 
       // ── Extract all fields ──
@@ -7099,7 +7112,7 @@
       var city = p.city || '';
       var country = p.country || '';
       var loc = [city, country].filter(Boolean).join(', ');
-      var conf = p.confidence || 95;
+      var conf = (p.confidence !== undefined && p.confidence !== null) ? p.confidence : 92;
       var type = p.place_type || p.category || '';
       var desc = p.description || '';
       var whyFamous = p.why_famous || '';
@@ -7245,7 +7258,7 @@
       }
 
       // Saved Places //
-      '<button id="savePlaceBtn" onclick="saveCurrentPlace()" ' +
+      html += '<button id="savePlaceBtn" onclick="saveCurrentPlace()" ' +
         'style="width:100%;padding:13px;background:var(--white);color:var(--blue);' +
         'border:1.5px solid var(--blue);border-radius:14px;font-family:var(--font-body);' +
         'font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;' +
@@ -7437,8 +7450,12 @@
     });
 
     // ── SAVE / DOWNLOAD ────────────────────────────
+    var _tripSaved = false;
     async function saveTrip() {
       if (!currentPlan) { showToast('Generate a plan first'); return; }
+      if (_tripSaved) { showToast('Already saved!'); return; }
+      var btn = document.getElementById('saveTripBtn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
       try {
         var meta = currentPlan._meta || {};
         var token = localStorage.getItem('yaply_token') || '';
@@ -7458,10 +7475,23 @@
           })
         });
         var data = await res.json();
-        if (data.limit_reached) { YaplyUpgrade.show(data); return; }
-        if (data.success) { showToast('Trip saved successfully!'); }
-        else { showToast(data.error || 'Could not save trip'); }
-      } catch (e) { showToast('Connection error'); }
+        if (data.limit_reached) {
+          if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save'; }
+          YaplyUpgrade.show(data); return;
+        }
+        if (data.success) {
+          _tripSaved = true;
+          showToast('Trip saved to your trips');
+          if (btn) { btn.textContent = 'Saved ✓'; btn.style.color = 'var(--green)'; btn.style.borderColor = 'var(--green)'; }
+        } else {
+          if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save'; }
+          showToast(data.error || 'Could not save trip');
+        }
+      } catch (e) {
+        console.error('[saveTrip]', e);
+        if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save'; }
+        showToast('Connection error — try again');
+      }
     }
 
     async function downloadOffline() {
@@ -7472,7 +7502,7 @@
         var res = await fetch('/download-itinerary', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ plan: currentPlan, multi_city: false })
+          body: JSON.stringify({ plan: currentPlan, multi_city: !!(currentPlan._meta && currentPlan._meta.is_multi) })
         });
         var blob = await res.blob();
         var url = URL.createObjectURL(blob);
@@ -7675,8 +7705,8 @@
       } catch (e) {
         _showToolLoading(toolId, false);
         btns.forEach(function (b) { b.disabled = false; });
-        console.error('[Tool ' + toolId + ']', e);
-        _showToolError(toolId, 'Connection error. Please try again.');
+        console.error('[Tool:' + toolId + ']', e);
+        _showToolError(toolId, 'Connection error — check your connection and try again.');
       }
     }
 
@@ -7832,13 +7862,13 @@
     function _renderToolResult(toolId, result) {
       switch (toolId) {
         case 'visa': return _renderVisa(result.visa || result.data || result);
-        case 'weather': return _renderWeather(result);
-        case 'currency': return _renderCurrency(result);
+        case 'weather': return _renderWeather(result.data || result.weather || result);
+        case 'currency': return _renderCurrency(result.data || result);
         case 'packing': return _renderPacking(result.packing || result.data || result);
         case 'budget-plan': return _renderBudgetPlan(result.data || result);
-        case 'safety-check': return _renderSafety(result.data || result);
+        case 'safety-check': return _renderSafety(result.safety || result.data || result);
         case 'festivals': return _renderFestivals(result.data || result);
-        case 'luggage-check': return _renderLuggage(result.data || result);
+        case 'luggage-check': return _renderLuggage(result.luggage || result.data || result);
         case 'jetlag': return _renderJetlag(result.data || result);
         case 'emergency-card': return _renderEmergency(result.data || result);
         case 'sim-guide': return _renderSim(result.guide || result.data || result);

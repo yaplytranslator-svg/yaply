@@ -13,7 +13,8 @@
       "Bash(npx skills *)",
       "Skill(higgsfield-generate)",
       "Skill(higgsfield-generate:*)",
-      "PowerShell($releases = Invoke-RestMethod \"https://api.github.com/repos/higgsfield-ai/cli/releases/latest\"; $releases.assets | Select-Object name, browser_download_url)"
+      "PowerShell($releases = Invoke-RestMethod \"https://api.github.com/repos/higgsfield-ai/cli/releases/latest\"; $releases.assets | Select-Object name, browser_download_url)",
+      "Bash(grep -n \"renderPlan\\(result\\\\|window._lastVibe\\\\|_tripSaved\\\\|emergencySection\\\\|\\\\/api\\\\/download-itinerary\\\\|\\\\/download-itinerary\" \"c:/Users/piyus/yaply-translator/templates/before_trip.html\")"
     ]
   }
 }
